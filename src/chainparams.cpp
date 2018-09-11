@@ -53,11 +53,11 @@ static void convertSeed6(std::vector<CAddress>& vSeedsOut, const SeedSpec6* data
 // + Contains no strange transactions
 static Checkpoints::MapCheckpoints mapCheckpoints =
     boost::assign::map_list_of
-    (0, uint256("0x001"));
+    (0, uint256("0x0000041e482b9b9691d98eefb48473405c0b8ec31b76df3797c74a78680ef818"));
 static const Checkpoints::CCheckpointData data = {
     &mapCheckpoints,
-    1525106065, // * UNIX timestamp of last checkpoint block
-    2498834,    // * total number of transactions between genesis and last checkpoint
+    1536662255, // * UNIX timestamp of last checkpoint block
+    0,    // * total number of transactions between genesis and last checkpoint
                 //   (the tx=... number in the SetBestChain debug.log lines)
     2000        // * estimated number of transactions per day after checkpoint
 };
@@ -66,7 +66,7 @@ static Checkpoints::MapCheckpoints mapCheckpointsTestnet =
     boost::assign::map_list_of(0, uint256("0x001"));
 static const Checkpoints::CCheckpointData dataTestnet = {
     &mapCheckpointsTestnet,
-    1740710,
+    1536662255,
     0,
     250};
 
@@ -74,7 +74,7 @@ static Checkpoints::MapCheckpoints mapCheckpointsRegtest =
     boost::assign::map_list_of(0, uint256("0x001"));
 static const Checkpoints::CCheckpointData dataRegtest = {
     &mapCheckpointsRegtest,
-    1454124731,
+    1536662255,
     0,
     100};
 
@@ -153,7 +153,7 @@ public:
          *     CTxOut(nValue=50.00000000, scriptPubKey=0xA9037BAC7050C479B121CF)
          *   vMerkleTree: e0028e
          */
-        const char* pszTimestamp = "U.S. News & World Report Jan 28 2016 With His Absence, Trump Dominates Another Debate";
+        const char* pszTimestamp = "U.S. News & World Report Sep 11 2018 With His Absence, Trump Dominates Another Debate";
         CMutableTransaction txNew;
         txNew.vin.resize(1);
         txNew.vout.resize(1);
@@ -164,13 +164,16 @@ public:
         genesis.hashPrevBlock = 0;
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
         genesis.nVersion = 1;
-        genesis.nTime = 1454124731;
+        genesis.nTime = 1536662255;
         genesis.nBits = 0x1e0ffff0;
         genesis.nNonce = 2402015;
 
         hashGenesisBlock = genesis.GetHash();
-        assert(hashGenesisBlock == uint256("0x0000041e482b9b9691d98eefb48473405c0b8ec31b76df3797c74a78680ef818"));
-        assert(genesis.hashMerkleRoot == uint256("0x1b2ef6e2f28be914103a277377ae7729dcd125dfeb8bf97bd5964ba72b6dc39b"));
+        std::cout << "--- Mainnet genesisblockhashvalue---" << hashGenesisBlock.ToString() << std::endl;
+        std::cout << "--- Mainnet hashMerkleRoot---" << genesis.hashMerkleRoot.ToString() << std::endl;
+
+        assert(hashGenesisBlock == uint256("0x76ef1db4547f0d903fb156cf8778176094b3ab2027412c93ca9e2eaec172b16a"));
+        assert(genesis.hashMerkleRoot == uint256("0x07312443a1c7b1fe878b45be27911d3c9474fc803219054754e6799371b5ecde"));
 
         vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "dapscoin.seed.fuzzbawls.pw"));     // Primary DNS Seeder from Fuzzbawls
         vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "dapscoin.seed2.fuzzbawls.pw"));    // Secondary DNS Seeder from Fuzzbawls
@@ -242,7 +245,7 @@ public:
         pchMessageStart[1] = 0xa2;
         pchMessageStart[2] = 0xb1;
         pchMessageStart[3] = 0xb4;
-        vAlertPubKey = ParseHex("000010e83b2703ccf322f7dbd62dd5855ac7c10bd055814ce121ba32607d573b8810c02c0582aed05b4deb9c4b77b26d92428c61256cd42774babea0a073b2ed0c9");
+        vAlertPubKey = ParseHex("04b6c4c72f1ef439a603ab52aa2ca7c73c59c5cfb0ebdae305f7fd2928bb90b41293dc746753f59fea3a6fb2cc546bbebf4387a368bdf1a3755d4545fe28ba449e");
         nDefaultPort = 52574;
         nEnforceBlockUpgradeMajority = 51;
         nRejectBlockOutdatedMajority = 75;
@@ -268,10 +271,13 @@ public:
         nRejectOldSporkKey = 1522454400; //!> Reject old spork key after Saturday, March 31, 2018 12:00:00 AM GMT
 
         //! Modify the testnet genesis block so the timestamp is valid for a later start.
-        genesis.nTime = 1454124731;
+        genesis.nTime = 1536662255;
         genesis.nNonce = 2402015;
 
         hashGenesisBlock = genesis.GetHash();
+
+        std::cout << "--- Testnet genesisblockhashvalue---" << hashGenesisBlock.ToString() << std::endl;
+
         assert(hashGenesisBlock == uint256("0x0000041e482b9b9691d98eefb48473405c0b8ec31b76df3797c74a78680ef818"));
 
         vFixedSeeds.clear();
