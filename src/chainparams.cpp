@@ -53,7 +53,7 @@ static void convertSeed6(std::vector<CAddress>& vSeedsOut, const SeedSpec6* data
 // + Contains no strange transactions
 static Checkpoints::MapCheckpoints mapCheckpoints =
     boost::assign::map_list_of
-    (0, uint256("0x0000041e482b9b9691d98eefb48473405c0b8ec31b76df3797c74a78680ef818"));
+    (0, uint256("0x76ef1db4547f0d903fb156cf8778176094b3ab2027412c93ca9e2eaec172b16a"));
 static const Checkpoints::CCheckpointData data = {
     &mapCheckpoints,
     1536662255, // * UNIX timestamp of last checkpoint block
@@ -113,7 +113,6 @@ public:
         pchMessageStart[2] = 0xb0;
         pchMessageStart[3] = 0xb3;
         vAlertPubKey = ParseHex("049def8e22e7f78b624dc62007c66c06066d032310b3507642306b143326a8295e03576ffab7469c552e1a68655598d78d501eb10cc27408bfd7876dbadb08b0ee");
-//        vAlertPubKey = ParseHex("0000098d3ba6ba6e7423fa5cbd6a89e0a9a5348f88d332b44a5cb1a8b7ed2c1eaa335fc8dc4f012cb8241cc0bdafd6ca70c5f5448916e4e6f511bcd746ed57dc50");
         nDefaultPort = 52572;
         bnProofOfWorkLimit = ~uint256(0) >> 20; // DAPScoin starting difficulty is 1 / 2^12
         nSubsidyHalvingInterval = 210000;
@@ -153,13 +152,13 @@ public:
          *     CTxOut(nValue=50.00000000, scriptPubKey=0xA9037BAC7050C479B121CF)
          *   vMerkleTree: e0028e
          */
-        const char* pszTimestamp = "U.S. News & World Report Sep 11 2018 With His Absence, Trump Dominates Another Debate";
+        const char* pszTimestamp = "U.S. News & World Report Sep 11 2018 With His Absence, Daps Development Team";
         CMutableTransaction txNew;
         txNew.vin.resize(1);
         txNew.vout.resize(1);
         txNew.vin[0].scriptSig = CScript() << 486604799 << CScriptNum(4) << vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
         txNew.vout[0].nValue = 250 * COIN;
-        txNew.vout[0].scriptPubKey = CScript() << ParseHex("04c10e83b2703ccf322f7dbd62dd5855ac7c10bd055814ce121ba32607d573b8810c02c0582aed05b4deb9c4b77b26d92428c61256cd42774babea0a073b2ed0c9") << OP_CHECKSIG;
+        txNew.vout[0].scriptPubKey = CScript() << ParseHex("041db2a1b75bc00fc1a18e9f8de27c65fede32eb9ac1c11e2587402a66732656d71f7b5de649c8dc7f94aeb433485ce3122ba856644b02e433c2d5fc94ea26bf8e") << OP_CHECKSIG;
         genesis.vtx.push_back(txNew);
         genesis.hashPrevBlock = 0;
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
@@ -169,17 +168,16 @@ public:
         genesis.nNonce = 2402015;
 
         hashGenesisBlock = genesis.GetHash();
-        std::cout << "--- Mainnet genesisblockhashvalue---" << hashGenesisBlock.ToString() << std::endl;
-        std::cout << "--- Mainnet hashMerkleRoot---" << genesis.hashMerkleRoot.ToString() << std::endl;
 
-        assert(hashGenesisBlock == uint256("0x76ef1db4547f0d903fb156cf8778176094b3ab2027412c93ca9e2eaec172b16a"));
-        assert(genesis.hashMerkleRoot == uint256("0x07312443a1c7b1fe878b45be27911d3c9474fc803219054754e6799371b5ecde"));
+        assert(hashGenesisBlock == uint256("0xeadf5415ea7c9014cf8d1befee0628eda3ecc70d0714368dd1d657bd843c2964"));
+        assert(genesis.hashMerkleRoot == uint256("0xc67673a79b4b4a3db0e4d765dd6ad1c01a80a5e460d84c3fc7dbbdeb317e54b6"));
 
-        vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "dapscoin.seed.fuzzbawls.pw"));     // Primary DNS Seeder from Fuzzbawls
-        vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "dapscoin.seed2.fuzzbawls.pw"));    // Secondary DNS Seeder from Fuzzbawls
-        vSeeds.push_back(CDNSSeedData("coin-server.com", "coin-server.com"));         // Single node address
-        vSeeds.push_back(CDNSSeedData("s3v3nh4cks.ddns.net", "s3v3nh4cks.ddns.net")); // Single node address
-        vSeeds.push_back(CDNSSeedData("178.254.23.111", "178.254.23.111"));           // Single node address
+//        vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "dapscoin.seed.fuzzbawls.pw"));     // Primary DNS Seeder from Fuzzbawls
+//        vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "dapscoin.seed2.fuzzbawls.pw"));    // Secondary DNS Seeder from Fuzzbawls
+//        vSeeds.push_back(CDNSSeedData("coin-server.com", "coin-server.com"));         // Single node address
+//        vSeeds.push_back(CDNSSeedData("s3v3nh4cks.ddns.net", "s3v3nh4cks.ddns.net")); // Single node address
+//        vSeeds.push_back(CDNSSeedData("178.254.23.111", "178.254.23.111"));           // Single node address
+        vSeeds.push_back(CDNSSeedData("192.168.2.240", "192.168.2.240"));           // Single node address
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 30);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 13);
@@ -276,9 +274,7 @@ public:
 
         hashGenesisBlock = genesis.GetHash();
 
-        std::cout << "--- Testnet genesisblockhashvalue---" << hashGenesisBlock.ToString() << std::endl;
-
-        assert(hashGenesisBlock == uint256("0x0000041e482b9b9691d98eefb48473405c0b8ec31b76df3797c74a78680ef818"));
+        assert(hashGenesisBlock == uint256("0xeadf5415ea7c9014cf8d1befee0628eda3ecc70d0714368dd1d657bd843c2964"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
@@ -344,13 +340,14 @@ public:
         nTargetTimespan = 24 * 60 * 60; // DAPScoin: 1 day
         nTargetSpacing = 1 * 60;        // DAPScoin: 1 minutes
         bnProofOfWorkLimit = ~uint256(0) >> 1;
-        genesis.nTime = 1454124731;
+        genesis.nTime = 1536662255;
         genesis.nBits = 0x207fffff;
         genesis.nNonce = 12345;
 
         hashGenesisBlock = genesis.GetHash();
         nDefaultPort = 51476;
-        assert(hashGenesisBlock == uint256("0x4f023a2120d9127b21bbad01724fdb79b519f593f2a85b60d3d79160ec5f29df"));
+
+        assert(hashGenesisBlock == uint256("0xf069e14bc1cf59b0a3ab88bad428d23dcdd1be710d39627522263b68429aa438"));
 
         vFixedSeeds.clear(); //! Testnet mode doesn't have any fixed seeds.
         vSeeds.clear();      //! Testnet mode doesn't have any DNS seeds.
