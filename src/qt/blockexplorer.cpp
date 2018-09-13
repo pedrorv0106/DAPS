@@ -1,7 +1,3 @@
-// Copyright (c) 2017-2018 The DAPScoin developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
-
 #include "blockexplorer.h"
 #include "bitcoinunits.h"
 #include "chainparams.h"
@@ -476,7 +472,7 @@ void BlockExplorer::showEvent(QShowEvent*)
         m_History.push_back(text);
         updateNavButtons();
 
-        if (!GetBoolArg("-txindex", true)) {
+        if (!GetBoolArg("-txindex", false)) {
             QString Warning = tr("Not all transactions will be shown. To view all transactions you need to set txindex=1 in the configuration file (dapscoin.conf).");
             QMessageBox::warning(this, "DAPScoin Core Blockchain Explorer", Warning, QMessageBox::Ok);
         }

@@ -109,9 +109,6 @@
     </message>
     </context>
 <context>
-    <name>BanTableModel</name>
-    </context>
-<context>
     <name>Bip38ToolDialog</name>
     <message>
         <source>Address:</source>

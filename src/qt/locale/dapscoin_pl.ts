@@ -108,6 +108,10 @@
         <translation>Powtórz nowe hasło</translation>
     </message>
     <message>
+        <source>For anonymization and staking only</source>
+        <translation>Tylko dla anonimizacji i stakingu</translation>
+    </message>
+    <message>
         <source>Encrypt wallet</source>
         <translation>Zakoduj portfel</translation>
     </message>
@@ -185,9 +189,6 @@
     </message>
 </context>
 <context>
-    <name>BanTableModel</name>
-    </context>
-<context>
     <name>Bip38ToolDialog</name>
     <message>
         <source>BIP 38 Tool</source>
@@ -226,6 +227,10 @@
         <translation>Zakodowany klucz:</translation>
     </message>
     <message>
+        <source>Sign the message to prove you own this DAPScoin address</source>
+        <translation>Zatwierdź wiadomość, aby udowodnić, że podany adres DAPScoin jest w twoim posiadaniu</translation>
+    </message>
+    <message>
         <source>Encrypt &amp;Key</source>
         <translation>Kodowanie &amp;klucz</translation>
     </message>
@@ -236,6 +241,10 @@
     <message>
         <source>&amp;BIP 38 Decrypt</source>
         <translation>&amp;BIP 38 Zakoduj</translation>
+    </message>
+    <message>
+        <source>Reset all verify message fields</source>
+        <translation>Resetuj wszystkie zweryfikowane pola tekstowe</translation>
     </message>
     <message>
         <source>Decrypted Key:</source>
@@ -681,6 +690,10 @@ MultiWysyłlka: %1</translation>
         <translation>Portfel jest 1Zakodowany1 i obecnie 2Odblokowany2</translation>
     </message>
     <message>
+        <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;unlocked&lt;/b&gt; for anonimization and staking only</source>
+        <translation>Portfel jest 1Zakodowany1 i obecnie 2Odblokowany2 tylko dla anonimizacji i stakingu</translation>
+    </message>
+    <message>
         <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;locked&lt;/b&gt;</source>
         <translation>Portfel jest 1Zakodowany1 i obecnie 2Zablokowany2</translation>
     </message>
@@ -933,6 +946,10 @@ MultiWysyłlka: %1</translation>
         <translation>Forma</translation>
     </message>
     <message>
+        <source>My Masternodes</source>
+        <translation>Moje Masternode</translation>
+    </message>
+    <message>
         <source>Address</source>
         <translation>Adres</translation>
     </message>
@@ -1082,10 +1099,6 @@ MultiWysyłlka: %1</translation>
     <message>
         <source>View MultiSend</source>
         <translation>Podgląd MultiWysyłki</translation>
-    </message>
-    <message>
-        <source>(no label)</source>
-        <translation>(brak zakładki)</translation>
     </message>
     <message>
         <source>The entered address:
@@ -1315,7 +1328,7 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations </trans
         <source>The supplied proxy address is invalid.</source>
         <translation>Podany adres proxy jest nieprawidłowy</translation>
     </message>
-    </context>
+</context>
 <context>
     <name>OverviewPage</name>
     <message>
@@ -1341,6 +1354,10 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations </trans
     <message>
         <source>Total:</source>
         <translation>Całość:</translation>
+    </message>
+    <message>
+        <source>Your current total balance</source>
+        <translation>Twój całkowity bilans</translation>
     </message>
     <message>
         <source>Current total balance in watch-only addresses</source>
@@ -1422,10 +1439,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations </trans
     <message>
         <source>Priority:</source>
         <translation>Priorytet:</translation>
-    </message>
-    <message>
-        <source>TextLabel</source>
-        <translation>TekstZakładka</translation>
     </message>
     <message>
         <source>Fee:</source>
@@ -1649,6 +1662,14 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations </trans
         <translation>Usługi</translation>
     </message>
     <message>
+        <source>Starting Height</source>
+        <translation>Wysokość rozpoczęcia</translation>
+    </message>
+    <message>
+        <source>Sync Height</source>
+        <translation>Wysokość synchronizacji</translation>
+    </message>
+    <message>
         <source>Connection Time</source>
         <translation>Czas połączenia</translation>
     </message>
@@ -1736,7 +1757,7 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations </trans
         <source>Unknown</source>
         <translation>Nieznane</translation>
     </message>
-</context>
+    </context>
 <context>
     <name>ReceiveCoinsDialog</name>
     <message>

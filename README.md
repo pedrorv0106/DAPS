@@ -3,10 +3,12 @@ DAPScoin Core integration/staging repository
 
 [![Build Status](https://travis-ci.org/DAPScoin-Project/DAPScoin.svg?branch=master)](https://travis-ci.org/DAPScoin-Project/DAPScoin) [![GitHub version](https://badge.fury.io/gh/DAPScoin-Project%2FDAPScoin.svg)](https://badge.fury.io/gh/DAPScoin-Project%2FDAPScoin)
 
-DAPScoin is an open source crypto-currency focused on fast private transactions with low transaction fees & environmental footprint.  It utilizes a custom Proof of Stake protocol for securing its network and uses an innovative variable seesaw reward mechanism that dynamically balances 90% of its block reward size between masternodes and staking nodes and 10% dedicated for budget proposals. The goal of DAPScoin is to achieve a decentralized sustainable crypto currency with near instant full-time private transactions, fair governance and community intelligence.
-- Anonymized transactions using the [_Zerocoin Protocol_](http://www.dapscoin.org/zdaps).
-- Fast transactions featuring guaranteed zero confirmation transactions, we call it _SwiftX_.
-- Decentralized blockchain voting utilizing Masternode technology to form a DAO. The blockchain will distribute monthly treasury funds based on successful proposals submitted by the community and voted on by the DAO.
+DAPScoin is a cutting edge cryptocurrency, with many features not available in most other cryptocurrencies.
+- Anonymized transactions using coin mixing technology, we call it _Obfuscation_.
+- Fast transactions featuring guaranteed zero confirmation transactions, we call it _SwiftTX_.
+- Decentralized blockchain voting providing for consensus based advancement of the current Masternode
+  technology used to secure the network and provide the above features, each Masternode is secured
+  with a collateral of 10K DAPS.
 
 More information at [dapscoin.org](http://www.dapscoin.org) Visit our ANN thread at [BitcoinTalk](http://www.bitcointalk.org/index.php?topic=1262920)
 
@@ -25,9 +27,14 @@ More information at [dapscoin.org](http://www.dapscoin.org) Visit our ANN thread
 ### Reward Distribution
 
 <table>
-<th colspan=4>Genesis Block</th>
-<tr><th>Block Height</th><th>Reward Amount</th><th>Notes</th></tr>
-<tr><td>1</td><td>60,000 DAPS</td><td>Initial Pre-mine, burnt in block <a href="http://www.presstab.pw/phpexplorer/DAPScoin/block.php?blockhash=206d9cfe859798a0b0898ab00d7300be94de0f5469bb446cecb41c3e173a57e0">279917</a></td></tr>
+<th colspan=4>PoW Phase</th>
+<tr><th>Block Height</th><th>Reward Amount</th><th>Notes</th><th>Duration (Days)</th></tr>
+<tr><td>1</td><td>60,000 DAPS</td><td>Initial Premine</td><td>0 Days</td></tr>
+<tr><td>2-151200</td><td>250 DAPS</td><td rowspan=2>Open Mining</td><td rowspan=2> Approx 180 Days</td></tr>
+<tr><td>151201-259200</td><td>50 DAPS</td></tr>
+<tr><th colspan=4>PoS Phase</th></tr>
+<tr><th>Block Height</th><th colspan=3>Reward Amount</th></tr>
+<tr><td>259201-Infinite</td><td colspan=3>Variable based on SeeSaw Reward Mechanism</td></tr>
 </table>
 
 ### PoW Rewards Breakdown

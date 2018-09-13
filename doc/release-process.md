@@ -115,7 +115,7 @@ The gbuild invocations below <b>DO NOT DO THIS</b> by default.
     mv build/out/dapscoin-*.tar.gz build/out/dapscoin-*.dmg ../
 
     ./bin/gbuild --memory 3000 --commit dapscoin=v${VERSION} ../dapscoin/contrib/gitian-descriptors/gitian-aarch64.yml
-    ./bin/gsign --signer $SIGNER --release ${VERSION}-aarch64 --destination ../gitian.sigs/ ../dapscoin/contrib/gitian-descriptors/gitian-aarch64.yml
+    ./bin/gsign --signer $SIGNER --release ${VERSION}-linux --destination ../gitian.sigs/ ../dapscoin/contrib/gitian-descriptors/gitian-aarch64.yml
     mv build/out/dapscoin-*.tar.gz build/out/src/dapscoin-*.tar.gz ../
     popd
 

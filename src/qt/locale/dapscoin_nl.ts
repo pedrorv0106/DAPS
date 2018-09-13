@@ -43,11 +43,11 @@
     </message>
     <message>
         <source>Choose the address to send coins to</source>
-        <translation>Kies het adres om munten naar toe te sturen</translation>
+        <translation>Kies het adres om naar te versturen</translation>
     </message>
     <message>
         <source>Choose the address to receive coins with</source>
-        <translation>Kies het adres om munten op te ontvangen</translation>
+        <translation>Kies het adres om op te ontvangen</translation>
     </message>
     <message>
         <source>C&amp;hoose</source>
@@ -63,11 +63,11 @@
     </message>
     <message>
         <source>These are your DAPScoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation>Dit zijn uw DAPScoin adressen om betalingen mee te verzenden. Controleer altijd zowel het bedrag als het ontvangstadres voor het verzenden van geld.</translation>
+        <translation>Dit zijn uw DAPScoinadressen om betalingen mee te verzenden. Controleer altijd zowel het bedrag als het ontvangstadres voor het verzenden.</translation>
     </message>
     <message>
         <source>These are your DAPScoin addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
-        <translation>Dit zijn uw DAPScoin adressen waarop betalingen kunnen worden ontvangen. Het wordt aangeraden om een nieuw ontvangstadres voor elke transactie te gebruiken.</translation>
+        <translation>Dit zijn uw DAPScoinadressen waarop betalingen kunnen worden ontvangen. Het wordt aangeraden om een nieuw ontvangstadres voor elke transactie te gebruiken.</translation>
     </message>
     <message>
         <source>&amp;Copy Address</source>
@@ -95,7 +95,7 @@
     </message>
     <message>
         <source>There was an error trying to save the address list to %1. Please try again.</source>
-        <translation>Er was een fout opgetreden tijdens het opslaan van deze adreslijst naar %1. Probeer het nogmaals.</translation>
+        <translation>Een fout is opgetreden tijdens het opslaan van deze adreslijst naar %1. Probeer het nogmaals.</translation>
     </message>
 </context>
 <context>
@@ -117,27 +117,27 @@
     <name>AskPassphraseDialog</name>
     <message>
         <source>Passphrase Dialog</source>
-        <translation>Wachtwoordzin dialoog</translation>
+        <translation>Wachtwoorddialoog</translation>
     </message>
     <message>
         <source>Enter passphrase</source>
-        <translation>Voer wachtwoordzin in</translation>
+        <translation>Voer wachtwoord in</translation>
     </message>
     <message>
         <source>New passphrase</source>
-        <translation>Nieuwe wachtwoordzin</translation>
+        <translation>Nieuw wachtwoord</translation>
     </message>
     <message>
         <source>Repeat new passphrase</source>
-        <translation>Herhaal nieuwe wachtwoordzin</translation>
+        <translation>Herhaal nieuw wachtwoord</translation>
     </message>
     <message>
         <source>Serves to disable the trivial sendmoney when OS account compromised. Provides no real security.</source>
         <translation>Dient om de triviale sendmoney uit te schakelen wanneer het OS account in gevaar is gebracht. Geeft geen echte veiligheid.</translation>
     </message>
     <message>
-        <source>For anonymization, automint, and staking only</source>
-        <translation>Alleen voor anonimisering, automint en staking</translation>
+        <source>For anonymization and staking only</source>
+        <translation>Alleen voor anonimisering en staking</translation>
     </message>
     <message>
         <source>Enter the new passphrase to the wallet.&lt;br/&gt;Please use a passphrase of &lt;b&gt;ten or more random characters&lt;/b&gt;, or &lt;b&gt;eight or more words&lt;/b&gt;.</source>
@@ -169,7 +169,7 @@
     </message>
     <message>
         <source>Enter the old and new passphrase to the wallet.</source>
-        <translation>Voer de oude en nieuwe wachtwoordzin in voor uw portemonnee.</translation>
+        <translation>Voer het oude en nieuwe wachtwoord voor uw portemonnee in.</translation>
     </message>
     <message>
         <source>Confirm wallet encryption</source>
@@ -177,7 +177,7 @@
     </message>
     <message>
         <source>DAPScoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your DAPSs from being stolen by malware infecting your computer.</source>
-        <translation>DAPScoin zal nu afsluiten om het versleutelingsproces te voltooien. Onthoud dat het versleutelen van uw portemonnee u niet volledig kan beschermen tegen malware infecties op uw computer die uw DAPS's kunnen stelen.</translation>
+        <translation>DAPScoin zal nu afsluiten om het versleutelingsproces te voltooien. Onthoud dat het versleutelen van uw portemonnee u niet volledig kan beschermen: Malware kan uw computer infecteren en uw DAPSs stelen.</translation>
     </message>
     <message>
         <source>Are you sure you wish to encrypt your wallet?</source>
@@ -193,7 +193,7 @@
     </message>
     <message>
         <source>IMPORTANT: Any previous backups you have made of your wallet file should be replaced with the newly generated, encrypted wallet file. For security reasons, previous backups of the unencrypted wallet file will become useless as soon as you start using the new, encrypted wallet.</source>
-        <translation>BELANGRIJK: Elke eerder gemaakte backup van uw portemonneebestand dient te worden vervangen door het nieuwe gegenereerde, versleutelde portemonneebestand. Om veiligheidsredenen zullen eerdere backups van het niet-versleutelde portemonneebestand onbruikbaar worden zodra u uw nieuwe, versleutelde, portemonnee begint te gebruiken.</translation>
+        <translation>BELANGRIJK: Elke eerder gemaakte backup van uw portemonneebestand dient te worden vervangen door het nieuw gegenereerde, versleutelde portemonneebestand. Om veiligheidsredenen zullen eerdere backups van het niet-versleutelde portemonneebestand onbruikbaar worden zodra u uw nieuwe, versleutelde, portemonnee begint te gebruiken.</translation>
     </message>
     <message>
         <source>Wallet encryption failed</source>
@@ -205,7 +205,7 @@
     </message>
     <message>
         <source>The supplied passphrases do not match.</source>
-        <translation>De opgegeven wachtwoordzinnen komen niet overeen.</translation>
+        <translation>De opgegeven wachtwoorden komen niet overeen.</translation>
     </message>
     <message>
         <source>Wallet unlock failed</source>
@@ -213,30 +213,19 @@
     </message>
     <message>
         <source>The passphrase entered for the wallet decryption was incorrect.</source>
-        <translation>De opgegeven wachtwoordzin voor de portemonnee ontsleuteling is niet correct.</translation>
+        <translation>Het opgegeven wachtwoord voor de portemonnee-ontsleuteling is niet correct.</translation>
     </message>
     <message>
         <source>Wallet decryption failed</source>
-        <translation>Portemonnee ontsleuteling mislukt</translation>
+        <translation>Portemonnee-ontsleuteling mislukt</translation>
     </message>
     <message>
         <source>Wallet passphrase was successfully changed.</source>
-        <translation>Portemonnee wachtwoordzin is met succes gewijzigd.</translation>
+        <translation>Portemonneewachtwoord is met succes gewijzigd.</translation>
     </message>
     <message>
         <source>Warning: The Caps Lock key is on!</source>
         <translation>Waarschuwing: De Caps-Lock-toets staat aan!</translation>
-    </message>
-</context>
-<context>
-    <name>BanTableModel</name>
-    <message>
-        <source>IP/Netmask</source>
-        <translation>IP/Netmask</translation>
-    </message>
-    <message>
-        <source>Banned Until</source>
-        <translation>Verboden tot</translation>
     </message>
 </context>
 <context>
@@ -250,16 +239,16 @@
         <translation>&amp;BIP 38 Versleuteling</translation>
     </message>
     <message>
+        <source>Enter a Dapscoin Address that you would like to encrypt using BIP 38. Enter a passphrase in the middle box. Press encrypt to compute the encrypted private key.</source>
+        <translation>Voer een DAPScoin adres in dat u wilt versleutelen met BIP 38. Voer een wachtwoord in, in het middelste veld. Druk op versleutelen om de versleutelde geheime sleutel te berekenen.</translation>
+    </message>
+    <message>
         <source>Address:</source>
         <translation>Adres:</translation>
     </message>
     <message>
-        <source>Enter a DAPScoin Address that you would like to encrypt using BIP 38. Enter a passphrase in the middle box. Press encrypt to compute the encrypted private key.</source>
-        <translation>Voer een DAPScoin adres in dat u wilt coderen met BIP 38. Voer een wachtwoordzin in in het middelste vak. Druk op versleutelen om de versleutelde privé sleutel te berekenen.</translation>
-    </message>
-    <message>
-        <source>The DAPScoin address to encrypt</source>
-        <translation>Het DAPScoin adres om te versleutelen</translation>
+        <source>The DAPScoin address to sign the message with</source>
+        <translation>Het DAPScoin adres om het bericht met te ondertekenen</translation>
     </message>
     <message>
         <source>Choose previously used address</source>
@@ -290,24 +279,16 @@
         <translation>Kopieer de huidige handtekening naar het systeemklembord</translation>
     </message>
     <message>
-        <source>Encrypt the private key for this DAPScoin address</source>
-        <translation>Versleutel de privé sleutel voor dit DAPScoin adres</translation>
-    </message>
-    <message>
-        <source>Reset all fields</source>
-        <translation>Reset alle velden</translation>
-    </message>
-    <message>
-        <source>The encrypted private key</source>
-        <translation>De versleutelde privé sleutel</translation>
-    </message>
-    <message>
-        <source>Decrypt the entered key using the passphrase</source>
-        <translation>Decodeer de ingevoerde sleutel met behulp van de wachtwoordzin</translation>
+        <source>Sign the message to prove you own this DAPScoin address</source>
+        <translation>Onderteken het bericht om te bewijzen dat u het DAPScoin adres bezit</translation>
     </message>
     <message>
         <source>Encrypt &amp;Key</source>
         <translation>Versleutel &amp;Sleutel</translation>
+    </message>
+    <message>
+        <source>Reset all sign message fields</source>
+        <translation>Maak alle ondertekenvelden leeg</translation>
     </message>
     <message>
         <source>Clear &amp;All</source>
@@ -319,11 +300,23 @@
     </message>
     <message>
         <source>Enter the BIP 38 encrypted private key. Enter the passphrase in the middle box. Click Decrypt Key to compute the private key. After the key is decrypted, clicking 'Import Address' will add this private key to the wallet.</source>
-        <translation>Voer de BIP 38 versleutelde geheime sleutel in. Voer de wachtwoordzin in, in het middelste veld. Druk op Ontsleutel Sleutel om de privé sleutel te berekenen.  Nadat de privé sleutel is ontsleuteld, zal het klikken op 'Adres Importeren' de privé sleutel toevoegen aan de portemonnee.</translation>
+        <translation>Voer de BIP 38 versleutelde geheime sleutel in. Voer het wachtwoord in, in het middelste veld. Druk op Ontsleutelen Sleutel om de geheime sleutel te berekenen.  Nadat de geheime sleutel is ontsleuteld, zal het klikken op 'Adres Importeren' de geheime sleutel toevoegen aan de portemonnee.</translation>
+    </message>
+    <message>
+        <source>The DAPScoin address the message was signed with</source>
+        <translation>Het DAPScoin adres waarmee het bericht was ondertekend</translation>
+    </message>
+    <message>
+        <source>Verify the message to ensure it was signed with the specified DAPScoin address</source>
+        <translation>Controleer een bericht om te verifiëren dat het ondertekend is door het gespecificeerde DAPScoin adres</translation>
     </message>
     <message>
         <source>Decrypt &amp;Key</source>
-        <translation>Ontsleutelen &amp;Sleutel</translation>
+        <translation>Ontsleutelen Sleutel</translation>
+    </message>
+    <message>
+        <source>Reset all verify message fields</source>
+        <translation>Maak alle verifiëren van het bericht velden leeg</translation>
     </message>
     <message>
         <source>Decrypted Key:</source>
@@ -339,7 +332,7 @@
     </message>
     <message>
         <source>The entered passphrase is invalid. </source>
-        <translation>De ingevoerde wachtwoordzin is ongeldig.</translation>
+        <translation>Het ingevoerde wachtwoord is ongeldig.</translation>
     </message>
     <message>
         <source>Allowed: 0-9,a-z,A-Z,</source>
@@ -359,11 +352,11 @@
     </message>
     <message>
         <source>Wallet unlock was cancelled.</source>
-        <translation>Portemonnee ontsleuteling is geannuleerd.</translation>
+        <translation>Portemonnee-ontsleuteling is geannuleerd.</translation>
     </message>
     <message>
         <source>Private key for the entered address is not available.</source>
-        <translation>Privé sleutel voor het ingevoerde adres is niet beschikbaar.</translation>
+        <translation>Geheime sleutel voor het ingevoerde adres is niet beschikbaar.</translation>
     </message>
     <message>
         <source>Failed to decrypt.</source>
@@ -371,7 +364,7 @@
     </message>
     <message>
         <source>Please check the key and passphrase and try again.</source>
-        <translation>Controleer de sleutel en de wachtwoordzin en probeer het opnieuw.</translation>
+        <translation>Controleer de sleutel en het wachtwoord en probeer het opnieuw.</translation>
     </message>
     <message>
         <source>Data Not Valid.</source>
@@ -395,7 +388,7 @@
     </message>
     <message>
         <source>Successfully Added Private Key To Wallet</source>
-        <translation>De privé sleutel is met succes toegevoegd aan de portemonnee</translation>
+        <translation>De geheime sleutel is toegevoegd aan de portemonnee</translation>
     </message>
 </context>
 <context>
@@ -433,12 +426,8 @@
         <translation>Blader door transactiegescheidenis</translation>
     </message>
     <message>
-        <source>Privacy Actions for zDAPS</source>
-        <translation>Privacy Acties voor zDAPS</translation>
-    </message>
-    <message>
         <source>E&amp;xit</source>
-        <translation>S&amp;luiten</translation>
+        <translation>&amp;Sluiten</translation>
     </message>
     <message>
         <source>Quit application</source>
@@ -466,15 +455,15 @@
     </message>
     <message>
         <source>&amp;Encrypt Wallet...</source>
-        <translation>$Versleutel portemonnee...</translation>
+        <translation>Versleutel portemonnee</translation>
     </message>
     <message>
         <source>Encrypt the private keys that belong to your wallet</source>
-        <translation>Versleutel de privé sleutels die bij uw portemonnee horen</translation>
+        <translation>Versleutel de geheime sleutels die bij uw portemonnee horen</translation>
     </message>
     <message>
         <source>&amp;Backup Wallet...</source>
-        <translation>&amp;Backup Portemonnee...</translation>
+        <translation>Backup Portemonnee...</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -482,11 +471,11 @@
     </message>
     <message>
         <source>&amp;Change Passphrase...</source>
-        <translation>&amp;Wijzig Wachtwoordzin...</translation>
+        <translation>&amp;Wijzig Wachtwoord...</translation>
     </message>
     <message>
         <source>Change the passphrase used for wallet encryption</source>
-        <translation>Wijzig de wachtwoordzin die gebruikt wordt voor uw portemonnee versleuteling</translation>
+        <translation>Wijzig het wachtwoord voor uw portemonneversleuteling</translation>
     </message>
     <message>
         <source>&amp;Unlock Wallet...</source>
@@ -566,7 +555,7 @@
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
-        <translation>Toon de lijst van gebruikte verzendadressen en labels</translation>
+        <translation>Toon de lijst van verzendadressen en labels</translation>
     </message>
     <message>
         <source>&amp;Receiving addresses...</source>
@@ -574,31 +563,7 @@
     </message>
     <message>
         <source>Show the list of used receiving addresses and labels</source>
-        <translation>Toon de lijst van gebruikte ontvangstadressen en labels</translation>
-    </message>
-    <message>
-        <source>&amp;Multisignature creation...</source>
-        <translation>&amp;Multisignature aanmaak...</translation>
-    </message>
-    <message>
-        <source>Create a new multisignature address and add it to this wallet</source>
-        <translation>Creëer een nieuw multisignature adres en voeg het toe aan deze portemonnee</translation>
-    </message>
-    <message>
-        <source>&amp;Multisignature spending...</source>
-        <translation>&amp;Multisignature spenderen...</translation>
-    </message>
-    <message>
-        <source>Spend from a multisignature address</source>
-        <translation>Besteden vanuit een multisignature adres</translation>
-    </message>
-    <message>
-        <source>&amp;Multisignature signing...</source>
-        <translation>Ondertekenen van &amp;Multisignature...</translation>
-    </message>
-    <message>
-        <source>Sign with a multisignature address</source>
-        <translation>Onderteken met een multisignature adres</translation>
+        <translation>Toon de lijst van ontvangstadressen en labels</translation>
     </message>
     <message>
         <source>Open &amp;URI...</source>
@@ -610,19 +575,11 @@
     </message>
     <message numerus="yes">
         <source>Processed %n blocks of transaction history.</source>
-        <translation><numerusform>%n blokken aan transactiegeschiedenis verwerkt.</numerusform><numerusform>%n blokken aan transactiegeschiedenis verwerkt.</numerusform></translation>
+        <translation><numerusform>%n blok van transactiegeschiedenis verwerkt.</numerusform><numerusform>%n blokken van transactiegeschiedenis verwerkt.</numerusform></translation>
     </message>
     <message>
         <source>Synchronizing additional data: %p%</source>
         <translation>Synchroniseren aanvullende gegevens: %p%</translation>
-    </message>
-    <message>
-        <source>%1 behind. Scanning block %2</source>
-        <translation>%1 achter. Scannen van block %2</translation>
-    </message>
-    <message>
-        <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;unlocked&lt;/b&gt; for anonymization and staking only</source>
-        <translation>Portemonnee is &lt;b&gt;versleuteld&lt;/b&gt; en momenteel &lt;b&gt;geopend&lt;/b&gt;enkel voor anonimisering en staking</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -646,7 +603,7 @@
     </message>
     <message>
         <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <translation>DAPScoin Kern</translation>
     </message>
     <message>
         <source>Send coins to a DAPScoin address</source>
@@ -654,7 +611,7 @@
     </message>
     <message>
         <source>Request payments (generates QR codes and dapscoin: URIs)</source>
-        <translation>Vraag betaling aan (genereert QR codes en DAPScoin: URI's)</translation>
+        <translation>Vraag betaling aan (genereert QR-codes en DAPScoin: URI's)</translation>
     </message>
     <message>
         <source>&amp;Privacy</source>
@@ -670,7 +627,7 @@
     </message>
     <message>
         <source>&amp;About DAPScoin Core</source>
-        <translation>&amp;Over DAPScoin Core</translation>
+        <translation>&amp;Over DAPScoin Kern</translation>
     </message>
     <message>
         <source>Show information about DAPScoin Core</source>
@@ -682,11 +639,11 @@
     </message>
     <message>
         <source>Sign messages with your DAPScoin addresses to prove you own them</source>
-        <translation>Onderteken berichten met uw DAPScoin adressen om te bewijzen dat deze adressen in uw bezit zijn</translation>
+        <translation>Onderteken berichten met uw DAPScoin adressen om te bewijzen dat u deze adressen bezit</translation>
     </message>
     <message>
         <source>Verify messages to ensure they were signed with specified DAPScoin addresses</source>
-        <translation>Controleer berichten om te verzekeren dat deze ondertekend zijn met de gespecificeerde DAPScoin adressen</translation>
+        <translation>Controleer berichten om te verifiëren dat deze ondertekend zijn met de gespecificeerde DAPScoin adressen</translation>
     </message>
     <message>
         <source>&amp;BIP38 tool</source>
@@ -694,7 +651,7 @@
     </message>
     <message>
         <source>Encrypt and decrypt private keys using a passphrase</source>
-        <translation>Versleutelen en ontsleutel privé sleutels door middel van een wachtwoordzin</translation>
+        <translation>Versleutelen en ontsleutelen door middel van een wachtwoord/wachtzin</translation>
     </message>
     <message>
         <source>&amp;MultiSend</source>
@@ -702,7 +659,7 @@
     </message>
     <message>
         <source>MultiSend Settings</source>
-        <translation>MultiSend instellingen</translation>
+        <translation>MultiSend intellingen</translation>
     </message>
     <message>
         <source>Open Wallet &amp;Configuration File</source>
@@ -738,7 +695,7 @@
     </message>
     <message numerus="yes">
         <source>%n active connection(s) to DAPScoin network</source>
-        <translation><numerusform>%n actieve verbindingen met het DAPScoin netwerk</numerusform><numerusform>%n actieve connectie(s) naar DAPScoin netwerk</numerusform></translation>
+        <translation><numerusform>%n actieve verbinding(en) naar het DAPScoin netwerk</numerusform><numerusform>%n actieve verbinding(en) naar het DAPScoin netwerk</numerusform></translation>
     </message>
     <message>
         <source>Synchronizing with network...</source>
@@ -761,24 +718,20 @@
         <translation>Bijgewerkt</translation>
     </message>
     <message numerus="yes">
-        <source>%n hour(s)</source>
-        <translation><numerusform>%n uren</numerusform><numerusform>%n uren</numerusform></translation>
-    </message>
-    <message numerus="yes">
         <source>%n day(s)</source>
-        <translation><numerusform>%n day</numerusform><numerusform>%n dagen</numerusform></translation>
+        <translation><numerusform>%n dag</numerusform><numerusform>%n dagen</numerusform></translation>
     </message>
     <message numerus="yes">
         <source>%n week(s)</source>
-        <translation><numerusform>%n weken</numerusform><numerusform>%n weken</numerusform></translation>
+        <translation><numerusform>%n week</numerusform><numerusform>%n weken</numerusform></translation>
     </message>
     <message>
         <source>%1 and %2</source>
-        <translation>%1 en %2</translation>
+        <translation>%1 en%2</translation>
     </message>
     <message numerus="yes">
         <source>%n year(s)</source>
-        <translation><numerusform>%n year</numerusform><numerusform>%n jaren</numerusform></translation>
+        <translation><numerusform>%n jaar</numerusform><numerusform>%n jaren</numerusform></translation>
     </message>
     <message>
         <source>Catching up...</source>
@@ -786,11 +739,11 @@
     </message>
     <message>
         <source>Last received block was generated %1 ago.</source>
-        <translation>Laatst ontvangen block was %1 geleden gegenereerd.</translation>
+        <translation>Het laatst ontvangen block was %1 geleden gegenereerd.</translation>
     </message>
     <message>
         <source>Transactions after this will not yet be visible.</source>
-        <translation>Transacties hierna zullen nog niet zichtbaar zijn.</translation>
+        <translation>Transacties hierna zijn nog niet zichtbaar.</translation>
     </message>
     <message>
         <source>Error</source>
@@ -814,7 +767,7 @@
     </message>
     <message>
         <source>Sent MultiSend transaction</source>
-        <translation>Verzonden MultiSend transactie</translation>
+        <translation>Verzend MultiSend transactie</translation>
     </message>
     <message>
         <source>Date: %1
@@ -849,20 +802,16 @@ Multisend: %1</translation>
 MultiSend: %1</translation>
     </message>
     <message>
-        <source>AutoMint is currently enabled and set to </source>
-        <translation>AutoMint is momenteel ingeschakeld en ingesteld op</translation>
-    </message>
-    <message>
-        <source>AutoMint is disabled</source>
-        <translation>AutoMint is uitgeschakeld</translation>
-    </message>
-    <message>
         <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;unlocked&lt;/b&gt;</source>
         <translation>Portemonnee is &lt;b&gt;versleuteld&lt;/b&gt; en momenteel &lt;b&gt;geopend&lt;/b&gt;</translation>
     </message>
     <message>
+        <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;unlocked&lt;/b&gt; for anonimization and staking only</source>
+        <translation>Portemonnee is &lt;b&gt;versleuteld&lt;/b&gt; en momenteel &lt;b&gt;geopend&lt;/b&gt;alleen voor anonimiteit en staking </translation>
+    </message>
+    <message>
         <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;locked&lt;/b&gt;</source>
-        <translation>Portemonnee is versleuteld &lt;/b&gt;en momenteel &lt;b&gt; vergrendeld&lt;/b&gt;</translation>
+        <translation>Portemonnee is &lt;b&gt;geëncrypteerd &lt;/b&gt;en momentel &lt;b&gt; vergrendeld&lt;/b&gt;</translation>
     </message>
 </context>
 <context>
@@ -893,7 +842,7 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>Not all transactions will be shown. To view all transactions you need to set txindex=1 in the configuration file (dapscoin.conf).</source>
-        <translation>Niet alle transacties zullen worden getoond. Om alle transacties te bekijken moet u txindex=1 instellen in het configuratie bestand (dapscoin.conf).</translation>
+        <translation>Niet alle transacties worden getoond. Om alle transacties te bekijken moet u txindex=1 instellen in het configuratie bestand (dapscoin.conf).</translation>
     </message>
 </context>
 <context>
@@ -919,7 +868,7 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>Amount:</source>
-        <translation>Bedrag:</translation>
+        <translation>Hoeveelheid:</translation>
     </message>
     <message>
         <source>Priority:</source>
@@ -927,7 +876,7 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>Fee:</source>
-        <translation>Fee:</translation>
+        <translation>Kost:</translation>
     </message>
     <message>
         <source>Coin Selection</source>
@@ -935,23 +884,23 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>Dust:</source>
-        <translation>Dust:</translation>
+        <translation>Stof:</translation>
     </message>
     <message>
         <source>After Fee:</source>
-        <translation>Na de fee:</translation>
+        <translation>Na de kost:</translation>
     </message>
     <message>
         <source>Change:</source>
-        <translation>Wisselgeld:</translation>
+        <translation>Wijzig:</translation>
     </message>
     <message>
         <source>(un)select all</source>
-        <translation>(de)selecteer alles</translation>
+        <translation>(on)selecteer alles</translation>
     </message>
     <message>
         <source>toggle lock state</source>
-        <translation>Schakel lock status</translation>
+        <translation>Schakel lock state</translation>
     </message>
     <message>
         <source>Tree mode</source>
@@ -959,15 +908,15 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>List mode</source>
-        <translation>Lijst modus</translation>
+        <translation>Lijstmodus</translation>
     </message>
     <message>
         <source>(1 locked)</source>
-        <translation>(1 locked)</translation>
+        <translation>(1 opgesloten)</translation>
     </message>
     <message>
         <source>Amount</source>
-        <translation>Bedrag</translation>
+        <translation>Hoeveelheid</translation>
     </message>
     <message>
         <source>Received with label</source>
@@ -1007,11 +956,11 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>Copy amount</source>
-        <translation>Kopieer bedrag</translation>
+        <translation>Kopieer hoeveelheid</translation>
     </message>
     <message>
         <source>Copy transaction ID</source>
-        <translation>Kopieer transactie ID</translation>
+        <translation>Kopier transactie ID</translation>
     </message>
     <message>
         <source>Lock unspent</source>
@@ -1023,15 +972,15 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>Copy quantity</source>
-        <translation>Kopieer kwantiteit</translation>
+        <translation>Kopieer kwanititeit</translation>
     </message>
     <message>
         <source>Copy fee</source>
-        <translation>Kopieer fee</translation>
+        <translation>Kopiëer kost</translation>
     </message>
     <message>
         <source>Copy after fee</source>
-        <translation>Kopieer na fee</translation>
+        <translation>Kopiëer na kost</translation>
     </message>
     <message>
         <source>Copy bytes</source>
@@ -1051,7 +1000,7 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>Please switch to "List mode" to use this function.</source>
-        <translation>Schakel alsjeblieft over naar "Lijst modus" om deze functie te gebruiken.</translation>
+        <translation>Ga alsjeblieft over naar "Lijst modus" om deze functie te gebruiken.</translation>
     </message>
     <message>
         <source>highest</source>
@@ -1068,6 +1017,10 @@ MultiSend: %1</translation>
     <message>
         <source>medium-high</source>
         <translation>medium-hoog</translation>
+    </message>
+    <message>
+        <source>Can vary +/- %1 duff(s) per input.</source>
+        <translation>Kan variëren van +/-%1 duff(s) per invoer.</translation>
     </message>
     <message>
         <source>medium</source>
@@ -1090,10 +1043,6 @@ MultiSend: %1</translation>
         <translation>laagst</translation>
     </message>
     <message>
-        <source>(%1 locked)</source>
-        <translation>(%1 vergrendeld)</translation>
-    </message>
-    <message>
         <source>none</source>
         <translation>geen</translation>
     </message>
@@ -1111,7 +1060,7 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>This means a fee of at least %1 per kB is required.</source>
-        <translation>Dit betekent dat een fee van minstens %1 per kB vereist is.</translation>
+        <translation>Dit betekent dat een honorarium van minstens %1 per kB vereist is.</translation>
     </message>
     <message>
         <source>Can vary +/- 1 byte per input.</source>
@@ -1119,7 +1068,7 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>Transactions with higher priority are more likely to get included into a block.</source>
-        <translation>Transacties met hogere prioriteit zullen waarschijnlijk eerder in een blok opgenomen worden.</translation>
+        <translation>Transacties met hogere prioriteit zullen waarschijnlijk in een blok opgenomen worden.</translation>
     </message>
     <message>
         <source>This label turns red, if the priority is smaller than "medium".</source>
@@ -1128,10 +1077,6 @@ MultiSend: %1</translation>
     <message>
         <source>This label turns red, if any recipient receives an amount smaller than %1.</source>
         <translation>Dit label wordt rood, als een ontvanger een hoeveelheid kleiner dan %1 ontvangt.</translation>
-    </message>
-    <message>
-        <source>Can vary +/- %1 udaps per input.</source>
-        <translation>Kan +/-%1 udaps per invoer variëren.</translation>
     </message>
     <message>
         <source>(no label)</source>
@@ -1158,7 +1103,7 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>The label associated with this address list entry</source>
-        <translation>Het label dat geassocieerd is met deze adreslijst invoer</translation>
+        <translation>Het label dat geassocieerd wordt met deze adreslijstinvoer</translation>
     </message>
     <message>
         <source>&amp;Address</source>
@@ -1166,7 +1111,7 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>The address associated with this address list entry. This can only be modified for sending addresses.</source>
-        <translation>Het adres geassocieerd met deze adreslijst invoer. Dit kan alleen worden gewijzigd voor verzend adressen.</translation>
+        <translation>Het adres geassocieerd met deze adreslijst vermelding. Dit kan alleen worden gewijzigd voor het verzenden van adressen.</translation>
     </message>
     <message>
         <source>New receiving address</source>
@@ -1174,7 +1119,7 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>New sending address</source>
-        <translation>Nieuw verzend adres</translation>
+        <translation>Nieuw verzendadres</translation>
     </message>
     <message>
         <source>Edit receiving address</source>
@@ -1182,7 +1127,7 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>Edit sending address</source>
-        <translation>Wijzig verzend adres</translation>
+        <translation>Wijzig verzendadres</translation>
     </message>
     <message>
         <source>The entered address "%1" is not a valid DAPScoin address.</source>
@@ -1205,7 +1150,7 @@ MultiSend: %1</translation>
     <name>FreespaceChecker</name>
     <message>
         <source>A new data directory will be created.</source>
-        <translation>Een nieuwe data directory zal worden aangemaakt.</translation>
+        <translation>Er wordt een nieuwe data map gemaakt.</translation>
     </message>
     <message>
         <source>name</source>
@@ -1213,7 +1158,7 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>Directory already exists. Add %1 if you intend to create a new directory here.</source>
-        <translation>Map bestaat reeds. Voeg %1 toe als je van plan bent om hier een nieuwe map te creëren.</translation>
+        <translation>Map bestaat alreeds. Voeg %1 toe als je van plan bent om hier een nieuwe map te creëren.</translation>
     </message>
     <message>
         <source>Path already exists, and is not a directory.</source>
@@ -1232,7 +1177,7 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <translation>DAPScoin Kern</translation>
     </message>
     <message>
         <source>(%1-bit)</source>
@@ -1259,14 +1204,6 @@ MultiSend: %1</translation>
         <translation>UI Opties:</translation>
     </message>
     <message>
-        <source>Choose data directory on startup (default: %u)</source>
-        <translation>Kies data directory bij opstarten (standaard: %u)</translation>
-    </message>
-    <message>
-        <source>Show splash screen on startup (default: %u)</source>
-        <translation>Toon splash scherm bij opstarten (standaard: %u)</translation>
-    </message>
-    <message>
         <source>Set language, for example "de_DE" (default: system locale)</source>
         <translation>Stel taal in, bijvoorbeeld "de_DE" (standaard: systeem locale)</translation>
     </message>
@@ -1287,15 +1224,15 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>Welcome to DAPScoin Core.</source>
-        <translation>Welkom bij DAPScoin Core.</translation>
+        <translation>Welkom bij DAPScoin Core</translation>
     </message>
     <message>
         <source>As this is the first time the program is launched, you can choose where DAPScoin Core will store its data.</source>
-        <translation>Aangezien dit de eerste keer is dat het programma is gestart, kun je kiezen waar DAPScoin Core zijn data opslaat.</translation>
+        <translation>Aangezien dit de eerste keer is dat het programma is gestart, kun je kiezen waar DAPScoin Core zijn gegevens opslaat.</translation>
     </message>
     <message>
         <source>DAPScoin Core will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
-        <translation>DAPScoin Core zal een kopie van de DAPScoin blockchain downloaden en opslaan. Tenminste %1GB aan data zal worden opgeslagen in deze map en het zal over de tijd groeien. De portemonnee zal ook in deze map worden opgeslagen.</translation>
+        <translation>DAPScoin Core zal een kopie van de DAPScoin blockchain downloaden en opslaan. Tenminste %1GB aan data zal worden opgeslagen in deze map en het zal over de tijd groeien. De portemonnee wordt ook in deze map opgeslagen.</translation>
     </message>
     <message>
         <source>Use the default data directory</source>
@@ -1307,7 +1244,7 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <translation>DAPScoin Kern</translation>
     </message>
     <message>
         <source>Error: Specified data directory "%1" cannot be created.</source>
@@ -1333,12 +1270,12 @@ MultiSend: %1</translation>
         <translation>Formulier</translation>
     </message>
     <message>
-        <source>MASTERNODES</source>
-        <translation>MASTERNODES</translation>
+        <source>My Masternodes</source>
+        <translation>Mijn Masternodes</translation>
     </message>
     <message>
         <source>Note: Status of your masternodes in local wallet can potentially be slightly incorrect.&lt;br /&gt;Always wait for wallet to sync additional data and then double check from another node&lt;br /&gt;if your node should be running but you still see "MISSING" in "Status" field.</source>
-        <translation>Opmerking: De status van uw masternodes in de lokale portemonnee kan mogelijk iets afwijken. &lt;br /&gt;Wacht altijd op de portemonnee om additionele data te synchroniseren en verifieer dit vanuit een andere node &lt;br /&gt;mocht de node nu aan het draaien zijn maar je ziet nog steeds 'MISSING' in het 'Status' veld.</translation>
+        <translation>Opmerking: De status van uw masternodes in de lokale portemonnee kan mogelijk iets afwijken. &lt;br /&gt;Wacht altijd op de portemonnee om additionele data te synchroniseren en verifieer dit vanuit een andere node &lt;br /&gt;mocht de node nu aan het draaien zijn maar je ziet nog steeds 'MISSING' in het veld 'Status'.</translation>
     </message>
     <message>
         <source>Alias</source>
@@ -1378,7 +1315,7 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>Start &amp;MISSING</source>
-        <translation>Start &amp;MISSING</translation>
+        <translation>Start &amp;ontbrekende</translation>
     </message>
     <message>
         <source>&amp;Update status</source>
@@ -1437,7 +1374,7 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>Enter whole numbers 1 - 100</source>
-        <translation>Geef volledige cijfers in 1 - 100</translation>
+        <translation>Geef volledige cijfers in 1-100</translation>
     </message>
     <message>
         <source>Enter % to Give (1-100)</source>
@@ -1445,17 +1382,17 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>Enter Address to Send to</source>
-        <translation>Vul het adres in om naar te verzenden</translation>
+        <translation>Vul het verzendadres in</translation>
     </message>
     <message>
         <source>MultiSend allows you to automatically send up to 100% of your stake or masternode reward to a list of other DAPScoin addresses after it matures.
 To Add: enter percentage to give and DAPScoin address to add to the MultiSend vector.
 To Delete: Enter address to delete and press delete.
 MultiSend will not be activated unless you have clicked Activate</source>
-        <translation>MultiSend stelt je in staat om automatisch tot 100% van uw stake of masternode beloning automatisch te verzenden naar een lijst van andere DAPScoin adressen nadat het volwassen is. 
-Toevoegen: voer het te geven percentage in en DAPScoin adres om toe te voegen aan de MultiSend vector.
+        <translation>MultiSend stelt je in staat om automatisch 100% van uw inzet of masternode-beloning automatisch te verzenden naar een lijst van andere DAPScoin adressen nadat het volwassen is.
+Toevoegen: voer percentage in om te geven en DAPScoin adres om toe te voegen aan de MultiSend vector.
 Verwijderen: Voer adres in om te verwijderen en druk op delete.
-MultiSend zal niet worden geactiveerd tenzij je op Activeer hebt geklikt</translation>
+MultiSend wordt niet geactiveerd, tenzij je op Activeer hebt geklikt</translation>
     </message>
     <message>
         <source>Add to MultiSend Vector</source>
@@ -1475,7 +1412,7 @@ MultiSend zal niet worden geactiveerd tenzij je op Activeer hebt geklikt</transl
     </message>
     <message>
         <source>Choose an address from the address book</source>
-        <translation>Kies een adres uit het adresboek</translation>
+        <translation>Kies een adres uit het adresgids</translation>
     </message>
     <message>
         <source>Alt+A</source>
@@ -1483,7 +1420,7 @@ MultiSend zal niet worden geactiveerd tenzij je op Activeer hebt geklikt</transl
     </message>
     <message>
         <source>Percentage of stake to send</source>
-        <translation>Staking percentage om te verzenden</translation>
+        <translation>Stakingspercentage om te verzenden</translation>
     </message>
     <message>
         <source>Percentage:</source>
@@ -1491,19 +1428,11 @@ MultiSend zal niet worden geactiveerd tenzij je op Activeer hebt geklikt</transl
     </message>
     <message>
         <source>Address to send portion of stake to</source>
-        <translation>Adres om een ​​deel van de stake te verzenden naar</translation>
+        <translation>Adres om een ​​deel van inzet te verzenden naar</translation>
     </message>
     <message>
         <source>Address:</source>
         <translation>Adres:</translation>
-    </message>
-    <message>
-        <source>Label:</source>
-        <translation>Label:</translation>
-    </message>
-    <message>
-        <source>Enter a label for this address to add it to your address book</source>
-        <translation>Voer een label in voor dit adres om het toe te voegen aan jouw adresboek</translation>
     </message>
     <message>
         <source>Delete Address From MultiSend Vector</source>
@@ -1531,15 +1460,11 @@ MultiSend zal niet worden geactiveerd tenzij je op Activeer hebt geklikt</transl
     </message>
     <message>
         <source>Send For Stakes</source>
-        <translation>Verstuur voor stakes</translation>
+        <translation>Verstuur voor inzetten</translation>
     </message>
     <message>
         <source>Send For Masternode Rewards</source>
         <translation>Verstuur voor Masternode beloningen</translation>
-    </message>
-    <message>
-        <source>(no label)</source>
-        <translation>(geen label)</translation>
     </message>
     <message>
         <source>The entered address:
@@ -1556,18 +1481,11 @@ Controleer het adres alsjeblieft en probeer het opnieuw.</translation>
     <message>
         <source>The total amount of your MultiSend vector is over 100% of your stake reward
 </source>
-        <translation>De totale hoeveelheid van je MultiSend vector is meer dan 100% van je stake beloning
-</translation>
+        <translation>De totale hoeveelheid van je MultiSend vector is meer dan 100% van je inzet beloning</translation>
     </message>
     <message>
         <source>Please Enter 1 - 100 for percent.</source>
         <translation>Vul alsjeblieft 1 - 100 voor procent in.</translation>
-    </message>
-    <message>
-        <source>Saved the MultiSend to memory, but failed saving properties to the database.
-</source>
-        <translation>De MultiSend in het geheugen opgeslagen, maar mislukt om de eigenschappen op te slaan in de database.
-</translation>
     </message>
     <message>
         <source>MultiSend Vector
@@ -1589,72 +1507,8 @@ Controleer het adres alsjeblieft en probeer het opnieuw.</translation>
 <context>
     <name>MultisigDialog</name>
     <message>
-        <source>Multisignature Address Interactions</source>
-        <translation>Multisignature Adres Interacties</translation>
-    </message>
-    <message>
-        <source>Create MultiSignature &amp;Address</source>
-        <translation>Creëer MultiSignature &amp;Adres</translation>
-    </message>
-    <message>
-        <source>How many people must sign to verify a transaction</source>
-        <translation>Hoeveel mensen moeten ondertekenen om een transactie te verifiëren</translation>
-    </message>
-    <message>
-        <source>Enter the minimum number of signatures required to sign transactions</source>
-        <translation>Voer het minimale aantal vereiste ondertekeningen in om de transacties te ondertekenen</translation>
-    </message>
-    <message>
-        <source>Address Label:</source>
-        <translation>Adreslabel:</translation>
-    </message>
-    <message>
-        <source>Add another address that could sign to verify a transaction from the multisig address.</source>
-        <translation>Voeg een ander adres toe die kan ondertekenen om een transactie vanuit het multisig adres te verifiëren.</translation>
-    </message>
-    <message>
-        <source>&amp;Add Address / Key</source>
-        <translation>&amp;Voeg Adres / Sleutel toe</translation>
-    </message>
-    <message>
-        <source>Local addresses or public keys that can sign:</source>
-        <translation>Lokale adressen of publieke sleutels die kunnen ondertekenen:</translation>
-    </message>
-    <message>
-        <source>Create a new multisig address</source>
-        <translation>Creëer een nieuw multisig adres</translation>
-    </message>
-    <message>
-        <source>C&amp;reate</source>
-        <translation>C&amp;reëer</translation>
-    </message>
-    <message>
         <source>Status:</source>
         <translation>Status:</translation>
-    </message>
-    <message>
-        <source>Use below to quickly import an address by its redeem. Don't forget to add a label before clicking import!
-Keep in mind, the wallet will rescan the blockchain to find transactions containing the new address.
-Please be patient after clicking import.</source>
-        <translation>Gebruik onderstaande om snel een adres te importeren door in te wisselen. Vergeet niet om een label toe te voegen voordat u op importeren klikt!
-Houd er rekening mee dat de portemonnee de blockchain opnieuw doorzoekt om transacties te vinden die het nieuwe adres bevatten.
-Waas alsjeblieft geduldig nadat u op importeren hebt geklikt.</translation>
-    </message>
-    <message>
-        <source>&amp;Import Redeem</source>
-        <translation>&amp;Importeer Inlossen</translation>
-    </message>
-    <message>
-        <source>&amp;Create MultiSignature Tx</source>
-        <translation>&amp;Creëer MultiSignature Tx</translation>
-    </message>
-    <message>
-        <source>Inputs:</source>
-        <translation>Inputs</translation>
-    </message>
-    <message>
-        <source>Coin Control</source>
-        <translation>Munt Controle</translation>
     </message>
     <message>
         <source>Quantity Selected:</source>
@@ -1666,97 +1520,9 @@ Waas alsjeblieft geduldig nadat u op importeren hebt geklikt.</translation>
     </message>
     <message>
         <source>Amount:</source>
-        <translation>Bedrag:</translation>
-    </message>
-    <message>
-        <source>Add an input to fund the outputs</source>
-        <translation>Voeg een invoer toe om de uitvoer te financieren</translation>
-    </message>
-    <message>
-        <source>Add a Raw Input</source>
-        <translation>Voer een Raw invoer in</translation>
-    </message>
-    <message>
-        <source>Address / Amount:</source>
-        <translation>Adres / Bedrag:</translation>
-    </message>
-    <message>
-        <source>Add destinations to send DAPS to</source>
-        <translation>Voeg bestemmingen toe om DAPS naar te verzenden</translation>
-    </message>
-    <message>
-        <source>Add &amp;Destination</source>
-        <translation>Voeg &amp;Bestemming toe</translation>
-    </message>
-    <message>
-        <source>Create a transaction object using the given inputs to the given outputs</source>
-        <translation>Maak een transactie object aan met behulp van de gegeven invoer voor de gegeven uitvoer</translation>
-    </message>
-    <message>
-        <source>Cr&amp;eate</source>
-        <translation>Cr&amp;eëer</translation>
-    </message>
-    <message>
-        <source>&amp;Sign MultiSignature Tx</source>
-        <translation>&amp;Onderteken MultiSignature Tx</translation>
-    </message>
-    <message>
-        <source>Transaction Hex:</source>
-        <translation>Transactie Hex:</translation>
-    </message>
-    <message>
-        <source>Sign the transaction from this wallet or from provided private keys</source>
-        <translation>Onderteken de transactie vanuit deze portemonnee of vanuit aangeboden privésleutels</translation>
-    </message>
-    <message>
-        <source>S&amp;ign</source>
-        <translation>O&amp;nderteken</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DISABLED until transaction has been signed enough times.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;UITGESCHAKELD totdat de transactie voldoende is ondertekend.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
-        <source>Co&amp;mmit</source>
-        <translation>&amp;Engageer</translation>
-    </message>
-    <message>
-        <source>Add private keys to sign the transaction with</source>
-        <translation>Voeg privésleutels toe om de transactie met te ondertekenen</translation>
-    </message>
-    <message>
-        <source>Add Private &amp;Key</source>
-        <translation>Voeg &amp;Privésleutel toe</translation>
-    </message>
-    <message>
-        <source>Sign with only private keys (Not Recommened)</source>
-        <translation>Onderteken met enkel privésleutels (Niet Aanbevolen)</translation>
-    </message>
-    <message>
-        <source>Invalid Tx Hash.</source>
-        <translation>Ongeldige Tx Hash.</translation>
-    </message>
-    <message>
-        <source>Vout position must be positive.</source>
-        <translation>Je positie moet positief zijn. </translation>
-    </message>
-    <message>
-        <source>Maximum possible addresses reached. (15)</source>
-        <translation>Maximale mogelijke adressen bereikt. (15)</translation>
-    </message>
-    <message>
-        <source>Vout Position: </source>
-        <translation>Jouw Positie:</translation>
-    </message>
-    <message>
-        <source>Amount: </source>
         <translation>Hoeveelheid:</translation>
     </message>
-    <message>
-        <source>Maximum (15)</source>
-        <translation>Maximum (15)</translation>
-    </message>
-</context>
+    </context>
 <context>
     <name>ObfuscationConfig</name>
     <message>
@@ -1911,7 +1677,7 @@ Waas alsjeblieft geduldig nadat u op importeren hebt geklikt.</translation>
     </message>
     <message>
         <source>Whether to show coin control features or not.</source>
-        <translation>Of je de muntcontrolefuncties wilt tonen of niet.</translation>
+        <translation>Of je de munteenheidsfuncties wilt tonen of niet.</translation>
     </message>
     <message>
         <source>Enable coin &amp;control features</source>
@@ -1948,14 +1714,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Map poort gebruikt &amp;UPnP</translation>
     </message>
     <message>
-        <source>Enable automatic minting of DAPS units to zDAPS</source>
-        <translation>Schakel automatisch slaan van DAPS-eenheden in op zDAPS</translation>
-    </message>
-    <message>
-        <source>Enable zDAPS Automint</source>
-        <translation>Schakel zDAPS Automint in</translation>
-    </message>
-    <message>
         <source>Percentage of incoming DAPS which get automatically converted to zDAPS via Zerocoin Protocol (min: 10%)</source>
         <translation>Percentage inkomende DAPS die automatisch wordt omgezet naar zDAPS via Zerocoin Protocol (min: 10%)</translation>
     </message>
@@ -1970,10 +1728,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     <message>
         <source>Preferred Automint zDAPS Denomination</source>
         <translation>Gewenste Automint zDAPS denominatie</translation>
-    </message>
-    <message>
-        <source>Stake split threshold:</source>
-        <translation>Inzet splitdrempel:</translation>
     </message>
     <message>
         <source>Connect to the DAPScoin network through a SOCKS5 proxy.</source>
@@ -2040,10 +1794,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Decimale cijfers</translation>
     </message>
     <message>
-        <source>Hide empty balances</source>
-        <translation>Verberg lege saldi</translation>
-    </message>
-    <message>
         <source>Third party URLs (e.g. a block explorer) that appear in the transactions tab as context menu items. %s in the URL is replaced by transaction hash. Multiple URLs are separated by vertical bar |.</source>
         <translation>URL's van derden (bijvoorbeeld een blok verkenner) die in het tabblad transacties verschijnen als contextmenu items. %s in de URL wordt vervangen door transactie hash. Meerdere URL's worden gescheiden door verticale balk |.</translation>
     </message>
@@ -2057,7 +1807,7 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     </message>
     <message>
         <source>Reset all client options to default.</source>
-        <translation>Reset alle client instellingen naar standaardinstellingen.</translation>
+        <translation>Reset alle client opties naar standaardinstellingen.</translation>
     </message>
     <message>
         <source>&amp;Reset Options</source>
@@ -2072,8 +1822,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>&amp;Annuleren</translation>
     </message>
     <message>
-        <source>Any</source>
-        <translation>een</translation>
+        <source>I don't care</source>
+        <translation>Het maakt me niet uit</translation>
     </message>
     <message>
         <source>default</source>
@@ -2103,14 +1853,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <source>The supplied proxy address is invalid.</source>
         <translation>Het opgegeven proxyadres is ongeldig.</translation>
     </message>
-    <message>
-        <source>The supplied proxy port is invalid.</source>
-        <translation>De meegeleverde proxy-poort is ongeldig.</translation>
-    </message>
-    <message>
-        <source>The supplied proxy settings are invalid.</source>
-        <translation>De geleverde proxy-instellingen zijn ongeldig.</translation>
-    </message>
 </context>
 <context>
     <name>OverviewPage</name>
@@ -2119,20 +1861,16 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Formulier</translation>
     </message>
     <message>
+        <source>DAPS Balances</source>
+        <translation>DAPS Saldi</translation>
+    </message>
+    <message>
         <source>Available:</source>
         <translation>Beschikbaar:</translation>
     </message>
     <message>
         <source>Your current spendable balance</source>
         <translation>Uw huidige bestedingsruimte</translation>
-    </message>
-    <message>
-        <source>Total Balance, including all unavailable coins.</source>
-        <translation>Totaal saldo, inclusief alle niet-beschikbare munten.</translation>
-    </message>
-    <message>
-        <source>DAPS Balance</source>
-        <translation>DAPS Saldi</translation>
     </message>
     <message>
         <source>Pending:</source>
@@ -2151,44 +1889,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Staked of masternode beloningen die nog niet volwassen zijn</translation>
     </message>
     <message>
-        <source>Current locked balance in watch-only addresses</source>
-        <translation>Huidige vergrendelde balans in alleen-lezen-adressen</translation>
-    </message>
-    <message>
-        <source>Your current DAPScoin balance, unconfirmed and immature transactions included</source>
-        <translation>Uw huidige DAPScoin-saldo, onbevestigde en onvolgroeide transacties inbegrepen</translation>
-    </message>
-    <message>
-        <source>zDAPS Balance</source>
-        <translation>zDAPS-saldo</translation>
-    </message>
-    <message>
-        <source>Mature: more than 20 confirmation and more than 1 mint of the same denomination after it was minted.
-These zDAPS are spendable.</source>
-        <translation>Volwassen: meer dan 20 bevestigingen en meer dan 1 mint van dezelfde denominatie nadat het gemint was.
-Deze zPIB zijn besteedbaar.</translation>
-    </message>
-    <message>
-        <source>Unconfirmed: less than 20 confirmations
-Immature: confirmed, but less than 1 mint of the same denomination after it was minted</source>
-        <translation>Onbevestigd: minder dan 20 bevestigingen
-Onvolwassen: bevestigd, maar minder dan 1 mint van dezelfde denominatie nadat het gemint was.</translation>
-    </message>
-    <message>
         <source>The displayed information may be out of date. Your wallet automatically synchronizes with the DAPScoin network after a connection is established, but this process has not completed yet.</source>
         <translation>De weergegeven informatie kan verouderd zijn. Je portemonnee synchroniseert automatisch met het DAPScoin netwerk nadat een verbinding is opgezet, maar dit proces is nog niet afgerond.</translation>
-    </message>
-    <message>
-        <source>OVERVIEW</source>
-        <translation>OVERZICHT</translation>
-    </message>
-    <message>
-        <source>Combined Balance (including unconfirmed and immature coins)</source>
-        <translation>Gecombineerde Saldi (inclusief onbevestigde en onvolwassen munten)</translation>
-    </message>
-    <message>
-        <source>Combined Balance</source>
-        <translation>Gecombineerde balans</translation>
     </message>
     <message>
         <source>Unconfirmed transactions to watch-only addresses</source>
@@ -2201,6 +1903,10 @@ Onvolwassen: bevestigd, maar minder dan 1 mint van dezelfde denominatie nadat he
     <message>
         <source>Total:</source>
         <translation>Totaal:</translation>
+    </message>
+    <message>
+        <source>Your current total balance</source>
+        <translation>Jouw huidige balanstotaal</translation>
     </message>
     <message>
         <source>Current total balance in watch-only addresses</source>
@@ -2219,20 +1925,24 @@ Onvolwassen: bevestigd, maar minder dan 1 mint van dezelfde denominatie nadat he
         <translation>Uitgeefbaar:</translation>
     </message>
     <message>
-        <source>Locked DAPS or Masternode collaterals. These are excluded from zDAPS minting.</source>
-        <translation>Vergrendelde DAPS of Masternode onderpanden. Deze zijn uitgesloten van de zDAPS muntage.</translation>
+        <source>DAPS:</source>
+        <translation>DAPS:</translation>
     </message>
     <message>
-        <source>Locked:</source>
-        <translation>Vergrendeld:</translation>
+        <source>zDAPS:</source>
+        <translation>zDAPS:</translation>
     </message>
     <message>
-        <source>Unconfirmed:</source>
-        <translation>Onbevestigd:</translation>
+        <source>0 %</source>
+        <translation>0 %</translation>
     </message>
     <message>
-        <source>Your current zDAPS balance, unconfirmed and immature zDAPS included.</source>
-        <translation>Uw huidige zDAPS-saldo, onbevestigde en onvolgroeide zDAPS inbegrepen.</translation>
+        <source>0.000 000 00 DAPS</source>
+        <translation>0.000 000 00 DAPS</translation>
+    </message>
+    <message>
+        <source>Zerocoin Balance</source>
+        <translation>Zerocoin saldo</translation>
     </message>
     <message>
         <source>Recent transactions</source>
@@ -2242,29 +1952,7 @@ Onvolwassen: bevestigd, maar minder dan 1 mint van dezelfde denominatie nadat he
         <source>out of sync</source>
         <translation>niet gesynchroniseerd</translation>
     </message>
-    <message>
-        <source>Current percentage of zDAPS.
-If AutoMint is enabled this percentage will settle around the configured AutoMint percentage (default = 10%).
-</source>
-        <translation>Huidige percentage van zDAPS
-Als AutoMint ingeschakeld is zal deze percentage afhangen van de geconfigureerde AutoMint percentage (standaard = 10%).
-</translation>
-    </message>
-    <message>
-        <source>AutoMint is currently enabled and set to </source>
-        <translation>AutoMint is momenteel ingeschakeld en ingesteld op</translation>
-    </message>
-    <message>
-        <source>To disable AutoMint add 'enablezeromint=0' in dapscoin.conf.</source>
-        <translation>Om AutoMint uit te schakelen, voeg je 'enablezeromint=0' toe aan dapscoin.conf.</translation>
-    </message>
-    <message>
-        <source>AutoMint is currently disabled.
-To enable AutoMint change 'enablezeromint=0' to 'enablezeromint=1' in dapscoin.conf</source>
-        <translation>AutoMint is momenteel uitgeschakeld.
-Om AutoMint in te schakelend verander je 'enablezeromint=0' naar 'enablezeromint=1' in dapscoin.conf</translation>
-    </message>
-</context>
+    </context>
 <context>
     <name>PaymentServer</name>
     <message>
@@ -2374,12 +2062,24 @@ Om AutoMint in te schakelend verander je 'enablezeromint=0' naar 'enablezeromint
 <context>
     <name>PrivacyDialog</name>
     <message>
+        <source>DAPS which were anonymized via Zerocin Protocol</source>
+        <translation>DAPS die via het Zerocin Protocol geanonimiseerd werden</translation>
+    </message>
+    <message>
+        <source>Zerocoin DAPS (zDAPS)</source>
+        <translation>Zerocoin DAPS (zDAPS)</translation>
+    </message>
+    <message>
         <source>Zerocoin Actions:</source>
         <translation>Zerocoin Acties:</translation>
     </message>
     <message>
         <source>The displayed information may be out of date. Your wallet automatically synchronizes with the DAPScoin network after a connection is established, but this process has not completed yet.</source>
         <translation>De weergegeven informatie kan verouderd zijn. Je portemonnee synchroniseert automatisch met het DAPScoin netwerk nadat een verbinding is opgezet, maar dit proces is nog niet afgerond.</translation>
+    </message>
+    <message>
+        <source>Enter an amount of Daps to convert to zDaps</source>
+        <translation>Vul de hoeveleheid in om Daps te converteren naar zDaps</translation>
     </message>
     <message>
         <source>Mint Zerocoin</source>
@@ -2392,10 +2092,6 @@ Om AutoMint in te schakelend verander je 'enablezeromint=0' naar 'enablezeromint
     <message>
         <source>zDAPS</source>
         <translation>zDAPS</translation>
-    </message>
-    <message>
-        <source>Available for minting are coins which are confirmed and not locked or Masternode collaterals.</source>
-        <translation>Beschikbaar voor muntage zijn munten die bevestigd en niet vergrendeld of Masternode onderpanden zijn.</translation>
     </message>
     <message>
         <source>Available for Minting:</source>
@@ -2438,20 +2134,12 @@ Om AutoMint in te schakelend verander je 'enablezeromint=0' naar 'enablezeromint
         <translation>Status en/of Berichten van de laatste mint actie.</translation>
     </message>
     <message>
-        <source>PRIVACY</source>
-        <translation>PRIVACY</translation>
+        <source>zDaps Control</source>
+        <translation>zDaps controle</translation>
     </message>
     <message>
-        <source>Enter an amount of Daps to convert to zDAPS</source>
-        <translation>Vul het aantal DAPS in om te converteren naar zDAPS</translation>
-    </message>
-    <message>
-        <source>zDAPS Control</source>
-        <translation>zDAPS Control</translation>
-    </message>
-    <message>
-        <source>zDAPS Selected:</source>
-        <translation>zDAPS geselecteerd:</translation>
+        <source>zDaps Selected:</source>
+        <translation>zDaps geselecteerd:</translation>
     </message>
     <message>
         <source>Quantity Selected:</source>
@@ -2466,20 +2154,8 @@ Om AutoMint in te schakelend verander je 'enablezeromint=0' naar 'enablezeromint
         <translation>Besteed Zerocoin</translation>
     </message>
     <message>
-        <source>Available (mature and spendable) zDAPS for spending</source>
-        <translation>Beschikbare (volwassen en uitgeefbaar) zDAPS voor besteding</translation>
-    </message>
-    <message>
         <source>Available Balance:</source>
         <translation>Beschikbaar saldo:</translation>
-    </message>
-    <message>
-        <source>Available (mature and spendable) zDAPS for spending
-
-zDAPS are mature when they have more than 20 confirmations AND more than 2 mints of the same denomination after them were minted</source>
-        <translation>Beschikbare (volwwassen en uitgeefbaar) zDAPS voor besteding
-
-zDaps zijn volwassen wanneer zij meer dan 20 bevestigingen hebben EN meer dan 2 muntages van dezelfde denominaties nadat zij gemunt zijn.</translation>
     </message>
     <message>
         <source>0 zDAPS</source>
@@ -2554,87 +2230,12 @@ zDaps zijn volwassen wanneer zij meer dan 20 bevestigingen hebben EN meer dan 2 
         <translation>Zerocoin Statistieken:</translation>
     </message>
     <message>
-        <source>Total Balance including unconfirmed and immature zDAPS</source>
-        <translation>Totale Saldi, inclusief onbevestigde en onvolwassen zDAPS</translation>
-    </message>
-    <message>
-        <source>Total Zerocoin  Balance:</source>
-        <translation>Totale Zerocoin Saldi:</translation>
-    </message>
-    <message>
         <source>Denominations with value 1:</source>
         <translation>Denominaties met waarde 1:</translation>
     </message>
     <message>
         <source>Denom. with value 1:</source>
         <translation>Denom. met waarde 1:</translation>
-    </message>
-    <message>
-        <source>Unconfirmed: less than 20 confirmations
-Immature: confirmed, but less than 1 mint of the same denomination after it was minted</source>
-        <translation>Onbevestigd: minder dan 20 bevestigingen
-Onvolwassen: bevestigd, maar minder dan 1 mint van dezelfde denominatie nadat het gemint was.</translation>
-    </message>
-    <message>
-        <source>Show the current status of automatic zDAPS minting.
-
-To change the status (restart required):
-- enable: add 'enablezeromint=1' to dapscoin.conf
-- disable: add 'enablezeromint=0' to dapscoin.conf
-
-To change the percentage (no restart required):
-- menu Settings-&gt;Options-&gt;Percentage of autominted zDAPS
-
-</source>
-        <translation>Toon de huidige status van automatische zDAPS-markering.
-
-Om de status te wijzigen (opnieuw opstarten vereist): 
-- enable: voeg 'enablezeromint = 1' toe aan dapscoin.conf
-- uitschakelen: voeg 'enablezeromint = 0' toe aan dapscoin.conf
-
-Om het percentage te wijzigen (geen herstart vereist): 
-- menu Instellingen-&gt; Opties-&gt; Percentage van geautomatiseerde zDAPS
-</translation>
-    </message>
-    <message>
-        <source>AutoMint Status</source>
-        <translation>AutoMint-status</translation>
-    </message>
-    <message>
-        <source>Global Supply:</source>
-        <translation>Wereldwijde levering:</translation>
-    </message>
-    <message>
-        <source>Denom. 1:</source>
-        <translation>Denom. 1:</translation>
-    </message>
-    <message>
-        <source>Denom. 5:</source>
-        <translation>Denom. 5:</translation>
-    </message>
-    <message>
-        <source>Denom. 10:</source>
-        <translation>Denom. 10:</translation>
-    </message>
-    <message>
-        <source>Denom. 50:</source>
-        <translation>Denom. 50:</translation>
-    </message>
-    <message>
-        <source>Denom. 100:</source>
-        <translation>Denom. 100:</translation>
-    </message>
-    <message>
-        <source>Denom. 500:</source>
-        <translation>Denom. 500:</translation>
-    </message>
-    <message>
-        <source>Denom. 1000:</source>
-        <translation>Denom. 1000:</translation>
-    </message>
-    <message>
-        <source>Denom. 5000:</source>
-        <translation>Denom. 5000:</translation>
     </message>
     <message>
         <source>0 x</source>
@@ -2697,12 +2298,12 @@ Om het percentage te wijzigen (geen herstart vereist):
         <translation>Denom. met waarde 5000:</translation>
     </message>
     <message>
-        <source>Priority:</source>
-        <translation>Prioriteit:</translation>
+        <source>Note: This hidden objects are used for communication between the 'Coin Control' dialog and its parent objects. We don't want to change/reimplement the existing Coin Control, so this objects must be here, even when we don't use them. No, we don't like this approach, either.</source>
+        <translation>Opmerking: Deze verborgen objecten worden gebruikt voor communicatie tussen de 'Munt Controle' dialoog en de  parent objecten. We willen de bestaande Munt Controle niet veranderen/opnieuw implementeren, dus deze objecten moeten hier zijn, zelfs als we ze niet gebruiken. Nee, we houden ook niet van deze aanpak.</translation>
     </message>
     <message>
-        <source>TextLabel</source>
-        <translation>TextLabel</translation>
+        <source>Priority:</source>
+        <translation>Prioriteit:</translation>
     </message>
     <message>
         <source>Fee:</source>
@@ -2769,122 +2370,6 @@ Om het percentage te wijzigen (geen herstart vereist):
         <translation>Kopieer hoeveelheid</translation>
     </message>
     <message>
-        <source>Starting ResetMintZerocoin: rescanning complete blockchain, this will need up to 30 minutes depending on your hardware.
-Please be patient...</source>
-        <translation>Start ResetMintZerocoin: rescanning complete blockchain, dit zal tot 30 minuten nodig hebben, afhankelijk van uw hardware.
-Wees alsjeblieft geduldig...</translation>
-    </message>
-    <message>
-        <source>Spending Zerocoin.
-Computationally expensive, might need several minutes depending on the selected Security Level and your hardware.
-Please be patient...</source>
-        <translation>Zerocoin besteden.
-Computationeel duur, zou mogelijk enkele minuten nodig hebben, afhankelijk van het geselecteerde beveiligingsniveau en je hardware.
-Wees alsjeblieft geduldig...</translation>
-    </message>
-    <message>
-        <source>) needed.
-Maximum allowed: </source>
-        <translation>) vereist.
-Maximaal toegestaan:</translation>
-    </message>
-    <message>
-        <source>zDAPS Spend #: </source>
-        <translation>zDAPS besteed #:</translation>
-    </message>
-    <message>
-        <source>zDAPS Mint</source>
-        <translation>zDAPS mint</translation>
-    </message>
-    <message>
-        <source> &lt;b&gt;enabled&lt;/b&gt;.</source>
-        <translation>&lt;b&gt;ingeschakeld&lt;/b&gt;.</translation>
-    </message>
-    <message>
-        <source> &lt;b&gt;disabled&lt;/b&gt;.</source>
-        <translation>&lt;b&gt;invalide&lt;/b&gt;.</translation>
-    </message>
-    <message>
-        <source> Configured target percentage: &lt;b&gt;</source>
-        <translation>Geconfigureerd doelpercentage:&lt;b&gt;</translation>
-    </message>
-    <message>
-        <source>zDAPS is currently disabled due to maintenance.</source>
-        <translation>zDAPS is momenteel uitgeschakeld vanwege onderhoud.</translation>
-    </message>
-    <message>
-        <source>zDAPS is currently undergoing maintenance.</source>
-        <translation>zDAPS wordt momenteel onderhouden.</translation>
-    </message>
-    <message>
-        <source>Denom. with value &lt;b&gt;1&lt;/b&gt;:</source>
-        <translation>Denom. met waarde &lt;b&gt; 1&lt;/b&gt;:</translation>
-    </message>
-    <message>
-        <source>Denom. with value &lt;b&gt;5&lt;/b&gt;:</source>
-        <translation>Denom. met waarde &lt;b&gt;5&lt;/b&gt;:</translation>
-    </message>
-    <message>
-        <source>Denom. with value &lt;b&gt;10&lt;/b&gt;:</source>
-        <translation>Denom. met waarde &lt;b&gt;10&lt;/b&gt;:</translation>
-    </message>
-    <message>
-        <source>Denom. with value &lt;b&gt;50&lt;/b&gt;:</source>
-        <translation>Denom. met waarde &lt;b&gt;50&lt;/b&gt;:</translation>
-    </message>
-    <message>
-        <source>Denom. with value &lt;b&gt;100&lt;/b&gt;:</source>
-        <translation>Denom. met waarde &lt;b&gt; 100&lt;/b&gt;:</translation>
-    </message>
-    <message>
-        <source>Denom. with value &lt;b&gt;500&lt;/b&gt;:</source>
-        <translation>Denom. met waarde &lt;b&gt; 500&lt;/b&gt;:</translation>
-    </message>
-    <message>
-        <source>Denom. with value &lt;b&gt;1000&lt;/b&gt;:</source>
-        <translation>Denom. met waarde &lt;b&gt;1000&lt;/b&gt;:</translation>
-    </message>
-    <message>
-        <source>Denom. with value &lt;b&gt;5000&lt;/b&gt;:</source>
-        <translation>Denom. met waarde &lt;b&gt;5000&lt;/b&gt;:</translation>
-    </message>
-    <message>
-        <source>AutoMint Status:</source>
-        <translation>AutoMint-status</translation>
-    </message>
-    <message>
-        <source>Denom. &lt;b&gt;1&lt;/b&gt;:</source>
-        <translation>Denom. &lt;b&gt;1&lt;/b&gt;:</translation>
-    </message>
-    <message>
-        <source>Denom. &lt;b&gt;5&lt;/b&gt;:</source>
-        <translation>Denom. &lt;b&gt;5&lt;/b&gt;:</translation>
-    </message>
-    <message>
-        <source>Denom. &lt;b&gt;10&lt;/b&gt;:</source>
-        <translation>Denom. &lt;b&gt;10&lt;/b&gt;:</translation>
-    </message>
-    <message>
-        <source>Denom. &lt;b&gt;50&lt;/b&gt;:</source>
-        <translation>Denom. &lt;b&gt;50&lt;/b&gt;:</translation>
-    </message>
-    <message>
-        <source>Denom. &lt;b&gt;100&lt;/b&gt;:</source>
-        <translation>Denom. &lt;b&gt;100&lt;/b&gt;:</translation>
-    </message>
-    <message>
-        <source>Denom. &lt;b&gt;500&lt;/b&gt;:</source>
-        <translation>Denom. &lt;b&gt;500&lt;/b&gt;:</translation>
-    </message>
-    <message>
-        <source>Denom. &lt;b&gt;1000&lt;/b&gt;:</source>
-        <translation>Denom. &lt;b&gt;1000&lt;/b&gt;:</translation>
-    </message>
-    <message>
-        <source>Denom. &lt;b&gt;5000&lt;/b&gt;:</source>
-        <translation>Denom. &lt;b&gt;5000&lt;/b&gt;:</translation>
-    </message>
-    <message>
         <source>Error: Your wallet is locked. Please enter the wallet passphrase first.</source>
         <translation>Fout: Je portemonnee is vergrendeld. Voer alsjeblieft de wachtwoord zin voor de portemonnee in.</translation>
     </message>
@@ -2909,6 +2394,12 @@ Maximaal toegestaan:</translation>
 </source>
         <translation>sec. gebruikte denominaties:
 </translation>
+    </message>
+    <message>
+        <source>Starting ResetMintZerocoin: rescanning complete blockchain, this will need up to 30 minutes depending on your hardware. 
+Please be patient...</source>
+        <translation>Start ResetMintZerocoin: rescanning complete blockchain, dit zal tot 30 minuten nodig hebben, afhankelijk van uw hardware.
+Wees alsjeblieft geduldig...</translation>
     </message>
     <message>
         <source>Duration: </source>
@@ -2949,10 +2440,6 @@ Maximaal toegestaan:</translation>
         <translation>naar adres</translation>
     </message>
     <message>
-        <source> to a newly generated (unused and therefore anonymous) local address &lt;br /&gt;</source>
-        <translation>naar een nieuw gegenereerd (ongebruikt en dus anoniem) lokaal adres&lt;br /&gt;</translation>
-    </message>
-    <message>
         <source>with Security Level </source>
         <translation>met beveiligingsniveau</translation>
     </message>
@@ -2961,35 +2448,21 @@ Maximaal toegestaan:</translation>
         <translation>Bevestig verzending coins</translation>
     </message>
     <message>
-        <source>Version 1 zDAPS require a security level of 100 to successfully spend.</source>
-        <translation>Versie 1 zDAPS vereist een beveiligingsniveau van 100 om succesvol te besteden.</translation>
-    </message>
-    <message>
-        <source>Failed to spend zDAPS</source>
-        <translation>Mislukt om zDAPS te besteden.</translation>
-    </message>
-    <message>
-        <source>Failed to fetch mint associated with serial hash</source>
-        <translation>Mislukt om de mint op te halen geassocieerd met de seriële hash</translation>
-    </message>
-    <message>
-        <source>Too much inputs (</source>
-        <translation>Teveel invoer (</translation>
-    </message>
-    <message>
-        <source>
-Either mint higher denominations (so fewer inputs are needed) or reduce the amount to spend.</source>
-        <translation>
-Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te besteden bedrag verminderen.</translation>
+        <source>Spending Zerocoin.
+Computationally expensive, might need several minutes depending on the selected Security Level and your hardware. 
+Please be patient...</source>
+        <translation>Zerocoin besteden.
+Computationeel duur, zou mogelijk enkele minuten nodig hebben, afhankelijk van het geselecteerde beveiligingsniveau en je 
+hardware.
+Wees alsjeblieft geduldig...</translation>
     </message>
     <message>
         <source>Spend Zerocoin failed with status = </source>
         <translation>Bestede Zerocoin mislukt met status =</translation>
     </message>
-    <message numerus="yes">
-        <source>PrivacyDialog</source>
-        <comment>Enter an amount of DAPS to convert to zDAPS</comment>
-        <translation><numerusform>PrivacyDialoog</numerusform><numerusform>PrivacyDialog</numerusform></translation>
+    <message>
+        <source>zDaps Spend #: </source>
+        <translation>zDaps besteed #: </translation>
     </message>
     <message>
         <source>denomination: </source>
@@ -3010,6 +2483,10 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     <message>
         <source>address: </source>
         <translation>adres:</translation>
+    </message>
+    <message>
+        <source>zDaps Mint</source>
+        <translation>zDaps Mint</translation>
     </message>
     <message>
         <source>Sending successful, return code: </source>
@@ -3209,16 +2686,8 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>&amp;Peers</translation>
     </message>
     <message>
-        <source>Banned peers</source>
-        <translation>Verboden leeftijdsgenoten</translation>
-    </message>
-    <message>
         <source>Select a peer to view detailed information.</source>
         <translation>Selecteer een peer om gedetailleerde informatie te bekijken.</translation>
-    </message>
-    <message>
-        <source>Whitelisted</source>
-        <translation>Whitelisted</translation>
     </message>
     <message>
         <source>Direction</source>
@@ -3235,6 +2704,14 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     <message>
         <source>Services</source>
         <translation>Diensten</translation>
+    </message>
+    <message>
+        <source>Starting Height</source>
+        <translation>Start hoogte</translation>
+    </message>
+    <message>
+        <source>Sync Height</source>
+        <translation>Sync hoogte</translation>
     </message>
     <message>
         <source>Ban Score</source>
@@ -3269,48 +2746,8 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>&amp;Portemonnee herstel</translation>
     </message>
     <message>
-        <source>Delete local Blockchain Folders</source>
-        <translation>Verwijder lokale Blockchain Mappen</translation>
-    </message>
-    <message>
         <source>Wallet In Use:</source>
         <translation>Portemonnee in gebruik:</translation>
-    </message>
-    <message>
-        <source>Starting Block</source>
-        <translation>Startblok</translation>
-    </message>
-    <message>
-        <source>Synced Headers</source>
-        <translation>Gesynchroniseerde headers</translation>
-    </message>
-    <message>
-        <source>Synced Blocks</source>
-        <translation>Gesynchroniseerde blokken</translation>
-    </message>
-    <message>
-        <source>The duration of a currently outstanding ping.</source>
-        <translation>De duur van een momenteel openstaande ping.</translation>
-    </message>
-    <message>
-        <source>Ping Wait</source>
-        <translation>Ping wacht</translation>
-    </message>
-    <message>
-        <source>Time Offset</source>
-        <translation>Tijdverschuiving</translation>
-    </message>
-    <message>
-        <source>Custom Backup Path:</source>
-        <translation>Aangepast back-up pad:</translation>
-    </message>
-    <message>
-        <source>Custom zDAPS Backup Path:</source>
-        <translation>Aangepast zDAPS back-up pad:</translation>
-    </message>
-    <message>
-        <source>Custom Backups Threshold:</source>
-        <translation>Aangepaste back-up drempel:</translation>
     </message>
     <message>
         <source>Salvage wallet</source>
@@ -3353,14 +2790,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Herstel blockchain index van huidige blk000??.dat bestanden.</translation>
     </message>
     <message>
-        <source>-resync:</source>
-        <translation>-resync:</translation>
-    </message>
-    <message>
-        <source>Deletes all local blockchain folders so the wallet synchronizes from scratch.</source>
-        <translation>Verwijder alle lokale blockchain mappen zodat de portemonnee alles opnieuw kan hersynchroniseren.</translation>
-    </message>
-    <message>
         <source>The buttons below will restart the wallet with command-line options to repair the wallet, fix issues with corrupt blockhain files or missing/obsolete transactions.</source>
         <translation>De onderstaande knoppen zullen de portemonnee opnieuw opstarten met command line opties om de portemonnee te repareren, problemen op te lossen met corrupte blockchain bestanden of ontbrekende/verouderde transacties.</translation>
     </message>
@@ -3389,54 +2818,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Welkom bij de DAPScoin RPC console.</translation>
     </message>
     <message>
-        <source>&amp;Disconnect Node</source>
-        <translation>&amp; Koppel Node los</translation>
-    </message>
-    <message>
-        <source>Ban Node for</source>
-        <translation>Ban Node voor</translation>
-    </message>
-    <message>
-        <source>1 &amp;hour</source>
-        <translation>1 &amp;hour</translation>
-    </message>
-    <message>
-        <source>1 &amp;day</source>
-        <translation>1 &amp;day</translation>
-    </message>
-    <message>
-        <source>1 &amp;week</source>
-        <translation>1 &amp;week</translation>
-    </message>
-    <message>
-        <source>1 &amp;year</source>
-        <translation>1 &amp;year</translation>
-    </message>
-    <message>
-        <source>&amp;Unban Node</source>
-        <translation>&amp; Veel succes</translation>
-    </message>
-    <message>
-        <source>This will delete your local blockchain folders and the wallet will synchronize the complete Blockchain from scratch.&lt;br /&gt;&lt;br /&gt;</source>
-        <translation>Dit zal al jouw lokale blockchain mappen verwijderen en de portemonnee zal de blockchain helemaal opnieuw synchroniseren.&lt;br /&gt;&lt;br /&gt;</translation>
-    </message>
-    <message>
-        <source>This needs quite some time and downloads a lot of data.&lt;br /&gt;&lt;br /&gt;</source>
-        <translation>Dit vergt nogal wat tijd en downloadt veel data.&lt;br /&gt;&lt;br /&gt;</translation>
-    </message>
-    <message>
-        <source>Your transactions and funds will be visible again after the download has completed.&lt;br /&gt;&lt;br /&gt;</source>
-        <translation>Uw transacties en tegoeden zijn opnieuw zichtbaar nadat het downloaden is voltooid.&lt;br /&gt;&lt;br /&gt;</translation>
-    </message>
-    <message>
-        <source>Do you want to continue?.&lt;br /&gt;</source>
-        <translation>Wil je verdergaan?</translation>
-    </message>
-    <message>
-        <source>Confirm resync Blockchain</source>
-        <translation>Bevestig hersynchronisering van Blockchain</translation>
-    </message>
-    <message>
         <source>Use up and down arrows to navigate history, and &lt;b&gt;Ctrl-L&lt;/b&gt; to clear screen.</source>
         <translation>Gebruik omhoog en omlaag pijlen om de geschiedenis te navigeren, en&lt;b&gt;Ctrl-L&lt;/b&gt;om scherm te wissen.</translation>
     </message>
@@ -3461,10 +2842,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>%1 GB</translation>
     </message>
     <message>
-        <source>(node id: %1)</source>
-        <translation>(node id: %1)</translation>
-    </message>
-    <message>
         <source>via %1</source>
         <translation>via %1</translation>
     </message>
@@ -3481,16 +2858,12 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Uitgaande</translation>
     </message>
     <message>
-        <source>Yes</source>
-        <translation>ja</translation>
-    </message>
-    <message>
-        <source>No</source>
-        <translation>Nee</translation>
-    </message>
-    <message>
         <source>Unknown</source>
         <translation>Ongekend</translation>
+    </message>
+    <message>
+        <source>Fetching...</source>
+        <translation>Ophalen...</translation>
     </message>
 </context>
 <context>
@@ -3514,10 +2887,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     <message>
         <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the DAPScoin network.</source>
         <translation>Een optioneel bericht dat aan het betalingsverzoek wordt gehecht, dat wordt weergegeven wanneer het verzoek wordt geopend. Opmerking: het bericht wordt niet verzonden met de betaling via het DAPScoin netwerk.</translation>
-    </message>
-    <message>
-        <source>RECEIVE</source>
-        <translation>ontvangen</translation>
     </message>
     <message>
         <source>An optional message to attach to the payment request, which will be displayed when the request is opened.&lt;br&gt;Note: The message will not be sent with the payment over the DAPScoin network.</source>
@@ -3677,10 +3046,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Verzend Munten</translation>
     </message>
     <message>
-        <source>SEND</source>
-        <translation>STUREN</translation>
-    </message>
-    <message>
         <source>Coin Control Features</source>
         <translation>Munt controle kenmerken</translation>
     </message>
@@ -3787,10 +3152,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     <message>
         <source>(Smart fee not initialized yet. This usually takes a few blocks...)</source>
         <translation>(Smart fee nog niet geïnitialiseerd. Dit duurt meestal een paar blokken ...)</translation>
-    </message>
-    <message>
-        <source>SwiftX</source>
-        <translation>SwiftX</translation>
     </message>
     <message>
         <source>Confirmation time:</source>
@@ -3909,8 +3270,20 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Het split block tool werkt niet met meerdere adressen. Probeer het nog eens.</translation>
     </message>
     <message>
+        <source>using</source>
+        <translation>gebruikt</translation>
+    </message>
+    <message>
+        <source>anonymous funds</source>
+        <translation>anonieme financiën</translation>
+    </message>
+    <message>
         <source>Warning: Invalid DAPScoin address</source>
         <translation>Waarschuwing: Ongeldig DAPScoin adres</translation>
+    </message>
+    <message>
+        <source>any available funds (not recommended)</source>
+        <translation>elke beschikbare fonds (niet aanbevolen)</translation>
     </message>
     <message>
         <source>%1 to %2</source>
@@ -3938,15 +3311,11 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     </message>
     <message numerus="yes">
         <source>Estimated to begin confirmation within %n block(s).</source>
-        <translation><numerusform>Schatting om te beginnen met bevestiging in %n blokken.</numerusform><numerusform>Schatting om te beginnen met bevestiging in %n blokken.</numerusform></translation>
+        <translation><numerusform>Schatting om te beginnen met bevestiging in %n blok.</numerusform><numerusform>Schatting om te beginnen met bevestiging in %n blokken.</numerusform></translation>
     </message>
     <message>
         <source>The recipient address is not valid, please recheck.</source>
         <translation>Het ontvangstadres is niet geldig, controleer deze.</translation>
-    </message>
-    <message>
-        <source>using SwiftX</source>
-        <translation>met SwiftX</translation>
     </message>
     <message>
         <source> split into %1 outputs using the UTXO splitter.</source>
@@ -4264,7 +3633,7 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     <name>TransactionDesc</name>
     <message numerus="yes">
         <source>Open for %n more block(s)</source>
-        <translation><numerusform>Klaar voor %n meer blokken</numerusform><numerusform>Klaar voor %n meer blokken</numerusform></translation>
+        <translation><numerusform>Klaar voor %n blok extra</numerusform><numerusform>Klaar voor %n meer blokken</numerusform></translation>
     </message>
     <message>
         <source>Open until %1</source>
@@ -4287,38 +3656,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>%1 bevestigingen</translation>
     </message>
     <message>
-        <source>%1/offline (verified via SwiftX)</source>
-        <translation>%1/offline (gecontroleerd via SwiftX)</translation>
-    </message>
-    <message>
-        <source>%1/confirmed (verified via SwiftX)</source>
-        <translation>%1/bevestigd (gecontroleerd via swifttx)</translation>
-    </message>
-    <message>
-        <source>%1 confirmations (verified via SwiftX)</source>
-        <translation>%1 bevestigingen (gecontroleerd via swifttx)</translation>
-    </message>
-    <message>
-        <source>%1/offline (SwiftX verification in progress - %2 of %3 signatures)</source>
-        <translation>%1/offline (SwiftTX controle in uitvoering - %2 van %3 handtekeningen)</translation>
-    </message>
-    <message>
-        <source>%1/confirmed (SwiftX verification in progress - %2 of %3 signatures )</source>
-        <translation>%1/bevestigd (SwiftTX controle in uitvoering - %2 van %3 handtekeningen)</translation>
-    </message>
-    <message>
-        <source>%1 confirmations (SwiftX verification in progress - %2 of %3 signatures)</source>
-        <translation>%1 bevestigingen (SwiftTX controle in uitvoering -%2 van %3 handtekeningen)</translation>
-    </message>
-    <message>
-        <source>%1/offline (SwiftX verification failed)</source>
-        <translation>%1/offline (SwiftTX verificatie mislukt)</translation>
-    </message>
-    <message>
-        <source>%1/confirmed (SwiftX verification failed)</source>
-        <translation>%1/bevestigd (SwiftTX verificatie mislukt)</translation>
-    </message>
-    <message>
         <source>Status</source>
         <translation>Status</translation>
     </message>
@@ -4328,7 +3665,7 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     </message>
     <message numerus="yes">
         <source>, broadcast through %n node(s)</source>
-        <translation><numerusform>, uitgezonden via %n nodes</numerusform><numerusform>, uitgezonden via %n nodes</numerusform></translation>
+        <translation><numerusform>, uitgezonden via %n node</numerusform><numerusform>, uitgezonden via %n nodes</numerusform></translation>
     </message>
     <message>
         <source>Date</source>
@@ -4372,7 +3709,7 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     </message>
     <message numerus="yes">
         <source>matures in %n more block(s)</source>
-        <translation><numerusform>maturiteit in %n meer blokken</numerusform><numerusform>maturiteit in %n meer blokken</numerusform></translation>
+        <translation><numerusform>matureit in %n blok meer</numerusform><numerusform>maturiteit in %n meer blokken</numerusform></translation>
     </message>
     <message>
         <source>not accepted</source>
@@ -4474,7 +3811,7 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     </message>
     <message numerus="yes">
         <source>Open for %n more block(s)</source>
-        <translation><numerusform>Klaar voor %n meer blokken</numerusform><numerusform>Klaar voor %n meer blokken</numerusform></translation>
+        <translation><numerusform>Klaar voor %n blok extra</numerusform><numerusform>Klaar voor %n meer blokken</numerusform></translation>
     </message>
     <message>
         <source>Open until %1</source>
@@ -4525,14 +3862,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Verkregen via verduistering</translation>
     </message>
     <message>
-        <source>DAPS Stake</source>
-        <translation>DAPS Stake</translation>
-    </message>
-    <message>
-        <source>zDAPS Stake</source>
-        <translation>zDAPS Stake</translation>
-    </message>
-    <message>
         <source>Obfuscation Denominate</source>
         <translation>Verduistering denominatie</translation>
     </message>
@@ -4549,34 +3878,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Verduistering creëert denominaties</translation>
     </message>
     <message>
-        <source>Converted DAPS to zDAPS</source>
-        <translation>Geconverteerde DAPS naar zDAPS</translation>
-    </message>
-    <message>
-        <source>Spent zDAPS</source>
-        <translation>Bestede zDAPS</translation>
-    </message>
-    <message>
-        <source>Received DAPS from zDAPS</source>
-        <translation>Ontvangen DAPS van zDAPS</translation>
-    </message>
-    <message>
-        <source>Minted Change as zDAPS from zDAPS Spend</source>
-        <translation>Gemint wisselgeld als zDAPS van bestede zDAPS</translation>
-    </message>
-    <message>
-        <source>Converted zDAPS to DAPS</source>
-        <translation>Geconverteerde zDAPS naar DAPS</translation>
-    </message>
-    <message>
-        <source>Anonymous (zDAPS Transaction)</source>
-        <translation>Anonieme (zDAPS transactie)</translation>
-    </message>
-    <message>
-        <source>Anonymous (zDAPS Stake)</source>
-        <translation>Anonieme (zDAPS stake)</translation>
-    </message>
-    <message>
         <source>Sent to</source>
         <translation>Verzenden naar</translation>
     </message>
@@ -4589,6 +3890,10 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Betaling naar jezelf</translation>
     </message>
     <message>
+        <source>Minted</source>
+        <translation>Minted</translation>
+    </message>
+    <message>
         <source>Mined</source>
         <translation>Mined</translation>
     </message>
@@ -4597,8 +3902,32 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Verduisterd</translation>
     </message>
     <message>
+        <source>Converted Daps to zDaps</source>
+        <translation>Geconverteerde Daps naar zDaps</translation>
+    </message>
+    <message>
+        <source>Spent zDaps</source>
+        <translation>Uitgegeven zDaps</translation>
+    </message>
+    <message>
+        <source>Received Daps from zDaps</source>
+        <translation>Verkregen Daps van zDaps</translation>
+    </message>
+    <message>
+        <source>Minted Change as zDaps from zDaps Spend</source>
+        <translation>Minted wisselgeld als zDaps van uitgegeven zDaps</translation>
+    </message>
+    <message>
+        <source>Converted zDaps to Daps</source>
+        <translation>Geconverteerde zDaps naar Daps</translation>
+    </message>
+    <message>
         <source>watch-only</source>
         <translation>watch-only</translation>
+    </message>
+    <message>
+        <source>zDaps Accumulator</source>
+        <translation>zDaps Accumulator</translation>
     </message>
     <message>
         <source>(n/a)</source>
@@ -4672,6 +4001,26 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Verzenden naar</translation>
     </message>
     <message>
+        <source>Obfuscated</source>
+        <translation>Verduisterd</translation>
+    </message>
+    <message>
+        <source>Obfuscation Make Collateral Inputs</source>
+        <translation>Verduistering maakt zijdelingse inputs</translation>
+    </message>
+    <message>
+        <source>Obfuscation Create Denominations</source>
+        <translation>Verduistering creëert denominaties</translation>
+    </message>
+    <message>
+        <source>Obfuscation Denominate</source>
+        <translation>Verduistering denominatie</translation>
+    </message>
+    <message>
+        <source>Obfuscation Collateral Payment</source>
+        <translation>Verduistering zijdelingse betaling</translation>
+    </message>
+    <message>
         <source>To yourself</source>
         <translation>Naar jezelf</translation>
     </message>
@@ -4688,12 +4037,20 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Masternode beloning</translation>
     </message>
     <message>
+        <source>Received Daps from zDaps</source>
+        <translation>Verkregen Daps van zDaps</translation>
+    </message>
+    <message>
         <source>Zerocoin Mint</source>
         <translation>Zerocoin Mint</translation>
     </message>
     <message>
         <source>Zerocoin Spend</source>
         <translation>Zerocoin uitgegeven</translation>
+    </message>
+    <message>
+        <source>Zerocoin Spend, Change in zDaps</source>
+        <translation>Zerocoin uitgegeven, wisselgeld in zDaps</translation>
     </message>
     <message>
         <source>Zerocoin Spend to Self</source>
@@ -4784,14 +4141,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Exporteren succesvol</translation>
     </message>
     <message>
-        <source>Received DAPS from zDAPS</source>
-        <translation>Ontvangen DAPS van zDAPS</translation>
-    </message>
-    <message>
-        <source>Zerocoin Spend, Change in zDAPS</source>
-        <translation>Zerocoin besteed, wisselgeld in zDAPS</translation>
-    </message>
-    <message>
         <source>The transaction history was successfully saved to %1.</source>
         <translation>De transactiegeschiedenis is succesvol bewaard in %1.</translation>
     </message>
@@ -4824,17 +4173,9 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <source>Send Coins</source>
         <translation>Verzend Munten</translation>
     </message>
-    <message>
-        <source>SwiftX doesn't support sending values that high yet. Transactions are currently limited to %1 DAPS.</source>
-        <translation>SwiftTX ondersteunt geen verzendwaarden die zo hoog zijn. Transacties zijn momenteel beperkt tot %1 DAPS.</translation>
-    </message>
-</context>
+    </context>
 <context>
     <name>WalletView</name>
-    <message>
-        <source>HISTORY</source>
-        <translation>GESCHIEDENIS</translation>
-    </message>
     <message>
         <source>&amp;Export</source>
         <translation>&amp;Exporteren</translation>
@@ -4855,12 +4196,28 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <source>Wallet Data (*.dat)</source>
         <translation>Portemonneegegevens (*.dat)</translation>
     </message>
+    <message>
+        <source>Backup Failed</source>
+        <translation>Backup mislukt</translation>
+    </message>
+    <message>
+        <source>There was an error trying to save the wallet data to %1.</source>
+        <translation>Er is een fout opgetreden om de portemonnee data op te slaan naar %1.</translation>
+    </message>
+    <message>
+        <source>Backup Successful</source>
+        <translation>Backup Succesvol</translation>
+    </message>
+    <message>
+        <source>The wallet data was successfully saved to %1.</source>
+        <translation>De portemonneegegevens zijn succesvol opgeslagen op %1.</translation>
+    </message>
 </context>
 <context>
     <name>ZDapsControlDialog</name>
     <message>
-        <source>Select zDAPS to Spend</source>
-        <translation>Selecteer zDAPS om te besteden</translation>
+        <source>Select zDaps to Spend</source>
+        <translation>Selecteer zDaps om te spenderen</translation>
     </message>
     <message>
         <source>Quantity</source>
@@ -4871,8 +4228,8 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>0</translation>
     </message>
     <message>
-        <source>zDAPS</source>
-        <translation>zDAPS</translation>
+        <source>zDaps</source>
+        <translation>zDaps</translation>
     </message>
     <message>
         <source>Select/Deselect All</source>
@@ -4892,6 +4249,10 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     <message>
         <source>Allow JSON-RPC connections from specified source. Valid for &lt;ip&gt; are a single IP (e.g. 1.2.3.4), a network/netmask (e.g. 1.2.3.4/255.255.255.0) or a network/CIDR (e.g. 1.2.3.4/24). This option can be specified multiple times</source>
         <translation>Sta JSON-RPC connecties toe van de opgegeven bron. Geldig voor&lt;ip&gt;zijn een enkel IP (bijvoorbeeld 1.2.3.4), een netwerk/netmask (bijvoorbeeld 1.2.3.4/255.255.255.0) of een netwerk/CIDR (bijvoorbeeld 1.2.3.4/24). Deze optie kan meerdere keren worden opgegeven</translation>
+    </message>
+    <message>
+        <source>An error occurred while setting up the RPC address %s port %u for listening: %s</source>
+        <translation>Er is een fout opgetreden tijdens het instellen van het RPC adres %s poort %u voor het luisteren: %s</translation>
     </message>
     <message>
         <source>Bind to given address and always listen on it. Use [host]:port notation for IPv6</source>
@@ -4930,24 +4291,8 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Verwijder alle portemonnee transacties en herstel alleen die delen van de blockchain via -rescan bij opstarten</translation>
     </message>
     <message>
-        <source>Delete all zerocoin spends and mints that have been recorded to the blockchain database and reindex them (0-1, default: %u)</source>
-        <translation>Verwijder alle bestede Zerocoin en mints die zijn geregistreerd in de blockchain database en her-indexeer ze (0-1, standaard: %u)</translation>
-    </message>
-    <message>
         <source>Distributed under the MIT software license, see the accompanying file COPYING or &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</source>
         <translation>Gedistribueerd onder de MIT software licentie, zie het bijgevoegde bestand COPYING of &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</translation>
-    </message>
-    <message>
-        <source>Enable automatic wallet backups triggered after each zDAPS minting (0-1, default: %u)</source>
-        <translation>Schakel automatische portemonnee back-ups in geactiveerd na elke geminte zDAPS (0-1, standaard: %u)</translation>
-    </message>
-    <message>
-        <source>Enable or disable staking functionality for DAPS inputs (0-1, default: %u)</source>
-        <translation>In- of uitschakelen staking functionaliteit voor DAPS inputs (0-1, standaard: %u)</translation>
-    </message>
-    <message>
-        <source>Enable or disable staking functionality for zDAPS inputs (0-1, default: %u)</source>
-        <translation>In- of uitschakelen staking functionaliteit voor zDAPS inputs (0-1, standaard: %u)</translation>
     </message>
     <message>
         <source>Enable spork administration functionality with the appropriate private key.</source>
@@ -4960,10 +4305,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     <message>
         <source>Error: Listening for incoming connections failed (listen returned error %s)</source>
         <translation>Fout: het luisteren naar inkomende verbindingen is mislukt (luister terug fout %s)</translation>
-    </message>
-    <message>
-        <source>Error: The transaction is larger than the maximum allowed transaction size!</source>
-        <translation>Fout: de transactie is groter dan de maximaal toegestane transactiegrootte!</translation>
     </message>
     <message>
         <source>Error: Unsupported argument -socks found. Setting SOCKS version isn't possible anymore, only SOCKS5 proxies are supported.</source>
@@ -5004,10 +4345,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     <message>
         <source>In this mode -genproclimit controls how many blocks are generated immediately.</source>
         <translation>In deze modus controleert -genproclimit hoeveel blokken er onmiddellijk worden gegenereerd.</translation>
-    </message>
-    <message>
-        <source>Insufficient or insufficient confirmed funds, you might need to wait a few minutes and try again.</source>
-        <translation>Onvoldoende of onvoldoende bevestigd geld, u moet mogelijk een paar minuten wachten en het opnieuw proberen.</translation>
     </message>
     <message>
         <source>Invalid amount for -maxtxfee=&lt;amount&gt;: '%s' (must be at least the minrelay fee of %s to prevent stuck transactions)</source>
@@ -5086,6 +4423,30 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Dit product bevat software ontwikkeld door het OpenSSL Project voor gebruik in de OpenSSL Toolkit &lt;https://www.openssl.org/&gt; en cryptografische software geschreven door Eric Young en UPnP software geschreven door Thomas Bernard.</translation>
     </message>
     <message>
+        <source>To use dapscoind, or the -server option to dapscoin-qt, you must set an rpcpassword in the configuration file:
+%s
+It is recommended you use the following random password:
+rpcuser=dapscoinrpc
+rpcpassword=%s
+(you do not need to remember this password)
+The username and password MUST NOT be the same.
+If the file does not exist, create it with owner-readable-only file permissions.
+It is also recommended to set alertnotify so you are notified of problems;
+for example: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
+</source>
+        <translation>Om dapscoind of de -server optie om dapscoin-qt te gebruiken, moet je een rpcpassword instellen in het configuratiebestand:
+%s
+Het is aan te raden het volgende willekeurige wachtwoord te gebruiken:
+rpcuser=dapscoinrpc
+rpcpassword=%s
+(je hoeft dit wachtwoord niet te onthouden)
+De gebruikersnaam en het wachtwoord MOETEN NIET hetzelfde zijn.
+Als het bestand niet bestaat, creëer het dan met owner-readable-only bestandsrechten.
+Het is ook aan te raden om alertnotify in te stellen, zodat je van problemen op de hoogte wordt gebracht;
+bijvoorbeeld: alertnotify = echo %%s | mail -s "DAPScoin Alert" admin@foo.com
+</translation>
+    </message>
+    <message>
         <source>Unable to bind to %s on this computer. DAPScoin Core is probably already running.</source>
         <translation>Niet mogelijk te binden aan %s op deze computer. DAPScoin Core loopt waarschijnlijk al.</translation>
     </message>
@@ -5146,8 +4507,8 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Je moet een masternodeprivkey opgeven in de configuratie. Raadpleeg de documentatie voor hulp.</translation>
     </message>
     <message>
-        <source>(52572 could be used only on mainnet)</source>
-        <translation>(52572 kan alleen op mainnet worden gebruikt)</translation>
+        <source>(53572 could be used only on mainnet)</source>
+        <translation>(53572 kan alleen op mainnet worden gebruikt)</translation>
     </message>
     <message>
         <source>(default: %s)</source>
@@ -5158,8 +4519,8 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>(standaard: 1)</translation>
     </message>
     <message>
-        <source>(must be 52572 for mainnet)</source>
-        <translation>(moet 52572 voor mainnet zijn)</translation>
+        <source>(must be 53572 for mainnet)</source>
+        <translation>(moet 53572 voor mainnet zijn)</translation>
     </message>
     <message>
         <source>Accept command line and JSON-RPC commands</source>
@@ -5172,6 +4533,10 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     <message>
         <source>Accept public REST requests (default: %u)</source>
         <translation>Accepteer publieke REST verzoeken (standaard: %u)</translation>
+    </message>
+    <message>
+        <source>Acceptable ciphers (default: %s)</source>
+        <translation>Acceptabele ciphers (standaard: %s)</translation>
     </message>
     <message>
         <source>Add a node to connect to and attempt to keep the connection open</source>
@@ -5274,16 +4639,16 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Corrupte block database gedetecteerd</translation>
     </message>
     <message>
+        <source>Could not parse -rpcbind value %s as network address</source>
+        <translation>Kan -rpcbind value %s niet parsen als een netwerk adres</translation>
+    </message>
+    <message>
         <source>Could not parse masternode.conf</source>
         <translation>Kan masternode.conf niet parsen</translation>
     </message>
     <message>
         <source>Debugging/Testing options:</source>
         <translation>Debugging/Test opties:</translation>
-    </message>
-    <message>
-        <source>Delete blockchain folders and resync from scratch</source>
-        <translation>Verwijder blockchain mappen en hersynchroniseer alles opnieuw</translation>
     </message>
     <message>
         <source>Disable OS notifications for incoming transactions (default: %u)</source>
@@ -5312,14 +4677,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     <message>
         <source>Enable automatic Zerocoin minting (0-1, default: %u)</source>
         <translation>Zet automatische Zerocoin minting aan (0-1, standaard: %u)</translation>
-    </message>
-    <message>
-        <source>Enable publish hash transaction (locked via SwiftX) in &lt;address&gt;</source>
-        <translation>Activeer publicatie hash transactie (vergrendeld via SwiftTX) in &lt;address&gt;</translation>
-    </message>
-    <message>
-        <source>Enable publish raw transaction (locked via SwiftX) in &lt;address&gt;</source>
-        <translation>Activeer publicatie raw transactie (vergrendeld via SwiftTX) in &lt;address&gt;</translation>
     </message>
     <message>
         <source>Enable the client to act as a masternode (0-1, default: %u)</source>
@@ -5396,10 +4753,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     <message>
         <source>Error: You already have pending entries in the Obfuscation pool</source>
         <translation>Fout: U heeft al entries in afwachting in de verduistering pool</translation>
-    </message>
-    <message>
-        <source>Failed to calculate accumulator checkpoint</source>
-        <translation>Kon het controlepunt van de accumulator niet berekenen</translation>
     </message>
     <message>
         <source>Failed to listen on any port. Use -listen=0 if you want this.</source>
@@ -5490,6 +4843,10 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Ongeldig -onion adres of hostnaam: '%s'</translation>
     </message>
     <message>
+        <source>Invalid -proxy address or hostname: '%s'</source>
+        <translation>Ongeldig -proxy adres of hostnaam: '%s'</translation>
+    </message>
+    <message>
         <source>Invalid amount for -maxtxfee=&lt;amount&gt;: '%s'</source>
         <translation>Ongeldige hoeveelheid voor -maxtxfee=&lt;amount&gt;: '%s'</translation>
     </message>
@@ -5538,30 +4895,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Ongeldige script gedetecteerd.</translation>
     </message>
     <message>
-        <source>Percentage of automatically minted Zerocoin  (1-100, default: %u)</source>
-        <translation>Percentage automatisch geminte Zerocoin (10-100, standaard: %u)</translation>
-    </message>
-    <message>
-        <source>Reindex the DAPS and zDAPS money supply statistics</source>
-        <translation>Indexeer de DAPS- en zDAPS-geldvoorraadstatistieken opnieuw</translation>
-    </message>
-    <message>
-        <source>Reindexing zerocoin database...</source>
-        <translation>Her-indexeren Zerocoin database...</translation>
-    </message>
-    <message>
-        <source>Reindexing zerocoin failed</source>
-        <translation>Her-indexeren Zerocoin database mislukt</translation>
-    </message>
-    <message>
-        <source>Selected coins value is less than payment target</source>
-        <translation>Geselecteerde munt waarde is minder dan het betalingsdoel</translation>
-    </message>
-    <message>
-        <source>SwiftX options:</source>
-        <translation>SwiftTX opties:</translation>
-    </message>
-    <message>
         <source>This is a pre-release test build - use at your own risk - do not use for staking or merchant applications!</source>
         <translation>Dit is een pre-release test build - gebruik op eigen risico - niet gebruiken voor staking of handel applicaties!</translation>
     </message>
@@ -5582,14 +4915,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
 </translation>
     </message>
     <message>
-        <source>Disable all DAPScoin specific functionality (Masternodes, Zerocoin, SwiftX, Budgeting) (0-1, default: %u)</source>
-        <translation>Schakel alle specifieke DAPScoin functionaliteit uit (Masternodes, Zerocoin, SwiftTX, Budgeting) (0-1, standaard: %u)</translation>
-    </message>
-    <message>
-        <source>Enable SwiftX, show confirmations for locked transactions (bool, default: %s)</source>
-        <translation>Schakel SwiftX in, toon bevestigingen voor vergrendelde transacties (bool, standaard: %s)</translation>
-    </message>
-    <message>
         <source>Error: The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.</source>
         <translation>Fout: De transactie is afgewezen! Dit kan gebeuren als sommige munten in je portemonnee al waren uitgegeven, bijvoorbeeld als je een kopie van wallet.dat gebruikt en munten in de kopie waren besteed maar hier niet als zodanig gemarkeerd.</translation>
     </message>
@@ -5602,32 +4927,8 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Fout: Niet ondersteund argument -checklevel gevonden. Checklevel moet niveau 4 zijn.</translation>
     </message>
     <message>
-        <source>Execute command when the best block changes and its size is over (%s in cmd is replaced by block hash, %d with the block size)</source>
-        <translation>Voer het commando uit als het beste blok verandert en de grootte ervan voorbij is (%s in cmd wordt vervangen door blokhash, %d met de blokgrootte)</translation>
-    </message>
-    <message>
-        <source>Failed to find coin set amongst held coins with less than maxNumber of Spends</source>
-        <translation>Het is niet gelukt om muntstukken te vinden onder de aangehouden munten met minder dan max. Aantal uitgaven</translation>
-    </message>
-    <message>
-        <source>In rare cases, a spend with 7 coins exceeds our maximum allowable transaction size, please retry spend using 6 or less coins</source>
-        <translation>In zeldzame gevallen overschrijdt een besteding met 7 munten uw maximaal toegestane transactiegrootte. Probeer het opnieuw met 6 of minder munten</translation>
-    </message>
-    <message>
         <source>Preferred Denomination for automatically minted Zerocoin  (1/5/10/50/100/500/1000/5000), 0 for no preference. default: %u)</source>
         <translation>Voorkeur denominatie voor automatisch minted Zerocoin (1/5/10/50/100/500/1000/5000), 0 voor geen voorkeur. standaard: %u)</translation>
-    </message>
-    <message>
-        <source>Specify custom backup path to add a copy of any automatic zDAPS backup. If set as dir, every backup generates a timestamped file. If set as file, will rewrite to that file every backup. If backuppath is set as well, 4 backups will happen</source>
-        <translation>Specificeer aangepast back-up pad om een kopie van elke automatische zDAPS back-up toe te voegen. Indien ingesteld als dir zal elke back-up een bestand genereren met een tijdstempel. Indien ingesteld als file zal elke back-up herschreven worden naar dat bestand. Indien backuppath ook is ingesteld zullen 4 back-ups gedaan worden.</translation>
-    </message>
-    <message>
-        <source>Specify custom backup path to add a copy of any wallet backup. If set as dir, every backup generates a timestamped file. If set as file, will rewrite to that file every backup.</source>
-        <translation>Specificeer aangepast back-up pad om een kopie van elke portemonnee back-up toe te voegen. Indien ingesteld als dir zal elke back-up een bestand genereren met een tijdstempel. Indien ingesteld als file zal elke back-up herschreven worden naar dat bestand.</translation>
-    </message>
-    <message>
-        <source>SwiftX requires inputs with at least 6 confirmations, you might need to wait a few minutes and try again.</source>
-        <translation>SwiftTX vereist invoer van tenminste 6 bevestigingen, je dient wellicht een paar minuten te wachten en het opnieuw proberen.</translation>
     </message>
     <message>
         <source>&lt;category&gt; can be:</source>
@@ -5636,10 +4937,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     <message>
         <source>Attempt to force blockchain corruption recovery</source>
         <translation>Poging om blockchain corruptie herstel te forceren</translation>
-    </message>
-    <message>
-        <source>CoinSpend: Accumulator witness does not verify</source>
-        <translation>CoinSpend: Accumulator witness controleert niet</translation>
     </message>
     <message>
         <source>Display the stake modifier calculations in the debug.log file.</source>
@@ -5668,38 +4965,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     <message>
         <source>Enable staking functionality (0-1, default: %u)</source>
         <translation>Activeer staking functionaliteit (0-1, standaard: %u)</translation>
-    </message>
-    <message>
-        <source>Error: A fatal internal error occurred, see debug.log for details</source>
-        <translation>Fout: Er is een fatale interne fout opgetreden, zie debug.log voor meer informatie</translation>
-    </message>
-    <message>
-        <source>Error: No valid utxo!</source>
-        <translation>Fout: geen geldige utxo!</translation>
-    </message>
-    <message>
-        <source>Failed to create mint</source>
-        <translation>Het is niet gelukt om mint te maken</translation>
-    </message>
-    <message>
-        <source>Failed to deserialize</source>
-        <translation>Kan deserialiseren niet</translation>
-    </message>
-    <message>
-        <source>Failed to find Zerocoins in wallet.dat</source>
-        <translation>Niet gelukt om Zerocoins in wallet.dat te vinden.</translation>
-    </message>
-    <message>
-        <source>Failed to select a zerocoin</source>
-        <translation>Het is niet gelukt om een zerocoin te selecteren</translation>
-    </message>
-    <message>
-        <source>Failed to wipe zerocoinDB</source>
-        <translation>Mislukt om zerocoinDB te legen.</translation>
-    </message>
-    <message>
-        <source>Failed to write coin serial number into wallet</source>
-        <translation>Het serienummer van het muntstuk kan niet in de portemonnee worden geschreven</translation>
     </message>
     <message>
         <source>Keep at most &lt;n&gt; unconnectable transactions in memory (default: %u)</source>
@@ -5735,7 +5000,7 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     </message>
     <message>
         <source>Loading block index...</source>
-        <translation>Blockindex laden...</translation>
+        <translation>Block index laden...</translation>
     </message>
     <message>
         <source>Loading budget cache...</source>
@@ -5762,20 +5027,12 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Portemonnee aan het laden...</translation>
     </message>
     <message>
-        <source>Location of the auth cookie (default: data dir)</source>
-        <translation>Locatie van de auth cookie (standaard: data dir)</translation>
-    </message>
-    <message>
         <source>Lock is already in place.</source>
         <translation>Vergrendeling is al uitgevoerd.</translation>
     </message>
     <message>
         <source>Lock masternodes from masternode configuration file (default: %u)</source>
         <translation>Masternodes vergrendelen van masternode configuratiebestand (standaard: %u)</translation>
-    </message>
-    <message>
-        <source>Lookup(): Invalid -proxy address or hostname: '%s'</source>
-        <translation>Lookup (): ongeldig -proxy-adres of hostnaam: '%s'</translation>
     </message>
     <message>
         <source>Maintain at most &lt;n&gt; connections to peers (default: %u)</source>
@@ -5802,20 +5059,12 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Maximaal per connectie verstuur buffer, &lt;n&gt;*1000 bytes (standaard: %u)</translation>
     </message>
     <message>
-        <source>Mint did not make it into blockchain</source>
-        <translation>Mint heeft de blockchain niet gehaald</translation>
-    </message>
-    <message>
         <source>Missing input transaction information.</source>
         <translation>Ontbrekende invoer transactie informatie ontbreekt.</translation>
     </message>
     <message>
         <source>Mixing in progress...</source>
         <translation>Bezig met mixen...</translation>
-    </message>
-    <message>
-        <source>Need address because change is not exact</source>
-        <translation>Noodzaak van adres omdat wijziging niet exact is</translation>
     </message>
     <message>
         <source>Need to specify a port with -whitebind: '%s'</source>
@@ -5862,10 +5111,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Aantal automatische portemonnee backups (standaard: 10)</translation>
     </message>
     <message>
-        <source>Number of custom location backups to retain (default: %d)</source>
-        <translation>Aantal aangepaste locatie back-ups om te behouden (standaard: %d)</translation>
-    </message>
-    <message>
         <source>Obfuscation is idle.</source>
         <translation>Verduistering is inactief.</translation>
     </message>
@@ -5894,12 +5139,8 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Wachtwoord voor JSON-RPC connecties</translation>
     </message>
     <message>
-        <source>isValid(): Invalid -proxy address or hostname: '%s'</source>
-        <translation>isValid (): ongeldig -proxy-adres of hostnaam: '%s'</translation>
-    </message>
-    <message>
-        <source>Preparing for resync...</source>
-        <translation>Voorbereiden van hersynchronisatie...</translation>
+        <source>Percentage of automatically minted Zerocoin  (10-100, default: %u)</source>
+        <translation>Percentage automatisch geminte Zerocoin (10-100, standaard: %u)</translation>
     </message>
     <message>
         <source>Prepend debug output with timestamp (default: %u)</source>
@@ -5910,8 +5151,16 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Print versie en verlaat</translation>
     </message>
     <message>
+        <source>RPC SSL options: (see the Bitcoin Wiki for SSL setup instructions)</source>
+        <translation>RPC SSL opties: (zie de Bitcoin Wiki voor SSL setup instructies)</translation>
+    </message>
+    <message>
         <source>RPC server options:</source>
         <translation>RPC server opties:</translation>
+    </message>
+    <message>
+        <source>RPC support for HTTP persistent connections (default: %d)</source>
+        <translation>RPC ondersteuning voor HTTP aanhoudende verbindingen (standaard: %d)</translation>
     </message>
     <message>
         <source>Randomly drop 1 of every &lt;n&gt; network messages</source>
@@ -5928,10 +5177,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     <message>
         <source>Receive and display P2P network alerts (default: %u)</source>
         <translation>Ontvang en laat P2P netwerkmeldingen zien (standaard: %u)</translation>
-    </message>
-    <message>
-        <source>Reindex the accumulator database</source>
-        <translation>Herindexeer de verzameldatabase</translation>
     </message>
     <message>
         <source>Relay and mine data carrier transactions (default: %u)</source>
@@ -5970,6 +5215,14 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Zend transacties als zero fee transacties indien mogelijk (standaard: %u)</translation>
     </message>
     <message>
+        <source>Server certificate file (default: %s)</source>
+        <translation>Server certificaat bestand (standaard: %s)</translation>
+    </message>
+    <message>
+        <source>Server private key (default: %s)</source>
+        <translation>Server privé sleutel (default: %s)</translation>
+    </message>
+    <message>
         <source>Session not complete!</source>
         <translation>Sessie niet voltooid!</translation>
     </message>
@@ -5996,10 +5249,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     <message>
         <source>Set minimum block size in bytes (default: %u)</source>
         <translation>Stel minimale block grootte in bytes in (default: %u)</translation>
-    </message>
-    <message>
-        <source>Set the Maximum reorg depth (default: %u)</source>
-        <translation>Stel de Maximale reorg diepte in (standaard: %u)</translation>
     </message>
     <message>
         <source>Set the masternode private key</source>
@@ -6062,10 +5311,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Specificeer je eigen publieke addres</translation>
     </message>
     <message>
-        <source>Spend Valid</source>
-        <translation>Besteed geldig</translation>
-    </message>
-    <message>
         <source>Spend unconfirmed change when sending transactions (default: %u)</source>
         <translation>Onbevestigd wisselgeld besteden bij het verzenden van transacties (standaard: %u)</translation>
     </message>
@@ -6118,26 +5363,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Synchroniseren sporks...</translation>
     </message>
     <message>
-        <source>Syncing zDAPS wallet...</source>
-        <translation>Synchroniseren zDAPS portemonnee...</translation>
-    </message>
-    <message>
-        <source>The coin spend has been used</source>
-        <translation>De muntuitgaven zijn gebruikt</translation>
-    </message>
-    <message>
-        <source>The new spend coin transaction did not verify</source>
-        <translation>De nieuwe uitgave voor uitgavengeld heeft niet geverifieerd</translation>
-    </message>
-    <message>
-        <source>The selected mint coin is an invalid coin</source>
-        <translation>De geselecteerde muntmunt is een ongeldige munt</translation>
-    </message>
-    <message>
-        <source>The transaction did not verify</source>
-        <translation>De transactie heeft niet geverifieerd</translation>
-    </message>
-    <message>
         <source>This help message</source>
         <translation>Dit help bericht</translation>
     </message>
@@ -6158,24 +5383,12 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Drempel voor het verbreken van misdragende peers (standaard: %u)</translation>
     </message>
     <message>
-        <source>Too many spends needed</source>
-        <translation>Te veel uitgaven nodig</translation>
-    </message>
-    <message>
         <source>Tor control port password (default: empty)</source>
         <translation>Tor controle poort wachtwoord (standaard: leeg)</translation>
     </message>
     <message>
         <source>Tor control port to use if onion listening enabled (default: %s)</source>
         <translation>Tor controle poort om te gebruiken als onion listening geactiveerd is (standaard: %s)</translation>
-    </message>
-    <message>
-        <source>Transaction Created</source>
-        <translation>Transactie gemaakt</translation>
-    </message>
-    <message>
-        <source>Transaction Mint Started</source>
-        <translation>Transactie startte met Mint</translation>
     </message>
     <message>
         <source>Transaction amount too small</source>
@@ -6210,28 +5423,12 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Verzending van de definitieve transactie.</translation>
     </message>
     <message>
-        <source>Try to spend with a higher security level to include more coins</source>
-        <translation>Probeer te spenderen met een hoger beveiligingsniveau om meer munten op te nemen</translation>
-    </message>
-    <message>
-        <source>Trying to spend an already spent serial #, try again.</source>
-        <translation>Probeer een reeds bestaand serienummer nog een keer uit te geven, probeer het opnieuw.</translation>
-    </message>
-    <message>
         <source>Unable to bind to %s on this computer (bind returned error %s)</source>
         <translation>Niet mogelijk te binden aan %s op deze computer (bind stuurt fout %s terug)</translation>
     </message>
     <message>
-        <source>Unable to find transaction containing mint</source>
-        <translation>Kan transactie met mint niet vinden</translation>
-    </message>
-    <message>
         <source>Unable to sign spork message, wrong key?</source>
         <translation>Kan sporkbericht niet tekenen, verkeerde sleutel?</translation>
-    </message>
-    <message>
-        <source>Unable to start HTTP server. See debug log for details.</source>
-        <translation>Kan HTTP-server niet starten. Zie foutopsporingslog voor details.</translation>
     </message>
     <message>
         <source>Unknown network specified in -onlynet: '%s'</source>
@@ -6246,6 +5443,10 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Upgrade portemonnee naar nieuwste formaat</translation>
     </message>
     <message>
+        <source>Use OpenSSL (https) for JSON-RPC connections</source>
+        <translation>Gebruik OpenSSL (https) voor JSON-RPC verbindingen</translation>
+    </message>
+    <message>
         <source>Use UPnP to map the listening port (default: %u)</source>
         <translation>Gebruik UPnP om de luisterpoort te mappen (standaard: %u)</translation>
     </message>
@@ -6254,20 +5455,12 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Gebruik UPnP om de luisterpoort te mappen (standaard: 1 bij het luisteren)</translation>
     </message>
     <message>
-        <source>Use a custom max chain reorganization depth (default: %u)</source>
-        <translation>Gebruik een aangepaste max chain reorganisatie diepte (standaard: %u)</translation>
-    </message>
-    <message>
         <source>Use the test network</source>
         <translation>Gebruik het test netwerk</translation>
     </message>
     <message>
         <source>Username for JSON-RPC connections</source>
         <translation>Gebruikersnaam voor JSON-RPC verbindingen</translation>
-    </message>
-    <message>
-        <source>Value is below the smallest available denomination (= 1) of zDAPS</source>
-        <translation>Waarde is minder dan de kleinst beschikbare denominatie (=1) van zDAPS</translation>
     </message>
     <message>
         <source>Value more than Obfuscation pool maximum allows.</source>
@@ -6280,10 +5473,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     <message>
         <source>Verifying wallet...</source>
         <translation>Portemonnee verifiëren...</translation>
-    </message>
-    <message>
-        <source>Version 1 zDAPS require a security level of 100 to successfully spend.</source>
-        <translation>Versie 1 zDAPS vereist een beveiligingsniveau van 100 om succesvol uit te geven.</translation>
     </message>
     <message>
         <source>Wallet %s resides outside data directory %s</source>
@@ -6326,10 +5515,6 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
         <translation>Zal het opnieuw proberen...</translation>
     </message>
     <message>
-        <source>You don't have enough Zerocoins in your wallet</source>
-        <translation>Je hebt niet genoeg Zerocoins in je portemonnee</translation>
-    </message>
-    <message>
         <source>You need to rebuild the database using -reindex to change -txindex</source>
         <translation>Je moet de database herbouwen met -reindex om -txindex te wijzigen</translation>
     </message>
@@ -6352,6 +5537,10 @@ Ofwel het munten van hogere denominaties (dus minder invoer nodig) of het te bes
     <message>
         <source>Zerocoin options:</source>
         <translation>Zerocoin opties:</translation>
+    </message>
+    <message>
+        <source>failed to validate zerocoin</source>
+        <translation>mislukt om zerocoin te valideren</translation>
     </message>
     <message>
         <source>on startup</source>

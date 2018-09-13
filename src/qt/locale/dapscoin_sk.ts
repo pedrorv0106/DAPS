@@ -136,6 +136,10 @@
         <translation>Slúži na zakázanie obyčajného odoslania peňazí, v prípade, že bol OS účet kompromitovaný. Neposkytuje žiadnu skutočnú bezpečnosť.</translation>
     </message>
     <message>
+        <source>For anonymization and staking only</source>
+        <translation>Len pre anonymizáciu a staking</translation>
+    </message>
+    <message>
         <source>Enter the new passphrase to the wallet.&lt;br/&gt;Please use a passphrase of &lt;b&gt;ten or more random characters&lt;/b&gt;, or &lt;b&gt;eight or more words&lt;/b&gt;.</source>
         <translation>Zadajte novú prístupovú frázu do peňaženky. &lt;br/&gt; Použite prístupovú frázu &lt;b&gt;, ktorá má desať alebo viac náhodných znakov &lt;/ b&gt; alebo &lt;b&gt; osem alebo viac slov &lt;/ b&gt;.</translation>
     </message>
@@ -225,9 +229,6 @@
     </message>
 </context>
 <context>
-    <name>BanTableModel</name>
-    </context>
-<context>
     <name>Bip38ToolDialog</name>
     <message>
         <source>BIP 38 Tool</source>
@@ -238,8 +239,16 @@
         <translation>BIP 38 Šifrovanie</translation>
     </message>
     <message>
+        <source>Enter a Dapscoin Address that you would like to encrypt using BIP 38. Enter a passphrase in the middle box. Press encrypt to compute the encrypted private key.</source>
+        <translation>Zadajte adresu Dapscoin, ktorú chcete zašifrovať pomocou BIP 38. Zadajte prístupovú frázu do stredného poľa. Stlačte šifrovanie na výpočet šifrovaného privátneho kľúča.</translation>
+    </message>
+    <message>
         <source>Address:</source>
         <translation>Adresa:</translation>
+    </message>
+    <message>
+        <source>The DAPScoin address to sign the message with</source>
+        <translation>Adresa DAPScoin, ktorou chcete správu podpísať</translation>
     </message>
     <message>
         <source>Choose previously used address</source>
@@ -270,8 +279,16 @@
         <translation>Skopírujte aktuálny podpis do schránky</translation>
     </message>
     <message>
+        <source>Sign the message to prove you own this DAPScoin address</source>
+        <translation>Podpíšte správu, aby ste preukázali, že ste vlastníkom tejto DAPScoin adresy</translation>
+    </message>
+    <message>
         <source>Encrypt &amp;Key</source>
         <translation>Zašifrovať kľúč</translation>
+    </message>
+    <message>
+        <source>Reset all sign message fields</source>
+        <translation>Zmazať všetky polia správy</translation>
     </message>
     <message>
         <source>Clear &amp;All</source>
@@ -286,8 +303,20 @@
         <translation>Zadajte súkromný kľúč zašifrovaný BIP 38. Zadajte prístupovú frázu do stredného poľa. Kliknite na Dešifrovať kľúč, ak chcete vypočítať privátny kľúč. Po dešifrovaní kľúča pridáte do peňaženky tento súkromný kľúč kliknutím na položku 'Importovať adresu'.</translation>
     </message>
     <message>
+        <source>The DAPScoin address the message was signed with</source>
+        <translation>DAPScoin adresa, ktorou bola správa podpísaná</translation>
+    </message>
+    <message>
+        <source>Verify the message to ensure it was signed with the specified DAPScoin address</source>
+        <translation>Skontrolujte správu, aby ste sa uistili, že bola podpísaná zadanou DAPScoin adresou</translation>
+    </message>
+    <message>
         <source>Decrypt &amp;Key</source>
         <translation>Dešifrovať kľúč</translation>
+    </message>
+    <message>
+        <source>Reset all verify message fields</source>
+        <translation>Zmazať všetky polia verifikácie správy</translation>
     </message>
     <message>
         <source>Decrypted Key:</source>
@@ -753,6 +782,10 @@ MultiSend: %1</translation>
         <translation>Peňaženka je &lt;b&gt;zašifrovaná&lt;/ b&gt; a momentálne je &lt;b&gt;odomknutá&lt;/ b&gt;</translation>
     </message>
     <message>
+        <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;unlocked&lt;/b&gt; for anonimization and staking only</source>
+        <translation>Peňaženka je &lt;b&gt;zašifrovaná&lt;/ b&gt; a momentálne &lt;b&gt;odomknutá&lt;/ b&gt; iba na anonymizáciu a staking</translation>
+    </message>
+    <message>
         <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;locked&lt;/b&gt;</source>
         <translation>Peňaženka je &lt;b&gt;zašifrovaná&lt;/ b&gt; a momentálne je &lt;b&gt;zamknutá&lt;/ b&gt;</translation>
     </message>
@@ -903,10 +936,6 @@ MultiSend: %1</translation>
         <source>Address:</source>
         <translation>Adresa:</translation>
     </message>
-    <message>
-        <source>(no label)</source>
-        <translation>(žiaden štítok)</translation>
-    </message>
     </context>
 <context>
     <name>MultisigDialog</name>
@@ -962,10 +991,6 @@ MultiSend: %1</translation>
     <message>
         <source>Priority:</source>
         <translation>Priorita:</translation>
-    </message>
-    <message>
-        <source>TextLabel</source>
-        <translation>TextLabel</translation>
     </message>
     <message>
         <source>Fee:</source>

@@ -136,6 +136,10 @@
         <translation>Slouží k neumožnění zaslání jednoduché platby, pokud je učet OS kompromitován. Neposkytuje tak reálné zabezpeční.</translation>
     </message>
     <message>
+        <source>For anonymization and staking only</source>
+        <translation>Pouze pro anonymizaci a sázení</translation>
+    </message>
+    <message>
         <source>Enter the new passphrase to the wallet.&lt;br/&gt;Please use a passphrase of &lt;b&gt;ten or more random characters&lt;/b&gt;, or &lt;b&gt;eight or more words&lt;/b&gt;.</source>
         <translation>Zadejte nové frázové heslo pro Vaši peněženku &lt;br/&gt; Prosím, použijte frázové heslo z &lt;b&gt; nebo více náhodných znaků &lt;/b&gt;, nebo&lt;b&gt;z osmi nebo více slov&lt;/b&gt;  .</translation>
     </message>
@@ -225,9 +229,6 @@
     </message>
 </context>
 <context>
-    <name>BanTableModel</name>
-    </context>
-<context>
     <name>Bip38ToolDialog</name>
     <message>
         <source>BIP 38 Tool</source>
@@ -238,8 +239,16 @@
         <translation>&amp;BIP 38 Šifrovat</translation>
     </message>
     <message>
+        <source>Enter a Dapscoin Address that you would like to encrypt using BIP 38. Enter a passphrase in the middle box. Press encrypt to compute the encrypted private key.</source>
+        <translation>Zadejte DAPScoin adresu, kterou si přejete zašifrovat pomocí BIP38. Frázové heslo zadejte do prostředního boxu. Stiskněte šifrovat pro výpočet šifrovaného privátního klíče.</translation>
+    </message>
+    <message>
         <source>Address:</source>
         <translation>Adresa:</translation>
+    </message>
+    <message>
+        <source>The DAPScoin address to sign the message with</source>
+        <translation>DAPScoin adresa pro podepsání zprávy</translation>
     </message>
     <message>
         <source>Choose previously used address</source>
@@ -270,8 +279,16 @@
         <translation>Kopírovat aktuální podpis do systémové mezipaměti</translation>
     </message>
     <message>
+        <source>Sign the message to prove you own this DAPScoin address</source>
+        <translation>Podepsat zprávu k prokázání, že vlastníte tuto DAPScoin adresu</translation>
+    </message>
+    <message>
         <source>Encrypt &amp;Key</source>
         <translation>Šifrovat &amp;Klíč</translation>
+    </message>
+    <message>
+        <source>Reset all sign message fields</source>
+        <translation>Resetovat všechny položky podepsání zprávy</translation>
     </message>
     <message>
         <source>Clear &amp;All</source>
@@ -286,8 +303,20 @@
         <translation>Vložte BIP 38 šifrovaný privítní klíc. Frázové heslo vložte do prostředního boxu. Kliknětě na Dešifrovat Klíč pro výpočet privátního klíče. Poté co bude klíč dešifrován, kliknutím na 'Importovat Adresu' přidáte privátní klíč do Vaší peněženky.</translation>
     </message>
     <message>
+        <source>The DAPScoin address the message was signed with</source>
+        <translation>DAPScoin adresa zprávy byla podpsána</translation>
+    </message>
+    <message>
+        <source>Verify the message to ensure it was signed with the specified DAPScoin address</source>
+        <translation>Verifikujte zprávu pro ujištění, že byla podepsána zmíněnou DAPScoin adresou</translation>
+    </message>
+    <message>
         <source>Decrypt &amp;Key</source>
         <translation>Dešifrovat &amp;Klíč</translation>
+    </message>
+    <message>
+        <source>Reset all verify message fields</source>
+        <translation>Resetovat všechny položky pro ověření zprávy</translation>
     </message>
     <message>
         <source>Decrypted Key:</source>
@@ -572,6 +601,10 @@
         <source>&amp;Command-line options</source>
         <translation>Možnosti příkazové řádky</translation>
     </message>
+    <message numerus="yes">
+        <source>Processed %n blocks of transaction history.</source>
+        <translation><numerusform>Zpracován %n blok z transakční historie.</numerusform><numerusform>Zpracováno %n bloků z transakční historie.</numerusform><numerusform>Zpracováno %n bloků z transakční historie.</numerusform></translation>
+    </message>
     <message>
         <source>Synchronizing additional data: %p%</source>
         <translation>Synchronizuji přídavná data: %p%</translation>
@@ -692,6 +725,10 @@
         <source>DAPScoin Core client</source>
         <translation>DAPScoin Core klient</translation>
     </message>
+    <message numerus="yes">
+        <source>%n active connection(s) to DAPScoin network</source>
+        <translation><numerusform>Aktivních připojení do sítě DAPScoin: %n</numerusform><numerusform>Aktivních připojení do sítě DAPScoin: %n</numerusform><numerusform>Aktivních připojení do sítě DAPScoin: %n</numerusform></translation>
+    </message>
     <message>
         <source>Synchronizing with network...</source>
         <translation>Synchronizace se sítí...</translation>
@@ -712,9 +749,25 @@
         <source>Up to date</source>
         <translation>Aktualizováno</translation>
     </message>
+    <message numerus="yes">
+        <source>%n hour(s)</source>
+        <translation><numerusform>%n hodina</numerusform><numerusform>%n hodin</numerusform><numerusform>%n hodin</numerusform></translation>
+    </message>
+    <message numerus="yes">
+        <source>%n day(s)</source>
+        <translation><numerusform>%n den</numerusform><numerusform>%n dvů</numerusform><numerusform>%n dnů</numerusform></translation>
+    </message>
+    <message numerus="yes">
+        <source>%n week(s)</source>
+        <translation><numerusform>%n týden</numerusform><numerusform>%n týdnů</numerusform><numerusform>%n týdnů</numerusform></translation>
+    </message>
     <message>
         <source>%1 and %2</source>
         <translation>%1 a %2</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n year(s)</source>
+        <translation><numerusform>%n rok</numerusform><numerusform>%n roků</numerusform><numerusform>%n roků</numerusform></translation>
     </message>
     <message>
         <source>Catching up...</source>
@@ -787,6 +840,10 @@ MultiSend: %1</translation>
     <message>
         <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;unlocked&lt;/b&gt;</source>
         <translation>Peněženka je &lt;b&gt;zašifrovaná&lt;/b&gt; a momentálně je &lt;b&gt;odemčená&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;unlocked&lt;/b&gt; for anonimization and staking only</source>
+        <translation>Peněženka je &lt;b&gt;zašifrovaná&lt;/b&gt; a momentálně je &lt;b&gt;odemčená&lt;/b&gt; pouze pro anonimizace a sázení</translation>
     </message>
     <message>
         <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;locked&lt;/b&gt;</source>
@@ -1213,6 +1270,10 @@ MultiSend: %1</translation>
         <translation>Od</translation>
     </message>
     <message>
+        <source>My Masternodes</source>
+        <translation>Moje Masternody</translation>
+    </message>
+    <message>
         <source>Alias</source>
         <translation>Alias</translation>
     </message>
@@ -1386,10 +1447,6 @@ MultiSend: %1</translation>
     <message>
         <source>Send For Masternode Rewards</source>
         <translation>Poslat pro odměny masternodů</translation>
-    </message>
-    <message>
-        <source>(no label)</source>
-        <translation>(bez popisku)</translation>
     </message>
     <message>
         <source>The entered address:
@@ -1641,6 +1698,10 @@ Prosím zkontrolujte adresu a zkuste to znovu.</translation>
         <translation>Celkem:</translation>
     </message>
     <message>
+        <source>Your current total balance</source>
+        <translation>Vaše aktuální celková balance</translation>
+    </message>
+    <message>
         <source>Spendable:</source>
         <translation>Disponibilní:</translation>
     </message>
@@ -1708,10 +1769,6 @@ Prosím zkontrolujte adresu a zkuste to znovu.</translation>
     <message>
         <source>Priority:</source>
         <translation>Priorita:</translation>
-    </message>
-    <message>
-        <source>TextLabel</source>
-        <translation>TextPopisku</translation>
     </message>
     <message>
         <source>Fee:</source>

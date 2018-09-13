@@ -3,7 +3,7 @@
     <name>AddressBookPage</name>
     <message>
         <source>Right-click to edit address or label</source>
-        <translation>Clique com o botão direito do rato para editar o endereço ou a descrição</translation>
+        <translation>Clique com o botão direito do mouse para editar o endereço ou a descrição</translation>
     </message>
     <message>
         <source>Create a new address</source>
@@ -11,7 +11,7 @@
     </message>
     <message>
         <source>&amp;New</source>
-        <translation>&amp;Novo</translation>
+        <translation>Novo</translation>
     </message>
     <message>
         <source>Copy the currently selected address to the system clipboard</source>
@@ -23,11 +23,11 @@
     </message>
     <message>
         <source>Delete the currently selected address from the list</source>
-        <translation>Apagar o endereço selecionado da lista</translation>
+        <translation>Deletar da lista o endereço selecionado</translation>
     </message>
     <message>
         <source>&amp;Delete</source>
-        <translation>&amp;Apagar</translation>
+        <translation>&amp;Excluir</translation>
     </message>
     <message>
         <source>Export the data in the current tab to a file</source>
@@ -39,19 +39,19 @@
     </message>
     <message>
         <source>C&amp;lose</source>
-        <translation>F&amp;echar</translation>
+        <translation>&amp;Fechar</translation>
     </message>
     <message>
         <source>Choose the address to send coins to</source>
-        <translation>Escolha o endereço para onde enviar moedas</translation>
+        <translation>Escolha o endereço para enviar moedas</translation>
     </message>
     <message>
         <source>Choose the address to receive coins with</source>
-        <translation>Escolha o endereço onde receber moedas</translation>
+        <translation>Escolha o endereço para receber moedas</translation>
     </message>
     <message>
         <source>C&amp;hoose</source>
-        <translation>E&amp;scolher</translation>
+        <translation>Escol&amp;her</translation>
     </message>
     <message>
         <source>Sending addresses</source>
@@ -63,19 +63,19 @@
     </message>
     <message>
         <source>These are your DAPScoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation>Esses são seus endereços DAPScoin para onde enviar pagamentos. Confira sempre o montante e os endereços de destino antes de enviar moedas.</translation>
+        <translation>Esses são seus endereços DAPScoin para enviar pagamentos. Sempre confira a quantidade e os endereços de destino antes de enviar moedas.</translation>
     </message>
     <message>
         <source>These are your DAPScoin addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
-        <translation>Esses são seus endereços DAPScoin onde receber pagamentos. Recomenda-se o uso de um novo endereço para cada transacção.</translation>
+        <translation>Esses são seus endereços DAPScoin para receber pagamentos. É recomendado usar um novo endereço para cada transação.</translation>
     </message>
     <message>
         <source>&amp;Copy Address</source>
-        <translation>&amp;Copiar Endereço</translation>
+        <translation>C&amp;opiar endereço</translation>
     </message>
     <message>
         <source>Copy &amp;Label</source>
-        <translation>Copiar &amp;Descrição</translation>
+        <translation>Cop&amp;iar Descrição</translation>
     </message>
     <message>
         <source>&amp;Edit</source>
@@ -117,11 +117,11 @@
     <name>AskPassphraseDialog</name>
     <message>
         <source>Passphrase Dialog</source>
-        <translation>Caixa de diálogo de senha</translation>
+        <translation>Caixa de diálogo de Senha</translation>
     </message>
     <message>
         <source>Enter passphrase</source>
-        <translation>Digite a sua senha</translation>
+        <translation>Digite sua senha</translation>
     </message>
     <message>
         <source>New passphrase</source>
@@ -129,11 +129,15 @@
     </message>
     <message>
         <source>Repeat new passphrase</source>
-        <translation>Repetir nova senha</translation>
+        <translation>Repetir senha</translation>
     </message>
     <message>
         <source>Serves to disable the trivial sendmoney when OS account compromised. Provides no real security.</source>
         <translation>Serve para desabilitar envio trivial de dinheiro quando a conta do SO for comprometida, mas não provê segurança real.</translation>
+    </message>
+    <message>
+        <source>For anonymization and staking only</source>
+        <translation>Apenas para anonimização e staking</translation>
     </message>
     <message>
         <source>Enter the new passphrase to the wallet.&lt;br/&gt;Please use a passphrase of &lt;b&gt;ten or more random characters&lt;/b&gt;, or &lt;b&gt;eight or more words&lt;/b&gt;.</source>
@@ -225,9 +229,6 @@
     </message>
 </context>
 <context>
-    <name>BanTableModel</name>
-    </context>
-<context>
     <name>Bip38ToolDialog</name>
     <message>
         <source>BIP 38 Tool</source>
@@ -238,8 +239,16 @@
         <translation>Encriptar com &amp;BIP 38</translation>
     </message>
     <message>
+        <source>Enter a Dapscoin Address that you would like to encrypt using BIP 38. Enter a passphrase in the middle box. Press encrypt to compute the encrypted private key.</source>
+        <translation>Digite um endereço Dapscoin que você gostaria de criptografar usando BIP 38. Digite uma frase secreta na caixa do meio. Pressione criptografar para calcular a chave privada criptografada.</translation>
+    </message>
+    <message>
         <source>Address:</source>
         <translation>Endereço:</translation>
+    </message>
+    <message>
+        <source>The DAPScoin address to sign the message with</source>
+        <translation>Um endereço DAPScoin para assinar a mensagem</translation>
     </message>
     <message>
         <source>Choose previously used address</source>
@@ -270,8 +279,16 @@
         <translation>Copiar a assinatura para a area de trabalho</translation>
     </message>
     <message>
+        <source>Sign the message to prove you own this DAPScoin address</source>
+        <translation>Assinar a Mensagem para provar que você e dono desse endereço DAPScoin.</translation>
+    </message>
+    <message>
         <source>Encrypt &amp;Key</source>
         <translation>Criptografar Chave</translation>
+    </message>
+    <message>
+        <source>Reset all sign message fields</source>
+        <translation>Reiniciar todas os campos das mensagens assinadas</translation>
     </message>
     <message>
         <source>Clear &amp;All</source>
@@ -280,6 +297,10 @@
     <message>
         <source>&amp;BIP 38 Decrypt</source>
         <translation>Criptografia BIP 38</translation>
+    </message>
+    <message>
+        <source>The DAPScoin address the message was signed with</source>
+        <translation>O endereço DAPScoin que foi assinado com</translation>
     </message>
     <message>
         <source>Decrypted Key:</source>
@@ -384,14 +405,6 @@
         <source>Edit Address</source>
         <translation>Alterar endereço</translation>
     </message>
-    <message>
-        <source>&amp;Label</source>
-        <translation>&amp;Descrição</translation>
-    </message>
-    <message>
-        <source>&amp;Address</source>
-        <translation>&amp;Endereço</translation>
-    </message>
     </context>
 <context>
     <name>FreespaceChecker</name>
@@ -418,10 +431,6 @@
     <message>
         <source>Address:</source>
         <translation>Endereço:</translation>
-    </message>
-    <message>
-        <source>(no label)</source>
-        <translation>(Sem descrição)</translation>
     </message>
     </context>
 <context>
@@ -1006,6 +1015,14 @@
         <translation>Enviar transações como transações de taxa zero, se possível (padrão:%u)</translation>
     </message>
     <message>
+        <source>Server certificate file (default: %s)</source>
+        <translation>Arquivo de certificado do servidor (padrão:%s)</translation>
+    </message>
+    <message>
+        <source>Server private key (default: %s)</source>
+        <translation>Chave privada do servidor (padrão:%s)</translation>
+    </message>
+    <message>
         <source>Session not complete!</source>
         <translation>Sessão não concluída!</translation>
     </message>
@@ -1212,6 +1229,10 @@
     <message>
         <source>Upgrade wallet to latest format</source>
         <translation>Atualizar a carteira para a ultimo formato</translation>
+    </message>
+    <message>
+        <source>Use OpenSSL (https) for JSON-RPC connections</source>
+        <translation>Use o OpenSSL(https) para conexões JSON-RPC</translation>
     </message>
     <message>
         <source>Use UPnP to map the listening port (default: %u)</source>

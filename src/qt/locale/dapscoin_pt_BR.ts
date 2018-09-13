@@ -132,12 +132,8 @@
         <translation>Repita a nova palavra-chave</translation>
     </message>
     <message>
-        <source>Serves to disable the trivial sendmoney when OS account compromised. Provides no real security.</source>
-        <translation>Server irá desabilitar o sendmoney trivial quando a conta do sistema operacional for comprometido. Não oferece segurança real.</translation>
-    </message>
-    <message>
-        <source>For anonymization, automint, and staking only</source>
-        <translation>Somente para anonimização, automint e staking</translation>
+        <source>For anonymization and staking only</source>
+        <translation>Para anonimização e staking somente</translation>
     </message>
     <message>
         <source>Enter the new passphrase to the wallet.&lt;br/&gt;Please use a passphrase of &lt;b&gt;ten or more random characters&lt;/b&gt;, or &lt;b&gt;eight or more words&lt;/b&gt;.</source>
@@ -229,17 +225,6 @@
     </message>
 </context>
 <context>
-    <name>BanTableModel</name>
-    <message>
-        <source>IP/Netmask</source>
-        <translation>IP/Netmask</translation>
-    </message>
-    <message>
-        <source>Banned Until</source>
-        <translation>Proibido até</translation>
-    </message>
-</context>
-<context>
     <name>Bip38ToolDialog</name>
     <message>
         <source>BIP 38 Tool</source>
@@ -250,12 +235,16 @@
         <translation>&amp;Encriptação BIP 38</translation>
     </message>
     <message>
+        <source>Enter a Dapscoin Address that you would like to encrypt using BIP 38. Enter a passphrase in the middle box. Press encrypt to compute the encrypted private key.</source>
+        <translation>Insira um endereço que você deseja criptografar usando a BIP 38. Insira a palavra-chave na caixa do meio. Pressione criptografar para computar a chave privada criptografada.</translation>
+    </message>
+    <message>
         <source>Address:</source>
         <translation>Endereço:</translation>
     </message>
     <message>
-        <source>Enter a DAPScoin Address that you would like to encrypt using BIP 38. Enter a passphrase in the middle box. Press encrypt to compute the encrypted private key.</source>
-        <translation>Insira um endereço que você deseja criptografar usando a BIP 38. Insira a palavra-chave na caixa do meio. Pressione criptografar para computar a chave privada criptografada.</translation>
+        <source>The DAPScoin address to sign the message with</source>
+        <translation>O endereço DAPScoin para assinar a mensagem</translation>
     </message>
     <message>
         <source>Choose previously used address</source>
@@ -286,8 +275,16 @@
         <translation>Copia a assinatura atual do sistema de transferência</translation>
     </message>
     <message>
+        <source>Sign the message to prove you own this DAPScoin address</source>
+        <translation>Assine a mensagem para provar que você possui este endereço DAPScoin</translation>
+    </message>
+    <message>
         <source>Encrypt &amp;Key</source>
         <translation>Chave encriptada:</translation>
+    </message>
+    <message>
+        <source>Reset all sign message fields</source>
+        <translation>Reiniciar todos os campos de mensagem</translation>
     </message>
     <message>
         <source>Clear &amp;All</source>
@@ -298,8 +295,20 @@
         <translation>&amp;Descriptografar BIP 38</translation>
     </message>
     <message>
+        <source>The DAPScoin address the message was signed with</source>
+        <translation>O endereço DAPScoin que assinou a mensagem</translation>
+    </message>
+    <message>
+        <source>Verify the message to ensure it was signed with the specified DAPScoin address</source>
+        <translation>Verifique a mensagem para ter certeza que foi assinada com o endereço DAPScoin especificado.</translation>
+    </message>
+    <message>
         <source>Decrypt &amp;Key</source>
         <translation>Descriptografar &amp;Chave</translation>
+    </message>
+    <message>
+        <source>Reset all verify message fields</source>
+        <translation>Reiniciar todos os campos de mensagem</translation>
     </message>
     <message>
         <source>Decrypted Key:</source>
@@ -573,10 +582,6 @@
         <translation>&amp;Assinando multiassinatura...</translation>
     </message>
     <message>
-        <source>Sign with a multisignature address</source>
-        <translation>Assinar com um endereço multiassinatura</translation>
-    </message>
-    <message>
         <source>Open &amp;URI...</source>
         <translation>Abrir &amp;URI...</translation>
     </message>
@@ -584,13 +589,13 @@
         <source>&amp;Command-line options</source>
         <translation>&amp;Opções de linha de comando</translation>
     </message>
+    <message numerus="yes">
+        <source>Processed %n blocks of transaction history.</source>
+        <translation><numerusform>Processado %n bloco do histórico de transação</numerusform><numerusform>Processado %n blocos do histórico de transação</numerusform></translation>
+    </message>
     <message>
         <source>Synchronizing additional data: %p%</source>
         <translation>Sincronizando informação adicional: %p%</translation>
-    </message>
-    <message>
-        <source>%1 behind. Scanning block %2</source>
-        <translation>%1 atrás. Escaneado bloco %2</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -724,9 +729,25 @@
         <source>Up to date</source>
         <translation>Atualizado</translation>
     </message>
+    <message numerus="yes">
+        <source>%n hour(s)</source>
+        <translation><numerusform>%n hora</numerusform><numerusform>%n horas</numerusform></translation>
+    </message>
+    <message numerus="yes">
+        <source>%n day(s)</source>
+        <translation><numerusform>%n dia</numerusform><numerusform>%n dias</numerusform></translation>
+    </message>
+    <message numerus="yes">
+        <source>%n week(s)</source>
+        <translation><numerusform>%n semana</numerusform><numerusform>%n semanas</numerusform></translation>
+    </message>
     <message>
         <source>%1 and %2</source>
         <translation>%1 e %2</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n year(s)</source>
+        <translation><numerusform>%n ano</numerusform><numerusform>%n anos</numerusform></translation>
     </message>
     <message>
         <source>Catching up...</source>
@@ -804,6 +825,10 @@ MultiSend: %1</translation>
     <message>
         <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;unlocked&lt;/b&gt;</source>
         <translation>A Carteira está &lt;b&gt;criptografada&lt;/b&gt; e atualmente &lt;b&gt;desbloqueada&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;unlocked&lt;/b&gt; for anonimization and staking only</source>
+        <translation>A Carteira está &lt;b&gt;criptografada&lt;/b&gt; e atualmente &lt;b&gt;desbloqueada&lt;/b&gt; somente para anonimização e staking</translation>
     </message>
     <message>
         <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;locked&lt;/b&gt;</source>
@@ -1005,6 +1030,10 @@ MultiSend: %1</translation>
     <message>
         <source>medium-high</source>
         <translation>médio-alto</translation>
+    </message>
+    <message>
+        <source>Can vary +/- %1 duff(s) per input.</source>
+        <translation>pode variar entre +/-%1 duff(s) por input</translation>
     </message>
     <message>
         <source>medium</source>
@@ -1262,6 +1291,10 @@ MultiSend: %1</translation>
         <translation>Formulário</translation>
     </message>
     <message>
+        <source>My Masternodes</source>
+        <translation>Meus Masternodes</translation>
+    </message>
+    <message>
         <source>Alias</source>
         <translation>Apelido</translation>
     </message>
@@ -1292,10 +1325,6 @@ MultiSend: %1</translation>
     <message>
         <source>S&amp;tart alias</source>
         <translation>iniciar apelido</translation>
-    </message>
-    <message>
-        <source>Start &amp;all</source>
-        <translation>Iniciar &amp;todos</translation>
     </message>
     <message>
         <source>&amp;Update status</source>
@@ -1397,10 +1426,6 @@ MultiSend: %1</translation>
         <translation>Endereço:</translation>
     </message>
     <message>
-        <source>Enter a label for this address to add it to your address book</source>
-        <translation>Coloque uma etiqueta neste endereço para adicioná-lo à lista de contatos</translation>
-    </message>
-    <message>
         <source>Delete Address From MultiSend Vector</source>
         <translation>Deleta endereço do vetor MultiSend</translation>
     </message>
@@ -1431,10 +1456,6 @@ MultiSend: %1</translation>
     <message>
         <source>Send For Masternode Rewards</source>
         <translation>Enviar para recompensas de Masternode</translation>
-    </message>
-    <message>
-        <source>(no label)</source>
-        <translation>(sem rótulo)</translation>
     </message>
     <message>
         <source>The entered address:
@@ -1479,36 +1500,8 @@ Favor verificar o endereço e tente novamente.</translation>
 <context>
     <name>MultisigDialog</name>
     <message>
-        <source>Create MultiSignature &amp;Address</source>
-        <translation>Criar &amp;Endereço multiassinatura</translation>
-    </message>
-    <message>
-        <source>How many people must sign to verify a transaction</source>
-        <translation>Quantas pessoas devem assinar para verificar uma transação</translation>
-    </message>
-    <message>
-        <source>Address Label:</source>
-        <translation>Rótulo do endereço:</translation>
-    </message>
-    <message>
-        <source>Create a new multisig address</source>
-        <translation>Criar um novo endereço multisig</translation>
-    </message>
-    <message>
-        <source>C&amp;reate</source>
-        <translation>C&amp;riar</translation>
-    </message>
-    <message>
         <source>Status:</source>
         <translation>Situação:</translation>
-    </message>
-    <message>
-        <source>Inputs:</source>
-        <translation>Inputs:</translation>
-    </message>
-    <message>
-        <source>Quantity Selected:</source>
-        <translation>Quantia selecionada:</translation>
     </message>
     <message>
         <source>0</source>
@@ -1517,18 +1510,6 @@ Favor verificar o endereço e tente novamente.</translation>
     <message>
         <source>Amount:</source>
         <translation>Quantia:</translation>
-    </message>
-    <message>
-        <source>Address / Amount:</source>
-        <translation>Endereço / Quantia:</translation>
-    </message>
-    <message>
-        <source>Cr&amp;eate</source>
-        <translation>Cr&amp;iar</translation>
-    </message>
-    <message>
-        <source>S&amp;ign</source>
-        <translation>A&amp;ssinar</translation>
     </message>
     <message>
         <source>Add Private &amp;Key</source>
@@ -1541,6 +1522,10 @@ Favor verificar o endereço e tente novamente.</translation>
     <message>
         <source>Invalid Tx Hash.</source>
         <translation>Tx Hash inválido.</translation>
+    </message>
+    <message>
+        <source>Maximum possible addresses reached. (16)</source>
+        <translation>Máximo possível de endereços alcançados. (16)</translation>
     </message>
     <message>
         <source>Amount: </source>
@@ -1798,6 +1783,10 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>&amp;Cancel</translation>
     </message>
     <message>
+        <source>I don't care</source>
+        <translation>Eu não me importo</translation>
+    </message>
+    <message>
         <source>default</source>
         <translation>padrão</translation>
     </message>
@@ -1825,12 +1814,16 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <source>The supplied proxy address is invalid.</source>
         <translation>O endereço proxy fornecido é inválido.</translation>
     </message>
-    </context>
+</context>
 <context>
     <name>OverviewPage</name>
     <message>
         <source>Form</source>
         <translation>Formulário</translation>
+    </message>
+    <message>
+        <source>DAPS Balances</source>
+        <translation>Balanços DAPS</translation>
     </message>
     <message>
         <source>Available:</source>
@@ -1865,6 +1858,10 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Total:</translation>
     </message>
     <message>
+        <source>Your current total balance</source>
+        <translation>Seu saldo total atual</translation>
+    </message>
+    <message>
         <source>Current total balance in watch-only addresses</source>
         <translation>Saldo total atual em endereços somente visualização</translation>
     </message>
@@ -1877,8 +1874,32 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Disponível:</translation>
     </message>
     <message>
+        <source>DAPS:</source>
+        <translation>DAPS:</translation>
+    </message>
+    <message>
+        <source>zDAPS:</source>
+        <translation>zDAPS:</translation>
+    </message>
+    <message>
+        <source>0 %</source>
+        <translation>0 %</translation>
+    </message>
+    <message>
+        <source>0.000 000 00 DAPS</source>
+        <translation>0.000 000 00 DAPS</translation>
+    </message>
+    <message>
         <source>Locked:</source>
         <translation>Travado:</translation>
+    </message>
+    <message>
+        <source>Unlocked:</source>
+        <translation>Destravado:</translation>
+    </message>
+    <message>
+        <source>Zerocoin Balance</source>
+        <translation>Saldo Zerocoin</translation>
     </message>
     <message>
         <source>Unconfirmed:</source>
@@ -1946,12 +1967,24 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
 <context>
     <name>PrivacyDialog</name>
     <message>
+        <source>DAPS which were anonymized via Zerocin Protocol</source>
+        <translation>DAPS que foram anonimizadas via protocolo Zerocoin</translation>
+    </message>
+    <message>
+        <source>Zerocoin DAPS (zDAPS)</source>
+        <translation>Zerocoin DAPS (zDAPS)</translation>
+    </message>
+    <message>
         <source>Zerocoin Actions:</source>
         <translation>Ações Zerocoin:</translation>
     </message>
     <message>
         <source>The displayed information may be out of date. Your wallet automatically synchronizes with the DAPScoin network after a connection is established, but this process has not completed yet.</source>
         <translation>A informação mostrada pode estar desatualizada. A sua carteira se sincroniza automaticamente com a rede DAPScoin após estabelecer uma conexão, mas esse processo ainda não foi concluído.</translation>
+    </message>
+    <message>
+        <source>Enter an amount of Daps to convert to zDaps</source>
+        <translation>Insira uma quantia de Daps para converter para zDaps</translation>
     </message>
     <message>
         <source>0</source>
@@ -1976,18 +2009,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     <message>
         <source>Amount:</source>
         <translation>Quantia:</translation>
-    </message>
-    <message>
-        <source>Quantity Selected:</source>
-        <translation>Quantia selecionada:</translation>
-    </message>
-    <message>
-        <source>Available Balance:</source>
-        <translation>Saldo disponível:</translation>
-    </message>
-    <message>
-        <source>Security Level:</source>
-        <translation>Nível de Segurança:</translation>
     </message>
     <message>
         <source>Security Level 1 - 100 (default: 42)</source>
@@ -2078,10 +2099,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Prioridade:</translation>
     </message>
     <message>
-        <source>TextLabel</source>
-        <translation>Rótulo</translation>
-    </message>
-    <message>
         <source>Fee:</source>
         <translation>Taxa:</translation>
     </message>
@@ -2134,24 +2151,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Mensagem: Insira uma quantia &gt; 0.</translation>
     </message>
     <message>
-        <source>Confirm additional Fees</source>
-        <translation>Confirmar Taxas adicionais</translation>
-    </message>
-    <message>
-        <source> to address </source>
-        <translation>para o endereço</translation>
-    </message>
-    <message>
         <source>Confirm send coins</source>
         <translation>Confirmar envio de moedas</translation>
-    </message>
-    <message>
-        <source>denomination: </source>
-        <translation>denominação:</translation>
-    </message>
-    <message>
-        <source>address: </source>
-        <translation>endereço:</translation>
     </message>
     <message>
         <source>Sending successful, return code: </source>
@@ -2351,6 +2352,14 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Serviços</translation>
     </message>
     <message>
+        <source>Starting Height</source>
+        <translation>Altura de início</translation>
+    </message>
+    <message>
+        <source>Sync Height</source>
+        <translation>Altura da sincronização</translation>
+    </message>
+    <message>
         <source>Connection Time</source>
         <translation>Tempo de conexão</translation>
     </message>
@@ -2405,10 +2414,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     <message>
         <source>Upgrade wallet format</source>
         <translation>Atualizar formato da carteira</translation>
-    </message>
-    <message>
-        <source>Deletes all local blockchain folders so the wallet synchronizes from scratch.</source>
-        <translation>Deleta todos os arquivos locais da blockchain para que a carteira sincronize do zero.</translation>
     </message>
     <message>
         <source>The buttons below will restart the wallet with command-line options to repair the wallet, fix issues with corrupt blockhain files or missing/obsolete transactions.</source>
@@ -2473,6 +2478,10 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     <message>
         <source>Unknown</source>
         <translation>Desconhecido</translation>
+    </message>
+    <message>
+        <source>Fetching...</source>
+        <translation>buscando...</translation>
     </message>
 </context>
 <context>
@@ -2763,10 +2772,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Confirma a ação de envio</translation>
     </message>
     <message>
-        <source>S&amp;end</source>
-        <translation>E&amp;nviar</translation>
-    </message>
-    <message>
         <source>Clear all fields of the form.</source>
         <translation>Limpa todos os campos do formulário.</translation>
     </message>
@@ -2819,8 +2824,20 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Copiar troco</translation>
     </message>
     <message>
+        <source>using</source>
+        <translation>usando</translation>
+    </message>
+    <message>
+        <source>anonymous funds</source>
+        <translation>fundos anônimos</translation>
+    </message>
+    <message>
         <source>Warning: Invalid DAPScoin address</source>
         <translation>Aviso: endereço DAPScoin inválido</translation>
+    </message>
+    <message>
+        <source>any available funds (not recommended)</source>
+        <translation>quaisquer fundos disponíveis (não recomendado)</translation>
     </message>
     <message>
         <source>%1 to %2</source>
@@ -2846,9 +2863,17 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <source>A fee %1 times higher than %2 per kB is considered an insanely high fee.</source>
         <translation>Uma taxa %1 vezes maior que %2 por kB é considerada extremamente alta.</translation>
     </message>
+    <message numerus="yes">
+        <source>Estimated to begin confirmation within %n block(s).</source>
+        <translation><numerusform>Estimado para iniciar confirmação em %n bloco.</numerusform><numerusform>Estimado para iniciar confirmação em %n blocos.</numerusform></translation>
+    </message>
     <message>
         <source>The recipient address is not valid, please recheck.</source>
         <translation>O endereço de recebimento não é válido, favor conferir novamente.</translation>
+    </message>
+    <message>
+        <source>and SwiftX</source>
+        <translation>e SwiftX</translation>
     </message>
     <message>
         <source> split into %1 outputs using the UTXO splitter.</source>
@@ -3144,6 +3169,10 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
 </context>
 <context>
     <name>TransactionDesc</name>
+    <message numerus="yes">
+        <source>Open for %n more block(s)</source>
+        <translation><numerusform>Aberto para mais %n bloco</numerusform><numerusform>Aberto para mais %n blocos</numerusform></translation>
+    </message>
     <message>
         <source>Open until %1</source>
         <translation>Aberto até %1</translation>
@@ -3203,6 +3232,10 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     <message>
         <source>, has not been successfully broadcast yet</source>
         <translation>, não foi propagada com sucesso ainda</translation>
+    </message>
+    <message numerus="yes">
+        <source>, broadcast through %n node(s)</source>
+        <translation><numerusform>, propagado através de %n node</numerusform><numerusform>, propagado através de %n nodes</numerusform></translation>
     </message>
     <message>
         <source>Date</source>
@@ -3334,6 +3367,10 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <source>Address</source>
         <translation>Endereço</translation>
     </message>
+    <message numerus="yes">
+        <source>Open for %n more block(s)</source>
+        <translation><numerusform>Aberto para mais %n bloco</numerusform><numerusform>Aberto para mais %n blocos</numerusform></translation>
+    </message>
     <message>
         <source>Open until %1</source>
         <translation>Aberto até %1</translation>
@@ -3395,6 +3432,10 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Pagamento para si mesmo</translation>
     </message>
     <message>
+        <source>Minted</source>
+        <translation>Cunhado</translation>
+    </message>
+    <message>
         <source>Mined</source>
         <translation>Minerado</translation>
     </message>
@@ -3403,8 +3444,24 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Ofuscado</translation>
     </message>
     <message>
+        <source>Spent zDaps</source>
+        <translation>zDaps gasto</translation>
+    </message>
+    <message>
+        <source>Received Daps from zDaps</source>
+        <translation>Recebido Daps de zDaps</translation>
+    </message>
+    <message>
+        <source>Converted zDaps to Daps</source>
+        <translation>Convertido zDaps para Daps</translation>
+    </message>
+    <message>
         <source>watch-only</source>
         <translation>somente visualização</translation>
+    </message>
+    <message>
+        <source>zDaps Accumulator</source>
+        <translation>zDaps Acumulador</translation>
     </message>
     <message>
         <source>(n/a)</source>
@@ -3478,6 +3535,10 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Enviado para</translation>
     </message>
     <message>
+        <source>Obfuscated</source>
+        <translation>Ofuscado</translation>
+    </message>
+    <message>
         <source>To yourself</source>
         <translation>Para si mesmo</translation>
     </message>
@@ -3492,6 +3553,10 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     <message>
         <source>Masternode Reward</source>
         <translation>Recompensa de Masternode</translation>
+    </message>
+    <message>
+        <source>Received Daps from zDaps</source>
+        <translation>Recebido Daps de zDaps</translation>
     </message>
     <message>
         <source>Other</source>
@@ -3633,6 +3698,22 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <source>Wallet Data (*.dat)</source>
         <translation>Wallet Data (.dat)</translation>
     </message>
+    <message>
+        <source>Backup Failed</source>
+        <translation>Backup falhou</translation>
+    </message>
+    <message>
+        <source>There was an error trying to save the wallet data to %1.</source>
+        <translation>Aconteceu um erro na tentativa de salvar os dados da carteira em %1.</translation>
+    </message>
+    <message>
+        <source>Backup Successful</source>
+        <translation>Backup com sucesso</translation>
+    </message>
+    <message>
+        <source>The wallet data was successfully saved to %1.</source>
+        <translation>Os dados da carteira foram salvos em %1 com sucesso.</translation>
+    </message>
 </context>
 <context>
     <name>ZDapsControlDialog</name>
@@ -3643,10 +3724,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     <message>
         <source>0</source>
         <translation>0</translation>
-    </message>
-    <message>
-        <source>zDAPS</source>
-        <translation>zDAPS</translation>
     </message>
     <message>
         <source>Select/Deselect All</source>
@@ -3728,8 +3805,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Você deve especificar uma masternodeprivkey na configuração. Favor verificar o manual para obter ajuda.</translation>
     </message>
     <message>
-        <source>(52572 could be used only on mainnet)</source>
-        <translation>(52572 could be used only on mainnet)</translation>
+        <source>(53572 could be used only on mainnet)</source>
+        <translation>(53572 could be used only on mainnet)</translation>
     </message>
     <message>
         <source>(default: %s)</source>
@@ -3740,8 +3817,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>(padrão: 1)</translation>
     </message>
     <message>
-        <source>(must be 52572 for mainnet)</source>
-        <translation>(deve ser 52572 para mainnet)</translation>
+        <source>(must be 53572 for mainnet)</source>
+        <translation>(deve ser 53572 para mainnet)</translation>
     </message>
     <message>
         <source>Accept connections from outside (default: 1 if no -proxy or -connect)</source>
@@ -3888,10 +3965,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Erro: Você já possui entradas pendentes na pool de Ofuscação</translation>
     </message>
     <message>
-        <source>Failed to listen on any port. Use -listen=0 if you want this.</source>
-        <translation>Falhou em escutar qualquer porta. Use -listen=0 se você quiser isso.</translation>
-    </message>
-    <message>
         <source>Failed to read block</source>
         <translation>Falhou em ler o bloco</translation>
     </message>
@@ -4002,10 +4075,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     <message>
         <source>Invalid script detected.</source>
         <translation>Script inválido detectado.</translation>
-    </message>
-    <message>
-        <source>SwiftX options:</source>
-        <translation>opções SwiftX:</translation>
     </message>
     <message>
         <source> unconfirmed transactions removed
@@ -4142,6 +4211,10 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Preparando para ressincronizar... </translation>
     </message>
     <message>
+        <source>RPC SSL options: (see the Bitcoin Wiki for SSL setup instructions)</source>
+        <translation>Opções de SSL RPC (veja a Bitcoin Wiki para instruções na configuração do SSL)</translation>
+    </message>
+    <message>
         <source>RPC server options:</source>
         <translation>opções do servidor RPC:</translation>
     </message>
@@ -4156,6 +4229,10 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     <message>
         <source>Send transactions as zero-fee transactions if possible (default: %u)</source>
         <translation>Enviar transações com taxa zero se possível (padrão: %u)</translation>
+    </message>
+    <message>
+        <source>Server private key (default: %s)</source>
+        <translation>Chave privada do servidor (padrão: %s)</translation>
     </message>
     <message>
         <source>Session not complete!</source>
@@ -4318,6 +4395,10 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Atualize a carteira para o último formato</translation>
     </message>
     <message>
+        <source>Use OpenSSL (https) for JSON-RPC connections</source>
+        <translation>Usar OpenSSL (https) para conexões JSON-RPC</translation>
+    </message>
+    <message>
         <source>Use the test network</source>
         <translation>Use a rede de testes</translation>
     </message>
@@ -4390,8 +4471,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Eliminando todas as transações da carteira...</translation>
     </message>
     <message>
-        <source>Zerocoin options:</source>
-        <translation>opções Zerocoin:</translation>
+        <source>failed to validate zerocoin</source>
+        <translation>falhou em validar zerocoin</translation>
     </message>
     <message>
         <source>on startup</source>

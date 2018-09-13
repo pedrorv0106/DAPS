@@ -29,8 +29,7 @@ Drag DAPScoin-Qt to your applications folder, and then run DAPScoin-Qt.
 * See the documentation at the [DAPScoin Wiki](https://en.bitcoin.it/wiki/Main_Page) ***TODO***
 for help and more information.
 * Ask for help on [BitcoinTalk](https://bitcointalk.org/index.php?topic=1262920.0) or on the [DAPScoin Forum](http://forum.dapscoin.org/).
-* Join our Discord server [Discord Server](https://discord.dapscoin.org)
-* Join one of our Slack groups [DAPScoin Slack Groups](https://dapscoin.org/slack-logins/) (Main community is replaced by Discord).
+* Join one of our Slack groups [DAPScoin Slack Groups](https://dapscoin.org/slack-logins/).
 
 Building
 ---------------------

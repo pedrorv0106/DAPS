@@ -11,6 +11,7 @@
  **/
 // Copyright (c) 2017 The DAPScoin developers
 
+
 #include <string>
 #include <iostream>
 #include <fstream>

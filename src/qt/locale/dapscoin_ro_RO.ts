@@ -61,9 +61,6 @@
     <name>AskPassphraseDialog</name>
     </context>
 <context>
-    <name>BanTableModel</name>
-    </context>
-<context>
     <name>Bip38ToolDialog</name>
     </context>
 <context>

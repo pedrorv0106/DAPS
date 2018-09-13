@@ -1,9 +1,9 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=DAPScoin
-Comment=DAPScoin P2P Cryptocurrency
-Comment[fr]=DAPScoin, monnaie virtuelle cryptographique pair à pair
-Comment[tr]=DAPScoin, eşten eşe kriptografik sanal para birimi
+Name=Dapscoin
+Comment=Dapscoin P2P Cryptocurrency
+Comment[fr]=Dapscoin, monnaie virtuelle cryptographique pair à pair
+Comment[tr]=Dapscoin, eşten eşe kriptografik sanal para birimi
 Exec=dapscoin-qt %u
 Terminal=false
 Type=Application

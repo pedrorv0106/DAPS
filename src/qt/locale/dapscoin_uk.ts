@@ -136,6 +136,10 @@
         <translation>Для ввімкнення тривіальної відправки коштів при скомпрометуванні операційної системи. Не забезпечує реальної безпеки.</translation>
     </message>
     <message>
+        <source>For anonymization and staking only</source>
+        <translation>Лише для анонімності</translation>
+    </message>
+    <message>
         <source>Enter the new passphrase to the wallet.&lt;br/&gt;Please use a passphrase of &lt;b&gt;ten or more random characters&lt;/b&gt;, or &lt;b&gt;eight or more words&lt;/b&gt;.</source>
         <translation>Введіть нове кодове слово гамамнця. &lt;br/&gt;Будь ласка, використовуйте кодове слово з &lt;b&gt;десяти і більше хаотичних символів&lt;/b&gt;, або &lt;b&gt;восьми і більше слів &lt;/b&gt;.</translation>
     </message>
@@ -189,9 +193,6 @@
     </message>
     </context>
 <context>
-    <name>BanTableModel</name>
-    </context>
-<context>
     <name>Bip38ToolDialog</name>
     </context>
 <context>
@@ -235,10 +236,6 @@
     </context>
 <context>
     <name>MultiSendDialog</name>
-    <message>
-        <source>(no label)</source>
-        <translation>(без міток)</translation>
-    </message>
     </context>
 <context>
     <name>MultisigDialog</name>

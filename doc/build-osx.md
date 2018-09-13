@@ -38,7 +38,7 @@ Instructions: Homebrew
 
 #### Install dependencies using Homebrew
 
-        brew install autoconf automake berkeley-db4 libtool boost miniupnpc openssl pkg-config protobuf qt5 zmq libevent
+        brew install autoconf automake berkeley-db4 libtool boost miniupnpc openssl pkg-config protobuf qt5 libzmq
 
 ### Building `dapscoind`
 
@@ -47,22 +47,17 @@ Instructions: Homebrew
         git clone https://github.com/DAPScoin-Project/DAPScoin.git
         cd DAPScoin
 
-2.  Make the Homebrew OpenSSL headers visible to the configure script  (do ```brew info openssl``` to find out why this is necessary, or if you use Homebrew with installation folders different from the default).
-
-        export LDFLAGS+=-L/usr/local/opt/openssl/lib
-        export CPPFLAGS+=-I/usr/local/opt/openssl/include
-
-3.  Build dapscoind:
+2.  Build dapscoind:
 
         ./autogen.sh
         ./configure --with-gui=qt5
         make
 
-4.  It is also a good idea to build and run the unit tests:
+3.  It is also a good idea to build and run the unit tests:
 
         make check
 
-5.  (Optional) You can also install dapscoind to your path:
+4.  (Optional) You can also install dapscoind to your path:
 
         make install
 

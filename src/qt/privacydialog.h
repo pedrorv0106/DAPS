@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2018 The DAPScoin developers
-// Distributed under the MIT software license, see the accompanying
+// Copyright (c) 2011-2014 The Bitcoin developers
+// Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef BITCOIN_QT_PRIVACYDIALOG_H
@@ -73,7 +73,6 @@ private:
     
     int nSecurityLevel = 0;
     bool fMinimizeChange = false;
-    bool fDenomsMinimized;
 
     int nDisplayUnit;
     bool updateLabel(const QString& address);
@@ -102,13 +101,8 @@ private slots:
     void on_pushButtonSpentReset_clicked();
     void on_pushButtonSpendzDAPS_clicked();
     void on_pushButtonZDapsControl_clicked();
-    void on_pushButtonHideDenoms_clicked();
-    void on_pushButtonShowDenoms_clicked();
     void on_pasteButton_clicked();
-    void minimizeDenomsSection(bool fMinimize);
     void updateDisplayUnit();
-    void updateAutomintStatus();
-    void updateSPORK16Status();
 };
 
 #endif // BITCOIN_QT_PRIVACYDIALOG_H

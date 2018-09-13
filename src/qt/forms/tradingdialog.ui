@@ -2941,7 +2941,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Generate DAPScoin Deposit Address</string>
+      <string>Generate Dapscoin Deposit Address</string>
      </property>
      <property name="icon">
       <iconset resource="../dapscoin.qrc">

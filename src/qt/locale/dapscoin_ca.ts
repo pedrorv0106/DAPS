@@ -209,9 +209,6 @@
     </message>
     </context>
 <context>
-    <name>BanTableModel</name>
-    </context>
-<context>
     <name>Bip38ToolDialog</name>
     <message>
         <source>BIP 38 Tool</source>
@@ -464,6 +461,10 @@
         <source>DAPScoin Core client</source>
         <translation>Client DAPScoin core</translation>
     </message>
+    <message numerus="yes">
+        <source>%n active connection(s) to DAPScoin network</source>
+        <translation><numerusform>%n connexió activa a la xarxa DAPScoin</numerusform><numerusform>%n connexions actives a la xarxa DAPScoin</numerusform></translation>
+    </message>
     <message>
         <source>Synchronizing with network...</source>
         <translation>Sinconitzant amb la xarxa...</translation>
@@ -472,9 +473,25 @@
         <source>Up to date</source>
         <translation>Actualitzat</translation>
     </message>
+    <message numerus="yes">
+        <source>%n hour(s)</source>
+        <translation><numerusform>%n hora</numerusform><numerusform>%n hores</numerusform></translation>
+    </message>
+    <message numerus="yes">
+        <source>%n day(s)</source>
+        <translation><numerusform>%n dia</numerusform><numerusform>%n dies</numerusform></translation>
+    </message>
+    <message numerus="yes">
+        <source>%n week(s)</source>
+        <translation><numerusform>%n setmana</numerusform><numerusform>%n setmanes</numerusform></translation>
+    </message>
     <message>
         <source>%1 and %2</source>
         <translation>%1 i %2</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n year(s)</source>
+        <translation><numerusform>%n any</numerusform><numerusform>%n anys</numerusform></translation>
     </message>
     <message>
         <source>Error</source>
@@ -754,10 +771,6 @@
         <translation>Aquesta etiqueta es posa vermella si la prioritat és més petita que "mitjana"</translation>
     </message>
     <message>
-        <source>This label turns red, if any recipient receives an amount smaller than %1.</source>
-        <translation>Aquesta etiqueta es posa vermella si algun destinatari rep un import inferior a l' %1.</translation>
-    </message>
-    <message>
         <source>(no label)</source>
         <translation>(sense etiqueta)</translation>
     </message>
@@ -949,6 +962,10 @@
         <translation>Formulari</translation>
     </message>
     <message>
+        <source>My Masternodes</source>
+        <translation>Els meus Masternodes</translation>
+    </message>
+    <message>
         <source>Alias</source>
         <translation>Àlies</translation>
     </message>
@@ -1078,10 +1095,6 @@
     <message>
         <source>Activate</source>
         <translation>Activa</translation>
-    </message>
-    <message>
-        <source>(no label)</source>
-        <translation>(sense etiqueta)</translation>
     </message>
     <message>
         <source>The entered address:
@@ -1277,6 +1290,22 @@
         <translation>Total:</translation>
     </message>
     <message>
+        <source>DAPS:</source>
+        <translation>DAPS:</translation>
+    </message>
+    <message>
+        <source>zDAPS:</source>
+        <translation>zDAPS:</translation>
+    </message>
+    <message>
+        <source>0 %</source>
+        <translation>0 %</translation>
+    </message>
+    <message>
+        <source>0.000 000 00 DAPS</source>
+        <translation>0.000 000 00 DAPS</translation>
+    </message>
+    <message>
         <source>Recent transactions</source>
         <translation>Transaccions recents</translation>
     </message>
@@ -1297,6 +1326,10 @@
 </context>
 <context>
     <name>PrivacyDialog</name>
+    <message>
+        <source>Zerocoin DAPS (zDAPS)</source>
+        <translation>Zerocoin DAPS (zDAPS)</translation>
+    </message>
     <message>
         <source>0</source>
         <translation>0</translation>
@@ -1340,10 +1373,6 @@
     <message>
         <source>Priority:</source>
         <translation>Prioritat:</translation>
-    </message>
-    <message>
-        <source>TextLabel</source>
-        <translation>EtiquetaDeText</translation>
     </message>
     <message>
         <source>Fee:</source>
@@ -1624,7 +1653,7 @@
     </message>
     <message>
         <source>After Fee:</source>
-        <translation>Amb comissió:</translation>
+        <translation>Després de la comissió:</translation>
     </message>
     <message>
         <source>Change:</source>
@@ -1886,6 +1915,10 @@
         <translation>Aquest any</translation>
     </message>
     <message>
+        <source>Obfuscated</source>
+        <translation>Ofuscat</translation>
+    </message>
+    <message>
         <source>Copy address</source>
         <translation>Copia l'adreça</translation>
     </message>
@@ -1969,8 +2002,8 @@
         <translation>0</translation>
     </message>
     <message>
-        <source>zDAPS</source>
-        <translation>zDAPS</translation>
+        <source>zDaps</source>
+        <translation>zDaps</translation>
     </message>
     </context>
 <context>

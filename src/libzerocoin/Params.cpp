@@ -10,7 +10,6 @@
 * @license    This project is released under the MIT license.
 **/
 // Copyright (c) 2017 The DAPScoin developers
-
 #include "Params.h"
 #include "ParamGeneration.h"
 

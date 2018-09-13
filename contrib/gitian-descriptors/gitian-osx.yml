@@ -1,11 +1,11 @@
 ---
-name: "dapscoin-osx-3.2"
+name: "dapscoin-osx-3.0"
 enable_cache: true
 suites:
 - "trusty"
 architectures:
 - "amd64"
-packages:
+packages: 
 - "ca-certificates"
 - "curl"
 - "g++"

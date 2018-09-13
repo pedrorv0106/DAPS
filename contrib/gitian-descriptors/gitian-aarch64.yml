@@ -1,5 +1,5 @@
 ---
-name: "dapscoin-aarch64-3.2"
+name: "dapscoin-aarch64-3.0"
 enable_cache: true
 suites:
 - "xenial"

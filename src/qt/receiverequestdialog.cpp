@@ -1,5 +1,4 @@
 // Copyright (c) 2011-2013 The Bitcoin developers
-// Copyright (c) 2017 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -18,6 +17,9 @@
 #include <QMimeData>
 #include <QMouseEvent>
 #include <QPixmap>
+#if QT_VERSION < 0x050000
+#include <QUrl>
+#endif
 
 #if defined(HAVE_CONFIG_H)
 #include "config/dapscoin-config.h" /* for USE_QRCODE */
@@ -84,7 +86,7 @@ void QRImageWidget::contextMenuEvent(QContextMenuEvent* event)
     contextMenu->exec(event->globalPos());
 }
 
-ReceiveRequestDialog::ReceiveRequestDialog(QWidget* parent) : QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
+ReceiveRequestDialog::ReceiveRequestDialog(QWidget* parent) : QDialog(parent),
                                                               ui(new Ui::ReceiveRequestDialog),
                                                               model(0)
 {

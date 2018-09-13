@@ -217,9 +217,6 @@
     </message>
 </context>
 <context>
-    <name>BanTableModel</name>
-    </context>
-<context>
     <name>Bip38ToolDialog</name>
     <message>
         <source>BIP 38 Tool</source>
@@ -230,8 +227,16 @@
         <translation>&amp;BIP 38 加密</translation>
     </message>
     <message>
+        <source>Enter a Dapscoin Address that you would like to encrypt using BIP 38. Enter a passphrase in the middle box. Press encrypt to compute the encrypted private key.</source>
+        <translation>輸入你想 BIP 38 加密的 Dapscoin 位址, 輸入密碼在中間欄, 按下加密按鈕來產生加密私鑰.</translation>
+    </message>
+    <message>
         <source>Address:</source>
         <translation>位址:</translation>
+    </message>
+    <message>
+        <source>The DAPScoin address to sign the message with</source>
+        <translation>對訊息簽名的 DAPScoin 位址</translation>
     </message>
     <message>
         <source>Choose previously used address</source>
@@ -262,8 +267,16 @@
         <translation>拷貝目前的簽章到系統剪貼簿</translation>
     </message>
     <message>
+        <source>Sign the message to prove you own this DAPScoin address</source>
+        <translation>使用簽章來證明你是該  DAPScoin 位址的擁有者,</translation>
+    </message>
+    <message>
         <source>Encrypt &amp;Key</source>
         <translation>加密 &amp;鑰匙</translation>
+    </message>
+    <message>
+        <source>Reset all sign message fields</source>
+        <translation>重設所有已簽章訊息</translation>
     </message>
     <message>
         <source>Clear &amp;All</source>
@@ -274,8 +287,20 @@
         <translation>&amp;BIP 38 解密</translation>
     </message>
     <message>
+        <source>The DAPScoin address the message was signed with</source>
+        <translation>此訊息之 DAPScoin 位址已簽章於</translation>
+    </message>
+    <message>
+        <source>Verify the message to ensure it was signed with the specified DAPScoin address</source>
+        <translation>驗證訊息以確保該  DAPScoin 位址已被簽章</translation>
+    </message>
+    <message>
         <source>Decrypt &amp;Key</source>
         <translation>解密 &amp;鑰匙</translation>
+    </message>
+    <message>
+        <source>Reset all verify message fields</source>
+        <translation>重設所有驗證訊息的欄位</translation>
     </message>
     <message>
         <source>Decrypted Key:</source>
@@ -699,10 +724,6 @@
         <source>Address:</source>
         <translation>位址:</translation>
     </message>
-    <message>
-        <source>(no label)</source>
-        <translation>(沒有標記)</translation>
-    </message>
     </context>
 <context>
     <name>MultisigDialog</name>
@@ -742,10 +763,6 @@
     <message>
         <source>Alt+P</source>
         <translation>Alt+P</translation>
-    </message>
-    <message>
-        <source>TextLabel</source>
-        <translation>文字標籤</translation>
     </message>
     </context>
 <context>
