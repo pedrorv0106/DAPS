@@ -1693,6 +1693,11 @@ bool AppInit2(boost::thread_group& threadGroup)
         }
     }
 
+    /**
+* @author Wang
+* @type zerocoin
+*/
+
     fEnableZeromint = GetBoolArg("-enablezeromint", true);
 
     nZeromintPercentage = GetArg("-zeromintpercentage", 10);

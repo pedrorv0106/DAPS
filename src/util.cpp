@@ -114,6 +114,11 @@ bool fLiteMode = false;
 // SwiftX
 bool fEnableSwiftTX = true;
 int nSwiftTXDepth = 5;
+
+/**
+* @author Wang
+* @type zerocoin
+*/
 // Automatic Zerocoin minting
 bool fEnableZeromint = true;
 int nZeromintPercentage = 10;

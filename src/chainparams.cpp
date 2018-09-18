@@ -121,6 +121,11 @@ public:
         /** Height or Time Based Activations **/
         nLastPOWBlock = 259200;
         nModifierUpdateBlock = 615800;
+
+        /**
+    * @author Wang
+    * @type zerocoin Start Height and start time define
+    */
         nZerocoinStartHeight = 863787;
         nZerocoinStartTime = 1541922481; // December 11, 2018 4:30:00 AM
         nBlockEnforceSerialRange = 895400; //Enforce serial range starting this block

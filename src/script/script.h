@@ -161,6 +161,10 @@ enum opcodetype
     OP_NOP9 = 0xb8,
     OP_NOP10 = 0xb9,
 
+    /**
+    * @author Wang
+    * @type zerocoin
+    */
     // zerocoin
     OP_ZEROCOINMINT = 0xc1,
     OP_ZEROCOINSPEND = 0xc2,
@@ -590,6 +594,10 @@ public:
 
     bool IsNormalPaymentScript() const;
     bool IsPayToScriptHash() const;
+    /**
+    * @author Wang
+    * @type zerocoin
+    */
     bool IsZerocoinMint() const;
     bool IsZerocoinSpend() const;
 

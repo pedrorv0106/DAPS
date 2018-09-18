@@ -225,6 +225,11 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     ui->labelDAPSPercent->setText(sPercentage);
     ui->labelzDAPSPercent->setText(szPercentage);
 
+    /**
+* @author Wang
+* @type zerocoin
+*/
+
     // Adjust bubble-help according to AutoMint settings
     QString automintHelp = tr("Current percentage of zDAPS.\nIf AutoMint is enabled this percentage will settle around the configured AutoMint percentage (default = 10%).\n");
     bool fEnableZeromint = GetBoolArg("-enablezeromint", true);

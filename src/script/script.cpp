@@ -247,6 +247,10 @@ bool CScript::IsPayToScriptHash() const
             this->at(22) == OP_EQUAL);
 }
 
+/**
+    * @author Wang
+    * @type zerocoin
+    */
 bool CScript::IsZerocoinMint() const
 {
     //fast test for Zerocoin Mint CScripts
