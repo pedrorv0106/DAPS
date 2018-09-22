@@ -197,6 +197,7 @@ public:
 
         vSeeds.push_back(CDNSSeedData("explorer.arcadiaapi.com", "explorer.arcadiaapi.com"));         // Single node address
         vSeeds.push_back(CDNSSeedData("arcadiaapi.com", "seed1.arcadiaapi.com"));     // Primary DNS Seeder from arcadiaapi
+        vSeeds.push_back(CDNSSeedData("arcadiaapi.com", "seed2.arcadiaapi.com"));     // Primary DNS Seeder from arcadiaapi
 //        vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "dapscoin.seed2.fuzzbawls.pw"));    // Secondary DNS Seeder from Fuzzbawls
 //        vSeeds.push_back(CDNSSeedData("178.254.23.111", "178.254.23.111"));           // Single node address
 //        vSeeds.push_back(CDNSSeedData("192.168.2.240", "192.168.2.240"));           // Single node address
