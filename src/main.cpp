@@ -2229,7 +2229,7 @@ CAmount GetSeeSaw(const CAmount& blockValue, int nMasternodeCount, int nHeight)
         } else if (mNodeCoins <= (nMoneySupply * .525) && mNodeCoins > (nMoneySupply * .5)) {
             ret = blockValue * .50;
         } else if (mNodeCoins <= (nMoneySupply * .55) && mNodeCoins > (nMoneySupply * .525)) {
-            ret = blockValue * .51;
+            ret = blockValue * .49;
         } else if (mNodeCoins <= (nMoneySupply * .6) && mNodeCoins > (nMoneySupply * .55)) {
             ret = blockValue * .48;
         } else if (mNodeCoins <= (nMoneySupply * .65) && mNodeCoins > (nMoneySupply * .6)) {
