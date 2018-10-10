@@ -2543,18 +2543,18 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
         return false;
 
     // presstab HyperStake - Initialize as static and don't update the set on every run of CreateCoinStake() in order to lighten resource use
-    static std::set<pair<const CWalletTx*, unsigned int> > setAuditCoins;
+    static std::set<pair<const CWalletTx*, unsigned int> > setStakeCoins;
     static int nLastStakeSetUpdate = 0;
 
     if (GetTime() - nLastStakeSetUpdate > nStakeSetUpdateTime) {
-        setAuditCoins.clear();
-        if (!SelectStakeCoins(setAuditCoins, nBalance - nReserveBalance))
+        setStakeCoins.clear();
+        if (!SelectStakeCoins(setStakeCoins, nBalance - nReserveBalance))
             return false;
 
         nLastStakeSetUpdate = GetTime();
     }
 
-    if (setAuditCoins.empty())
+    if (setStakeCoins.empty())
         return false;
 
     vector<const CWalletTx*> vwtxPrev;
@@ -2566,7 +2566,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
     if (GetAdjustedTime() <= chainActive.Tip()->nTime)
         MilliSleep(10000);
 
-    BOOST_FOREACH (PAIRTYPE(const CWalletTx*, unsigned int) pcoin, setAuditCoins) {
+    BOOST_FOREACH (PAIRTYPE(const CWalletTx*, unsigned int) pcoin, setStakeCoins) {
         //make sure that enough time has elapsed between
         CBlockIndex* pindex = NULL;
         BlockMap::iterator it = mapBlockIndex.find(pcoin.first->hashBlock);
@@ -2710,18 +2710,18 @@ bool CWallet::CreateCoinAudit(const CKeyStore& keystore, unsigned int nBits, int
         return false;
 
     // presstab HyperStake - Initialize as static and don't update the set on every run of CreateCoinAudit() in order to lighten resource use
-    static std::set<pair<const CWalletTx*, unsigned int> > setStakeCoins;
+    static std::set<pair<const CWalletTx*, unsigned int> > setAuditCoins;
     static int nLastStakeSetUpdate = 0;
 
     if (GetTime() - nLastStakeSetUpdate > nStakeSetUpdateTime) {
-        setStakeCoins.clear();
-        if (!SelectStakeCoins(setStakeCoins, nBalance - nReserveBalance))
+        setAuditCoins.clear();
+        if (!SelectStakeCoins(setAuditCoins, nBalance - nReserveBalance))
             return false;
 
         nLastStakeSetUpdate = GetTime();
     }
 
-    if (setStakeCoins.empty())
+    if (setAuditCoins.empty())
         return false;
 
     vector<const CWalletTx*> vwtxPrev;
@@ -2733,7 +2733,7 @@ bool CWallet::CreateCoinAudit(const CKeyStore& keystore, unsigned int nBits, int
     if (GetAdjustedTime() <= chainActive.Tip()->nTime)
         MilliSleep(10000);
 
-    BOOST_FOREACH (PAIRTYPE(const CWalletTx*, unsigned int) pcoin, setStakeCoins) {
+    BOOST_FOREACH (PAIRTYPE(const CWalletTx*, unsigned int) pcoin, setAuditCoins) {
         //make sure that enough time has elapsed between
         CBlockIndex* pindex = NULL;
         BlockMap::iterator it = mapBlockIndex.find(pcoin.first->hashBlock);
@@ -2810,7 +2810,6 @@ bool CWallet::CreateCoinAudit(const CKeyStore& keystore, unsigned int nBits, int
             if (fDebug && GetBoolArg("-printcoinstake", false))
                 LogPrintf("CreateCoinStake : added kernel type=%d\n", whichType);
             fKernelFound = true;
-            break;
         }
         if (fKernelFound)
             break; // if kernel is found stop searching
@@ -2825,8 +2824,6 @@ bool CWallet::CreateCoinAudit(const CKeyStore& keystore, unsigned int nBits, int
     nCredit += nReward;
 
     CAmount nMinFee = 0;
-//    while (true) {
-        // Set output amount
     if (txNew.vout.size() == 3) {
         txNew.vout[1].nValue = ((nCredit - nMinFee) / 2 / CENT) * CENT;
         txNew.vout[2].nValue = nCredit - nMinFee - txNew.vout[1].nValue;
@@ -2838,8 +2835,6 @@ bool CWallet::CreateCoinAudit(const CKeyStore& keystore, unsigned int nBits, int
     if (nBytes >= DEFAULT_BLOCK_MAX_SIZE / 5)
         return error("CreateCoinStake : exceeded coinstake size limit");
 
-    //Masternode payment
-    FillBlockPayee(txNew, nMinFee, true);
 
     // Sign
     int nIn = 0;
