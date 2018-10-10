@@ -2671,19 +2671,6 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
     if (nBytes >= DEFAULT_BLOCK_MAX_SIZE / 5)
         return error("CreateCoinStake : exceeded coinstake size limit");
 
-//        CAmount nFeeNeeded = GetMinimumFee(nBytes, nTxConfirmTarget, mempool);
-//
-//        // Check enough fee is paid
-//        if (nMinFee < nFeeNeeded) {
-//            nMinFee = nFeeNeeded;
-//            continue; // try signing again
-//        } else {
-//            if (fDebug)
-//                LogPrintf("CreateCoinStake : fee for coinstake %s\n", FormatMoney(nMinFee).c_str());
-//            break;
-//        }
-//    }
-
     //Masternode payment
     FillBlockPayee(txNew, nMinFee, true);
 
