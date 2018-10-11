@@ -150,6 +150,16 @@ public:
         return !IsProofOfStake();
     }
 
+    /**
+     * @todo
+     * add condition check for Audit mining
+     * @return
+     */
+    bool IsProofOfAudit() const
+    {
+        return false;
+    }
+
     bool SignBlock(const CKeyStore& keystore);
     bool CheckBlockSignature() const;
 
