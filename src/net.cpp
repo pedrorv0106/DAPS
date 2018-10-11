@@ -1107,7 +1107,7 @@ void ThreadDNSAddressSeed()
         MilliSleep(11 * 1000);
 
         LOCK(cs_vNodes);
-        if (vNodes.size() >= 2) {
+        if (vNodes.size() >= 3) {
             LogPrintf("P2P peers available. Skipped DNS seeding.\n");
             return;
         }
