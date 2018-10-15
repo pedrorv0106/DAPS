@@ -120,6 +120,7 @@ public:
 
         /** Height or Time Based Activations **/
         nLastPOWBlock = 1000;
+        nStartPOABlock = 25000;
         nModifierUpdateBlock = 615800;
 
         /**
@@ -195,10 +196,11 @@ public:
         assert(hashGenesisBlock == uint256("0x00000e9468bba3df97334bfb5015543488a0fb38193c82b101472937590e3037"));
         assert(genesis.hashMerkleRoot == uint256("0xba1bca1de4a5d1d1b3ff9c2bf93048417fefb18f13f8838744cca1ec41fa9a0c"));
 
-        vSeeds.push_back(CDNSSeedData("explorer.arcadiaapi.com", "explorer.arcadiaapi.com"));         // Single node address
-        vSeeds.push_back(CDNSSeedData("arcadiaapi.com", "seed1.arcadiaapi.com"));     // Primary DNS Seeder from arcadiaapi
-        vSeeds.push_back(CDNSSeedData("arcadiaapi.com", "seed2.arcadiaapi.com"));     // Primary DNS Seeder from arcadiaapi
-        vSeeds.push_back(CDNSSeedData("arcadiaapi.com", "instance4.arcadiaapi.com"));     // Primary DNS Seeder from arcadiaapi
+        vSeeds.push_back(CDNSSeedData("explorer.arcadiaapi.com", "explorer.arcadiaapi.com")); //35.236.110.118        // Single node address
+        vSeeds.push_back(CDNSSeedData("arcadiaapi.com", "seed1.arcadiaapi.com"));  //35.229.86.175   // Primary DNS Seeder from arcadiaapi
+        vSeeds.push_back(CDNSSeedData("seed2.arcadiaapi.com", "seed2.arcadiaapi.com"));  //35.237.17.148   // // Single node address
+        vSeeds.push_back(CDNSSeedData("seed3.arcadiaapi.com", "seed3.arcadiaapi.com"));  //35.237.201.178   // // Single node address
+        vSeeds.push_back(CDNSSeedData("eed4.arcadiaapi.com", "seed4.arcadiaapi.com"));  //35.231.153.52   // // Single node address
 //        vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "dapscoin.seed2.fuzzbawls.pw"));    // Secondary DNS Seeder from Fuzzbawls
 //        vSeeds.push_back(CDNSSeedData("178.254.23.111", "178.254.23.111"));           // Single node address
 //        vSeeds.push_back(CDNSSeedData("192.168.2.240", "192.168.2.240"));           // Single node address
@@ -326,10 +328,10 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
-        vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "dapscoin-testnet.seed.fuzzbawls.pw"));
-        vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "dapscoin-testnet.seed2.fuzzbawls.pw"));
-        vSeeds.push_back(CDNSSeedData("s3v3nh4cks.ddns.net", "s3v3nh4cks.ddns.net"));
-        vSeeds.push_back(CDNSSeedData("88.198.192.110", "88.198.192.110"));
+//        vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "dapscoin-testnet.seed.fuzzbawls.pw"));
+//        vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "dapscoin-testnet.seed2.fuzzbawls.pw"));
+//        vSeeds.push_back(CDNSSeedData("s3v3nh4cks.ddns.net", "s3v3nh4cks.ddns.net"));
+        vSeeds.push_back(CDNSSeedData("192.168.2.202", "192.168.2.202"));
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 139); // Testnet dapscoin addresses start with 'x' or 'y'
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 19);  // Testnet dapscoin script addresses start with '8' or '9'
