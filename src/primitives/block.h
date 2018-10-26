@@ -16,6 +16,40 @@
 static const unsigned int MAX_BLOCK_SIZE_CURRENT = 2000000;
 static const unsigned int MAX_BLOCK_SIZE_LEGACY = 1000000;
 
+class PoSBlockSummary {
+public:
+    uint256 hash;
+    uint32_t nTime;
+    uint32_t height;
+    
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
+        READWRITE(this->hash);
+        READWRITE(this->nTime);
+        READWRITE(this->height);
+    }
+    
+    const uint256& GetHash() const {
+        uint256 summaryHash;
+        
+        return summaryHash;
+    }
+    
+    std::string ToString() const;
+    
+    friend bool operator==(const PoSBlockSummary& a, const PoSBlockSummary& b)
+    {
+        return a.hash == b.hash && a.nTime == b.nTime && a.height == b.height;
+    }
+
+    friend bool operator!=(const PoSBlockSummary& a, const PoSBlockSummary& b)
+    {
+        return (a.hash != b.hash) || (a.nTime != b.nTime) || (a.height != b.height);
+    }
+};
+
 /** Nodes collect new transactions into a block, hash them into a hash tree,
  * and scan through nonce values to make the block's hash satisfy proof-of-work
  * requirements.  When they solve the proof-of-work, they broadcast the block
@@ -28,8 +62,16 @@ class CBlockHeader
 public:
     // header
     static const int32_t CURRENT_VERSION=4;
+    static const uint256 DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK(0x11);
     int32_t nVersion;
+    //hashPrevBlock of PoA blocks is 0x00..00 for differentiating it from other block types
     uint256 hashPrevBlock;
+    //hash of previous PoA block, other block types dont need to care this property
+    //For the first PoA block, this property should be set as a default value: maybe 0x11 (magic number) 
+    //or the hash of the genenis block
+    uint256 hashPrevPoABlock;
+    //The hash root of all audited PoS block summary
+    uint256 hashPoSAuditedMerkleRoot;
     uint256 hashMerkleRoot;
     uint32_t nTime;
     uint32_t nBits;
@@ -48,6 +90,11 @@ public:
         READWRITE(this->nVersion);
         nVersion = this->nVersion;
         READWRITE(hashPrevBlock);
+        if (hashPrevBlock == DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK) {
+            //PoA block
+            READWRITE(hashPrevPoABlock);
+            READWRITE(hashPoSAuditedMerkleRoot);
+        }
         READWRITE(hashMerkleRoot);
         READWRITE(nTime);
         READWRITE(nBits);
@@ -62,6 +109,8 @@ public:
     {
         nVersion = CBlockHeader::CURRENT_VERSION;
         hashPrevBlock.SetNull();
+        hashPrevPoABlock.SetNull();
+        hashPoSAuditedMerkleRoot.SetNull();
         hashMerkleRoot.SetNull();
         nTime = 0;
         nBits = 0;
@@ -88,6 +137,9 @@ class CBlock : public CBlockHeader
 public:
     // network and disk
     std::vector<CTransaction> vtx;
+    //Contain the summary of all audited PoS blocks sorted in an increasing order of block height
+    //In between sequential audited PoS blocks, there might be PoA blocks which should not be found here
+    std::vector<PoSBlockSummary> posBlocksAudited;
 
     // ppcoin: block signature - signed by one of the coin base txout[N]'s owner
     std::vector<unsigned char> vchBlockSig;
@@ -95,6 +147,7 @@ public:
     // memory only
     mutable CScript payee;
     mutable std::vector<uint256> vMerkleTree;
+    mutable std::vector<uint256> posMerkleTree;
 
     CBlock()
     {
@@ -115,6 +168,9 @@ public:
         READWRITE(vtx);
 	if(vtx.size() > 1 && vtx[1].IsCoinStake())
 		READWRITE(vchBlockSig);
+        if (IsProofOfAudit()) {
+            READWRITE(posBlocksAudited);
+        }
     }
 
     void SetNull()
@@ -131,7 +187,9 @@ public:
         CBlockHeader block;
         block.nVersion       = nVersion;
         block.hashPrevBlock  = hashPrevBlock;
+        block.hashPrevPoABlock = hashPrevPoABlock;
         block.hashMerkleRoot = hashMerkleRoot;
+        block.hashPoSAuditedMerkleRoot = hashPoSAuditedMerkleRoot;
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
@@ -142,12 +200,12 @@ public:
     // ppcoin: two types of block: proof-of-work or proof-of-stake
     bool IsProofOfStake() const
     {
-        return (vtx.size() > 1 && vtx[1].IsCoinStake());
+        return (vtx.size() > 1 && vtx[1].IsCoinStake()) && !IsProofOfAudit();
     }
 
     bool IsProofOfWork() const
     {
-        return !IsProofOfStake();
+        return !IsProofOfStake() && !IsProofOfAudit();
     }
 
     /**
@@ -157,7 +215,7 @@ public:
      */
     bool IsProofOfAudit() const
     {
-        return false;
+        return (hashPrevBlock == DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK);
     }
 
     bool SignBlock(const CKeyStore& keystore);
@@ -178,6 +236,10 @@ public:
     static uint256 CheckMerkleBranch(uint256 hash, const std::vector<uint256>& vMerkleBranch, int nIndex);
     std::string ToString() const;
     void print() const;
+    
+    uint256 BuildPoAMerkleTree(bool* mutated == NULL) const;
+    std::vector<uint256> GetPoAMerkleBranch(int nIndex) const;
+    static uint256 CheckPoAMerkleBranch(uint256 hash, const std::vector<uint256>& vMerkleBranch, int nIndex);
 };
 
 
