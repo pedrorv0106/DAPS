@@ -288,7 +288,7 @@ public:
         CBlockHeader block;
         block.nVersion = nVersion;
         if (IsProofOfAudit()) {
-            block.hashPrevBlock = CBlockHeader::DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK;
+            block.hashPrevBlock = uint256(CBlockHeader::DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK);
             block.hashPoSAuditedMerkleRoot = hashPoAMerkleRoot;
         } else if (pprev)
             block.hashPrevBlock = pprev->GetBlockHash();

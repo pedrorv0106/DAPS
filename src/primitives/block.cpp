@@ -21,7 +21,7 @@ uint256& PoSBlockSummary::GetHash() const {
 
 uint256 CBlockHeader::GetHash() const
 {
-    if (hashPrevBlock == DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK) {
+    if (hashPrevBlock == uint256(DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK)) {
         //Only hash necessary fields for PoA block header
         //Dont add nAccumulatorCheckpoint to the hash
         return Hash(BEGIN(nVersion), END(nVersion), 
@@ -196,7 +196,7 @@ uint256 CBlock::CheckPoAMerkleBranch(uint256 mhash, const std::vector<uint256>& 
 std::string CBlock::ToString() const
 {
     std::stringstream s;
-    if (this->hashPrevBlock == DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK) {
+    if (this->hashPrevBlock == uint256(DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK)) {
         s << strprintf("PoABlock(hash=%s, ver=%d, hashPrevBlock=%s, hashPrevPoABlock=%s, hashMerkleRoot=%s, hashPoSAuditedMerkleRoot=%s, nTime=%u, nBits=%08x, nNonce=%u, vtx=%u, PoSBlocks=%u)\n",
             GetHash().ToString(),
             nVersion,

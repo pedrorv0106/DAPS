@@ -54,7 +54,7 @@ class CBlockHeader
 public:
     // header
     static const int32_t CURRENT_VERSION=4;
-    static const uint256 DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK("11");
+    static const std::string DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK("11");
     int32_t nVersion;
     //hashPrevBlock of PoA blocks is 0x00..00 for differentiating it from other block types
     uint256 hashPrevBlock;
@@ -82,7 +82,7 @@ public:
         READWRITE(this->nVersion);
         nVersion = this->nVersion;
         READWRITE(hashPrevBlock);
-        if (hashPrevBlock == DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK) {
+        if (hashPrevBlock == uint256(DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK)) {
             //PoA block
             READWRITE(hashPrevPoABlock);
             READWRITE(hashPoSAuditedMerkleRoot);
@@ -207,7 +207,7 @@ public:
      */
     bool IsProofOfAudit() const
     {
-        return (hashPrevBlock == DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK);
+        return (hashPrevBlock == uint256(DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK));
     }
 
     bool SignBlock(const CKeyStore& keystore);
