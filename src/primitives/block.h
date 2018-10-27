@@ -31,14 +31,6 @@ public:
         READWRITE(this->height);
     }
     
-    const uint256& GetHash() const {
-        uint256 summaryHash;
-        
-        return summaryHash;
-    }
-    
-    std::string ToString() const;
-    
     friend bool operator==(const PoSBlockSummary& a, const PoSBlockSummary& b)
     {
         return a.hash == b.hash && a.nTime == b.nTime && a.height == b.height;
@@ -147,7 +139,7 @@ public:
     // memory only
     mutable CScript payee;
     mutable std::vector<uint256> vMerkleTree;
-    mutable std::vector<uint256> posMerkleTree;
+    mutable std::vector<uint256> poaMerkleTree;
 
     CBlock()
     {
@@ -166,8 +158,8 @@ public:
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         READWRITE(*(CBlockHeader*)this);
         READWRITE(vtx);
-	if(vtx.size() > 1 && vtx[1].IsCoinStake())
-		READWRITE(vchBlockSig);
+	    if(vtx.size() > 1 && vtx[1].IsCoinStake())
+		    READWRITE(vchBlockSig);
         if (IsProofOfAudit()) {
             READWRITE(posBlocksAudited);
         }

@@ -155,6 +155,7 @@ public:
         BLOCK_PROOF_OF_STAKE = (1 << 0), // is proof-of-stake block
         BLOCK_STAKE_ENTROPY = (1 << 1),  // entropy bit for stake modifier
         BLOCK_STAKE_MODIFIER = (1 << 2), // regenerated stake modifier
+        BLOCK_PROOF_OF_AUDIT = (1 << 3), //Added for PoA blocks
     };
 
     // proof-of-stake specific fields
@@ -174,6 +175,9 @@ public:
     unsigned int nBits;
     unsigned int nNonce;
     uint256 nAccumulatorCheckpoint;
+
+    //! PoA block header
+    uint256 hashPoAMerkleRoot;
 
     //! (memory only) Sequential id assigned to distinguish order in which blocks are received.
     uint32_t nSequenceId;
@@ -216,6 +220,8 @@ public:
             mapZerocoinSupply.insert(make_pair(denom, 0));
         }
         vMintDenominationsInBlock.clear();
+
+        hashPoAMerkleRoot = uint256();
     }
 
     CBlockIndex()
@@ -244,7 +250,9 @@ public:
         nStakeModifierChecksum = 0;
         hashProofOfStake = uint256();
 
-        if (block.IsProofOfStake()) {
+        if (block.IsProofOfAudit()) {
+            SetProofOfAudit();
+        } else if (block.IsProofOfStake()) {
             SetProofOfStake();
             prevoutStake = block.vtx[1].vin[0].prevout;
             nStakeTime = block.nTime;
@@ -279,7 +287,10 @@ public:
     {
         CBlockHeader block;
         block.nVersion = nVersion;
-        if (pprev)
+        if (IsProofOfAudit()) {
+            block.hashPrevBlock = CBlockHeader::DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK;
+            block.hashPoSAuditedMerkleRoot = hashPoAMerkleRoot;
+        } else if (pprev)
             block.hashPrevBlock = pprev->GetBlockHash();
         block.hashMerkleRoot = hashMerkleRoot;
         block.nTime = nTime;
@@ -331,17 +342,26 @@ public:
 
     bool IsProofOfWork() const
     {
-        return !(nFlags & BLOCK_PROOF_OF_STAKE);
+        return !(nFlags & BLOCK_PROOF_OF_STAKE) && !IsProofOfAudit();
     }
 
     bool IsProofOfStake() const
     {
-        return (nFlags & BLOCK_PROOF_OF_STAKE);
+        return (nFlags & BLOCK_PROOF_OF_STAKE) && !IsProofOfAudit();
     }
 
     void SetProofOfStake()
     {
         nFlags |= BLOCK_PROOF_OF_STAKE;
+    }
+
+    bool IsProofOfAudit() const {
+        return (nFlags & BLOCK_PROOF_OF_AUDIT);
+    }
+
+    void SetProofOfAudit()
+    {
+        nFlags |= BLOCK_PROOF_OF_AUDIT;
     }
 
     unsigned int GetStakeEntropyBit() const
