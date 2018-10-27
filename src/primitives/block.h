@@ -54,7 +54,7 @@ class CBlockHeader
 public:
     // header
     static const int32_t CURRENT_VERSION=4;
-    static const uint256 DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK(0x11);
+    static const uint256 DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK(uint64_t(11));
     int32_t nVersion;
     //hashPrevBlock of PoA blocks is 0x00..00 for differentiating it from other block types
     uint256 hashPrevBlock;
