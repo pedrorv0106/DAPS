@@ -63,6 +63,11 @@ public:
     uint256 hashPrevBlock;
     uint256 hashMerkleRoot;
 
+    uint32_t nTime;
+    uint32_t nBits;
+    uint32_t nNonce;
+    uint256 nAccumulatorCheckpoint;
+
     //PoA block specific
     //hash of previous PoA block, other block types dont need to care this property
     //For the first PoA block, this property should be set as a default value: maybe 0x11 (magic number) 
@@ -74,11 +79,6 @@ public:
     //PoA block hash is hash of combination of previous hash and minedHash, since the previous hash of
     //a PoA block is only known once the miner has mined the PoA block
     uint256 minedHash;
-
-    uint32_t nTime;
-    uint32_t nBits;
-    uint32_t nNonce;
-    uint256 nAccumulatorCheckpoint;
 
     CBlockHeader()
     {
