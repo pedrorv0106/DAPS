@@ -178,6 +178,7 @@ public:
 
     //! PoA block header
     uint256 hashPoAMerkleRoot;
+    uint256 minedHash;
 
     //! (memory only) Sequential id assigned to distinguish order in which blocks are received.
     uint32_t nSequenceId;
@@ -222,6 +223,7 @@ public:
         vMintDenominationsInBlock.clear();
 
         hashPoAMerkleRoot = uint256();
+        minedHash = uint256();
     }
 
     CBlockIndex()
@@ -252,6 +254,9 @@ public:
 
         if (block.IsProofOfAudit()) {
             SetProofOfAudit();
+            //TODO: need to check here
+            prevoutStake = block.vtx[1].vin[0].prevout;
+            nStakeTime = block.nTime;
         } else if (block.IsProofOfStake()) {
             SetProofOfStake();
             prevoutStake = block.vtx[1].vin[0].prevout;
@@ -289,8 +294,10 @@ public:
         block.nVersion = nVersion;
         if (IsProofOfAudit()) {
             block.hashPrevBlock = uint256(CBlockHeader::DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK);
-            block.hashPoSAuditedMerkleRoot = hashPoAMerkleRoot;
-        } else if (pprev)
+            block.hashPoAMerkleRoot = hashPoAMerkleRoot;
+            block.minedHash = minedHash;
+        }  
+        if (pprev)
             block.hashPrevBlock = pprev->GetBlockHash();
         block.hashMerkleRoot = hashMerkleRoot;
         block.nTime = nTime;
@@ -480,9 +487,13 @@ public:
         READWRITE(nMoneySupply);
         READWRITE(nFlags);
         READWRITE(nStakeModifier);
+
         if (IsProofOfStake()) {
             READWRITE(prevoutStake);
             READWRITE(nStakeTime);
+        } if (IsProofOfAudit()) {
+            READWRITE(hashPoAMerkleRoot);
+            READWRITE(minedHash);
         } else {
             const_cast<CDiskBlockIndex*>(this)->prevoutStake.SetNull();
             const_cast<CDiskBlockIndex*>(this)->nStakeTime = 0;
@@ -497,7 +508,7 @@ public:
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
-        if(this->nVersion > 3) {
+        if(this->nVersion > 3 && !IsProofOfAudit()) {
             READWRITE(nAccumulatorCheckpoint);
             READWRITE(mapZerocoinSupply);
             READWRITE(vMintDenominationsInBlock);
@@ -511,6 +522,8 @@ public:
         block.nVersion = nVersion;
         block.hashPrevBlock = hashPrev;
         block.hashMerkleRoot = hashMerkleRoot;
+        block.hashPoAMerkleRoot = hashPoAMerkleRoot;
+        block.minedHash = minedHash;
         block.nTime = nTime;
         block.nBits = nBits;
         block.nNonce = nNonce;

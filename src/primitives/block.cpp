@@ -21,14 +21,15 @@ uint256& PoSBlockSummary::GetHash() const {
 
 uint256 CBlockHeader::GetHash() const
 {
-    if (hashPrevBlock == uint256(DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK)) {
+    if (IsPoABlockByVersion()) {
         //Only hash necessary fields for PoA block header
         //Dont add nAccumulatorCheckpoint to the hash
         return Hash(BEGIN(nVersion), END(nVersion), 
             BEGIN(hashPrevBlock), END(hashPrevBlock),
-            BEGIN(hashPrevPoABlock), END(hashPrevPoABlock),
-            BEGIN(hashPoSAuditedMerkleRoot), END(hashPoSAuditedMerkleRoot),
             BEGIN(hashMerkleRoot), END(hashMerkleRoot),
+            BEGIN(hashPrevPoABlock), END(hashPrevPoABlock),
+            BEGIN(hashPoAMerkleRoot), END(hashPoAMerkleRoot),
+            BEGIN(minedHash), END(minedHash),
             BEGIN(nTime), END(nTime),
             BEGIN(nBits), END(nBits),
             BEGIN(nNonce), END(nonce))
@@ -197,13 +198,14 @@ std::string CBlock::ToString() const
 {
     std::stringstream s;
     if (this->hashPrevBlock == uint256(DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK)) {
-        s << strprintf("PoABlock(hash=%s, ver=%d, hashPrevBlock=%s, hashPrevPoABlock=%s, hashMerkleRoot=%s, hashPoSAuditedMerkleRoot=%s, nTime=%u, nBits=%08x, nNonce=%u, vtx=%u, PoSBlocks=%u)\n",
+        s << strprintf("PoABlock(hash=%s, ver=%d, hashPrevBlock=%s, hashPrevPoABlock=%s, hashMerkleRoot=%s, hashPoAMerkleRoot=%s, minedHash=%s, nTime=%u, nBits=%08x, nNonce=%u, vtx=%u, PoSBlocks=%u)\n",
             GetHash().ToString(),
             nVersion,
             hashPrevBlock.ToString(),
             hashPrevPoABlock.ToString(),
             hashMerkleRoot.ToString(),
-            hashPoSAuditedMerkleRoot.ToString(),
+            hashPoAMerkleRoot.ToString(),
+            minedHash.ToString(),
             nTime, nBits, nNonce,
             vtx.size(),
             posBlocksAudited.size());

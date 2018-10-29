@@ -54,17 +54,25 @@ class CBlockHeader
 public:
     // header
     static const int32_t CURRENT_VERSION=4;
-    static const std::string DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK("11");
+    //Efficient and compatible, but not beautiful design: A PoA block version will be always equal or higher this const
+    static const int32_t POA_BLOCK_VERSION_LOW_LIMIT = 100;
     int32_t nVersion;
     //hashPrevBlock of PoA blocks is 0x00..00 for differentiating it from other block types
     uint256 hashPrevBlock;
+    uint256 hashMerkleRoot;
+
+    //PoA block specific
     //hash of previous PoA block, other block types dont need to care this property
     //For the first PoA block, this property should be set as a default value: maybe 0x11 (magic number) 
     //or the hash of the genenis block
     uint256 hashPrevPoABlock;
     //The hash root of all audited PoS block summary
-    uint256 hashPoSAuditedMerkleRoot;
-    uint256 hashMerkleRoot;
+    uint256 hashPoAMerkleRoot;
+    //hash of any mined PoA block: minedHash is found when a miner successfully mines a PoA block
+    //PoA block hash is hash of combination of previous hash and minedHash, since the previous hash of
+    //a PoA block is only known once the miner has mined the PoA block
+    uint256 minedHash;
+
     uint32_t nTime;
     uint32_t nBits;
     uint32_t nNonce;
@@ -82,28 +90,38 @@ public:
         READWRITE(this->nVersion);
         nVersion = this->nVersion;
         READWRITE(hashPrevBlock);
-        if (hashPrevBlock == uint256(DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK)) {
+        READWRITE(hashMerkleRoot);
+        if (IsPoABlockByVersion()) {
             //PoA block
             READWRITE(hashPrevPoABlock);
-            READWRITE(hashPoSAuditedMerkleRoot);
+            READWRITE(hashPoAMerkleRoot);
+            READWRITE(minedHash);
         }
-        READWRITE(hashMerkleRoot);
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
 
         //zerocoin active, header changes to include accumulator checksum
-        if(nVersion > 3)
+        if(nVersion > 3 && !IsPoABlockByVersion())
             READWRITE(nAccumulatorCheckpoint);
+    }
+
+    bool IsPoABlockByVersion() {
+        return nVersion >= CBlockHeader::POA_BLOCK_VERSION_LOW_LIMIT;
+    }
+
+    bool SetVersionPoABlock() {
+        nVersion = CBlockHeader::POA_BLOCK_VERSION_LOW_LIMIT;
     }
 
     void SetNull()
     {
         nVersion = CBlockHeader::CURRENT_VERSION;
         hashPrevBlock.SetNull();
-        hashPrevPoABlock.SetNull();
-        hashPoSAuditedMerkleRoot.SetNull();
         hashMerkleRoot.SetNull();
+        hashPrevPoABlock.SetNull();
+        hashPoAMerkleRoot.SetNull();
+        minedHash.SetNull();
         nTime = 0;
         nBits = 0;
         nNonce = 0;
@@ -169,7 +187,9 @@ public:
     {
         CBlockHeader::SetNull();
         vtx.clear();
+        posBlocksAudited.clear();
         vMerkleTree.clear();
+        poaMerkleTree.clear();
         payee = CScript();
         vchBlockSig.clear();
     }
@@ -179,9 +199,12 @@ public:
         CBlockHeader block;
         block.nVersion       = nVersion;
         block.hashPrevBlock  = hashPrevBlock;
-        block.hashPrevPoABlock = hashPrevPoABlock;
         block.hashMerkleRoot = hashMerkleRoot;
-        block.hashPoSAuditedMerkleRoot = hashPoSAuditedMerkleRoot;
+
+        block.hashPrevPoABlock = hashPrevPoABlock;
+        block.hashPoAMerkleRoot = hashPoAMerkleRoot;
+        block.minedHash = minedHash;
+
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
@@ -207,7 +230,7 @@ public:
      */
     bool IsProofOfAudit() const
     {
-        return (hashPrevBlock == uint256(DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK));
+        return IsPoABlockByVersion();
     }
 
     bool SignBlock(const CKeyStore& keystore);
