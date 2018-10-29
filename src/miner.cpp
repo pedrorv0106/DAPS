@@ -94,6 +94,52 @@ void UpdateTime(CBlockHeader* pblock, const CBlockIndex* pindexPrev)
         pblock->nBits = GetNextWorkRequired(pindexPrev, pblock);
 }
 
+void GetListOfPoSInfo(uint32_t currentHeight, std::vector<PoSBlockSummary> audits) {
+    if (currentHeight - 60 == Params().START_POA_BLOCK()) {
+        //this is the first PoA block ==> take all PoS blocks from LAST_POW_BLOCK up to currentHeight - 59 inclusive
+        for (uint32_t i = Params().LAST_POW_BLOCK() + 1; i <= currentHeight - 59; i++) {
+            PoSBlockSummary pos;
+            pos.hash = *(chainActive[i]->GetBlockHash());
+            pos.nTime = chainActive[i]->GetBlockHeader().nTime;
+            pos.height = i;
+            audits.push_back(pos)
+        }
+    } else {
+        //Find the previous PoA block
+        uint32_t start = currentHeight;
+        while (start > Params().START_POA_BLOCK()) {
+            if (chainActive[start]->GetBlockHeader().IsPoABlockByVersion()) {
+                break;
+            }
+            start--;
+        }
+        if (start > Params().START_POA_BLOCK()) {
+            uint256 poaHash = *(chainActive[start]->GetBlockHash());
+            CBlock block;
+            CBlockIndex* pblockindex = mapBlockIndex[poaHash];
+            if (!ReadBlockFromDisk(block, pblockindex))
+                throw JSONRPCError(RPC_INTERNAL_ERROR, "Can't read block from disk");
+            PoSBlockSummary back = block.posBlocksAudited.back();
+            uint32_t lastAuditedHeight = back.height;
+            uint32_t nextAuditHeight = lastAuditedHeight + 1;
+            
+            while (nextAuditHeight <= currentHeight) {
+                if (chainActive[nextAuditHeight]->GetBlockHeader().IsProofOfStake()) {
+                    PoSBlockSummary pos;
+                    pos.hash = *(chainActive[nextAuditHeight]->GetBlockHash());
+                    pos.nTime = chainActive[nextAuditHeight]->GetBlockHeader().nTime;
+                    pos.height = i;
+                    audits.push_back(pos)
+                }
+                if (audits.size() == 59) {
+                    break;
+                }
+                nextAuditHeight++;
+            }
+        }
+    }
+}
+
 CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, bool fProofOfStake)
 {
     CReserveKey reservekey(pwallet);
@@ -149,6 +195,8 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, 
             if (pindexPrev->nHeight % 60 == 0 && pindexPrev->nHeight > Params().START_POA_BLOCK()){
                 CMutableTransaction txCoinAudit;
                 if (pwallet->CreateCoinAudit(*pwallet, pblock->nBits, nSearchTime - nLastCoinStakeSearchTime, txCoinAudit, nTxNewTime)) {
+                    GetListOfPoSInfo(pindexPrev->nHeight, pblock->posBlocksAudited);
+                    pblock->SetVersionPoABlock();
                     pblock->nTime = nTxNewTime;
                     pblock->vtx[0].vout[0].SetEmpty();
                     pblock->vtx.push_back(CTransaction(txCoinAudit));
