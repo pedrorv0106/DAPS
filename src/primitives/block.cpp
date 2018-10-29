@@ -13,7 +13,7 @@
 #include "utilstrencodings.h"
 #include "util.h"
 
-uint256& PoSBlockSummary::GetHash() const {
+uint256 PoSBlockSummary::GetHash() const {
     return Hash(BEGIN(hash), END(hash),
                 BEGIN(nTime), END(nTime),
                 BEGIN(height), END(height));
@@ -32,7 +32,7 @@ uint256 CBlockHeader::GetHash() const
             BEGIN(minedHash), END(minedHash),
             BEGIN(nTime), END(nTime),
             BEGIN(nBits), END(nBits),
-            BEGIN(nNonce), END(nonce))
+            BEGIN(nNonce), END(nNonce));
     }
     if(nVersion < 4) {
         return HashQuark(BEGIN(nVersion), END(nNonce));

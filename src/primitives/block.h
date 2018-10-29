@@ -40,6 +40,8 @@ public:
     {
         return (a.hash != b.hash) || (a.nTime != b.nTime) || (a.height != b.height);
     }
+
+    uint256 GetHash() const;
 };
 
 /** Nodes collect new transactions into a block, hash them into a hash tree,
