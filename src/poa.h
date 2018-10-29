@@ -1,0 +1,17 @@
+#ifndef DAPSCOIN_POW_H
+#define DAPSCOIN_POW_H
+
+#include <stdint.h>
+
+class CBlockHeader;
+class CBlockIndex;
+class uint256;
+class arith_uint256;
+extern const uint32_t POA_BLOCK_PERIOD;
+//unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader* pblock);
+
+/** Check whether a block hash satisfies the proof-of-work requirement specified by nBits */
+bool CheckProofOfAudit(CBlockIndex* pindex);
+//uint256 GetBlockProof(const CBlockIndex& block);
+
+#endif // DAPSCOIN_POW_H
