@@ -106,11 +106,11 @@ public:
             READWRITE(nAccumulatorCheckpoint);
     }
 
-    bool IsPoABlockByVersion() {
+    bool IsPoABlockByVersion() const {
         return nVersion >= CBlockHeader::POA_BLOCK_VERSION_LOW_LIMIT;
     }
 
-    bool SetVersionPoABlock() {
+    void SetVersionPoABlock() {
         nVersion = CBlockHeader::POA_BLOCK_VERSION_LOW_LIMIT;
     }
 
@@ -252,7 +252,7 @@ public:
     std::string ToString() const;
     void print() const;
     
-    uint256 BuildPoAMerkleTree(bool* mutated == NULL) const;
+    uint256 BuildPoAMerkleTree(bool* mutated = NULL) const;
     std::vector<uint256> GetPoAMerkleBranch(int nIndex) const;
     static uint256 CheckPoAMerkleBranch(uint256 hash, const std::vector<uint256>& vMerkleBranch, int nIndex);
 };

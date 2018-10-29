@@ -293,7 +293,6 @@ public:
         CBlockHeader block;
         block.nVersion = nVersion;
         if (IsProofOfAudit()) {
-            block.hashPrevPoABlock = hashPrevPoABlock;
             block.hashPoAMerkleRoot = hashPoAMerkleRoot;
             block.minedHash = minedHash;
         }  
