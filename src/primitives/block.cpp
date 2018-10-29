@@ -197,7 +197,7 @@ uint256 CBlock::CheckPoAMerkleBranch(uint256 mhash, const std::vector<uint256>& 
 std::string CBlock::ToString() const
 {
     std::stringstream s;
-    if (this->hashPrevBlock == uint256(DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK)) {
+    if (IsProofOfAudit()) {
         s << strprintf("PoABlock(hash=%s, ver=%d, hashPrevBlock=%s, hashPrevPoABlock=%s, hashMerkleRoot=%s, hashPoAMerkleRoot=%s, minedHash=%s, nTime=%u, nBits=%08x, nNonce=%u, vtx=%u, PoSBlocks=%u)\n",
             GetHash().ToString(),
             nVersion,

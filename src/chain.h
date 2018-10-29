@@ -293,7 +293,7 @@ public:
         CBlockHeader block;
         block.nVersion = nVersion;
         if (IsProofOfAudit()) {
-            block.hashPrevBlock = uint256(CBlockHeader::DEFAULT_PREVIOUS_HASH_OF_POA_BLOCK);
+            block.hashPrevPoABlock = hashPrevPoABlock;
             block.hashPoAMerkleRoot = hashPoAMerkleRoot;
             block.minedHash = minedHash;
         }  
