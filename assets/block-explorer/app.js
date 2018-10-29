@@ -34,6 +34,7 @@ if (settings.heavy != true) {
     getmaxmoney - Returns the maximum possible money supply.
   */
   chaincoinapi.setAccess('only', ['getinfo', 'getstakinginfo', 'getnetworkhashps', 'getdifficulty', 'getconnectioncount',
+
     'getmasternodecount', 'getcurrentseesawreward', 'getseesawrewardratio', 'getmasternodecountonline', 'getmasternodelist', 'getvotelist', 'getblockcount', 'getblockhash', 
     'getblock', 'getrawtransaction', 'getmaxmoney', 'getvote', 'getmaxvote', 'getphase', 'getreward', 'getpeerinfo', 
     'getnextrewardestimate', 'getnextrewardwhenstr', 'getnextrewardwhensec', 'getsupply', 'gettxoutsetinfo', 'getseesawrewardwithheight']);
