@@ -91,7 +91,7 @@ Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDe
 
     result.push_back(Pair("moneysupply",ValueFromAmount(blockindex->nMoneySupply)));
 
-    if ((blockindex->nHeight - 1) % 60 == 0) {
+    if (blockindex->nHeight > Params().START_POA_BLOCK() && (blockindex->nHeight - 1) % 60 == 0) {
         //This is a PoA block
         //Read information of PoS blocks audited by this PoA block
         Array posBlockInfos;
