@@ -2,6 +2,7 @@
 #define DAPSCOIN_POW_H
 
 #include <stdint.h>
+#include <primitives/block.h>
 
 class CBlockHeader;
 class CBlockIndex;
@@ -11,7 +12,9 @@ extern const uint32_t POA_BLOCK_PERIOD;
 //unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader* pblock);
 
 /** Check whether a block hash satisfies the proof-of-work requirement specified by nBits */
-bool CheckPoAContainRecentHash(CBlockIndex* pindex);
+bool CheckPoAContainRecentHash(CBlock* block);
+bool CheckNumberOfAuditedPoSBlocks(CBlock* block);
+
 //uint256 GetBlockProof(const CBlockIndex& block);
 
 #endif // DAPSCOIN_POW_H

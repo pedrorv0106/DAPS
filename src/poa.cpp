@@ -83,3 +83,10 @@ bool CheckPoAContainRecentHash(CBlock* block) {
     }
     return ret;
 }
+
+bool CheckNumberOfAuditedPoSBlocks(CBlock* block) {
+    if (block->posBlocksAudited.size() < POA_BLOCK_PERIOD) {
+        return false;
+    }
+    return true;
+}
