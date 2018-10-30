@@ -1,213 +1,150 @@
-UNIX BUILD NOTES
+WINDOWS BUILD NOTES
 ====================
-Some notes on how to build DAPScoin in Unix.
 
-Note
----------------------
-Always use absolute paths to configure and compile dapscoin and the dependencies,
-for example, when specifying the the path of the dependency:
+Below are some notes on how to build Dapscoin Core for Windows.
 
-	../dist/configure --enable-cxx --disable-shared --with-pic --prefix=$BDB_PREFIX
+The options known to work for building Dapscoin Core on Windows are:
 
-Here BDB_PREFIX must absolute path - it is defined using $(pwd) which ensures
-the usage of the absolute path.
+* On Linux, using the [Mingw-w64](https://mingw-w64.org/doku.php) cross compiler tool chain. Ubuntu Bionic 18.04 is required
+and is the platform used to build the Dapscoin Core Windows release binaries.
+* On Windows, using [Windows
+Subsystem for Linux (WSL)](https://msdn.microsoft.com/commandline/wsl/about) and the Mingw-w64 cross compiler tool chain.
 
-To Build
----------------------
+Other options which may work, but which have not been extensively tested are (please contribute instructions):
 
-```bash
-./autogen.sh
-./configure
-make
-make install # optional
-```
+* On Windows, using a POSIX compatibility layer application such as [cygwin](http://www.cygwin.com/) or [msys2](http://www.msys2.org/).
+* On Windows, using a native compiler tool chain such as [Visual Studio](https://www.visualstudio.com).
 
-This will build dapscoin-qt as well if the dependencies are met.
+Installing Windows Subsystem for Linux
+---------------------------------------
 
-Dependencies
----------------------
+With Windows 10, Microsoft has released a new feature named the [Windows
+Subsystem for Linux (WSL)](https://msdn.microsoft.com/commandline/wsl/about). This
+feature allows you to run a bash shell directly on Windows in an Ubuntu-based
+environment. Within this environment you can cross compile for Windows without
+the need for a separate Linux VM or server. Note that while WSL can be installed with
+other Linux variants, such as OpenSUSE, the following instructions have only been
+tested with Ubuntu.
 
-These dependencies are required:
+This feature is not supported in versions of Windows prior to Windows 10 or on
+Windows Server SKUs. In addition, it is available [only for 64-bit versions of
+Windows](https://msdn.microsoft.com/en-us/commandline/wsl/install_guide).
 
- Library     | Purpose          | Description
- ------------|------------------|----------------------
- libssl      | SSL Support      | Secure communications
- libboost    | Boost            | C++ Library
+Full instructions to install WSL are available on the above link.
+To install WSL on Windows 10 with Fall Creators Update installed (version >= 16215.0) do the following:
 
-Optional dependencies:
+1. Enable the Windows Subsystem for Linux feature
+  * Open the Windows Features dialog (`OptionalFeatures.exe`)
+  * Enable 'Windows Subsystem for Linux'
+  * Click 'OK' and restart if necessary
+2. Install Ubuntu
+  * Open Microsoft Store and search for "Ubuntu 18.04" or use [this link](https://www.microsoft.com/store/productId/9N9TNGVNDL3Q)
+  * Click Install
+3. Complete Installation
+  * Open a cmd prompt and type "Ubuntu1804"
+  * Create a new UNIX user account (this is a separate account from your Windows account)
 
- Library     | Purpose          | Description
- ------------|------------------|----------------------
- miniupnpc   | UPnP Support     | Firewall-jumping support
- libdb4.8    | Berkeley DB      | Wallet storage (only needed when wallet enabled)
- qt          | GUI              | GUI toolkit (only needed when GUI enabled)
- protobuf    | Payments in GUI  | Data interchange format used for payment protocol (only needed when GUI enabled)
- libqrencode | QR codes in GUI  | Optional for generating QR codes (only needed when GUI enabled)
+After the bash shell is active, you can follow the instructions below, starting
+with the "Cross-compilation" section. Compiling the 64-bit version is
+recommended, but it is possible to compile the 32-bit version.
 
-For the versions used in the release, see [release-process.md](release-process.md) under *Fetch and build inputs*.
+Cross-compilation for Ubuntu and Windows Subsystem for Linux
+------------------------------------------------------------
 
-System requirements
---------------------
+The steps below can be performed on Ubuntu (including in a VM) or WSL. The depends system
+will also work on other Linux distributions, however the commands for
+installing the toolchain will be different.
 
-C++ compilers are memory-hungry. It is recommended to have at least 1 GB of
-memory available when compiling DAPScoin Core. With 512MB of memory or less
-compilation will take much longer due to swap thrashing.
+First, install the general dependencies:
 
-Dependency Build Instructions: Ubuntu & Debian
-----------------------------------------------
-Build requirements:
+    sudo apt update
+    sudo apt upgrade
+    sudo apt install build-essential libtool autotools-dev automake pkg-config bsdmainutils curl git
 
-	sudo apt-get install build-essential libtool autotools-dev autoconf pkg-config libssl-dev
+A host toolchain (`build-essential`) is necessary because some dependency
+packages (such as `protobuf`) need to build host utilities that are used in the
+build process.
 
-For Ubuntu 12.04 and later or Debian 7 and later libboost-all-dev has to be installed:
+See also: [dependencies.md](dependencies.md).
 
-	sudo apt-get install libboost-all-dev
+## Building for 64-bit Windows
 
- db4.8 packages are available [here](https://launchpad.net/~bitcoin/+archive/bitcoin).
- You can add the repository using the following command:
+The first step is to install the mingw-w64 cross-compilation tool chain:
 
-        sudo add-apt-repository ppa:bitcoin/bitcoin
-        sudo apt-get update
+    sudo apt install g++-mingw-w64-x86-64
 
- Ubuntu 12.04 and later have packages for libdb5.1-dev and libdb5.1++-dev,
- but using these will break binary wallet compatibility, and is not recommended.
+Ubuntu Bionic 18.04 <sup>[1](#footnote1)</sup>:
 
-For other Debian & Ubuntu (with ppa):
+    sudo update-alternatives --config x86_64-w64-mingw32-g++ # Set the default mingw32 g++ compiler option to posix.
 
-	sudo apt-get install libdb4.8-dev libdb4.8++-dev
+Once the toolchain is installed the build steps are common:
 
-Optional:
+Note that for WSL the Dapscoin Core source path MUST be somewhere in the default mount file system, for
+example /usr/src/dapscoin, AND not under /mnt/d/. If this is not the case the dependency autoconf scripts will fail.
+This means you cannot use a directory that is located directly on the host Windows file system to perform the build.
 
-	sudo apt-get install libminiupnpc-dev (see --with-miniupnpc and --enable-upnp-default)
+Acquire the source in the usual way:
 
-Dependencies for the GUI: Ubuntu & Debian
------------------------------------------
+    git clone DAPScoin source URL
 
-If you want to build DAPScoin-Qt, make sure that the required packages for Qt development
-are installed. Qt 5 is necessary to build the GUI.
-If both Qt 4 and Qt 5 are installed, Qt 5 will be used.
-To build without GUI pass `--without-gui`.
+Once the source code is ready the build steps are below:
 
-For Qt 5 you need the following:
+    PATH=$(echo "$PATH" | sed -e 's/:\/mnt.*//g') # strip out problematic Windows %PATH% imported var
+    cd depends
+    make HOST=x86_64-w64-mingw32
+    cd ..
+    ./autogen.sh # not required when building from tarball
+    CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure --prefix=/
+    make
 
-    sudo apt-get install libqt5gui5 libqt5core5a libqt5dbus5 qttools5-dev qttools5-dev-tools libprotobuf-dev protobuf-compiler
+## Building for 32-bit Windows
 
-libqrencode (optional) can be installed with:
+To build executables for Windows 32-bit, install the following dependencies:
 
-    sudo apt-get install libqrencode-dev
+    sudo apt install g++-mingw-w64-i686 mingw-w64-i686-dev
 
-Once these are installed, they will be found by configure and a dapscoin-qt executable will be
-built by default.
+For Ubuntu Bionic 18.04 and Windows Subsystem for Linux <sup>[1](#footnote1)</sup>:
 
-Notes
------
-The release is built with GCC and then "strip dapscoind" to strip the debug
-symbols, which reduces the executable size by about 90%.
+    sudo update-alternatives --config i686-w64-mingw32-g++  # Set the default mingw32 g++ compiler option to posix.
 
+Note that for WSL the Dapscoin Core source path MUST be somewhere in the default mount file system, for
+example /usr/src/dapscoin, AND not under /mnt/d/. If this is not the case the dependency autoconf scripts will fail.
+This means you cannot use a directory that located directly on the host Windows file system to perform the build.
 
-miniupnpc
+Acquire the source in the usual way:
+
+    git clone DAPSCoin source Github URL
+
+Then build using:
+
+    PATH=$(echo "$PATH" | sed -e 's/:\/mnt.*//g') # strip out problematic Windows %PATH% imported var
+    cd depends
+    make HOST=i686-w64-mingw32
+    cd ..
+    ./autogen.sh # not required when building from tarball
+    CONFIG_SITE=$PWD/depends/i686-w64-mingw32/share/config.site ./configure --prefix=/
+    make
+
+## Depends system
+
+For further documentation on the depends system see [README.md](../depends/README.md) in the depends directory.
+
+Installation
+-------------
+
+After building using the Windows subsystem it can be useful to copy the compiled
+executables to a directory on the Windows drive in the same directory structure
+as they appear in the release `.zip` archive. This can be done in the following
+way. This will install to `c:\workspace\dapscoin`, for example:
+
+    make install DESTDIR=/mnt/c/workspace/dapscoin
+
+Footnotes
 ---------
 
-[miniupnpc](http://miniupnp.free.fr/) may be used for UPnP port mapping.  It can be downloaded from [here](
-http://miniupnp.tuxfamily.org/files/).  UPnP support is compiled in and
-turned off by default.  See the configure options for upnp behavior desired:
-
-	--without-miniupnpc      No UPnP support miniupnp not required
-	--disable-upnp-default   (the default) UPnP support turned off by default at runtime
-	--enable-upnp-default    UPnP support turned on by default at runtime
-
-To build:
-
-	tar -xzvf miniupnpc-1.6.tar.gz
-	cd miniupnpc-1.6
-	make
-	sudo su
-	make install
-
-
-Berkeley DB
------------
-It is recommended to use Berkeley DB 4.8. If you have to build it yourself:
-
-```bash
-DAPScoin_ROOT=$(pwd)
-
-# Pick some path to install BDB to, here we create a directory within the dapscoin directory
-BDB_PREFIX="${DAPScoin_ROOT}/db4"
-mkdir -p $BDB_PREFIX
-
-# Fetch the source and verify that it is not tampered with
-wget 'http://download.oracle.com/berkeley-db/db-4.8.30.NC.tar.gz'
-echo '12edc0df75bf9abd7f82f821795bcee50f42cb2e5f76a6a281b85732798364ef  db-4.8.30.NC.tar.gz' | sha256sum -c
-# -> db-4.8.30.NC.tar.gz: OK
-tar -xzvf db-4.8.30.NC.tar.gz
-
-# Build the library and install to our prefix
-cd db-4.8.30.NC/build_unix/
-#  Note: Do a static build so that it can be embedded into the exectuable, instead of having to find a .so at runtime
-../dist/configure --enable-cxx --disable-shared --with-pic --prefix=$BDB_PREFIX
-make install
-
-# Configure DAPScoin Core to use our own-built instance of BDB
-cd $DAPScoin_ROOT
-./configure (other args...) LDFLAGS="-L${BDB_PREFIX}/lib/" CPPFLAGS="-I${BDB_PREFIX}/include/"
-```
-
-**Note**: You only need Berkeley DB if the wallet is enabled (see the section *Disable-Wallet mode* below).
-
-Boost
------
-If you need to build Boost yourself:
-
-	sudo su
-	./bootstrap.sh
-	./bjam install
-
-
-Security
---------
-To help make your DAPScoin installation more secure by making certain attacks impossible to
-exploit even if a vulnerability is found, binaries are hardened by default.
-This can be disabled with:
-
-Hardening Flags:
-
-	./configure --enable-hardening
-	./configure --disable-hardening
-
-
-Hardening enables the following features:
-
-* Position Independent Executable
-    Build position independent code to take advantage of Address Space Layout Randomization
-    offered by some kernels. An attacker who is able to cause execution of code at an arbitrary
-    memory location is thwarted if he doesn't know where anything useful is located.
-    The stack and heap are randomly located by default but this allows the code section to be
-    randomly located as well.
-
-    On an Amd64 processor where a library was not compiled with -fPIC, this will cause an error
-    such as: "relocation R_X86_64_32 against `......' can not be used when making a shared object;"
-
-    To test that you have built PIE executable, install scanelf, part of paxutils, and use:
-
-    	scanelf -e ./dapscoind
-
-    The output should contain:
-     TYPE
-    ET_DYN
-
-* Non-executable Stack
-    If the stack is executable then trivial stack based buffer overflow exploits are possible if
-    vulnerable buffers are found. By default, dapscoin should be built with a non-executable stack
-    but if one of the libraries it uses asks for an executable stack or someone makes a mistake
-    and uses a compiler extension which requires an executable stack, it will silently build an
-    executable without the non-executable stack protection.
-
-    To verify that the stack is non-executable after compiling use:
-    `scanelf -e ./dapscoind`
-
-    the output should contain:
-	STK/REL/PTL
-	RW- R-- RW-
-
-    The STK RW- means that the stack is readable and writeable but not executable.
+<a name="footnote1">1</a>: Starting from Ubuntu Xenial 16.04, both the 32 and 64 bit Mingw-w64 packages install two different
+compiler options to allow a choice between either posix or win32 threads. The default option is win32 threads which is the more
+efficient since it will result in binary code that links directly with the Windows kernel32.lib. Unfortunately, the headers
+required to support win32 threads conflict with some of the classes in the C++11 standard library, in particular std::mutex.
+It's not possible to build the Dapscoin Core code using the win32 version of the Mingw-w64 cross compilers (at least not without
+modifying headers in the Dapscoin Core source code).
