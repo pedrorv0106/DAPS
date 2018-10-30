@@ -128,8 +128,8 @@ void GetListOfPoSInfo(uint32_t currentHeight, std::vector<PoSBlockSummary> audit
                     PoSBlockSummary pos;
                     pos.hash = *(chainActive[nextAuditHeight]->GetBlockHash());
                     pos.nTime = chainActive[nextAuditHeight]->GetBlockHeader().nTime;
-                    pos.height = i;
-                    audits.push_back(pos)
+                    pos.height = nextAuditHeight;
+                    audits.push_back(pos);
                 }
                 if (audits.size() == 59) {
                     break;
