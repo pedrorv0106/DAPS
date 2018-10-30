@@ -210,6 +210,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, 
                     pblock->vtx.push_back(CTransaction(txCoinStake));
                     fStakeFound = true;
                 }
+                stdd::cout << "Creating a PoS block at height:" << pindexPrev->nHeight + 1 << std::endl;
             }
 
             nLastCoinStakeSearchInterval = nSearchTime - nLastCoinStakeSearchTime;
