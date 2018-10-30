@@ -114,7 +114,7 @@ void GetListOfPoSInfo(uint32_t currentHeight, std::vector<PoSBlockSummary> audit
             start--;
         }
         if (start > Params().START_POA_BLOCK()) {
-            CBlockIndex* pblockindex = *chainActive[start];
+            CBlockIndex* pblockindex = chainActive[start];
             CBlock block;
             if (!ReadBlockFromDisk(block, pblockindex))
                 throw runtime_error("Can't read block from disk");
@@ -129,7 +129,7 @@ void GetListOfPoSInfo(uint32_t currentHeight, std::vector<PoSBlockSummary> audit
                     throw runtime_error("Can't read block from disk");
                 if (posBlock.IsProofOfStake()) {
                     PoSBlockSummary pos;
-                    pos.hash = *(chainActive[nextAuditHeight]->GetBlockHash());
+                    pos.hash = chainActive[nextAuditHeight]->GetBlockHash();
                     pos.nTime = chainActive[nextAuditHeight]->GetBlockHeader().nTime;
                     pos.height = nextAuditHeight;
                     audits.push_back(pos);
