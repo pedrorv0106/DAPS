@@ -102,7 +102,7 @@ void GetListOfPoSInfo(uint32_t currentHeight, std::vector<PoSBlockSummary> audit
             pos.hash = *(chainActive[i]->GetBlockHash());
             pos.nTime = chainActive[i]->GetBlockHeader().nTime;
             pos.height = i;
-            audits.push_back(pos)
+            audits.push_back(pos);
         }
     } else {
         //Find the previous PoA block
