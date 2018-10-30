@@ -17,12 +17,16 @@
 
 const uint32_t POA_BLOCK_PERIOD = 59;
 
-bool CheckPoAContainRecentHash(CBlock* block) {
+//If blockheight = -1, the to-be-checked block is not included yet in the chain, otherwise, that is the height of the poa block
+bool CheckPoAContainRecentHash(CBlock* block, int blockHeight) {
     if (block->posBlocksAudited.size() < POA_BLOCK_PERIOD) {
         return false;
     }
     //block.Merkle
     int currentHeight = chainActive.Tip()->nHeight;
+    if (blockHeight != - 1) {
+        currentHeight = blockHeight - 1;
+    }
     bool ret = true;
     if (currentHeight - (POA_BLOCK_PERIOD + 1) == Params().START_POA_BLOCK()) {
         //this is the first PoA block ==> check all PoS blocks from LAST_POW_BLOCK up to currentHeight - POA_BLOCK_PERIOD - 1 inclusive
