@@ -17,21 +17,28 @@
 
 const uint32_t POA_BLOCK_PERIOD = 59;
 
-bool CheckProofOfAudit(CBlock* block) {
+bool CheckPoAContainRecentHash(CBlock* block) {
+    if (block->posBlocksAudited.size() < POA_BLOCK_PERIOD) {
+        return false;
+    }
     //block.Merkle
-    uint32_t currentHeight = chainActive.Tip().nHeight();
+    int currentHeight = chainActive.Tip()->nHeight;
+    bool ret = true;
     if (currentHeight - (POA_BLOCK_PERIOD + 1) == Params().START_POA_BLOCK()) {
-        //this is the first PoA block ==> check all PoS blocks from LAST_POW_BLOCK up to currentHeight - 59 inclusive
-        for (uint32_t i = Params().LAST_POW_BLOCK() + 1; i <= currentHeight - 59; i++) {
-            PoSBlockSummary pos;
-            pos.hash = *(chainActive[i]->GetBlockHash());
-            pos.nTime = chainActive[i]->GetBlockHeader().nTime;
-            pos.height = i;
-            audits.push_back(pos)
+        //this is the first PoA block ==> check all PoS blocks from LAST_POW_BLOCK up to currentHeight - POA_BLOCK_PERIOD - 1 inclusive
+        int index = 0;
+        for (int i = Params().LAST_POW_BLOCK() + 1; i <= currentHeight - POA_BLOCK_PERIOD; i++) {
+            PoSBlockSummary pos = block->posBlocksAudited.at(index);
+            if (pos.hash != chainActive[i]->GetBlockHash()
+                    || pos.nTime != chainActive[i]->GetBlockTime()
+                    || pos.height != chainActive[i]->nHeight) {
+                ret = false;
+                break;
+            }
         }
     } else {
         //Find the previous PoA block
-        uint32_t start = currentHeight;
+        int start = currentHeight;
         while (start > Params().START_POA_BLOCK()) {
             if (chainActive[start]->GetBlockHeader().IsPoABlockByVersion()) {
                 break;
@@ -39,28 +46,40 @@ bool CheckProofOfAudit(CBlock* block) {
             start--;
         }
         if (start > Params().START_POA_BLOCK()) {
-            uint256 poaHash = *(chainActive[start]->GetBlockHash());
-            CBlock block;
-            CBlockIndex* pblockindex = mapBlockIndex[poaHash];
-            if (!ReadBlockFromDisk(block, pblockindex))
-                throw JSONRPCError(RPC_INTERNAL_ERROR, "Can't read block from disk");
-            PoSBlockSummary back = block.posBlocksAudited.back();
-            uint32_t lastAuditedHeight = back.height;
-            uint32_t nextAuditHeight = lastAuditedHeight + 1;
-            
-            while (nextAuditHeight <= currentHeight) {
-                if (chainActive[nextAuditHeight]->GetBlockHeader().IsProofOfStake()) {
-                    PoSBlockSummary pos;
-                    pos.hash = *(chainActive[nextAuditHeight]->GetBlockHash());
-                    pos.nTime = chainActive[nextAuditHeight]->GetBlockHeader().nTime;
-                    pos.height = i;
-                    audits.push_back(pos)
+            uint256 prevPoaHash = chainActive[start]->GetBlockHash();
+            CBlock prevPoablock;
+            CBlockIndex* pblockindex = chainActive[start];
+            if (!ReadBlockFromDisk(prevPoablock, pblockindex))
+                throw runtime_error("Can't read block from disk");
+            PoSBlockSummary lastAuditedPoSBlockInfo = prevPoablock.posBlocksAudited.back();
+            uint32_t lastAuditedPoSHeight = lastAuditedPoSBlockInfo.height;
+            uint32_t loopIndexCheckPoS = lastAuditedPoSHeight + 1;
+            uint32_t idxOfPoSInfo = 0;
+
+            while (lastAuditedPoSHeight <= currentHeight) {
+                if (chainActive[lastAuditedPoSHeight]->GetBlockHeader().IsPoABlockByVersion()
+                        && chainActive[lastAuditedPoSHeight]->nHeight > Params().LAST_POW_BLOCK()) {
+                    PoSBlockSummary pos = block->posBlocksAudited[idxOfPoSInfo];
+                    CBlockIndex* posAudited = chainActive[lastAuditedPoSHeight];
+                    if (pos.hash == *(posAudited->phashBlock)
+                        && pos.height == posAudited->nHeight
+                        && pos.nTime == posAudited->GetBlockTime()) {
+                        idxOfPoSInfo++;
+                    } else {
+                        //The PoA block is not satisfied the constraint
+                        ret = false;
+                        break;
+                    }
                 }
-                if (audits.size() == 59) {
-                    break;
-                }
-                nextAuditHeight++;
+                lastAuditedPoSHeight++;
             }
+            if (idxOfPoSInfo != block->posBlocksAudited.size() - 1) {
+                //Not all PoS Blocks in PoA block have been checked, not satisfied
+                ret = false;
+            }
+        } else {
+            ret = false;
         }
     }
+    return ret;
 }

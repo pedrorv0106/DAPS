@@ -11,7 +11,7 @@ extern const uint32_t POA_BLOCK_PERIOD;
 //unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader* pblock);
 
 /** Check whether a block hash satisfies the proof-of-work requirement specified by nBits */
-bool CheckProofOfAudit(CBlockIndex* pindex);
+bool CheckPoAContainRecentHash(CBlockIndex* pindex);
 //uint256 GetBlockProof(const CBlockIndex& block);
 
 #endif // DAPSCOIN_POW_H
