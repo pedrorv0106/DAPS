@@ -114,17 +114,20 @@ void GetListOfPoSInfo(uint32_t currentHeight, std::vector<PoSBlockSummary> audit
             start--;
         }
         if (start > Params().START_POA_BLOCK()) {
-            uint256 poaHash = *(chainActive[start]->GetBlockHash());
+            CBlockIndex* pblockindex = *chainActive[start];
             CBlock block;
-            CBlockIndex* pblockindex = mapBlockIndex[poaHash];
             if (!ReadBlockFromDisk(block, pblockindex))
-                throw JSONRPCError(RPC_INTERNAL_ERROR, "Can't read block from disk");
+                throw runtime_error("Can't read block from disk");
             PoSBlockSummary back = block.posBlocksAudited.back();
             uint32_t lastAuditedHeight = back.height;
             uint32_t nextAuditHeight = lastAuditedHeight + 1;
             
             while (nextAuditHeight <= currentHeight) {
-                if (chainActive[nextAuditHeight]->GetBlockHeader().IsProofOfStake()) {
+                CBlockIndex* posIndex = chainActive[nextAuditHeight];
+                CBlock posBlock;
+                if (!ReadBlockFromDisk(posBlock, posIndex))
+                    throw runtime_error("Can't read block from disk");
+                if (posBlock.IsProofOfStake()) {
                     PoSBlockSummary pos;
                     pos.hash = *(chainActive[nextAuditHeight]->GetBlockHash());
                     pos.nTime = chainActive[nextAuditHeight]->GetBlockHeader().nTime;
