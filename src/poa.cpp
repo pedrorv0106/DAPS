@@ -94,3 +94,57 @@ bool CheckNumberOfAuditedPoSBlocks(CBlock* block) {
     }
     return true;
 }
+
+//Check whether the block is successfully mined and the mined hash satisfy the difficulty
+bool CheckPoABlockMinedHash(CBlock* block) {
+    const uint256 minedHash = block->ComputeMinedHash();
+    if (minedHash == block->minedHash) {
+        //Check minedHash satisfy difficulty based on nbits
+        bool fNegative;
+        bool fOverflow;
+        uint256 bnTarget;
+
+        if (Params().SkipProofOfWorkCheck())
+            return true;
+
+        bnTarget.SetCompact(block->nBits, &fNegative, &fOverflow);
+
+        // Check range
+        if (fNegative || bnTarget == 0 || fOverflow || bnTarget > Params().ProofOfWorkLimit())
+            return error("CheckProofOfWork() : nBits below minimum work");
+
+        // Check proof of work matches claimed amount
+        if (minedHash > bnTarget)
+            return error("CheckProofOfWork() : hash doesn't match nBits");
+
+        return true;
+    }
+    return false;
+}
+
+//A PoA block should contains previous PoA block hash
+bool CheckPrevPoABlockHash(CBlock* block, int blockHeight) {
+    uint256 blockHash = block->hashPrevPoABlock;
+    int currentHeight = chainActive.Tip()->nHeight;
+    if (blockHeight != - 1) {
+        currentHeight = blockHeight - 1;
+    }
+    int start = currentHeight;
+    while (start > Params().START_POA_BLOCK()) {
+        if (chainActive[start]->GetBlockHeader().IsPoABlockByVersion()) {
+            break;
+        }
+        start--;
+    }
+    bool ret = false;
+
+    if (start > Params().START_POA_BLOCK()) {
+        CBlockHeader header = chainActive[start]->GetBlockHeader();
+        uint256 poaBlockHash = header.GetHash();
+        if (poaBlockHash == block->hashPrevPoABlock) {
+            ret = true;
+        }
+    }
+
+    return ret;
+}

@@ -136,6 +136,7 @@ public:
     }
 
     uint256 GetHash() const;
+    uint256 ComputeMinedHash() const;
 
     int64_t GetBlockTime() const
     {

@@ -19,20 +19,27 @@ uint256 PoSBlockSummary::GetHash() const {
                 BEGIN(height), END(height));
 }
 
+uint256 CBlockHeader::ComputeMinedHash() const
+{
+    if (IsPoABlockByVersion()) {
+        return Hash(BEGIN(nVersion), END(nVersion),
+            BEGIN(hashMerkleRoot), END(hashMerkleRoot),
+            BEGIN(hashPrevPoABlock), END(hashPrevPoABlock),
+            BEGIN(hashPoAMerkleRoot), END(hashPoAMerkleRoot),
+            BEGIN(nTime), END(nTime),
+            BEGIN(nBits), END(nBits),
+            BEGIN(nNonce), END(nNonce));
+    }
+    return uint256();
+}
+
 uint256 CBlockHeader::GetHash() const
 {
     if (IsPoABlockByVersion()) {
         //Only hash necessary fields for PoA block header
         //Dont add nAccumulatorCheckpoint to the hash
-        return Hash(BEGIN(nVersion), END(nVersion), 
-            BEGIN(hashPrevBlock), END(hashPrevBlock),
-            BEGIN(hashMerkleRoot), END(hashMerkleRoot),
-            BEGIN(hashPrevPoABlock), END(hashPrevPoABlock),
-            BEGIN(hashPoAMerkleRoot), END(hashPoAMerkleRoot),
-            BEGIN(minedHash), END(minedHash),
-            BEGIN(nTime), END(nTime),
-            BEGIN(nBits), END(nBits),
-            BEGIN(nNonce), END(nNonce));
+        return Hash(BEGIN(hashPrevBlock), END(hashPrevBlock),
+            BEGIN(minedHash), END(minedHash));
     }
     if(nVersion < 4) {
         return HashQuark(BEGIN(nVersion), END(nNonce));
