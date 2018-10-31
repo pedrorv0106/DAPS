@@ -17,6 +17,7 @@ bool CheckNumberOfAuditedPoSBlocks(CBlock* block);
 bool CheckPoABlockMinedHash(CBlock* block);
 bool CheckPrevPoABlockHash(CBlock* block, int blockheight = -1);
 bool CheckPoAMerkleRoot(CBlock* block);
+bool CheckPoABlockNotContainingPoABlockInfo(CBlock* block, int blockheight = -1);
 
 //uint256 GetBlockProof(const CBlockIndex& block);
 

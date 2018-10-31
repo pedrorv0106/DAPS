@@ -157,3 +157,29 @@ bool CheckPoAMerkleRoot(CBlock* block) {
     }
     return false;
 }
+
+//A PoA block cannot contain information of any PoA block information (hash, height, timestamp)
+bool CheckPoABlockNotContainingPoABlockInfo(CBlock* block, int blockheight) {
+    //block.Merkle
+    int currentHeight = chainActive.Tip()->nHeight;
+    if (blockHeight != - 1) {
+        currentHeight = blockHeight - 1;
+    }
+    uint32_t numOfPoSBlocks = block->posBlocksAudited.size();
+    for (int i = 0; i < numOfPoSBlocks; i++) {
+        PoSBlockSummary pos = block->posBlocksAudited.at(i);
+        uint256 hash = pos.hash;
+        if (mapBlockIndex.count(hash) == 0) {
+            return false;
+        }
+        CBlockIndex* pblockindex = mapBlockIndex[hash];
+        CBlockHeader header = pblockindex->GetBlockHeader();
+        if (header.IsPoABlockByVersion()) {
+            return false;
+        }
+        if (pblockindex->nTime != block->nTime || pblockindex->nBits != block->nBits) {
+            return false;
+        }
+    }
+    return true;
+}
