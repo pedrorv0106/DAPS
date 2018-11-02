@@ -196,6 +196,90 @@ Value setgenerate(const Array& params, bool fHelp)
     return Value::null;
 }
 
+
+Value generatepoa(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw runtime_error(
+            "generatepoa generate PoA blocks ( genproclimit )\n"
+            "\nArguments:\n"
+            "1. period     (numeric, optional) Set the interval for creating a poa block \n"
+            "                    Note: in -regtest mode, period is not needed, one poa block can be generated on demand.\n"
+            "\nResult\n"
+            "blockhash     (-regtest only) hash of generated poa block\n"
+            "\nExamples:\n"
+            "\nSet generate a poa block every 30 minutes\n" +
+            HelpExampleCli("generatepoa", "30") +
+            "\nCheck the setting\n" + HelpExampleCli("getgenerate", "") +
+            "\nTurn off generation\n" + HelpExampleCli("generatepoa", "0") +
+            "\nUsing json rpc\n" + HelpExampleRpc("generatepoa", "30"));
+
+    if (pwalletMain == NULL)
+        throw JSONRPCError(RPC_METHOD_NOT_FOUND, "Method not found (disabled)");
+
+
+    int period = 60;//default value
+    if (params.size() > 1) {
+        period = params[1].get_int();
+    }
+
+    // -regtest mode: don't return until a poa block is successfully generated and added to the chain
+    if (Params().MineBlocksOnDemand()) {
+        int nHeightStart = 0;
+        int nHeightEnd = 0;
+        int nHeight = 0;
+        int nGenerate = 1;
+        CReserveKey reservekey(pwalletMain);
+
+        { // Don't keep cs_main locked
+            LOCK(cs_main);
+            nHeightStart = chainActive.Height();
+            nHeight = nHeightStart;
+            nHeightEnd = nHeightStart + nGenerate;
+        }
+        unsigned int nExtraNonce = 0;
+        Array blockHashes;
+        while (nHeight < nHeightEnd) {
+            bool createPoABlock = false;
+            if (nHeight >= Params().LAST_POW_BLOCK()) {
+            	createPoABlock = true;
+            }
+
+            if (!createPoABlock) {
+            	return Value::null;
+            }
+
+            unique_ptr<CBlockTemplate> pblocktemplate(CreateNewPoABlock(reservekey, pwalletMain));
+            if (!pblocktemplate.get())
+                throw JSONRPCError(RPC_INTERNAL_ERROR, "Wallet keypool empty");
+            CBlock* pblock = &pblocktemplate->block;
+            {
+                LOCK(cs_main);
+                IncrementExtraNonce(pblock, chainActive.Tip(), nExtraNonce);
+            }
+            while (!CheckProofOfWork(pblock->GetHash(), pblock->nBits)) {
+                // Yes, there is a chance every nonce could fail to satisfy the -regtest
+                // target -- 1 in 2^(2^32). That ain't gonna happen.
+                ++pblock->nNonce;
+            }
+
+
+            CValidationState state;
+            if (!ProcessNewBlock(state, NULL, pblock))
+                throw JSONRPCError(RPC_INTERNAL_ERROR, "ProcessNewBlock, block not accepted");
+            ++nHeight;
+            blockHashes.push_back(pblock->GetHash().GetHex());
+        }
+        return blockHashes;
+    } else // Not -regtest: start generate thread, return immediately
+    {
+        mapArgs["-period"] = itostr(period);
+        GeneratePoADapscoin(pwalletMain, period);
+    }
+
+    return Value::null;
+}
+
 Value gethashespersec(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 0)

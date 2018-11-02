@@ -29,6 +29,7 @@
 
 #include <boost/thread.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <boost/chrono.hpp>
 
 using namespace std;
 
@@ -509,6 +510,10 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, 
     return pblocktemplate.release();
 }
 
+CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, CWallet* pwallet) {
+	return NULL;
+}
+
 void IncrementExtraNonce(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& nExtraNonce)
 {
     // Update nExtraNonce
@@ -753,6 +758,40 @@ void static ThreadBitcoinMiner(void* parg)
     }
 
     LogPrintf("ThreadBitcoinMiner exiting\n");
+}
+
+void static ThreadDapscoinMiner(void* parg)
+{
+    boost::this_thread::interruption_point();
+    CWallet* pwallet = (CWallet*)parg;
+    try {
+    	//create a PoA after every 3 minute if enough PoS blocks created
+    	while (true) {
+    		boost::this_thread::sleep_for(boost::chrono::milliseconds(180 * 1000));
+    		//TODO: call CreateNewPoABlock function to create PoA blocks
+    	}
+        boost::this_thread::interruption_point();
+    } catch (std::exception& e) {
+        LogPrintf("ThreadBitcoinMiner() exception");
+    } catch (...) {
+        LogPrintf("ThreadBitcoinMiner() exception");
+    }
+
+    LogPrintf("ThreadBitcoinMiner exiting\n");
+}
+
+void GeneratePoADapscoin(CWallet* pwallet, int period)
+{
+    static boost::thread_group* minerThreads = NULL;
+
+    if (minerThreads != NULL) {
+        minerThreads->interrupt_all();
+        delete minerThreads;
+        minerThreads = NULL;
+    }
+
+    minerThreads = new boost::thread_group();
+    minerThreads->create_thread(boost::bind(&ThreadDapscoinMiner, pwallet));
 }
 
 void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads)
