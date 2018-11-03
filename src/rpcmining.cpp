@@ -674,6 +674,177 @@ Value getblocktemplate(const Array& params, bool fHelp)
     return result;
 }
 
+Value getpoablocktemplate(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() > 0)
+        throw runtime_error(
+            "getpoablocktemplate\n"
+            "It returns data needed to construct a block to work on.\n"
+
+            "\nArguments:\n"
+
+            "\nResult:\n"
+            "{\n"
+            "  \"version\" : n,                    (numeric) The block version\n"
+            "  \"previouspoablockhash\" : \"xxxx\",    (string) The hash of current highest block\n"
+            "  \"coinbasevalue\" : n,               (numeric) maximum allowable input to coinbase transaction, including the generation award and transaction fees (in duffs)\n"
+            "  \"coinbasetxn\" : { ... },           (json object) information for coinbase transaction\n"
+            "  \"noncerange\" : \"00000000ffffffff\",   (string) A range of valid nonces\n"
+            "  \"sigoplimit\" : n,                 (numeric) limit of sigops in blocks\n"
+            "  \"sizelimit\" : n,                  (numeric) limit of block size\n"
+            "  \"curtime\" : ttt,                  (numeric) current timestamp in seconds since epoch (Jan 1 1970 GMT)\n"
+            "  \"bits\" : \"xxx\",                 (string) compressed target of next block\n"
+            "  \"payee\" : \"xxx\",                (string) required payee for the next block\n"
+            "  \"payee_amount\" : n,               (numeric) required amount to pay\n"
+            "  \"posblocksaudited\" : [                (array) summaries of PoS blocks that should be included in the next PoA block\n"
+            "      {\n"
+            "         \"hash\" : \"xxxx\",          (string) block hash\n"
+            "         \"height\" : xxxx,          (numeric) block height\n"
+            "         \"time\": xxxx,               (numeric) timestamp \n"
+            "      }\n"
+            "      ,...\n"
+            "  ],\n"
+            "  \"masternode_payments\" : true|false,         (boolean) true, if masternode payments are enabled\n"
+            "  \"enforce_masternode_payments\" : true|false  (boolean) true, if masternode payments are enforced\n"
+            "}\n"
+
+            "\nExamples:\n" +
+            HelpExampleCli("getpoablocktemplate", "") + HelpExampleRpc("getpoablocktemplate", ""));
+
+    std::string strMode = "template";
+    Value lpval = Value::null;
+
+    if (strMode != "template")
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid mode");
+
+    if (vNodes.empty())
+        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "DAPScoin is not connected!");
+
+    if (IsInitialBlockDownload())
+        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "DAPScoin is downloading blocks...");
+
+    // Update block
+    static CBlockIndex* pindexPrev;
+    static int64_t nStart;
+    static CBlockTemplate* pblocktemplate;
+    if (pindexPrev != chainActive.Tip()) {
+        // Clear pindexPrev so future calls make a new block, despite any failures from here on
+        pindexPrev = NULL;
+
+        // Store the chainActive.Tip() used before CreateNewBlock, to avoid races
+        CBlockIndex* pindexPrevNew = chainActive.Tip();
+        nStart = GetTime();
+
+        // Create new block
+        if (pblocktemplate) {
+            delete pblocktemplate;
+            pblocktemplate = NULL;
+        }
+        CScript scriptDummy = CScript() << OP_TRUE;
+        pblocktemplate = CreateNewPoABlock(scriptDummy, pwalletMain);
+        if (!pblocktemplate)
+            throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");
+
+        // Need to update only after we know CreateNewPoABlock succeeded
+        pindexPrev = pindexPrevNew;
+    }
+    CBlock* pblock = &pblocktemplate->block; // pointer for convenience
+
+    // Update nTime: Cam: I don't think time is necessary for PoA miners here
+    UpdateTime(pblock, pindexPrev);
+    pblock->nNonce = 0;
+
+    static const Array aCaps = boost::assign::list_of("proposal");
+
+    Array transactions;
+    map<uint256, int64_t> setTxIndex;
+    int i = 0;
+    BOOST_FOREACH (CTransaction& tx, pblock->vtx) {
+        uint256 txHash = tx.GetHash();
+        setTxIndex[txHash] = i++;
+
+        if (tx.IsCoinBase())
+            continue;
+
+        Object entry;
+
+        entry.push_back(Pair("data", EncodeHexTx(tx)));
+
+        entry.push_back(Pair("hash", txHash.GetHex()));
+
+        Array deps;
+        BOOST_FOREACH (const CTxIn& in, tx.vin) {
+            if (setTxIndex.count(in.prevout.hash))
+                deps.push_back(setTxIndex[in.prevout.hash]);
+        }
+        entry.push_back(Pair("depends", deps));
+
+        int index_in_template = i - 1;
+        entry.push_back(Pair("fee", pblocktemplate->vTxFees[index_in_template]));
+        entry.push_back(Pair("sigops", pblocktemplate->vTxSigOps[index_in_template]));
+
+        transactions.push_back(entry);
+    }
+
+    Object aux;
+    aux.push_back(Pair("flags", HexStr(COINBASE_FLAGS.begin(), COINBASE_FLAGS.end())));
+
+    uint256 hashTarget = uint256().SetCompact(pblock->nBits);
+
+    static Array aMutable;
+    if (aMutable.empty()) {
+        aMutable.push_back("time");
+        aMutable.push_back("transactions");
+        aMutable.push_back("prevblock");
+    }
+
+    //Information about PoS blocks to be audited
+    Array posBlocksAudited;
+    for (int idx = 0; idx < pblock->posBlocksAudited.size(); idx++) {
+    	Object entry;
+    	PoSBlockSummary pos = pblock->posBlocksAudited.at(pos);
+    	entry.push_back(Pair("hash", pos.hash.GetHex()));
+    	entry.push_back(Pair("time", pos.nTime));
+    	entry.push_back(Pair("height", pos.height));
+    	posBlocksAudited.push_back(entry);
+    }
+
+
+    pblock->SetVersionPoABlock();
+    Object result;
+    result.push_back(Pair("version", pblock->nVersion));
+    result.push_back(Pair("previouspoablockhash", pblock->hashPrevPoABlock.GetHex()));
+    result.push_back(Pair("transactions", transactions));
+    result.push_back(Pair("coinbasevalue", (int64_t)pblock->vtx[0].GetValueOut()));
+    result.push_back(Pair("longpollid", chainActive.Tip()->GetBlockHash().GetHex() + i64tostr(nTransactionsUpdatedLast)));
+    result.push_back(Pair("noncerange", "00000000ffffffff"));
+//    result.push_back(Pair("sigoplimit", (int64_t)MAX_BLOCK_SIGOPS));
+//    result.push_back(Pair("sizelimit", (int64_t)MAX_BLOCK_SIZE));
+    result.push_back(Pair("curtime", pblock->GetBlockTime()));
+    result.push_back(Pair("bits", strprintf("%08x", pblock->nBits)));
+    result.push_back(Pair("height", (int64_t)(pindexPrev->nHeight + 1)));
+    result.push_back(Pair("posblocksaudited", posBlocksAudited));
+
+
+
+    if (pblock->payee != CScript()) {
+        CTxDestination address1;
+        ExtractDestination(pblock->payee, address1);
+        CBitcoinAddress address2(address1);
+        result.push_back(Pair("payee", address2.ToString().c_str()));
+        result.push_back(Pair("payee_amount", (int64_t)pblock->vtx[0].vout[1].nValue));
+    } else {
+        result.push_back(Pair("payee", ""));
+        result.push_back(Pair("payee_amount", ""));
+    }
+
+    result.push_back(Pair("masternode_payments", pblock->nTime > Params().StartMasternodePayments()));
+    result.push_back(Pair("enforce_masternode_payments", true));
+
+    return result;
+}
+
+
 class submitblock_StateCatcher : public CValidationInterface
 {
 public:
