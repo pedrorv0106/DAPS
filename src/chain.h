@@ -179,6 +179,7 @@ public:
     //! PoA block header
     uint256 hashPoAMerkleRoot;
     uint256 minedHash;
+    uint256 hashPrevPoABlock;
 
     //! (memory only) Sequential id assigned to distinguish order in which blocks are received.
     uint32_t nSequenceId;
@@ -224,6 +225,7 @@ public:
 
         hashPoAMerkleRoot = uint256();
         minedHash = uint256();
+        hashPrevPoABlock = uint256();
     }
 
     CBlockIndex()
@@ -254,6 +256,9 @@ public:
 
         if (block.IsProofOfAudit()) {
             SetProofOfAudit();
+            hashPrevPoABlock = block.hashPrevPoABlock;
+            minedHash = block.minedHash;
+            hashPoAMerkleRoot = block.hashPoAMerkleRoot;
             //TODO: need to check here
             prevoutStake = block.vtx[1].vin[0].prevout;
             nStakeTime = block.nTime;
@@ -295,6 +300,7 @@ public:
         if (IsProofOfAudit()) {
             block.hashPoAMerkleRoot = hashPoAMerkleRoot;
             block.minedHash = minedHash;
+            block.hashPrevPoABlock = hashPrevPoABlock;
         }  
         if (pprev)
             block.hashPrevBlock = pprev->GetBlockHash();
