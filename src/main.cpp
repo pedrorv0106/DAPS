@@ -4311,8 +4311,8 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
                          REJECT_INVALID, "bad-header", true);
 
     // Check timestamp
-    LogPrint("debug", "%s: block=%s  is proof of stake=%d\n", __func__, block.GetHash().ToString().c_str(),
-             block.IsProofOfStake());
+    LogPrint("debug", "%s: block=%s  is proof of stake=%d, is proof of audit=%d\n", __func__, block.GetHash().ToString().c_str(),
+             block.IsProofOfStake(), block.IsProofOfAudit());
     if (block.GetBlockTime() >
         GetAdjustedTime() + (block.IsProofOfStake() ? 180 : 7200)) // 3 minute future drift for PoS
         return state.Invalid(error("CheckBlock() : block timestamp too far in the future"),
@@ -4332,6 +4332,21 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
         if (mutated)
             return state.DoS(100, error("CheckBlock() : duplicate transaction"),
                              REJECT_INVALID, "bad-txns-duplicate", true);
+    }
+
+    //Proof of Audit: Check audited PoS blocks infor merkle root
+    {
+    	bool fMutated;
+    	if (!CheckPoAMerkleRoot(block, &fMutated)) {
+    		return state.DoS(100, error("CheckBlock() : hashPoAMerkleRoot mismatch"),
+    		                             REJECT_INVALID, "bad-txnmrklroot", true);
+    	}
+    	// Check for PoA merkle tree malleability (CVE-2012-2459): repeating sequences
+		// of transactions in a block without affecting the PoA merkle root of a block,
+		// while still invalidating it.
+		if (fMutated)
+			return state.DoS(100, error("CheckBlock() : duplicate PoS block info"),
+							 REJECT_INVALID, "bad-txns-duplicate", true);
     }
 
     // All potential-corruption validation must be done before we do any
@@ -4381,6 +4396,19 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
         for (unsigned int i = 2; i < block.vtx.size(); i++)
             if (block.vtx[i].IsCoinStake())
                 return state.DoS(100, error("CheckBlock() : more than one coinaudit"));
+
+        //Check PoA consensus rules
+        if (!CheckPoAContainRecentHash(block)) {
+        	return state.DoS(100, error("CheckBlock() : PoA block should contain only non-audited recent PoS blocks"));
+        }
+
+        if (!CheckNumberOfAuditedPoSBlocks(block)) {
+        	return state.DoS(100, error("CheckBlock() : A PoA block should audit at least 59 PoS blocks"));
+        }
+
+        if (!CheckPoABlockNotContainingPoABlockInfo(block)) {
+        	return state.DoS(100, error("CheckBlock() : A PoA block should not audit any existing PoA blocks"));
+        }
     }
 
     // ----------- swiftTX transaction scanning -----------
