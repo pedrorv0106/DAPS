@@ -30,6 +30,7 @@
 #include "ui_interface.h"
 #include "util.h"
 #include "utilmoneystr.h"
+#include "poa.h"
 
 #include "primitives/zerocoin.h"
 #include "libzerocoin/Denominations.h"
@@ -4272,6 +4273,19 @@ bool CheckBlockHeader(const CBlockHeader &block, CValidationState &state, bool f
     if (fCheckPOW && !CheckProofOfWork(block.GetHash(), block.nBits))
         return state.DoS(50, error("CheckBlockHeader() : proof of work failed"),
                          REJECT_INVALID, "high-hash");
+
+    //PoA specific header checks
+    //Check that the header is valid for PoA mining, this check will use a PoA consensus rule
+    if (block.IsPoABlockByVersion() && !CheckPoABlockMinedHash(&block)) {
+    	return state.DoS(50, error("CheckBlockHeader() : proof of work PoA failed"),
+    	                         REJECT_INVALID, "high-hash");
+    }
+
+    //Check that the PoA header contains valid for PoA previous block hash, this check will use a PoA consensus rule
+    if (block.IsPoABlockByVersion() && !CheckPrevPoABlockHash(&block)) {
+        return state.DoS(50, error("CheckBlockHeader() : proof of work PoA failed"),
+        	                         REJECT_INVALID, "high-hash");
+    }
 
     // Version 4 header must be used after Params().Zerocoin_StartHeight(). And never before.
     if (block.GetBlockTime() > Params().Zerocoin_StartTime()) {

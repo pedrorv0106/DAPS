@@ -18,8 +18,8 @@
 const uint32_t POA_BLOCK_PERIOD = 59;
 
 //If blockheight = -1, the to-be-checked block is not included yet in the chain, otherwise, that is the height of the poa block
-bool CheckPoAContainRecentHash(CBlock* block, int blockHeight) {
-    if (block->posBlocksAudited.size() < POA_BLOCK_PERIOD) {
+bool CheckPoAContainRecentHash(CBlock& block, int blockHeight) {
+    if (block.posBlocksAudited.size() < POA_BLOCK_PERIOD) {
         return false;
     }
     //block.Merkle
@@ -32,7 +32,7 @@ bool CheckPoAContainRecentHash(CBlock* block, int blockHeight) {
         //this is the first PoA block ==> check all PoS blocks from LAST_POW_BLOCK up to currentHeight - POA_BLOCK_PERIOD - 1 inclusive
         int index = 0;
         for (int i = Params().LAST_POW_BLOCK() + 1; i <= currentHeight - POA_BLOCK_PERIOD; i++) {
-            PoSBlockSummary pos = block->posBlocksAudited.at(index);
+            PoSBlockSummary pos = block.posBlocksAudited.at(index);
             if (pos.hash != chainActive[i]->GetBlockHash()
                     || pos.nTime != chainActive[i]->GetBlockTime()
                     || pos.height != chainActive[i]->nHeight) {
@@ -63,7 +63,7 @@ bool CheckPoAContainRecentHash(CBlock* block, int blockHeight) {
             while (lastAuditedPoSHeight <= currentHeight) {
                 if (chainActive[lastAuditedPoSHeight]->GetBlockHeader().IsPoABlockByVersion()
                         && chainActive[lastAuditedPoSHeight]->nHeight > Params().LAST_POW_BLOCK()) {
-                    PoSBlockSummary pos = block->posBlocksAudited[idxOfPoSInfo];
+                    PoSBlockSummary pos = block.posBlocksAudited[idxOfPoSInfo];
                     CBlockIndex* posAudited = chainActive[lastAuditedPoSHeight];
                     if (pos.hash == *(posAudited->phashBlock)
                         && pos.height == posAudited->nHeight
@@ -77,7 +77,7 @@ bool CheckPoAContainRecentHash(CBlock* block, int blockHeight) {
                 }
                 lastAuditedPoSHeight++;
             }
-            if (idxOfPoSInfo != block->posBlocksAudited.size() - 1) {
+            if (idxOfPoSInfo != block.posBlocksAudited.size() - 1) {
                 //Not all PoS Blocks in PoA block have been checked, not satisfied
                 ret = false;
             }
@@ -88,17 +88,17 @@ bool CheckPoAContainRecentHash(CBlock* block, int blockHeight) {
     return ret;
 }
 
-bool CheckNumberOfAuditedPoSBlocks(CBlock* block) {
-    if (block->posBlocksAudited.size() < POA_BLOCK_PERIOD) {
+bool CheckNumberOfAuditedPoSBlocks(CBlock& block) {
+    if (block.posBlocksAudited.size() < POA_BLOCK_PERIOD) {
         return false;
     }
     return true;
 }
 
 //Check whether the block is successfully mined and the mined hash satisfy the difficulty
-bool CheckPoABlockMinedHash(CBlock* block) {
-    const uint256 minedHash = block->ComputeMinedHash();
-    if (minedHash == block->minedHash) {
+bool CheckPoABlockMinedHash(CBlockHeader& block) {
+    const uint256 minedHash = block.ComputeMinedHash();
+    if (minedHash == block.minedHash) {
         //Check minedHash satisfy difficulty based on nbits
         bool fNegative;
         bool fOverflow;
@@ -107,7 +107,7 @@ bool CheckPoABlockMinedHash(CBlock* block) {
         if (Params().SkipProofOfWorkCheck())
             return true;
 
-        bnTarget.SetCompact(block->nBits, &fNegative, &fOverflow);
+        bnTarget.SetCompact(block.nBits, &fNegative, &fOverflow);
 
         // Check range
         if (fNegative || bnTarget == 0 || fOverflow || bnTarget > Params().ProofOfWorkLimit())
@@ -123,8 +123,8 @@ bool CheckPoABlockMinedHash(CBlock* block) {
 }
 
 //A PoA block should contains previous PoA block hash
-bool CheckPrevPoABlockHash(CBlock* block, int blockHeight) {
-    uint256 blockHash = block->hashPrevPoABlock;
+bool CheckPrevPoABlockHash(CBlockHeader& block, int blockHeight) {
+    uint256 blockHash = block.hashPrevPoABlock;
     int currentHeight = chainActive.Tip()->nHeight;
     if (blockHeight != - 1) {
         currentHeight = blockHeight - 1;
@@ -141,7 +141,7 @@ bool CheckPrevPoABlockHash(CBlock* block, int blockHeight) {
     if (start > Params().START_POA_BLOCK()) {
         CBlockHeader header = chainActive[start]->GetBlockHeader();
         uint256 poaBlockHash = header.GetHash();
-        if (poaBlockHash == block->hashPrevPoABlock) {
+        if (poaBlockHash == block.hashPrevPoABlock) {
             ret = true;
         }
     }
@@ -150,24 +150,24 @@ bool CheckPrevPoABlockHash(CBlock* block, int blockHeight) {
 }
 
 //Check whether the poa merkle root is correctly computed
-bool CheckPoAMerkleRoot(CBlock* block) {
-    uint256 expected = block->BuildPoAMerkleTree();
-    if (expected == block->hashPoAMerkleRoot) {
+bool CheckPoAMerkleRoot(CBlock& block) {
+    uint256 expected = block.BuildPoAMerkleTree();
+    if (expected == block.hashPoAMerkleRoot) {
         return true;
     }
     return false;
 }
 
 //A PoA block cannot contain information of any PoA block information (hash, height, timestamp)
-bool CheckPoABlockNotContainingPoABlockInfo(CBlock* block, int blockheight) {
+bool CheckPoABlockNotContainingPoABlockInfo(CBlock& block, int blockHeight) {
     //block.Merkle
     int currentHeight = chainActive.Tip()->nHeight;
     if (blockHeight != - 1) {
         currentHeight = blockHeight - 1;
     }
-    uint32_t numOfPoSBlocks = block->posBlocksAudited.size();
+    uint32_t numOfPoSBlocks = block.posBlocksAudited.size();
     for (int i = 0; i < numOfPoSBlocks; i++) {
-        PoSBlockSummary pos = block->posBlocksAudited.at(i);
+        PoSBlockSummary pos = block.posBlocksAudited.at(i);
         uint256 hash = pos.hash;
         if (mapBlockIndex.count(hash) == 0) {
             return false;
@@ -177,7 +177,7 @@ bool CheckPoABlockNotContainingPoABlockInfo(CBlock* block, int blockheight) {
         if (header.IsPoABlockByVersion()) {
             return false;
         }
-        if (pblockindex->nTime != block->nTime || pblockindex->nBits != block->nBits) {
+        if (pblockindex->nTime != block.nTime || pblockindex->nBits != block.nBits) {
             return false;
         }
     }
