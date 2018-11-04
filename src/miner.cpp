@@ -575,8 +575,7 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, CWallet* pwalle
 	//Comment out all, because a PoA block does not verify any transaction, except reward transactions to miners
 	// No need to collect memory pool transactions into the block
 	CAmount nFees = 0;
-	CBlockIndex* pindexPrev = chainActive.Tip();
-	const int nHeight = pindexPrev->nHeight + 1;}
+	const int nHeight = pindexPrev->nHeight + 1;
 
 	// Fill in header
 	pblock->hashPrevBlock = pindexPrev->GetBlockHash();
