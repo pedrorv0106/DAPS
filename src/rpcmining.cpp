@@ -802,7 +802,7 @@ Value getpoablocktemplate(const Array& params, bool fHelp)
     Array posBlocksAudited;
     for (int idx = 0; idx < pblock->posBlocksAudited.size(); idx++) {
     	Object entry;
-    	PoSBlockSummary pos = pblock->posBlocksAudited[pos];
+    	PoSBlockSummary pos = pblock->posBlocksAudited.at(idx);
     	entry.push_back(Pair("hash", pos.hash.GetHex()));
     	entry.push_back(Pair("time", (int64_t)(pos.nTime)));
     	entry.push_back(Pair("height", (int64_t)(pos.height)));
