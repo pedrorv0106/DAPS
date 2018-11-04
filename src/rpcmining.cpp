@@ -249,7 +249,7 @@ Value generatepoa(const Array& params, bool fHelp)
             	return Value::null;
             }
 
-            unique_ptr<CBlockTemplate> pblocktemplate(CreateNewPoABlock(reservekey, pwalletMain));
+            unique_ptr<CBlockTemplate> pblocktemplate(CreateNewPoABlockWithKey(reservekey, pwalletMain));
             if (!pblocktemplate.get())
                 throw JSONRPCError(RPC_INTERNAL_ERROR, "Wallet keypool empty");
             CBlock* pblock = &pblocktemplate->block;
@@ -802,10 +802,10 @@ Value getpoablocktemplate(const Array& params, bool fHelp)
     Array posBlocksAudited;
     for (int idx = 0; idx < pblock->posBlocksAudited.size(); idx++) {
     	Object entry;
-    	PoSBlockSummary pos = pblock->posBlocksAudited.at(pos);
+    	PoSBlockSummary pos = pblock->posBlocksAudited[pos];
     	entry.push_back(Pair("hash", pos.hash.GetHex()));
-    	entry.push_back(Pair("time", pos.nTime));
-    	entry.push_back(Pair("height", pos.height));
+    	entry.push_back(Pair("time", (int64_t)(pos.nTime)));
+    	entry.push_back(Pair("height", (int64_t)(pos.height)));
     	posBlocksAudited.push_back(entry);
     }
 
@@ -816,7 +816,7 @@ Value getpoablocktemplate(const Array& params, bool fHelp)
     result.push_back(Pair("previouspoablockhash", pblock->hashPrevPoABlock.GetHex()));
     result.push_back(Pair("transactions", transactions));
     result.push_back(Pair("coinbasevalue", (int64_t)pblock->vtx[0].GetValueOut()));
-    result.push_back(Pair("longpollid", chainActive.Tip()->GetBlockHash().GetHex() + i64tostr(nTransactionsUpdatedLast)));
+    //result.push_back(Pair("longpollid", chainActive.Tip()->GetBlockHash().GetHex() + i64tostr(nTransactionsUpdatedLast)));
     result.push_back(Pair("noncerange", "00000000ffffffff"));
 //    result.push_back(Pair("sigoplimit", (int64_t)MAX_BLOCK_SIGOPS));
 //    result.push_back(Pair("sizelimit", (int64_t)MAX_BLOCK_SIZE));
