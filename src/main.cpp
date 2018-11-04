@@ -4276,13 +4276,13 @@ bool CheckBlockHeader(const CBlockHeader &block, CValidationState &state, bool f
 
     //PoA specific header checks
     //Check that the header is valid for PoA mining, this check will use a PoA consensus rule
-    if (block.IsPoABlockByVersion() && !CheckPoABlockMinedHash(&block)) {
+    if (block.IsPoABlockByVersion() && !CheckPoABlockMinedHash(block)) {
     	return state.DoS(50, error("CheckBlockHeader() : proof of work PoA failed"),
     	                         REJECT_INVALID, "high-hash");
     }
 
     //Check that the PoA header contains valid for PoA previous block hash, this check will use a PoA consensus rule
-    if (block.IsPoABlockByVersion() && !CheckPrevPoABlockHash(&block)) {
+    if (block.IsPoABlockByVersion() && !CheckPrevPoABlockHash(block)) {
         return state.DoS(50, error("CheckBlockHeader() : proof of work PoA failed"),
         	                         REJECT_INVALID, "high-hash");
     }

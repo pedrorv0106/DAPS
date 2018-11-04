@@ -18,7 +18,7 @@
 const uint32_t POA_BLOCK_PERIOD = 59;
 
 //If blockheight = -1, the to-be-checked block is not included yet in the chain, otherwise, that is the height of the poa block
-bool CheckPoAContainRecentHash(CBlock& block, int blockHeight) {
+bool CheckPoAContainRecentHash(const CBlock& block, int blockHeight) {
     if (block.posBlocksAudited.size() < POA_BLOCK_PERIOD) {
         return false;
     }
@@ -88,7 +88,7 @@ bool CheckPoAContainRecentHash(CBlock& block, int blockHeight) {
     return ret;
 }
 
-bool CheckNumberOfAuditedPoSBlocks(CBlock& block) {
+bool CheckNumberOfAuditedPoSBlocks(const CBlock& block) {
     if (block.posBlocksAudited.size() < POA_BLOCK_PERIOD) {
         return false;
     }
@@ -96,7 +96,7 @@ bool CheckNumberOfAuditedPoSBlocks(CBlock& block) {
 }
 
 //Check whether the block is successfully mined and the mined hash satisfy the difficulty
-bool CheckPoABlockMinedHash(CBlockHeader& block) {
+bool CheckPoABlockMinedHash(const CBlockHeader& block) {
     const uint256 minedHash = block.ComputeMinedHash();
     if (minedHash == block.minedHash) {
         //Check minedHash satisfy difficulty based on nbits
@@ -123,7 +123,7 @@ bool CheckPoABlockMinedHash(CBlockHeader& block) {
 }
 
 //A PoA block should contains previous PoA block hash
-bool CheckPrevPoABlockHash(CBlockHeader& block, int blockHeight) {
+bool CheckPrevPoABlockHash(const CBlockHeader& block, int blockHeight) {
     uint256 blockHash = block.hashPrevPoABlock;
     int currentHeight = chainActive.Tip()->nHeight;
     if (blockHeight != - 1) {
@@ -150,7 +150,7 @@ bool CheckPrevPoABlockHash(CBlockHeader& block, int blockHeight) {
 }
 
 //Check whether the poa merkle root is correctly computed
-bool CheckPoAMerkleRoot(CBlock& block, bool* fMutate) {
+bool CheckPoAMerkleRoot(const CBlock& block, bool* fMutate) {
     uint256 expected = block.BuildPoAMerkleTree(fMutate);
     if (expected == block.hashPoAMerkleRoot) {
         return true;
@@ -159,7 +159,7 @@ bool CheckPoAMerkleRoot(CBlock& block, bool* fMutate) {
 }
 
 //A PoA block cannot contain information of any PoA block information (hash, height, timestamp)
-bool CheckPoABlockNotContainingPoABlockInfo(CBlock& block, int blockHeight) {
+bool CheckPoABlockNotContainingPoABlockInfo(const CBlock& block, int blockHeight) {
     //block.Merkle
     int currentHeight = chainActive.Tip()->nHeight;
     if (blockHeight != - 1) {

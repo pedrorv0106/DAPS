@@ -12,15 +12,15 @@ extern const uint32_t POA_BLOCK_PERIOD;
 //unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader* pblock);
 
 //Check PoA block header consensus rules
-bool CheckPrevPoABlockHash(CBlockHeader& block, int blockheight = -1);
-bool CheckPoABlockMinedHash(CBlockHeader& block);
+bool CheckPrevPoABlockHash(const CBlockHeader& block, int blockheight = -1);
+bool CheckPoABlockMinedHash(const CBlockHeader& block);
 
-bool CheckPoAMerkleRoot(CBlock& block, bool* fMutate = false);
+bool CheckPoAMerkleRoot(const CBlock& block, bool* fMutate = false);
 
 /** Check whether a block hash satisfies the proof-of-work requirement specified by nBits */
-bool CheckPoAContainRecentHash(CBlock& block, int blockHeight = -1);
-bool CheckNumberOfAuditedPoSBlocks(CBlock& block);
-bool CheckPoABlockNotContainingPoABlockInfo(CBlock& block, int blockheight = -1);
+bool CheckPoAContainRecentHash(const CBlock& block, int blockHeight = -1);
+bool CheckNumberOfAuditedPoSBlocks(const CBlock& block);
+bool CheckPoABlockNotContainingPoABlockInfo(const CBlock& block, int blockheight = -1);
 
 //uint256 GetBlockProof(const CBlockIndex& block);
 
