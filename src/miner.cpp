@@ -156,6 +156,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, 
     unique_ptr<CBlockTemplate> pblocktemplate(new CBlockTemplate());
     if (!pblocktemplate.get())
         return NULL;
+
     CBlock* pblock = &pblocktemplate->block; // pointer for convenience
 
     // -regtest only: allow overriding block.nVersion with
@@ -574,22 +575,20 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, CWallet* pwalle
 	//Comment out all, because a PoA block does not verify any transaction, except reward transactions to miners
 	// No need to collect memory pool transactions into the block
 	CAmount nFees = 0;
+	CBlockIndex* pindexPrev = chainActive.Tip();
+	const int nHeight = pindexPrev->nHeight + 1;}
 
-	{
-		CBlockIndex* pindexPrev = chainActive.Tip();
-		const int nHeight = pindexPrev->nHeight + 1;}
+	// Fill in header
+	pblock->hashPrevBlock = pindexPrev->GetBlockHash();
+	if (nprevPoAHeight >= Params().START_POA_BLOCK()) {
+		pblock->hashPrevPoABlock = chainActive[nprevPoAHeight]->GetBlockHeader().hashPrevPoABlock;
+	}
 
-		// Fill in header
-		pblock->hashPrevBlock = pindexPrev->GetBlockHash();
-		if (nprevPoAHeight >= Params().START_POA_BLOCK()) {
-			pblock->hashPrevPoABlock = chainActive[nprevPoAHeight]->GetBlockHeader().hashPrevPoABlock;
-		}
+	pblock->nBits = GetNextWorkRequired(pindexPrev, pblock);
+	pblock->nNonce = 0;
+	uint256 nCheckpoint = 0;
 
-		pblock->nBits = GetNextWorkRequired(pindexPrev, pblock);
-		pblock->nNonce = 0;
-		uint256 nCheckpoint = 0;
-
-		pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(pblock->vtx[0]);
+	pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(pblock->vtx[0]);
 
 //        CValidationState state;
 //        if (!TestBlockValidity(state, *pblock, pindexPrev, false, false)) {
@@ -597,7 +596,6 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, CWallet* pwalle
 //            mempool.clear();
 //            return NULL;
 //        }
-	}
 
 	return pblocktemplate.release();
 }
