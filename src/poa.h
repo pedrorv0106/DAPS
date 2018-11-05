@@ -1,5 +1,5 @@
-#ifndef DAPSCOIN_POW_H
-#define DAPSCOIN_POW_H
+#ifndef DAPSCOIN_POA_H
+#define DAPSCOIN_POA_H
 
 #include <stdint.h>
 #include <primitives/block.h>
@@ -24,4 +24,4 @@ bool CheckPoABlockNotContainingPoABlockInfo(const CBlock& block, int blockheight
 
 //uint256 GetBlockProof(const CBlockIndex& block);
 
-#endif // DAPSCOIN_POW_H
+#endif // DAPSCOIN_POA_H
