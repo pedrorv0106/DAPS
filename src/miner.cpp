@@ -511,20 +511,16 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, CWallet* pwalle
 		return NULL;
 	CBlock* pblock = &pblocktemplate->block; // pointer for convenience
 
-	// -regtest only: allow overriding block.nVersion with
-	// -blockversion=N to test forking scenarios
-	if (Params().MineBlocksOnDemand())
-		pblock->nVersion = GetArg("-blockversion", pblock->nVersion);
-
 	// Create coinbase tx
 	CMutableTransaction txNew;
 	txNew.vin.resize(1);
 	txNew.vin[0].prevout.SetNull();
 	txNew.vout.resize(1);
+	//Value of this vout coinbase will be computed based on the number of audited PoS blocks
+	//This will be computed later
 	txNew.vout[0].scriptPubKey = scriptPubKeyIn;
 
 	CBlockIndex* prev = chainActive.Tip();
-	txNew.vout[0].nValue = GetBlockValue(prev->nHeight);
 
 	pblock->vtx.push_back(txNew);
 	pblocktemplate->vTxFees.push_back(-1);   // updated at end
@@ -535,45 +531,22 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, CWallet* pwalle
 	CBlockIndex* pindexPrev = chainActive.Tip();
 	pblock->nBits = GetNextWorkRequired(pindexPrev, pblock);
 
-	bool fPoABlockCreated = false;
 	uint32_t nprevPoAHeight;
 
-	unsigned int nTxNewTime = 0;
 
-	CMutableTransaction txCoinAudit;
-	if (pwallet->CreateCoinAudit(*pwallet, pblock->nBits, 0, txCoinAudit, nTxNewTime)) {
-		nprevPoAHeight = GetListOfPoSInfo(pindexPrev->nHeight, pblock->posBlocksAudited);
-		// Set block version to differentiate PoA blocks from PoS blocks
-		pblock->SetVersionPoABlock();
-		pblock->nTime = nTxNewTime;
-		pblock->vtx[0].vout[0].SetEmpty();
-		pblock->vtx.push_back(CTransaction(txCoinAudit));
-		fPoABlockCreated = true;
-	}
-
-	if (!fPoABlockCreated) {
+	nprevPoAHeight = GetListOfPoSInfo(pindexPrev->nHeight, pblock->posBlocksAudited);
+	if (pblock->posBlocksAudited.size() == 0) {
 		return NULL;
 	}
+	// Set block version to differentiate PoA blocks from PoS blocks
+	pblock->SetVersionPoABlock();
+	pblock->nTime = GetAdjustedTime();
 
-	// Largest block you're willing to create:
-	unsigned int nBlockMaxSize = GetArg("-blockmaxsize", DEFAULT_BLOCK_MAX_SIZE);
-	// Limit to betweeen 1K and MAX_BLOCK_SIZE-1K for sanity:
-	unsigned int nBlockMaxSizeNetwork = MAX_BLOCK_SIZE_CURRENT;
-	nBlockMaxSize = std::max((unsigned int)1000, std::min((nBlockMaxSizeNetwork - 1000), nBlockMaxSize));
+	//compute PoA block reward
+	CAmount nReward = pblock->posBlocksAudited.size() * 100 * COIN;
 
-	// How much of the block should be dedicated to high-priority transactions,
-	// included regardless of the fees they pay
-	unsigned int nBlockPrioritySize = GetArg("-blockprioritysize", DEFAULT_BLOCK_PRIORITY_SIZE);
-	nBlockPrioritySize = std::min(nBlockMaxSize, nBlockPrioritySize);
-
-	// Minimum block size you want to create; block will be filled with free transactions
-	// until there are no more or the block reaches this size:
-	unsigned int nBlockMinSize = GetArg("-blockminsize", DEFAULT_BLOCK_MIN_SIZE);
-	nBlockMinSize = std::min(nBlockMaxSize, nBlockMinSize);
-
-	//Comment out all, because a PoA block does not verify any transaction, except reward transactions to miners
+	//Comment out all previous code, because a PoA block does not verify any transaction, except reward transactions to miners
 	// No need to collect memory pool transactions into the block
-	CAmount nFees = 0;
 	const int nHeight = pindexPrev->nHeight + 1;
 
 	// Fill in header
@@ -584,7 +557,6 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, CWallet* pwalle
 
 	pblock->nBits = GetNextWorkRequired(pindexPrev, pblock);
 	pblock->nNonce = 0;
-	uint256 nCheckpoint = 0;
 
 	pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(pblock->vtx[0]);
 
