@@ -47,7 +47,6 @@ function route_get_tx(res, txid) {
       // }
       // else {
         lib.get_rawtransaction(txid, function(rtx) {
-          console.log('RawTX',rtx)
           if (rtx.txid) {
             lib.prepare_vin(rtx, function(vin) {
               lib.prepare_vout(rtx.vout, rtx.txid, vin, function(rvout, rvin) {
@@ -67,7 +66,6 @@ function route_get_tx(res, txid) {
                       blockhash: '-',
                       blockindex: -1,
                     });
-                    console.log("CONF <0")
                     res.render('tx', { active: 'tx', tx: utx, confirmations: settings.confirmations, blockcount:-1});
                   } else {
                     Object.assign(utx, {
@@ -75,7 +73,6 @@ function route_get_tx(res, txid) {
                       blockindex: rtx.blockheight,
                     });
                     lib.get_blockcount(function(blockcount) {
-                      console.log("CONF >=0", rtx.confirmations, settings.confirmations)
                       res.render('tx', { active: 'tx', tx: utx, confirmations: settings.confirmations, blockcount: blockcount});
                     });
                   }
