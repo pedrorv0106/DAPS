@@ -34,6 +34,7 @@
     "tx_hash": "Hash",
     "tx_address": "Address",
     "tx_nonstandard": "NONSTANDARD TX",
+    "tx_mineType": "Type",
 
     // block view
     "block_previous": "Previous",
@@ -57,6 +58,8 @@
     "nonce": "Nonce",
     "new_coins": "New Coins",
     "proof_of_stake": "PoS",
+    "proof_of_work": "PoW",
+    "proof_of_audit": "PoA",
     "initial_index_alert": "Indexing is currently incomplete, functionality is limited until index is up-to-date.",
 
     //address menu
