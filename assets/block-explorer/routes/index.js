@@ -40,39 +40,42 @@ function route_get_tx(res, txid) {
     route_get_block(res, settings.genesis_block);
   } else {
     db.get_tx(txid, function(tx) {
-      if (tx) {
-        lib.get_blockcount(function(blockcount) {
-          res.render('tx', { active: 'tx', tx: tx, confirmations: settings.confirmations, blockcount: blockcount});
-        });
-      }
-      else {
+      // if (tx) {
+      //   lib.get_blockcount(function(blockcount) {
+      //     res.render('tx', { active: 'tx', tx: tx, confirmations: settings.confirmations, blockcount: blockcount});
+      //   });
+      // }
+      // else {
         lib.get_rawtransaction(txid, function(rtx) {
+          console.log('RawTX',rtx)
           if (rtx.txid) {
             lib.prepare_vin(rtx, function(vin) {
               lib.prepare_vout(rtx.vout, rtx.txid, vin, function(rvout, rvin) {
                 lib.calculate_total(rvout, function(total){
+                  rtx.mineType = (rvin[0].addresses==='coinbase')? 'PoW': 'PoS';
+                  if (rtx.version>=100) rtx.mineType = 'PoA';
+                  var utx = {
+                    txid: rtx.txid,
+                    vin: rvin,
+                    vout: rvout,
+                    total: total.toFixed(8),
+                    timestamp: rtx.time,
+                    mineType: rtx.mineType,
+                  };
                   if (!rtx.confirmations > 0) {
-                    var utx = {
-                      txid: rtx.txid,
-                      vin: rvin,
-                      vout: rvout,
-                      total: total.toFixed(8),
-                      timestamp: rtx.time,
+                    Object.assign(utx, {
                       blockhash: '-',
                       blockindex: -1,
-                    };
+                    });
+                    console.log("CONF <0")
                     res.render('tx', { active: 'tx', tx: utx, confirmations: settings.confirmations, blockcount:-1});
                   } else {
-                    var utx = {
-                      txid: rtx.txid,
-                      vin: rvin,
-                      vout: rvout,
-                      total: total.toFixed(8),
-                      timestamp: rtx.time,
+                    Object.assign(utx, {
                       blockhash: rtx.blockhash,
                       blockindex: rtx.blockheight,
-                    };
+                    });
                     lib.get_blockcount(function(blockcount) {
+                      console.log("CONF >=0", rtx.confirmations, settings.confirmations)
                       res.render('tx', { active: 'tx', tx: utx, confirmations: settings.confirmations, blockcount: blockcount});
                     });
                   }
@@ -83,7 +86,7 @@ function route_get_tx(res, txid) {
             route_get_index(res, null);
           }
         });
-      }
+      //}
     });
   }
 }
@@ -137,7 +140,6 @@ router.get('/markets/:market', function(req, res) {
       /*if (market === 'bittrex') {
         data = JSON.parse(data);
       }*/
-      console.log(data);
       res.render('./markets/' + market, {
         active: 'markets',
         marketdata: {
