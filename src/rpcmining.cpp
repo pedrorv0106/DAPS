@@ -223,61 +223,52 @@ Value generatepoa(const Array& params, bool fHelp)
         period = params[1].get_int();
     }
 
-    // -regtest mode: don't return until a poa block is successfully generated and added to the chain
-    if (Params().MineBlocksOnDemand()) {
-        int nHeightStart = 0;
-        int nHeightEnd = 0;
-        int nHeight = 0;
-        int nGenerate = 1;
-        CReserveKey reservekey(pwalletMain);
+    // don't return until a poa block is successfully generated and added to the chain
+	int nHeightStart = 0;
+	int nHeightEnd = 0;
+	int nHeight = 0;
+	int nGenerate = 1;
+	CReserveKey reservekey(pwalletMain);
 
-        { // Don't keep cs_main locked
-            LOCK(cs_main);
-            nHeightStart = chainActive.Height();
-            nHeight = nHeightStart;
-            nHeightEnd = nHeightStart + nGenerate;
-        }
-        unsigned int nExtraNonce = 0;
-        Array blockHashes;
-        while (nHeight < nHeightEnd) {
-            bool createPoABlock = false;
-            if (nHeight >= Params().LAST_POW_BLOCK()) {
-            	createPoABlock = true;
-            }
+	{ // Don't keep cs_main locked
+		LOCK(cs_main);
+		nHeightStart = chainActive.Height();
+		nHeight = nHeightStart;
+		nHeightEnd = nHeightStart + nGenerate;
+	}
+	unsigned int nExtraNonce = 0;
+	Array blockHashes;
 
-            if (!createPoABlock) {
-            	return Value::null;
-            }
+	bool createPoABlock = false;
+	if (nHeight >= Params().LAST_POW_BLOCK()) {
+		createPoABlock = true;
+	}
 
-            unique_ptr<CBlockTemplate> pblocktemplate(CreateNewPoABlockWithKey(reservekey, pwalletMain));
-            if (!pblocktemplate.get())
-                throw JSONRPCError(RPC_INTERNAL_ERROR, "Wallet keypool empty");
-            CBlock* pblock = &pblocktemplate->block;
-            {
-                LOCK(cs_main);
-                IncrementExtraNonce(pblock, chainActive.Tip(), nExtraNonce);
-            }
-            while (!CheckProofOfWork(pblock->GetHash(), pblock->nBits)) {
-                // Yes, there is a chance every nonce could fail to satisfy the -regtest
-                // target -- 1 in 2^(2^32). That ain't gonna happen.
-                ++pblock->nNonce;
-            }
+	if (!createPoABlock) {
+		return Value::null;
+	}
+
+	unique_ptr<CBlockTemplate> pblocktemplate(CreateNewPoABlockWithKey(reservekey, pwalletMain));
+	if (!pblocktemplate.get())
+		throw JSONRPCError(RPC_INTERNAL_ERROR, "Wallet keypool empty");
+	CBlock* pblock = &pblocktemplate->block;
+	{
+		LOCK(cs_main);
+		IncrementExtraNonce(pblock, chainActive.Tip(), nExtraNonce);
+	}
+	while (!CheckProofOfWork(pblock->GetHash(), pblock->nBits)) {
+		// Yes, there is a chance every nonce could fail to satisfy the -regtest
+		// target -- 1 in 2^(2^32). That ain't gonna happen.
+		++pblock->nNonce;
+	}
 
 
-            CValidationState state;
-            if (!ProcessNewBlock(state, NULL, pblock))
-                throw JSONRPCError(RPC_INTERNAL_ERROR, "ProcessNewBlock, block not accepted");
-            ++nHeight;
-            blockHashes.push_back(pblock->GetHash().GetHex());
-        }
-        return blockHashes;
-    } else // Not -regtest: start generate thread, return immediately
-    {
-        mapArgs["-period"] = itostr(period);
-        GeneratePoADapscoin(pwalletMain, period);
-    }
-
-    return Value::null;
+	CValidationState state;
+	if (!ProcessNewBlock(state, NULL, pblock))
+		throw JSONRPCError(RPC_INTERNAL_ERROR, "ProcessNewBlock, block not accepted");
+	++nHeight;
+	blockHashes.push_back(pblock->GetHash().GetHex());
+	return blockHashes;
 }
 
 Value gethashespersec(const Array& params, bool fHelp)
