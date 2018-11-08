@@ -16,15 +16,18 @@ block content
             th #{settings.locale.confirmations}
             th.hidden-xs #{settings.locale.tx_block_hash}
             th #{settings.locale.timestamp}
+            th #{settings.locale.tx_mineType}
             th
         tbody
           - var confirms = (blockcount - tx.blockindex) + 1;
+          - var mineType = {'PoS':settings.locale.proof_of_stake,'PoW':settings.locale.proof_of_work, 'PoA': settings.locale.proof_of_audit}          
           if confirms >= confirmations                
             tr.success
                 td #{confirms}
                 td.hidden-xs 
                   a(href='/block/#{tx.blockhash}') #{tx.blockhash}
                 td #{time}
+                td #{mineType[tx.mineType]}
                 td.view_tx  
                   a(href='/block/#{tx.blockhash}')
                     span.glyphicon.glyphicon-eye-open 
@@ -35,6 +38,7 @@ block content
                 td.hidden-xs  
                   a(href='/block/#{tx.blockhash}') #{tx.blockhash}
                 td #{time}
+                td #{mineType[tx.mineType]}
                 td.view_tx  
                   a(href='/block/#{tx.blockhash}')
                     span.glyphicon.glyphicon-eye-open 
@@ -44,6 +48,7 @@ block content
                 td.hidden-xs  
                   a(href='/block/#{tx.blockhash}') #{tx.blockhash}
                 td #{time}
+                td #{mineType[tx.mineType]}
                 td.view_tx  
                   a(href='/block/#{tx.blockhash}')
                     span.glyphicon.glyphicon-eye-open
