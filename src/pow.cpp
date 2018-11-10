@@ -159,8 +159,16 @@ bool CheckPoAContainRecentHash(const CBlock& block, int blockHeight) {
     if (blockHeight != - 1) {
         currentHeight = blockHeight - 1;
     }
+    //Find the previous PoA block
+	int start = currentHeight;
+	while (start > Params().START_POA_BLOCK()) {
+		if (chainActive[start]->GetBlockHeader().IsPoABlockByVersion()) {
+			break;
+		}
+		start--;
+	}
     bool ret = true;
-    if (currentHeight - (POA_BLOCK_PERIOD + 1) == Params().START_POA_BLOCK()) {
+    if (start <= Params().START_POA_BLOCK()) {
         //this is the first PoA block ==> check all PoS blocks from LAST_POW_BLOCK up to currentHeight - POA_BLOCK_PERIOD - 1 inclusive
         int index = 0;
         for (int i = Params().LAST_POW_BLOCK() + 1; i <= currentHeight - POA_BLOCK_PERIOD; i++) {
@@ -171,6 +179,7 @@ bool CheckPoAContainRecentHash(const CBlock& block, int blockHeight) {
                 ret = false;
                 break;
             }
+            index++;
         }
     } else {
         //Find the previous PoA block
@@ -214,7 +223,7 @@ bool CheckPoAContainRecentHash(const CBlock& block, int blockHeight) {
                 ret = false;
             }
         } else {
-            ret = false;
+        	ret = block.hashPrevPoABlock.IsNull();
         }
     }
     return ret;
@@ -236,7 +245,7 @@ bool CheckPoABlockMinedHash(const CBlockHeader& block) {
         bool fOverflow;
         uint256 bnTarget;
 
-        if (Params().SkipProofOfWorkCheck())
+        if (Params().SkipProofOfWorkCheck() || Params().NetworkID() == CBaseChainParams::TESTNET)
             return true;
 
         bnTarget.SetCompact(block.nBits, &fNegative, &fOverflow);
@@ -276,6 +285,9 @@ bool CheckPrevPoABlockHash(const CBlockHeader& block, int blockHeight) {
         if (poaBlockHash == block.hashPrevPoABlock) {
             ret = true;
         }
+    } else {
+    	//This is the first poa block ==> previous poa hash = 0
+    	ret = block.hashPrevPoABlock.IsNull();
     }
 
     return ret;
@@ -309,9 +321,10 @@ bool CheckPoABlockNotContainingPoABlockInfo(const CBlock& block, int blockHeight
         if (header.IsPoABlockByVersion()) {
             return false;
         }
-        if (pblockindex->nTime != block.nTime || pblockindex->nBits != block.nBits) {
-            return false;
-        }
+        //if (pblockindex->nTime != block.nTime) {
+        //	std::cout << "block time or nbits not equal" << std::endl;
+          //  return false;
+        //}
     }
     return true;
 }

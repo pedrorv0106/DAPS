@@ -259,9 +259,8 @@ public:
             hashPrevPoABlock = block.hashPrevPoABlock;
             minedHash = block.minedHash;
             hashPoAMerkleRoot = block.hashPoAMerkleRoot;
-            //TODO: need to check here
-            prevoutStake = block.vtx[1].vin[0].prevout;
-            nStakeTime = block.nTime;
+            prevoutStake.SetNull();
+            nStakeTime = 0;
         } else if (block.IsProofOfStake()) {
             SetProofOfStake();
             prevoutStake = block.vtx[1].vin[0].prevout;

@@ -94,7 +94,7 @@ void UpdateTime(CBlockHeader* pblock, const CBlockIndex* pindexPrev)
         pblock->nBits = GetNextWorkRequired(pindexPrev, pblock);
 }
 
-uint32_t GetListOfPoSInfo(uint32_t currentHeight, std::vector<PoSBlockSummary> audits) {
+uint32_t GetListOfPoSInfo(uint32_t currentHeight, std::vector<PoSBlockSummary>& audits) {
 	//A PoA block should be mined only after at least 59 PoS blocks have not been audited
 	//Look for the previous PoA block
 	int nloopIdx = currentHeight;
@@ -511,6 +511,7 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, CWallet* pwalle
 		return NULL;
 	CBlock* pblock = &pblocktemplate->block; // pointer for convenience
 
+	pblock->SetNull();
 	// Create coinbase tx
 	CMutableTransaction txNew;
 	txNew.vin.resize(1);
@@ -544,6 +545,7 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, CWallet* pwalle
 
 	//compute PoA block reward
 	CAmount nReward = pblock->posBlocksAudited.size() * 100 * COIN;
+	pblock->vtx[0].vout[0].nValue = nReward;
 
 	//Comment out all previous code, because a PoA block does not verify any transaction, except reward transactions to miners
 	// No need to collect memory pool transactions into the block
@@ -553,6 +555,8 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, CWallet* pwalle
 	pblock->hashPrevBlock = pindexPrev->GetBlockHash();
 	if (nprevPoAHeight >= Params().START_POA_BLOCK()) {
 		pblock->hashPrevPoABlock = chainActive[nprevPoAHeight]->GetBlockHeader().hashPrevPoABlock;
+	} else {
+		pblock->hashPrevPoABlock.SetNull();
 	}
 
 	pblock->nBits = GetNextWorkRequired(pindexPrev, pblock);
@@ -560,6 +564,12 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, CWallet* pwalle
 
 	pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(pblock->vtx[0]);
 
+    if (Params().NetworkID() == CBaseChainParams::TESTNET) {
+	    pblock->minedHash = pblock->ComputeMinedHash();
+            std::cout << "Mined hash:" << pblock->minedHash.GetHex() << std::endl;
+	    pblock->hashMerkleRoot = pblock->BuildMerkleTree();
+	    pblock->hashPoAMerkleRoot = pblock->BuildPoAMerkleTree();
+    }
 //        CValidationState state;
 //        if (!TestBlockValidity(state, *pblock, pindexPrev, false, false)) {
 //            LogPrintf("CreateNewBlock() : TestBlockValidity failed\n");
