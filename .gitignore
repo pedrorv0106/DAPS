@@ -3,6 +3,8 @@
 todo.txt
 reset-files.bash
 
+boot/config/config.json
+
 *.tar.gz
 
 *.exe
