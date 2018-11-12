@@ -49,6 +49,17 @@ def stop():
 def start():
     print 'wip'
 
+def startStaking(server):
+    connect = ssh(server)
+    response = send(connect, 'dapscoin-cli '+s['serveroption']+'getstakingstatus')
+    print response
+    if ((response.find('false')!=-1) or (response.find("couldn't")!=-1)):
+        print send(connect, 'dapscoind '+s['serveroption']+'stop')
+        print "Waiting for 30 seconds..."
+        sleep(30)
+        print send(connect, 'dapscoind '+s['serveroption'])
+        #unlock wallet
+
 def reboot(servers = s['servers']):
     for server in servers:
         try:
