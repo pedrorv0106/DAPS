@@ -34,12 +34,12 @@ exports.tx_contributors = "Contributor(s)",
 exports.tx_hash = "Hash",
 exports.tx_address = "Address",
 exports.tx_nonstandard = "NONSTANDARD TX",
-exports.tx_mineType = "Type",
 
 exports.block_title = "Block Details",
 exports.block_previous = "Previous",
 exports.block_next = "Next",
 exports.block_genesis = "GENESIS",
+exports.blocktype = "Type",
 
 exports.difficulty = "Difficulty",
 exports.network = "Network",

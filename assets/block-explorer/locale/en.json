@@ -34,13 +34,13 @@
     "tx_hash": "Hash",
     "tx_address": "Address",
     "tx_nonstandard": "NONSTANDARD TX",
-    "tx_mineType": "Type",
 
     // block view
     "block_previous": "Previous",
     "block_next": "Next",
     "block_title": "Block Details",
     "block_genesis": "GENESIS",
+    "blocktype": "Type",
 
     // global
     "difficulty": "Difficulty",
@@ -158,5 +158,5 @@
     "heavy_estnext": "Est. Next",
     "heavy_changein": "Reward change in approximately",
     "heavy_key": "Key",
-    "heavy_lastxvotes": "Last 20 votes",
+    "heavy_lastxvotes": "Last 20 votes"
 }
