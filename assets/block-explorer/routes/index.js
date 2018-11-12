@@ -14,12 +14,12 @@ function route_get_block(res, blockhash) {
       } else {
         db.get_txs(block, function(txs) {
           if (txs.length > 0) {
-            res.render('block', { active: 'block', block: block, confirmations: settings.confirmations, txs: txs});
+            res.render('block', { active: 'block', block: block, confirmations: settings.confirmations, txs: txs, blocktype: lib.determineBlockType(block, txs)});
           } else {
             db.create_txs(block, function(){
               db.get_txs(block, function(ntxs) {
                 if (ntxs.length > 0) {
-                  res.render('block', { active: 'block', block: block, confirmations: settings.confirmations, txs: ntxs});
+                  res.render('block', { active: 'block', block: block, confirmations: settings.confirmations, txs: ntxs, blocktype: lib.determineBlockType(block, ntxs)});
                 } else {
                   route_get_index(res, 'Block not found: ' + blockhash);
                 }
@@ -40,26 +40,23 @@ function route_get_tx(res, txid) {
     route_get_block(res, settings.genesis_block);
   } else {
     db.get_tx(txid, function(tx) {
-      // if (tx) {
-      //   lib.get_blockcount(function(blockcount) {
-      //     res.render('tx', { active: 'tx', tx: tx, confirmations: settings.confirmations, blockcount: blockcount});
-      //   });
-      // }
-      // else {
+      if (tx) {
+        lib.get_blockcount(function(blockcount) {
+          res.render('tx', { active: 'tx', tx: tx, confirmations: settings.confirmations, blockcount: blockcount});
+        });
+      }
+      else {
         lib.get_rawtransaction(txid, function(rtx) {
           if (rtx.txid) {
             lib.prepare_vin(rtx, function(vin) {
               lib.prepare_vout(rtx.vout, rtx.txid, vin, function(rvout, rvin) {
                 lib.calculate_total(rvout, function(total){
-                  rtx.mineType = (rvin[0].addresses==='coinbase')? 'PoW': 'PoS';
-                  if (rtx.version>=100) rtx.mineType = 'PoA';
                   var utx = {
                     txid: rtx.txid,
                     vin: rvin,
                     vout: rvout,
                     total: total.toFixed(8),
                     timestamp: rtx.time,
-                    mineType: rtx.mineType,
                   };
                   if (!rtx.confirmations > 0) {
                     Object.assign(utx, {
@@ -83,7 +80,7 @@ function route_get_tx(res, txid) {
             route_get_index(res, null);
           }
         });
-      //}
+      }
     });
   }
 }
