@@ -98,7 +98,7 @@ uint32_t GetListOfPoSInfo(uint32_t currentHeight, std::vector<PoSBlockSummary>& 
 	//A PoA block should be mined only after at least 59 PoS blocks have not been audited
 	//Look for the previous PoA block
 	int nloopIdx = currentHeight;
-	while (nloopIdx > Params().START_POA_BLOCK()) {
+	while (nloopIdx >= Params().START_POA_BLOCK()) {
 		if (chainActive[nloopIdx]->GetBlockHeader().IsPoABlockByVersion()) {
 			break;
 		}
@@ -554,10 +554,10 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, CWallet* pwalle
 	// Fill in header
 	pblock->hashPrevBlock = pindexPrev->GetBlockHash();
 	if (nprevPoAHeight >= Params().START_POA_BLOCK()) {
-		pblock->hashPrevPoABlock = chainActive[nprevPoAHeight]->GetBlockHeader().hashPrevPoABlock;
+		pblock->hashPrevPoABlock = *(chainActive[nprevPoAHeight]->phashBlock);
 	} else {
 		pblock->hashPrevPoABlock.SetNull();
-	}
+	} 
 
 	pblock->nBits = GetNextWorkRequired(pindexPrev, pblock);
 	pblock->nNonce = 0;

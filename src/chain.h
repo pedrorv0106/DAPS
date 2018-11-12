@@ -466,6 +466,11 @@ public:
     explicit CDiskBlockIndex(CBlockIndex* pindex) : CBlockIndex(*pindex)
     {
         hashPrev = (pprev ? pprev->GetBlockHash() : uint256());
+        if (IsProofOfAudit()) {
+			hashPoAMerkleRoot = pindex->hashPoAMerkleRoot;
+			minedHash = pindex->minedHash;
+			hashPrevPoABlock = pindex->hashPrevPoABlock;
+        }
     }
 
     ADD_SERIALIZE_METHODS;
@@ -498,6 +503,7 @@ public:
         } if (IsProofOfAudit()) {
             READWRITE(hashPoAMerkleRoot);
             READWRITE(minedHash);
+            READWRITE(hashPrevPoABlock);
         } else {
             const_cast<CDiskBlockIndex*>(this)->prevoutStake.SetNull();
             const_cast<CDiskBlockIndex*>(this)->nStakeTime = 0;

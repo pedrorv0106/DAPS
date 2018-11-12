@@ -91,20 +91,17 @@ Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDe
 
     result.push_back(Pair("moneysupply",ValueFromAmount(blockindex->nMoneySupply)));
 
-    if (blockindex->nHeight > Params().START_POA_BLOCK() && (blockindex->nHeight - 1) % 60 == 0) {
+    if (blockindex->IsProofOfAudit()) {
         //This is a PoA block
         //Read information of PoS blocks audited by this PoA block
         Array posBlockInfos;
-        int posStart = blockindex->nHeight - 59;
-        int posStop = posStart + 60 - 1;
 
-        for (int i = posStart; i < posStop; i++) {
-            CBlockIndex* pPoSBlockindex = chainActive[i];
+        for (int i = 0; i < block.posBlocksAudited.size(); i++) {
             Object objPoSBlockInfo;
 
-            PoSBlockInfoToJSON(pPoSBlockindex->GetBlockHash(),
-                               pPoSBlockindex->GetBlockTime(), i, objPoSBlockInfo);
-            posBlockInfos.push_back(objPoSBlockInfo);
+            PoSBlockInfoToJSON(block.posBlocksAudited[i].hash,
+                        		block.posBlocksAudited[i].nTime, block.posBlocksAudited[i].height, objPoSBlockInfo);
+                        posBlockInfos.push_back(objPoSBlockInfo);
         }
 
         result.push_back(Pair("posblocks", posBlockInfos));

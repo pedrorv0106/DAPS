@@ -2988,7 +2988,7 @@ bool RecalculateDAPSSupply(int nHeightStart) {
         CAmount nValueOut = 0;
         for (const CTransaction tx : block.vtx) {
             for (unsigned int i = 0; i < tx.vin.size(); i++) {
-                if (tx.IsCoinBase())
+                if (tx.IsCoinBase() || tx.IsCoinAudit())
                     break;
 
                 if (tx.vin[i].scriptSig.IsZerocoinSpend()) {
@@ -3016,7 +3016,7 @@ bool RecalculateDAPSSupply(int nHeightStart) {
         nSupplyPrev = pindex->nMoneySupply;
 
         // Add fraudulent funds to the supply and remove any recovered funds.
-        if (pindex->nHeight == Params().Zerocoin_Block_RecalculateAccumulators()) {
+        if (!block.IsProofOfAudit() && pindex->nHeight == Params().Zerocoin_Block_RecalculateAccumulators()) {
             PopulateInvalidOutPointMap();
             LogPrintf("%s : Original money supply=%s\n", __func__, FormatMoney(pindex->nMoneySupply));
 
@@ -4387,15 +4387,17 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
      */
     if (block.IsProofOfAudit()) {
         // Coinbase output should be empty if proof-of-audit block
-        if (block.vtx[0].vout.size() != 1 || !block.vtx[0].vout[0].IsEmpty())
-            return state.DoS(100, error("CheckBlock() : coinbase output not empty for proof-of-audit block"));
+    	//Attension: This condition is now not true because PoA blocks contain only a coinbase transaction
+
+    	//if (block.vtx[0].vout.size() != 1 || !block.vtx[0].vout[0].IsEmpty())
+        //    return state.DoS(100, error("CheckBlock() : coinbase output not empty for proof-of-audit block"));
 
         // Second transaction must be coinstake, the rest must not be
-        if (block.vtx.empty() || !block.vtx[1].IsCoinStake())
-            return state.DoS(100, error("CheckBlock() : second tx is not coinaudit"));
-        for (unsigned int i = 2; i < block.vtx.size(); i++)
-            if (block.vtx[i].IsCoinStake())
-                return state.DoS(100, error("CheckBlock() : more than one coinaudit"));
+        //if (block.vtx.empty() || !block.vtx[1].IsCoinStake())
+        //    return state.DoS(100, error("CheckBlock() : second tx is not coinaudit"));
+        //for (unsigned int i = 2; i < block.vtx.size(); i++)
+        //    if (block.vtx[i].IsCoinStake())
+        //        return state.DoS(100, error("CheckBlock() : more than one coinaudit"));
 
         //Check PoA consensus rules
         if (!CheckPoAContainRecentHash(block)) {
