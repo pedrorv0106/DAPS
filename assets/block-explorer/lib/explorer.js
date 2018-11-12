@@ -394,6 +394,12 @@ module.exports = {
     }, function(){
       return cb(arr_vin);
     });
+  },
+  determineBlockType: function (block, txs) {
+    if (!txs.length||!block) return 0
+    let blocktype = (txs[0].vin[0].addresses==='coinbase')? 'PoW':'PoS'
+    if (block.version>=100) blocktype = 'PoA'
+    return blocktype
   }
 };
 
