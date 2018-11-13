@@ -28,12 +28,12 @@ def status(servers = s['servers']):
                     else:
                         print '\033[91m'+res+'\nNo node service detected\033[0m'
                         server['nodedown']=True
-                    print send(connect, 'dapscoin-cli '+s['serveroption']+'status')
+                    send(connect, 'dapscoin-cli '+s['serveroption']+'status')
                     disconnect(connect)
                     call('ping -c 1 '+server['address'], shell=True)
                 else:
-                    print send(connect, 'dapscoin-cli '+s['serveroption']+'status')
-                    print send(connect, 'dapscoin-cli '+s['serveroption']+'getbalance')
+                    send(connect, 'dapscoin-cli '+s['serveroption']+'masternode status')
+                    send(connect, 'dapscoin-cli '+s['serveroption']+'getbalance')
                     disconnect(connect)
                 print("\n\n")
                 sleep(2)
@@ -51,21 +51,55 @@ def start():
 
 def startStaking(server):
     connect = ssh(server)
-    response = send(connect, 'dapscoin-cli '+s['serveroption']+'getstakingstatus')
-    print response
-    if ((response.find('false')!=-1) or (response.find("couldn't")!=-1)):
-        print send(connect, 'dapscoind '+s['serveroption']+'stop')
+    result = send(connect, 'dapscoin-cli '+s['serveroption']+'getstakingstatus')
+    print result
+    if ((result.find('false')!=-1) or (result.find("couldn't")!=-1)):
+        send(connect, 'dapscoind '+s['serveroption']+'stop')
         print "Waiting for 30 seconds..."
         sleep(30)
-        print send(connect, 'dapscoind '+s['serveroption'])
+        send(connect, 'dapscoind '+s['serveroption'])#+  -daemon?
         #unlock wallet
+
+def masternodeScript(masterservers, stakingserver):
+    genStakingNodeConfigFileScript(masterservers, stakingserver)
+    connect = ssh(stakingserver)
+    send(connect, 'dapscoind '+s['serveroption']+'-daemon')
+    key = send(connect, 'dapscoin-cli '+s['serveroption']+'masternode genkey')
+    if ((key[0].lower().find('not')==-1) and (key[0].lower().find('error')==-1)):
+        for server in masterservers:
+            genMasternodeConfigFileScript(server, stakingserver, key)
+    else:
+        print('could not complete process')
+
+
+
+def genMasternodeConfigFileScript(masterserver, stakingserver, nodeprivkey):
+    dapsConfData = open('boot/config/dapscoin.conf', 'r').read()+'externalip='+masterserver['address']+'\nmasternodeprivkey='+nodeprivkey
+    connect = ssh(masterserver)
+    send(connect, 'mkdir ~/.dapscoin')
+    send(connect, 'touch ~/.dapscoin/dapscoin.conf')
+    send(connect, 'echo "'+dapsConfData+'">~/.dapscoin/dapscoin.conf')
+    send(connect, 'dapscoin-cli '+s['serveroption']+'-daemon -connect '+ip)
+    sleep(5)
+    send(connect, 'dapscoin-cli '+s['serveroption']+'masternode genkey')
+
+def genStakingNodeConfigFileScript(masterservers, stakingserver):
+    nodes = ''
+    for server in masterservers:
+        nodes += 'addnode='+server['address']+'\n'
+    dapsConfData = open('boot/config/dapscoin.conf', 'r').read()+'addnode='+nodes
+    connect = ssh(stakingserver)
+    send(connect, 'mkdir ~/.dapscoin')
+    send(connect, 'touch ~/.dapscoin/dapscoin.conf')
+    send(connect, 'echo "'+dapsConfData+'">~/dapscoin/dapscoin.conf')
+
 
 def reboot(servers = s['servers']):
     for server in servers:
         try:
             connect = ssh(server)
             if connect:
-                print send(connect, 'su reboot')
+                send(connect, 'su reboot')
                 send(connect, getpass())
         except pxssh.ExceptionPxssh, err:
             print err
@@ -74,22 +108,22 @@ def reboot(servers = s['servers']):
         try:
             connect = ssh(server)
             if connect:
-                print send(connect, 'dapscoind')
+                send(connect, 'dapscoind')
         except pxssh.ExceptionPxssh, err:
             print err
 
 def transfer(masternode, worker, amount=s['coinamount'] ):
     connect = ssh(masternode)
-    print send(connect, 'dapscoind')#needs to connect
-    print send(connect, 'dapscoin-cli '+s['serveroption']+'masternode genkey')
+    send(connect, 'dapscoind')#needs to connect
+    send(connect, 'dapscoin-cli '+s['serveroption']+'masternode genkey')
     coinAddress = send(connect,'dapscoin-cli '+s['serveroption']+'getaccountaddress'+s['alias'])#what is alias?
     print coinAddress
     disconnect(connect)
     connect = ssh(worker)
-    print send(connect, 'dapscoin-cli '+s['serveroption']+'sendtoaddress '+coinAddress+amount)
+    send(connect, 'dapscoin-cli '+s['serveroption']+'sendtoaddress '+coinAddress+amount)
     disconnect(connect)
     connect = ssh(masternode)
-    print send(connect, 'dapscoin-cli '+s['serveroption']+'getbalance')
+    send(connect, 'dapscoin-cli '+s['serveroption']+'getbalance')
 
 def awaitWorkers(workers, amount=s['coinamount']):
     ready = False
@@ -97,7 +131,7 @@ def awaitWorkers(workers, amount=s['coinamount']):
         ready = True
         for worker in workers:
             connect = ssh(worker)
-            balance = send(connect, 'dapscoin-cli getbalance')
+            balance = send(connect, 'dapscoin-cli '+s['serveroption']+'getbalance')
             if (balance<amount):
                 ready = False
             disconnect(connect)
@@ -124,3 +158,5 @@ def runArgs():
                     autoGCloud()
 
 runArgs()
+#genConfigFileScript(s['masternodes'][0],'92zcRZrsy2JJjuY9kXGA4n7jSihfjGzrjKwB4s4Mq4UG42NPgBe', '38.29.176.86')
+masternodeScript(s['masternodes'],s['stakingnodes'][0])
