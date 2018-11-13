@@ -557,7 +557,7 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, CWallet* pwalle
 		pblock->hashPrevPoABlock = *(chainActive[nprevPoAHeight]->phashBlock);
 	} else {
 		pblock->hashPrevPoABlock.SetNull();
-	} 
+	}
 
 	pblock->nBits = GetNextWorkRequired(pindexPrev, pblock);
 	pblock->nNonce = 0;

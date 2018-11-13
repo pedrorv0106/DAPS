@@ -4105,7 +4105,7 @@ CBlockIndex *AddToBlockIndex(const CBlock &block) {
         pindexNew->bnChainTrust = (pindexNew->pprev ? pindexNew->pprev->bnChainTrust : 0) + pindexNew->GetBlockTrust();
 
         // ppcoin: compute stake entropy bit for stake modifier
-        if (!pindexNew->SetStakeEntropyBit(pindexNew->GetStakeEntropyBit()))
+        if (!block.IsPoABlockByVersion() && !pindexNew->SetStakeEntropyBit(pindexNew->GetStakeEntropyBit()))
             LogPrintf("AddToBlockIndex() : SetStakeEntropyBit() failed \n");
 
         // ppcoin: record proof-of-stake hash value
@@ -4534,22 +4534,6 @@ bool CheckWork(const CBlock block, CBlockIndex *const pindexPrev) {
         }
         if (!mapProofOfStake.count(hash)) // add to mapProofOfStake
             mapProofOfStake.insert(make_pair(hash, hashProofOfStake));
-    }
-
-    /**
-     * @todo update "mapProofOfStake"
-     * update CheckProofOfStake => CheckProofOfAudit
-     */
-    if (block.IsProofOfAudit()) {
-        uint256 hashProofOfAudit;
-        uint256 hash = block.GetHash();
-
-        if (!CheckProofOfStake(block, hashProofOfAudit)) {
-            LogPrintf("WARNING: ProcessBlock(): check proof-of-audit failed for block %s\n", hash.ToString().c_str());
-            return false;
-        }
-        if (!mapProofOfStake.count(hash)) // add to mapProofOfStake
-            mapProofOfStake.insert(make_pair(hash, hashProofOfAudit));
     }
 
     return true;

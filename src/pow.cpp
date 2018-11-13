@@ -167,7 +167,7 @@ bool CheckPoAContainRecentHash(const CBlock& block, int blockHeight) {
     }
     //Find the previous PoA block
 	int start = currentHeight;
-	while (start > Params().START_POA_BLOCK()) {
+	while (start >= Params().START_POA_BLOCK()) {
 		if (chainActive[start]->GetBlockHeader().IsPoABlockByVersion()) {
 			break;
 		}
