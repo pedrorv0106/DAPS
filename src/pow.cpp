@@ -177,7 +177,7 @@ bool CheckPoAContainRecentHash(const CBlock& block, int blockHeight) {
     if (start <= Params().START_POA_BLOCK()) {
         //this is the first PoA block ==> check all PoS blocks from LAST_POW_BLOCK up to currentHeight - POA_BLOCK_PERIOD - 1 inclusive
         int index = 0;
-        for (int i = Params().LAST_POW_BLOCK() + 1; i <= currentHeight - POA_BLOCK_PERIOD; i++) {
+        for (int i = Params().LAST_POW_BLOCK() + 1; i <= Params().LAST_POW_BLOCK() + block.posBlocksAudited.size(); i++) {
             PoSBlockSummary pos = block.posBlocksAudited.at(index);
             if (pos.hash != chainActive[i]->GetBlockHash()
                     || pos.nTime != chainActive[i]->GetBlockTime()
@@ -199,7 +199,7 @@ bool CheckPoAContainRecentHash(const CBlock& block, int blockHeight) {
             uint32_t loopIndexCheckPoS = lastAuditedPoSHeight + 1;
             uint32_t idxOfPoSInfo = 0;
 
-            while (loopIndexCheckPoS <= currentHeight) {
+            while (loopIndexCheckPoS <= currentHeight && idxOfPoSInfo < block.posBlocksAudited.size()) {
                 if (!chainActive[loopIndexCheckPoS]->GetBlockHeader().IsPoABlockByVersion()
                         && chainActive[loopIndexCheckPoS]->nHeight > Params().LAST_POW_BLOCK()) {
                     PoSBlockSummary pos = block.posBlocksAudited[idxOfPoSInfo];

@@ -252,11 +252,7 @@ Value generatepoa(const Array& params, bool fHelp)
 	if (!pblocktemplate.get())
 		throw JSONRPCError(RPC_INTERNAL_ERROR, "Wallet keypool empty");
 	CBlock* pblock = &pblocktemplate->block;
-	if (Params().NetworkID() == CBaseChainParams::TESTNET) {
-            pblock->minedHash = pblock->ComputeMinedHash();
-            pblock->hashMerkleRoot = pblock->BuildMerkleTree();
-            pblock->hashPoAMerkleRoot = pblock->BuildPoAMerkleTree();
-        }	
+	
 	CValidationState state;
 	if (!ProcessNewBlock(state, NULL, pblock))
 		throw JSONRPCError(RPC_INTERNAL_ERROR, "ProcessNewBlock, block not accepted");

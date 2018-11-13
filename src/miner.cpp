@@ -106,7 +106,7 @@ uint32_t GetListOfPoSInfo(uint32_t currentHeight, std::vector<PoSBlockSummary>& 
 	}
     if (nloopIdx <= Params().START_POA_BLOCK()) {
         //this is the first PoA block ==> take all PoS blocks from LAST_POW_BLOCK up to currentHeight - 59 inclusive
-        for (uint32_t i = Params().LAST_POW_BLOCK() + 1; i <= currentHeight - 59; i++) {
+        for (uint32_t i = Params().LAST_POW_BLOCK() + 1; i <= Params().LAST_POW_BLOCK() + 59; i++) {
             PoSBlockSummary pos;
             pos.hash = chainActive[i]->GetBlockHash();
             pos.nTime = chainActive[i]->GetBlockHeader().nTime;
@@ -564,11 +564,18 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, CWallet* pwalle
 
 	pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(pblock->vtx[0]);
 
+	// Compute final coinbase transaction.
+	CMutableTransaction txCoinbase(pblock->vtx[0]);
+	txCoinbase.vin[0].scriptSig = (CScript() << nHeight << CScriptNum(1)) + COINBASE_FLAGS;
+	assert(txCoinbase.vin[0].scriptSig.size() <= 100);
+
+	pblock->vtx[0] = txCoinbase;
+	pblock->hashMerkleRoot = pblock->BuildMerkleTree();
+
     if (Params().NetworkID() == CBaseChainParams::TESTNET) {
+    	bool fMutated;
+    	pblock->hashPoAMerkleRoot = pblock->BuildPoAMerkleTree();
 	    pblock->minedHash = pblock->ComputeMinedHash();
-            std::cout << "Mined hash:" << pblock->minedHash.GetHex() << std::endl;
-	    pblock->hashMerkleRoot = pblock->BuildMerkleTree();
-	    pblock->hashPoAMerkleRoot = pblock->BuildPoAMerkleTree();
     }
 //        CValidationState state;
 //        if (!TestBlockValidity(state, *pblock, pindexPrev, false, false)) {
