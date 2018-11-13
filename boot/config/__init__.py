@@ -73,8 +73,12 @@ def disconnect(connect):
 def send(sshConnect, command):
     try:
         sshConnect.sendline(command)
-        sshConnect.prompt()      
-        return sshConnect.before   
+        sshConnect.prompt()    
+        print sshConnect.before
+        response = sshConnect.before.replace('\r','')
+        response = response.split('\n')  
+        del response[0]
+        return response  
     except pxssh.ExceptionPxssh, err:
         print err
         return 0
