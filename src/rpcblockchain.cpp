@@ -94,7 +94,7 @@ Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDe
     if (blockindex->IsProofOfAudit()) {
         //This is a PoA block
         //Read information of PoS blocks audited by this PoA block
-    	result.push_back(Pair("previouspoahash", block.hashPrevPoABlock));
+    	result.push_back(Pair("previouspoahash", block.hashPrevPoABlock.GetHex()));
         Array posBlockInfos;
 
         for (int i = 0; i < block.posBlocksAudited.size(); i++) {
