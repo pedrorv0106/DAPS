@@ -1,6 +1,8 @@
 import json
 import sys
-from pexpect import pxssh
+from pexpect import pxssh, spawn, expect
+from time import sleep
+from subprocess import call, Popen, PIPE, STDOUT
 
 with open('./boot/config/config.json') as json_data:
     config = json.load(json_data)
@@ -57,17 +59,18 @@ else:
     config['serveroption']=' '+config['serveroption']+' '
 
 def ssh(server):
-    print '\033[0;36;48m  Connecting to '+server['name']+'...\033[0m'
+    print '\033[0;36;48m  Connecting to '+server['name']+' ('+server['address']+')...\033[0m'
     connect = pxssh.pxssh()
     try:
         if ('publickeyfile' in server):
             connectionString = server['username']+'@'+server['address']
             connect.login (connectionString, None, port=server['port'], ssh_key=server['publickeyfile'])
         else:
-            connect.login (server['address'], server['username'], server['password'], port=server['port'])
+            print '\033[0;36;48m     with:   '+server['username']+'  :  '+server['password']+'\033[0m'
+            connect.login (server['address'], server['username'], server['password'])#, port=server['port'])
         return connect
     except pxssh.ExceptionPxssh, err:
-        print err
+        print str(err)
         return 0
 
 def disconnect(connect):
@@ -84,5 +87,21 @@ def send(sshConnect, command):
         del response[0]
         return response  
     except pxssh.ExceptionPxssh, err:
-        print err
+        print str(err)
         return 0
+
+def sendFile(server, sourcestr, deststr, options=''):
+    print 'Sending '+sourcestr+' to '+server['name']
+    if ('publickeyfile' in server):
+        spawn('scp')
+    else:
+        try:
+            print 'scp '+sourcestr+' '+options+' '+server['username']+'@'+server['address']+':'+deststr
+            process = spawn('scp '+sourcestr+' '+options+' '+server['username']+'@'+server['address']+':'+deststr)
+            process.expect(server['username']+'.*')
+            process.sendline(server['password'])
+            process.expect(sourcestr)
+            print 'Transfer complete'
+        except pxssh.ExceptionPxssh, err:
+            print str(err)
+            return 0
