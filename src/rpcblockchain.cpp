@@ -90,6 +90,14 @@ Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDe
         result.push_back(Pair("nextblockhash", pnext->GetBlockHash().GetHex()));
 
     result.push_back(Pair("moneysupply",ValueFromAmount(blockindex->nMoneySupply)));
+    std::string minetype = "PoW";
+    if (blockindex->IsProofOfStake()) {
+    	minetype = "PoS";
+    } else if (blockindex->IsProofOfAudit()) {
+    	minetype = "PoA";
+    }
+
+    result.push_back(Pair("minetype", minetype));
 
     if (blockindex->IsProofOfAudit()) {
         //This is a PoA block
