@@ -32,8 +32,8 @@ def status(servers = s['servers']):
                     disconnect(connect)
                     call('ping -c 1 '+server['address'], shell=True)
                 else:
-                    send(connect, 'dapscoin-cli '+s['serveroption']+'masternode status')
-                    send(connect, 'dapscoin-cli '+s['serveroption']+'getbalance')
+                    send(connect, 'dapscoin-cli '+s['serveroption']+' masternode status')
+                    send(connect, 'dapscoin-cli '+s['serveroption']+' getbalance')
                     disconnect(connect)
                 print("\n\n")
                 sleep(2)
@@ -45,6 +45,48 @@ def status(servers = s['servers']):
 def stop():
     for server in s['servers']:
         print 'wip'
+
+def stopAllWalletDaemons():
+    for server in s['servers']:
+        stopAWallet(server)
+
+def stopAWallet(server):
+    try:
+        connect = ssh(server)
+        if connect:
+            print("Trying to stop daemon:" + server['name'] + "\n")
+            send(connect, 'dapscoin-cli '+s['serveroption']+' stop')
+            sleep(2)    #wait 2 seconds
+        else:
+            print("Server" + server['name'] + " is down\n")
+    except pxssh.ExceptionPxssh, err:
+        print err
+
+
+def startStakingWallet(server, hard=false):#Main server producing PoW blocks, hard=true meaning to erase block data and restart wallet
+    try:
+        connect = ssh(server)
+        if connect:
+            if hard:
+                removeBlockchainData(main)
+            genStakingNodeConfigFileScript(s['servers'], main)   
+            send(connect, 'dapscoind '+s['serveroption']+' -daemon')#Start daemon
+            sleep(2)    #wait 2 seconds
+            if server == s['main']:#Start generating PoW blocks
+                send(connect, 'dapscoin-cli '+s['serveroption']+' setgenerate true 1')
+            #if hard:
+                #Need to reindex explorer database
+        else:
+            print("Staking server " + server['name'] + " is down\n")
+    except pxssh.ExceptionPxssh, err:
+        print err
+
+def removeBlockchainData(server):
+    if s['serveroption'] != '-testnet':
+        send(connect, 'rm -r ~/.dapscoin/')
+    else: 
+        send(connect, 'rm -r ~/.dapscoin/testnet4/')
+
 
 def start():
     print 'wip'
@@ -59,6 +101,8 @@ def startStaking(server):
         sleep(30)
         send(connect, 'dapscoind '+s['serveroption'])#+  -daemon?
         #unlock wallet
+
+
 
 def masternodeScript(masterservers, stakingserver):
     genStakingNodeConfigFileScript(masterservers, stakingserver)
@@ -87,12 +131,109 @@ def genStakingNodeConfigFileScript(masterservers, stakingserver):
     nodes = ''
     for server in masterservers:
         nodes += 'addnode='+server['address']+'\n'
-    dapsConfData = open('boot/config/dapscoin.conf', 'r').read()+'addnode='+nodes
+    dapsConfData = open('boot/config/dapscoin.conf', 'r').read() + nodes
     connect = ssh(stakingserver)
     send(connect, 'mkdir ~/.dapscoin')
     send(connect, 'touch ~/.dapscoin/dapscoin.conf')
     send(connect, 'echo "'+dapsConfData+'">~/dapscoin/dapscoin.conf')
 
+def restartAllWallets(hard=false):#hard restart = erase data and start blockchain from beginning
+    stopAllWalletDaemons();
+    if hard:
+        for server in s['servers']:
+            removeBlockchainData(server)
+    startStakingWallet(s['main'])
+    print('Wait 10s for a number of PoW blocks generated\n')
+    sleep(10)
+
+    #start control wallet that controls the first masternode, this assume the machine running
+    #this script is running control wallet
+    mn1 = s['masternodes'][0]
+    mn1ip = mn1['address']
+    if hard:
+        #1. Stop control wallet
+        p = subprocess.Popen('dapscoin-cli ' + s['serveroption'] + " stop", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        for line in p.stdout.readlines():
+            print line,
+        sleep(2)
+        #2. Start daemon
+        subprocess.Popen('dapscoind ' + s['serveroption'] + " -daemon", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        sleep(2)
+
+        #3. generate masternodeprivatekey
+        p = subprocess.Popen('dapscoin-cli ' + s['serveroption'] + " masternode genkey", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        lines = p.stdout.readlines()
+        mnprivateKey = lines[0]
+        mnalias = "masternode1"
+
+        #4. generate account
+        p = subprocess.Popen('dapscoin-cli ' + s['serveroption'] + " getaccountaddress " + mnalias, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        lines = p.stdout.readlines()
+        accountAddress = lines[0]
+
+        #5. send 10 000 daps to accountaddress
+        txhash = transferFromMainWallet(accountAddress)
+        if txhash:
+            #check whether the transaction is confirmed
+            confirmed = False
+            while !confirmed:
+                print('Checking tx masternode send confirmation\n')
+                p = subprocess.Popen('dapscoin-cli ' + s['serveroption'] + " masternode outputs", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                lines = p.stdout.readlines()
+                if txhash in str(lines):
+                    confirmed = True
+        else:
+            print('cannot send daps to masternode')
+            return 0
+        
+        #6. create masternode.conf file
+        mp1port = '53572'
+        mnconfPath = '~/.dapscoin/masternode.conf'
+        if s['serveroption'] == '-testnet':
+            mn1port = '53575'
+            mnconfPath = '~/.dapscoin/testnet4/masternode.conf'
+        mnconfContent = mnalias + ' ' + mn1ip + ':' + mn1port + ' ' + mnprivateKey + ' ' + txhash + ' 1'
+        subprocess.Popen('echo "' + mnconfContent + '" >' + mnconfPath, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+        #7. Start masternode daemon
+        startStakingWallet(mn1, hard)
+        stopAWallet(mn1)
+        nodes = ''
+        for server in s['servers']:
+            nodes += '\naddnode='+server['address']
+        dapsConfData = open('boot/config/dapscoin.conf', 'r').read() + nodes 
+        dapsConfData = dapsConfData + '\n' + 'masternode=1\n' + 'externalip=' + mn1ip + '\nmasternodeprivkey=' + mnprivateKey
+        mn1Connect=ssh(mn1)
+        send(mn1Connect, 'echo "'+dapsConfData+'">~/dapscoin/dapscoin.conf')
+        send(mn1Connect, 'dapscoind '+s['serveroption']+' -daemon')#Start daemon
+
+        #8. Start masternode from control wallet
+        p = subprocess.Popen('dapscoin-cli ' + s['serveroption'] + ' startmasternode alias false ' + mnalias, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        lines = p.stdout.readlines()
+        if 'Successfully started 1' in str(lines):
+            print('Sucessfully start control wallet masternode\n')
+        else:
+            print('Failed to start control wallet masternode\n')    
+            return 0
+        
+        #9. Start masternode in VPS
+        res = send(mn1Connect, 'dapscoin-cli '+s['serveroption']+' startmasternode local false')#Start daemon
+        print(res + '\n')
+
+        #10. Start staking nodes...
+
+def transferFromMainWallet(destination, amount = '10000'):
+    main = s['main']
+    try:
+        connect = ssh(main)
+        if connect:
+            response = send(connect, 'dapscoin-cli ' + s['serveroption' + ' sendtoaddress ' + destination + ' 10000'])
+            if response:
+                txhash = response[0]
+                return txhash
+    except pxssh.ExceptionPxssh, err:
+        print err        
+        return 0
 
 def reboot(servers = s['servers']):
     for server in servers:
