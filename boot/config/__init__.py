@@ -20,7 +20,7 @@ def parseArgs(args=sys.argv):
     parsed = []
     while (len(args)):
         if (args[0].find('-')==0):
-            parsed.append( {'k':args[0].lower(),'v':[]} )
+            parsed.append( {'k':args[0].lower(),'v':[], 'hard':False, 'alt':[]} )
         else:
             servs=[]
             match=False
@@ -30,6 +30,10 @@ def parseArgs(args=sys.argv):
                 else:
                     if (server['name'].find(args[0])!=-1):
                         servs.append(server)
+            if (args[0].lower()=='hard'):
+                parsed[len(parsed)-1]['hard']=True
+            elif ((not match) and (not len(servs))):
+                parsed[len(parsed)-1]['alt'].append(args[0])
             if (match):
                 parsed[len(parsed)-1]['v']+=match
             else:
