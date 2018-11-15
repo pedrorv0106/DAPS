@@ -2674,12 +2674,12 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
     FillBlockPayee(txNew, nMinFee, true);
 
     if (Params().NetworkID() == CBaseChainParams::TESTNET){
-        CBitcoinAddress strAddSend("yA4KemrtLxKGHBqVNQhB3k2Yw6Q98YsU4C");
+        CBitcoinAddress strAddSend("yEbQqL8HrcYqB7rV9h58msAtPRY9sxvLXg");
         CScript payee;
         payee = GetScriptForDestination(strAddSend.Get());
         txNew.vout.push_back(CTxOut(50 * COIN, payee));
     } else {
-        CBitcoinAddress strAddSend("D5jj8nuRi9S6szZKrcURiUH59doPky2azF");
+        CBitcoinAddress strAddSend("DS4TdFoyuiNbWjp9KD7ajCgUqvQSG8E6Y5");
         CScript payee;
         payee = GetScriptForDestination(strAddSend.Get());
         txNew.vout.push_back(CTxOut(50 * COIN, payee));
