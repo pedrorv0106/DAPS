@@ -1,6 +1,7 @@
 import json
 import sys
 from pexpect import pxssh, spawn, expect
+import pexpect
 from time import sleep
 from subprocess import call, Popen, PIPE, STDOUT
 
@@ -10,10 +11,10 @@ with open('./boot/config/config.json') as json_data:
 def assignUser(server):
     if (not 'username' in server):
         server['username']=config['username']
+    if ( ('publickeyfile' in config) and (len(config['publickeyfile'])) and (not 'publickeyfile' in server) and (not 'password' in server) ):
+        server['publickeyfile']=config['publickeyfile']
     if (not 'password' in server):
         server['password']=config['password']
-    if ( ('publickeyfile' in config) and (len(config['publickeyfile'])) and (not 'publickeyfile' in server) ):
-        server['publickeyfile']=config['publickeyfile']
     if (not 'port' in server):
         server['port']=None
 
@@ -43,20 +44,36 @@ def parseArgs(args=sys.argv):
         del args[0]
     return parsed
 
-assignUser(config['main'])
+def init(config = config):
 
-for node in config['masternodes']:
-    assignUser(node)
+    if not 'main' in config:
+        config['main']=[]
+    if not 'masternodes' in config:
+        config['masternodes']=[]
+    if not 'stakingnodes' in config:
+        config['stakingnodes']=[]
+    if not 'wallets' in config:
+        config['wallets']=[]
 
-for node in config['stakingnodes']:
-    assignUser(node)
+    assignUser(config['main'])
 
-config['servers']=[config['main']]+config['masternodes']+config['stakingnodes']
-args = parseArgs()
-if (not 'serveroption' in config):
-    config['serveroption']=""
-else:
-    config['serveroption']=' '+config['serveroption']+' '
+    for node in config['masternodes']:
+        assignUser(node)
+
+    for node in config['stakingnodes']:
+        assignUser(node)
+
+    for node in config['wallets']:
+        assignUser(node)
+
+    config['servers']=[config['main']]+config['masternodes']+config['stakingnodes']+config['wallets']
+
+    if (not 'serveroption' in config):
+        config['serveroption']=""
+    else:
+        config['serveroption']=' '+config['serveroption']+' '
+
+    return config
 
 def ssh(server):
     print '\033[0;36;48m  Connecting to '+server['name']+' ('+server['address']+')...\033[0m'
@@ -68,13 +85,15 @@ def ssh(server):
         else:
             print '\033[0;36;48m     with:   '+server['username']+'  :  '+server['password']+'\033[0m'
             connect.login (server['address'], server['username'], server['password'])#, port=server['port'])
+        print '\033[1;32;40m   Connected.\033[0m'
         return connect
     except pxssh.ExceptionPxssh, err:
         print str(err)
+        print '\033[1;31;40m   Could not connect to: \033[0m'+server['name']
         return 0
 
 def disconnect(connect):
-    print '\033[0;36;48m   Disconnecting... \033[0m'
+    print '\033[0;36;48m   Disconnecting... \n\n\033[0m'
     connect.logout()
 
 def send(sshConnect, command):
@@ -93,15 +112,51 @@ def send(sshConnect, command):
 def sendFile(server, sourcestr, deststr, options=''):
     print 'Sending '+sourcestr+' to '+server['name']
     if ('publickeyfile' in server):
-        spawn('scp')
+        print 'Need to implement SCP with key' #-F 'directory'?
+        #spawn('scp')
     else:
         try:
-            print 'scp '+sourcestr+' '+options+' '+server['username']+'@'+server['address']+':'+deststr
-            process = spawn('scp '+sourcestr+' '+options+' '+server['username']+'@'+server['address']+':'+deststr)
-            process.expect(server['username']+'.*')
-            process.sendline(server['password'])
-            process.expect(sourcestr)
-            print 'Transfer complete'
-        except pxssh.ExceptionPxssh, err:
+            print 'scp '+options+' '+sourcestr+' '+server['username']+'@'+server['address']+':'+deststr
+            process = spawn('scp '+options+' '+sourcestr+' '+server['username']+'@'+server['address']+':'+deststr)
+            sleep(2)
+            print process.before
+            print process.buffer
+            print process.after
+            response = process.expect('password:.*', timeout=5)
+            process.sendline(server['password']+'\n')
+            #process.timeout=12000
+            #cpl = process.compile_pattern_list(['denied.*','refused.*'])
+            sleep(2)
+            print process.before
+            print process.buffer
+            print process.after
+            #denied = process.expect('denied.*', timeout=3)
+            if (process.after.find('denied')==-1):
+                print "logged in"
+                eof = process.expect('eta', timeout=12000)
+                
+                eof = process.expect(pexpect.EOF, timeout=12000)
+            else:
+                print "Could not complete transfer"
+            print process.before
+            print process.buffer
+            print process.after
+            process.terminate(True)
+        except pexpect.TIMEOUT, err:
+            print 'Timeout'
+            pass
+        except pexpect.EOF, err:
             print str(err)
-            return 0
+            pass
+        finally:
+            pass
+
+
+
+
+
+
+
+
+config = init()
+args = parseArgs()

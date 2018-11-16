@@ -2,8 +2,9 @@ print('Starting script')
 
 from time import sleep
 from pexpect import pxssh
+import configparser
 
-from config import args, ssh, send, disconnect, config as s
+from config import args, ssh, send, sendFile, disconnect, config as s
 from subprocess import call, Popen, PIPE, STDOUT
 
 from getpass import getpass
@@ -40,7 +41,7 @@ def status(servers = s['servers']):
             else:
                 server['down']=True
         except pxssh.ExceptionPxssh, err:
-            print err
+            print str(err)
 
 # def stop():
 #     for server in s['servers']:
@@ -67,51 +68,54 @@ def startStakingWallet(server, hard=False):#Main server producing PoW blocks, ha
         removeBlockchainData(s['main'])
     genStakingnodeConfigs(s['servers'], s['main'])   
     connect = ssh(server)
-    send(connect, 'dapscoind '+s['serveroption']+' -daemon')#Start daemon
-    sleep(2)    #wait 2 seconds
-    if server == s['main']:#Start generating PoW blocks
-        send(connect, 'dapscoin-cli '+s['serveroption']+' setgenerate true 1')
-    #if hard:
-        #Need to reindex explorer database
-    disconnect(connect)
+    if connect:
+        send(connect, 'dapscoind '+s['serveroption']+' -daemon')#Start daemon
+        sleep(2)    #wait 2 seconds
+        if server == s['main']:#Start generating PoW blocks
+            send(connect, 'dapscoin-cli '+s['serveroption']+' setgenerate true 1')
+        #if hard:
+            #Need to reindex explorer database
+        disconnect(connect)
+
+def removeBlockDataFromServers(servers=s['servers']):
+    for server in servers:
+        removeBlockchainData(server)
 
 def removeBlockchainData(server):
     connect = ssh(server)
     if connect:
-        if s['serveroption'] != '-testnet':
-            send(connect, 'rm -r ~/.dapscoin/')
-        else: 
-            send(connect, 'rm -r ~/.dapscoin/testnet4/')
+        send(connect, 'rm -r * ~/.dapscoin/')
+        disconnect(connect)
+
+def startStakingServers(servers=s['servers']):
+    for server in servers:
+        startStaking(server)
+
+def startStaking(server):
+    connect = ssh(server)
+    if connect:
+        result = send(connect, 'dapscoin-cli '+s['serveroption']+'getstakingstatus')
+        print result
+        if ((result.find('false')!=-1) or (result.find("couldn't")!=-1)):
+            send(connect, 'dapscoind '+s['serveroption']+'stop')
+            print "Waiting for 30 seconds..."
+            sleep(30)
+            send(connect, 'dapscoind '+s['serveroption']+' -daemon')
+            #unlock wallet
         disconnect(connect)
 
 
-# def start():
-#     print 'wip'
 
-# def startStaking(server):
-#     connect = ssh(server)
-#     result = send(connect, 'dapscoin-cli '+s['serveroption']+'getstakingstatus')
-#     print result
-#     if ((result.find('false')!=-1) or (result.find("couldn't")!=-1)):
-#         send(connect, 'dapscoind '+s['serveroption']+'stop')
-#         print "Waiting for 30 seconds..."
-#         sleep(30)
-#         send(connect, 'dapscoind '+s['serveroption'])#+  -daemon?
-#         #unlock wallet
-#     disconnect(connect)
-
-
-
-# def masternodeScript(masterservers=s['masterservers'], stakingserver):
-#     genStakingNodeConfigFileScript(masterservers, stakingserver)
-#     connect = ssh(stakingserver)
-#     send(connect, 'dapscoind '+s['serveroption']+'-daemon')
-#     key = send(connect, 'dapscoin-cli '+s['serveroption']+'masternode genkey')
-#     if ((key[0].lower().find('not')==-1) and (key[0].lower().find('error')==-1)):
-#         for server in masterservers:
-#             genMasternodeConfigFileScript(server, stakingserver, key)
-#     else:
-#         print('could not complete process')
+def masternodeScript(stakingserver, masterservers=s['masterservers']):
+    genStakingNodeConfigFileScript(masterservers, stakingserver)
+    connect = ssh(stakingserver)
+    send(connect, 'dapscoind '+s['serveroption']+'-daemon')
+    key = send(connect, 'dapscoin-cli '+s['serveroption']+'masternode genkey')
+    if ((key[0].lower().find('not')==-1) and (key[0].lower().find('error')==-1)):
+        for server in masterservers:
+            genMasternodeConfigFileScript(server, stakingserver, key)
+    else:
+        print('could not complete process')
 
 
 
@@ -126,7 +130,7 @@ def genMasternodeConfigFileScript(masterserver, stakingserver, nodeprivkey):
     send(connect, 'dapscoin-cli '+s['serveroption']+'masternode genkey')
     disconnect(connect)
 
-def genStakingnodeConfigs(stakingservers, masterservers=s['masternodes']):
+def genStakingnodeConfigs(stakingservers=s['stakingnodes'], masterservers=s['masternodes']):
     for server in stakingservers:
         genStakingNodeConfigFileScript(server, masterservers)
 
@@ -238,21 +242,33 @@ def transferFromMainWallet(destination, amount = s['coinamount']):
 
 def reboot(servers = s['servers']):
     for server in servers:
-        try:
-            connect = ssh(server)
-            if connect:
-                send(connect, 'su reboot')
-                send(connect, getpass())
-        except pxssh.ExceptionPxssh, err:
-            print err
+        connect = ssh(server)
+        if connect:
+            send(connect, 'su reboot')
+            send(connect, getpass())
     sleep(60)
     for server in servers:
-        try:
-            connect = ssh(server)
-            if connect:
-                send(connect, 'dapscoind')
-        except pxssh.ExceptionPxssh, err:
-            print err
+        connect = ssh(server)
+        if connect:
+            send(connect, 'dapscoind')
+
+def installBinToServers(pathtobin, servers=s['servers']):
+    success = []
+    for server in servers:
+        success.append(installbinaries(server, pathtobin))
+    return all(success)
+
+def installbinaries(server, pathtobin):
+    sendFile(server, pathtobin+'dapscoind.bin '+pathtobin+'dapscoincli.bin', '/usr/bin/')
+    connect = ssh(server)
+    if connect:
+        send(connect, 'cd /usr/bin/')
+        send(connect, 'mv dapscoind.bin dapscoind')
+        send(connect, 'mv dapscoin-cli.bin dapscoin-cli')
+        disconnect(connect)
+        return 1
+    else:
+        return 0
 
 # def transfer(masternode, worker, amount=s['coinamount'] ):
 #     connect = ssh(masternode)
@@ -266,6 +282,7 @@ def reboot(servers = s['servers']):
 #     disconnect(connect)
 #     connect = ssh(masternode)
 #     send(connect, 'dapscoin-cli '+s['serveroption']+'getbalance')
+
 
 def awaitWorkers(workers, amount=s['coinamount']):
     ready = False
@@ -293,29 +310,42 @@ def runArgs():
                     status(arg['v'])
                 else:
                     status()
-            elif (arg['k'].find('auto')!=-1):
+            if (arg['k'].find('auto')!=-1):
                 if (len(arg['v'])):
                     autoGCloud(arg['v'])
                 else:
                     autoGCloud()
-            elif (arg['k'].find('transferfrom')!=-1):
+            if (arg['k'].find('transferfrom')!=-1):
                 if (len(arg['alt'])>1):
                     transferFromMainWallet(arg['alt'][0], arg['alt'][1])
                 else:
                     transferFromMainWallet(arg['alt'][0])
-            elif (arg['k'].find('restartallwallets')!=-1):
+            if (arg['k'].find('restartallwallets')!=-1):
                 restartAllWallets(arg['hard'])
-            elif (arg['k'].find('stopwalletdaemons')!=-1):
+            if (arg['k'].find('stopwalletdaemons')!=-1):
                 if (len(arg['v'])):
                     stopAllWalletDaemons(arg['v'])
                 else:
                     stopAllWalletDaemons()
-            elif (arg['k'].find('startstakingwallet')):
+            if (arg['k'].find('startstakingwallet')!=-1):
                 startStakingWallets(arg['v'])
-            elif (arg['k'].find('genstaking')!=-1):
+            if (arg['k'].find('genstaking')!=-1):
                 genStakingNodeConfigFileScript(arg['v'])
+            if (arg['k'].find('inst')!=-1):
+                if (len(arg['alt'])):
+                    if (len(arg['v'])):
+                        installBinToServers(arg['alt'][0],arg['v'])
+                    else:
+                        installBinToServers(arg['alt'][0])
+                else:
+                    print "Could not install binaries. Please provide a source path."
 
 runArgs()
 print args
+
+
+
+#sendFile(s['main'], 'test.test', '/home/dapstest/')
+#sendFile(s['main'], 'boot/', '/home/dapstest/','-r')
 #genConfigFileScript(s['masternodes'][0],'92zcRZrsy2JJjuY9kXGA4n7jSihfjGzrjKwB4s4Mq4UG42NPgBe', '38.29.176.86')
 #masternodeScript(s['masternodes'],s['stakingnodes'][0])
