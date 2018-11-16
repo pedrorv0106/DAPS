@@ -23,6 +23,10 @@ sudo apt install python python-pip & pip install setuptools wheel boot/
 Specify user/pass or public key for individual server. If none is provided for a
 server, the global setting will be used instead.
 
+If a username, password, or key file is provided for an individual server, it will override the global setting.
+
+If a password is provided for an individual server, it will be used instead of global key file.
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
  "username":"daps-devnet",
@@ -130,7 +134,7 @@ Check server status:
 python boot -status [servers]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Use gcloud to generate identity key, set permissions, and ssh into servers (gcloud must be installed and configured on local machine):
+Use gcloud to generate identity key, set permissions, and ssh into servers (gcloud must be installed and configured on local machine, only works with ubuntu at present):
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 python boot -autocloud [servers]
