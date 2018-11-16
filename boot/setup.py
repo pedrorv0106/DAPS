@@ -4,5 +4,5 @@ setup(
     name='DAPS_BOOT_PKG',
     version='0.1',
     #packages=['mypack',],
-    install_requires=['Pexpect>=4.6'],
+    install_requires=['Pexpect>=4.6','configparser'],
 )
