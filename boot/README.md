@@ -13,7 +13,7 @@ Setup
 Debian/Ubuntu, from repository root directory:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-sudo apt install python python-pip & pip install boot/
+sudo apt install python python-pip & pip install setuptools wheel boot/
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  
