@@ -71,7 +71,7 @@ def startStakingWallet(server, hard=False):#Main server producing PoW blocks, ha
     if connect:
         send(connect, 'dapscoind '+s['serveroption']+' -daemon')#Start daemon
         sleep(2)    #wait 2 seconds
-        if server == s['main']:#Start generating PoW blocks
+        if server['address'] == s['main']['address']:#Start generating PoW blocks
             send(connect, 'dapscoin-cli '+s['serveroption']+' setgenerate true 1')
         #if hard:
             #Need to reindex explorer database
@@ -101,6 +101,7 @@ def startStaking(server):
             print "Waiting for 30 seconds..."
             sleep(30)
             send(connect, 'dapscoind '+s['serveroption']+' -daemon')
+            send(connect, 'dapscoin-cli '+s['serveroption']+'')
             #unlock wallet
         disconnect(connect)
 
@@ -109,26 +110,28 @@ def startStaking(server):
 def masternodeScript(stakingserver, masterservers=s['masterservers']):
     genStakingNodeConfigFileScript(masterservers, stakingserver)
     connect = ssh(stakingserver)
-    send(connect, 'dapscoind '+s['serveroption']+'-daemon')
-    key = send(connect, 'dapscoin-cli '+s['serveroption']+'masternode genkey')
-    if ((key[0].lower().find('not')==-1) and (key[0].lower().find('error')==-1)):
-        for server in masterservers:
-            genMasternodeConfigFileScript(server, stakingserver, key)
-    else:
-        print('could not complete process')
+    if connect:
+        send(connect, 'dapscoind '+s['serveroption']+'-daemon')
+        key = send(connect, 'dapscoin-cli '+s['serveroption']+'masternode genkey')
+        if ((key[0].lower().find('not')==-1) and (key[0].lower().find('error')==-1)):
+            for server in masterservers:
+                genMasternodeConfigFileScript(server, stakingserver, key)
+        else:
+            print('could not complete process')
 
 
 
 def genMasternodeConfigFileScript(masterserver, stakingserver, nodeprivkey):
     dapsConfData = open('boot/config/dapscoin.conf', 'r').read()+'externalip='+masterserver['address']+'\nmasternodeprivkey='+nodeprivkey
     connect = ssh(masterserver)
-    send(connect, 'mkdir ~/.dapscoin')
-    send(connect, 'touch ~/.dapscoin/dapscoin.conf')
-    send(connect, 'echo "'+dapsConfData+'">~/.dapscoin/dapscoin.conf')
-    send(connect, 'dapscoin-cli '+s['serveroption']+'-daemon -connect '+stakingserver['address'])
-    sleep(5)
-    send(connect, 'dapscoin-cli '+s['serveroption']+'masternode genkey')
-    disconnect(connect)
+    if connect:
+        send(connect, 'mkdir ~/.dapscoin')
+        send(connect, 'touch ~/.dapscoin/dapscoin.conf')
+        send(connect, 'echo "'+dapsConfData+'">~/.dapscoin/dapscoin.conf')
+        send(connect, 'dapscoin-cli '+s['serveroption']+'-daemon -connect '+stakingserver['address'])
+        sleep(5)
+        send(connect, 'dapscoin-cli '+s['serveroption']+'masternode genkey')
+        disconnect(connect)
 
 def genStakingnodeConfigs(stakingservers=s['stakingnodes'], masterservers=s['masternodes']):
     for server in stakingservers:
@@ -140,12 +143,13 @@ def genStakingNodeConfigFileScript(stakingserver, masterservers=s['masternodes']
         nodes += 'addnode='+server['address']+'\n'
     dapsConfData = open('boot/config/dapscoin.conf', 'r').read() + nodes
     connect = ssh(stakingserver)
-    send(connect, 'mkdir ~/.dapscoin')
-    send(connect, 'touch ~/.dapscoin/dapscoin.conf')
-    send(connect, 'echo "'+dapsConfData+'">~/dapscoin/dapscoin.conf')
-    disconnect(connect)
+    if connect:
+        send(connect, 'mkdir ~/.dapscoin')
+        send(connect, 'touch ~/.dapscoin/dapscoin.conf')
+        send(connect, 'echo "'+dapsConfData+'">~/dapscoin/dapscoin.conf')
+        disconnect(connect)
 
-def restartAllWallets(hard=False):#hard restart = erase data and start blockchain from beginning
+def restartAllWallets(hard=False, masternode=s['masternodes'][0]):#hard restart = erase data and start blockchain from beginning
     stopAllWalletDaemons()
     if hard:
         for server in s['servers']:
@@ -156,8 +160,7 @@ def restartAllWallets(hard=False):#hard restart = erase data and start blockchai
 
     #start control wallet that controls the first masternode, this assume the machine running
     #this script is running control wallet
-    mn1 = s['masternodes'][0]
-    mn1ip = mn1['address']
+    mn1ip = masternode['address']
     if hard:
         #1. Stop control wallet
         p = Popen('dapscoin-cli ' + s['serveroption'] + " stop", shell=True, stdout=PIPE, stderr=STDOUT)
@@ -204,16 +207,18 @@ def restartAllWallets(hard=False):#hard restart = erase data and start blockchai
         Popen('echo "' + mnconfContent + '" >' + mnconfPath, shell=True, stdout=PIPE, stderr=STDOUT)
 
         #7. Start masternode daemon
-        startStakingWallet(mn1, hard)
-        stopAWallet(mn1)
+        startStakingWallet(masternode, hard)
+        stopAWallet(masternode)
         nodes = ''
         for server in s['servers']:
             nodes += '\naddnode='+server['address']
         dapsConfData = open('boot/config/dapscoin.conf', 'r').read() + nodes 
         dapsConfData = dapsConfData + '\n' + 'masternode=1\n' + 'externalip=' + mn1ip + '\nmasternodeprivkey=' + mnprivateKey
-        mn1Connect=ssh(mn1)
-        send(mn1Connect, 'echo "'+dapsConfData+'">~/dapscoin/dapscoin.conf')
-        send(mn1Connect, 'dapscoind '+s['serveroption']+' -daemon')#Start daemon
+        mn1Connect=ssh(masternode)
+        if mn1Connect:
+            send(mn1Connect, 'echo "'+dapsConfData+'">~/dapscoin/dapscoin.conf')
+            send(mn1Connect, 'dapscoind '+s['serveroption']+' -daemon')#Start daemon
+            disconnect(mn1Connect)
 
         #8. Start masternode from control wallet
         p = Popen('dapscoin-cli ' + s['serveroption'] + ' startmasternode alias false ' + mnalias, shell=True, stdout=PIPE, stderr=STDOUT)
@@ -230,6 +235,7 @@ def restartAllWallets(hard=False):#hard restart = erase data and start blockchai
 
         #10. Start staking nodes...
 
+#transfer funds to specified destination
 def transferFromMainWallet(destination, amount = s['coinamount']):
     main = s['main']
     connect = ssh(main)
@@ -240,29 +246,34 @@ def transferFromMainWallet(destination, amount = s['coinamount']):
             return txhash
         disconnect(connect)
 
+#restart specified servers
 def reboot(servers = s['servers']):
     for server in servers:
         connect = ssh(server)
         if connect:
-            send(connect, 'su reboot')
+            send(connect, 'sudo reboot')
             send(connect, getpass())
+            disconnect(connect)
     sleep(60)
     for server in servers:
         connect = ssh(server)
         if connect:
             send(connect, 'dapscoind')
 
+#transfer and install binary files from local machine to all specified servers
 def installBinToServers(pathtobin, servers=s['servers']):
     success = []
     for server in servers:
         success.append(installbinaries(server, pathtobin))
     return all(success)
 
+#transfer and install binary files from local machine to specified server
 def installbinaries(server, pathtobin):
     sendFile(server, pathtobin+'dapscoind.bin '+pathtobin+'dapscoincli.bin', '/usr/bin/')
     connect = ssh(server)
     if connect:
         send(connect, 'cd /usr/bin/')
+        send(connect, 'rm dapscoind dapscoin-cli')
         send(connect, 'mv dapscoind.bin dapscoind')
         send(connect, 'mv dapscoin-cli.bin dapscoin-cli')
         disconnect(connect)
@@ -296,6 +307,7 @@ def awaitWorkers(workers, amount=s['coinamount']):
             disconnect(connect)
         sleep(s['checkworkerinterval'])
 
+#use glcoud to automatically generate key, set permissions and open ssh shell to specified servers
 def autoGCloud(servers=s['servers']):
     for server in servers:
         call('xterm -e gcloud compute --project "'+s['project']+'" ssh --zone "'+s['zone']+'" "'+server['name']+'"', shell=True)
@@ -315,21 +327,21 @@ def runArgs():
                     autoGCloud(arg['v'])
                 else:
                     autoGCloud()
-            if (arg['k'].find('transferfrom')!=-1):
+            if (arg['k'].find('transfer')!=-1):
                 if (len(arg['alt'])>1):
                     transferFromMainWallet(arg['alt'][0], arg['alt'][1])
                 else:
                     transferFromMainWallet(arg['alt'][0])
-            if (arg['k'].find('restartallwallets')!=-1):
+            if (arg['k'].find('restartwallet')!=-1):
                 restartAllWallets(arg['hard'])
-            if (arg['k'].find('stopwalletdaemons')!=-1):
+            if (arg['k'].find('stopdaemon')!=-1):
                 if (len(arg['v'])):
                     stopAllWalletDaemons(arg['v'])
                 else:
                     stopAllWalletDaemons()
-            if (arg['k'].find('startstakingwallet')!=-1):
-                startStakingWallets(arg['v'])
-            if (arg['k'].find('genstaking')!=-1):
+            if (arg['k'].find('start')!=-1):
+                startStakingWallets(arg['v'], arg['hard'])
+            if (arg['k'].find('genstakingconfig')!=-1):
                 genStakingNodeConfigFileScript(arg['v'])
             if (arg['k'].find('inst')!=-1):
                 if (len(arg['alt'])):

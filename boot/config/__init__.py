@@ -109,11 +109,17 @@ def send(sshConnect, command):
         print str(err)
         return 0
 
+#send file from local machine to remote server
 def sendFile(server, sourcestr, deststr, options=''):
     print 'Sending '+sourcestr+' to '+server['name']
     if ('publickeyfile' in server):
-        print 'Need to implement SCP with key' #-F 'directory'?
-        #spawn('scp')
+        print 'scp '+options+' '+sourcestr+' '+server['username']+'@'+server['address']+':'+deststr
+        process = spawn('scp -i '+server['publickeyfile']+' '+options+' '+sourcestr+' '+server['username']+'@'+server['address']+':'+deststr)
+        process.timeout=12000
+        sleep(10)
+        print process.before
+        print process.buffer
+        print process.after
     else:
         try:
             print 'scp '+options+' '+sourcestr+' '+server['username']+'@'+server['address']+':'+deststr
