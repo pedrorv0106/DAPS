@@ -572,11 +572,9 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, CWallet* pwalle
 	pblock->vtx[0] = txCoinbase;
 	pblock->hashMerkleRoot = pblock->BuildMerkleTree();
 
-    if (Params().NetworkID() == CBaseChainParams::TESTNET) {
-    	bool fMutated;
-    	pblock->hashPoAMerkleRoot = pblock->BuildPoAMerkleTree();
-	    pblock->minedHash = pblock->ComputeMinedHash();
-    }
+    bool fMutated;
+    pblock->hashPoAMerkleRoot = pblock->BuildPoAMerkleTree();
+	pblock->minedHash = pblock->ComputeMinedHash();
 //        CValidationState state;
 //        if (!TestBlockValidity(state, *pblock, pindexPrev, false, false)) {
 //            LogPrintf("CreateNewBlock() : TestBlockValidity failed\n");
