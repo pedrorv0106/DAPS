@@ -243,7 +243,8 @@ bool CheckPoABlockMinedHash(const CBlockHeader& block) {
         bool fOverflow;
         uint256 bnTarget;
 
-        if (Params().SkipProofOfWorkCheck() || Params().NetworkID() == CBaseChainParams::TESTNET)
+        //As of now, there is no PoA miner, this will let all emulated PoA blocks bypass the check
+        if (Params().SkipProofOfWorkCheck() || Params().NetworkID() == CBaseChainParams::TESTNET || Params().NetworkID() == CBaseChainParams::MAIN)
             return true;
 
         bnTarget.SetCompact(block.nBits, &fNegative, &fOverflow);
