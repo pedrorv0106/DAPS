@@ -122,6 +122,7 @@ public:
         nLastPOWBlock = 1000;
         nStartPOABlock = 100000;
         nModifierUpdateBlock = 615800;
+        nPoABlockTime = 30 * 60; //a PoA block every 30 minutes
 
         /**
     * @author Wang
@@ -278,6 +279,7 @@ public:
         nTargetSpacing = 1 * 60;  // DAPScoin: 1 minute
         nLastPOWBlock = 220;
         nStartPOABlock = 300;
+        nPoABlockTime = 15 * 60;  //1 PoA block every 15 minutes
         nMaturity = 15;
         nMasternodeCountDrift = 4;
         nModifierUpdateBlock = 51197; //approx Mon, 17 Apr 2017 04:00:00 GMT
