@@ -120,7 +120,7 @@ public:
 
         /** Height or Time Based Activations **/
         nLastPOWBlock = 500;
-        nStartPOABlock = 100000;
+        nStartPOABlock = 1000;
         nModifierUpdateBlock = 615800;
         nPoABlockTime = 30 * 60; //a PoA block every 30 minutes
 
