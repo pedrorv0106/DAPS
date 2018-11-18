@@ -4320,6 +4320,12 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
         return state.Invalid(error("CheckBlock() : block timestamp too far in the future"),
                              REJECT_INVALID, "time-too-new");
 
+    //Check PoA block time
+    if (block.IsPoABlockByVersion() && !CheckPoAblockTime(block)) {
+    	return state.Invalid(error("CheckBlock() : Time elapsed between two PoA blocks is too short"),
+    	                             REJECT_INVALID, "time-too-new");
+    }
+
     // Check the merkle root.
     if (fCheckMerkleRoot) {
         bool mutated;

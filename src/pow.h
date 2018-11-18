@@ -33,13 +33,16 @@ extern const uint32_t POA_BLOCK_PERIOD;
 
 //Check PoA block header consensus rules
 bool CheckPrevPoABlockHash(const CBlockHeader& block, int blockheight = -1);
-bool CheckPoABlockMinedHash(const CBlockHeader& block);
 
 bool CheckPoAMerkleRoot(const CBlock& block, bool* fMutate = false);
 
 /** Check whether a block hash satisfies the proof-of-work requirement specified by nBits */
+bool CheckPoABlockMinedHash(const CBlockHeader& block);
+
 bool CheckPoAContainRecentHash(const CBlock& block, int blockHeight = -1);
 bool CheckNumberOfAuditedPoSBlocks(const CBlock& block);
 bool CheckPoABlockNotContainingPoABlockInfo(const CBlock& block, int blockheight = -1);
+
+bool CheckPoAblockTime(const CBlock& block, int blockheight = -1);
 
 #endif // BITCOIN_POW_H

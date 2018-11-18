@@ -339,3 +339,34 @@ bool CheckPoABlockNotContainingPoABlockInfo(const CBlock& block, int blockHeight
     }
     return true;
 }
+
+bool CheckPoAblockTime(const CBlock& block, int blockHeight) {
+	bool ret = false;
+	if (block.posBlocksAudited.size() < POA_BLOCK_PERIOD) {
+		return false;
+	}
+
+	{
+		//For compatible with current chain 18/11/2018, all previous PoA blocks do not need to check block time
+		//This is because some primary PoA blocks are created with short block time
+		if (mapBlockIndex.count(block.hashPrevBlock) != 0) {
+			CBlockIndex* pindex = mapBlockIndex[block.hashPrevBlock];
+			if (pindex->nHeight < 4838) {
+				return true;
+			}
+		}
+	}
+
+	if (block.hashPrevPoABlock.IsNull()) {
+		ret = true;
+	} else {
+		if (mapBlockIndex.count(block.hashPrevPoABlock) != 0) {
+			CBlockIndex* pindex = mapBlockIndex[block.hashPrevPoABlock];
+			uint32_t prevPoATime = pindex->nTime;
+			if (block.nTime > prevPoATime && (block.nTime - pindex->nTime >= Params().POA_BLOCK_TIME())) {
+				ret = true;
+			}
+		}
+	}
+	return ret;
+}
