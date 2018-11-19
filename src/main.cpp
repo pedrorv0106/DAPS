@@ -4326,6 +4326,12 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
     	                             REJECT_INVALID, "time-too-new");
     }
 
+    //Check PoA block not auditing PoS blocks audited by its previous PoA block
+    if (block.IsPoABlockByVersion() && !CheckPoABlockNotAuditingOverlap(block)) {
+    	return state.Invalid(error("CheckBlock() : PoA block auditing PoS blocks previously audited by its parent"),
+    	    	                             REJECT_INVALID, "overlap-audit");
+    }
+
     // Check the merkle root.
     if (fCheckMerkleRoot) {
         bool mutated;
