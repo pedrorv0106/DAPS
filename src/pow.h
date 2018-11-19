@@ -43,6 +43,7 @@ bool CheckPoAContainRecentHash(const CBlock& block, int blockHeight = -1);
 bool CheckNumberOfAuditedPoSBlocks(const CBlock& block);
 bool CheckPoABlockNotContainingPoABlockInfo(const CBlock& block, int blockheight = -1);
 
-bool CheckPoAblockTime(const CBlock& block, int blockheight = -1);
+bool CheckPoAblockTime(const CBlock& block);
+bool CheckPoABlockNotAuditingOverlap(const CBlock& block);
 
 #endif // BITCOIN_POW_H

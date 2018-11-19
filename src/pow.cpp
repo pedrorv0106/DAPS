@@ -337,7 +337,7 @@ bool CheckPoABlockNotContainingPoABlockInfo(const CBlock& block, int blockHeight
     return true;
 }
 
-bool CheckPoAblockTime(const CBlock& block, int blockHeight) {
+bool CheckPoAblockTime(const CBlock& block) {
 	bool ret = false;
 
 	{
@@ -345,7 +345,7 @@ bool CheckPoAblockTime(const CBlock& block, int blockHeight) {
 		//This is because some primary PoA blocks are created with short block time
 		if (mapBlockIndex.count(block.hashPrevBlock) != 0) {
 			CBlockIndex* pindex = mapBlockIndex[block.hashPrevBlock];
-			if (pindex->nHeight < 4838) {
+			if (pindex->nHeight < 5000) {
 				return true;
 			}
 		}
@@ -362,5 +362,41 @@ bool CheckPoAblockTime(const CBlock& block, int blockHeight) {
 			}
 		}
 	}
+	return ret;
+}
+
+bool CheckPoABlockNotAuditingOverlap(const CBlock& block) {
+	bool ret = false;
+
+	if (block.hashPrevPoABlock.IsNull()) {
+		//First PoA block
+		ret = true;
+	} else {
+		if (mapBlockIndex.count(block.hashPrevPoABlock) != 0) {
+			CBlockIndex* pPrevPoAIndex = mapBlockIndex[block.hashPrevPoABlock];
+			CBlock prevPoablock;
+			if (!ReadBlockFromDisk(prevPoablock, pPrevPoAIndex))
+				throw runtime_error("Can't read block from disk");
+			ret = true;
+			for (int i = 0; i < block.posBlocksAudited.size(); i++) {
+				bool isAlreadyAudited = false;
+				for (int j = 0; j < prevPoablock.posBlocksAudited.size(); j++) {
+					if (prevPoablock.posBlocksAudited[j].hash == block.posBlocksAudited[j].hash
+						&& prevPoablock.posBlocksAudited[j].nTime == block.posBlocksAudited[j].nTime
+						&& prevPoablock.posBlocksAudited[j].height == block.posBlocksAudited[j].height) {
+						isAlreadyAudited = true;
+						break;
+					}
+				}
+
+				if (isAlreadyAudited) {
+					ret = false;
+					break;
+				}
+			}
+
+		}
+	}
+
 	return ret;
 }
