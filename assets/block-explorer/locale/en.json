@@ -40,6 +40,7 @@
     "block_next": "Next",
     "block_title": "Block Details",
     "block_genesis": "GENESIS",
+    "blocktype": "Type",
 
     // global
     "difficulty": "Difficulty",
@@ -57,6 +58,8 @@
     "nonce": "Nonce",
     "new_coins": "New Coins",
     "proof_of_stake": "PoS",
+    "proof_of_work": "PoW",
+    "proof_of_audit": "PoA",
     "initial_index_alert": "Indexing is currently incomplete, functionality is limited until index is up-to-date.",
 
     //address menu
@@ -155,5 +158,5 @@
     "heavy_estnext": "Est. Next",
     "heavy_changein": "Reward change in approximately",
     "heavy_key": "Key",
-    "heavy_lastxvotes": "Last 20 votes",
+    "heavy_lastxvotes": "Last 20 votes"
 }

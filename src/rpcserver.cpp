@@ -285,6 +285,7 @@ static const CRPCCommand vRPCCommands[] =
 
         /* Mining */
         {"mining", "getblocktemplate", &getblocktemplate, true, false, false},
+		{"mining", "getpoablocktemplate", &getpoablocktemplate, true, false, false},
         {"mining", "getmininginfo", &getmininginfo, true, false, false},
         {"mining", "getnetworkhashps", &getnetworkhashps, true, false, false},
         {"mining", "prioritisetransaction", &prioritisetransaction, true, false, false},
@@ -296,6 +297,7 @@ static const CRPCCommand vRPCCommands[] =
         {"generating", "getgenerate", &getgenerate, true, false, false},
         {"generating", "gethashespersec", &gethashespersec, true, false, false},
         {"generating", "setgenerate", &setgenerate, true, true, false},
+		{"generating", "generatepoa", &generatepoa, true, true, false},
 #endif
 
         /* Raw transactions */
@@ -877,6 +879,9 @@ void JSONRequest::parse(const Value& valRequest)
     strMethod = valMethod.get_str();
     if (strMethod != "getblocktemplate")
         LogPrint("rpc", "ThreadRPCServer method=%s\n", SanitizeString(strMethod));
+    if (strMethod != "getpoablocktemplate") {
+    	LogPrint("rpc", "ThreadRPCServer method=%s\n", SanitizeString(strMethod));
+    }
 
     // Parse params
     Value valParams = find_value(request, "params");
