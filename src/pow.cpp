@@ -151,9 +151,6 @@ const uint32_t POA_BLOCK_PERIOD = 59;
 
 //If blockheight = -1, the to-be-checked block is not included yet in the chain, otherwise, that is the height of the poa block
 bool CheckPoAContainRecentHash(const CBlock& block, int blockHeight) {
-    if (block.posBlocksAudited.size() < POA_BLOCK_PERIOD) {
-        return false;
-    }
     //block.Merkle
     int currentHeight = chainActive.Tip()->nHeight;
     if (blockHeight != - 1) {
@@ -342,9 +339,6 @@ bool CheckPoABlockNotContainingPoABlockInfo(const CBlock& block, int blockHeight
 
 bool CheckPoAblockTime(const CBlock& block, int blockHeight) {
 	bool ret = false;
-	if (block.posBlocksAudited.size() < POA_BLOCK_PERIOD) {
-		return false;
-	}
 
 	{
 		//For compatible with current chain 18/11/2018, all previous PoA blocks do not need to check block time
