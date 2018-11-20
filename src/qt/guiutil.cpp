@@ -833,10 +833,10 @@ QString loadStyleSheet()
         // Build-in CSS
         settings.setValue("fCSSexternal", false);
         if (!theme.isEmpty()) {
-            cssName = QString(":/css/") + theme;
+            cssName = QString(":/css/") + theme + ".css";
         } else {
-            cssName = QString(":/css/default");
-            settings.setValue("theme", "default");
+            cssName = QString(":/css/Light.css");
+            settings.setValue("theme", "Light");
         }
     }
 
