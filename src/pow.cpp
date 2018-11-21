@@ -341,7 +341,7 @@ bool CheckPoAblockTime(const CBlock& block) {
 		//This is because some primary PoA blocks are created with short block time
 		if (mapBlockIndex.count(block.hashPrevBlock) != 0) {
 			CBlockIndex* pindex = mapBlockIndex[block.hashPrevBlock];
-			if (pindex->nHeight < 5000) {
+			if (pindex->nHeight < 6000) {
 				return true;
 			}
 		}
