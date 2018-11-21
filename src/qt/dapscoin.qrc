@@ -55,7 +55,8 @@
         <file alias="staking_inactive">res/icons/staking_inactive.png</file>
     </qresource>
     <qresource prefix="/css">
-        <file alias="default">res/css/default.css</file>
+        <file alias="light">res/css/Light.css</file>
+        <file alias="dark">res/css/Dark.css</file>
     </qresource>
     <qresource prefix="/images">
         <file alias="about">res/images/about.png</file>
