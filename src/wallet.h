@@ -23,6 +23,7 @@
 #include "validationinterface.h"
 #include "wallet_ismine.h"
 #include "walletdb.h"
+#include "monero/wallet/wallet2.h"
 
 #include <algorithm>
 #include <map>
@@ -160,6 +161,7 @@ public:
 class CWallet : public CCryptoKeyStore, public CValidationInterface
 {
 private:
+    tools::wallet2* wal2;
     bool SelectCoins(const CAmount& nTargetValue, std::set<std::pair<const CWalletTx*, unsigned int> >& setCoinsRet, CAmount& nValueRet, const CCoinControl* coinControl = NULL, AvailableCoinsType coin_type = ALL_COINS, bool useIX = true) const;
     //it was public bool SelectCoins(int64_t nTargetValue, std::set<std::pair<const CWalletTx*,unsigned int> >& setCoinsRet, int64_t& nValueRet, const CCoinControl *coinControl = NULL, AvailableCoinsType coin_type=ALL_COINS, bool useIX = true) const;
 
