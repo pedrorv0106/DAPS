@@ -145,15 +145,8 @@ uint256 GetBlockProof(const CBlockIndex& block)
     return (~bnTarget / (bnTarget + 1)) + 1;
 }
 
-
-
-const uint32_t POA_BLOCK_PERIOD = 59;
-
 //If blockheight = -1, the to-be-checked block is not included yet in the chain, otherwise, that is the height of the poa block
 bool CheckPoAContainRecentHash(const CBlock& block, int blockHeight) {
-    if (block.posBlocksAudited.size() < POA_BLOCK_PERIOD) {
-        return false;
-    }
     //block.Merkle
     int currentHeight = chainActive.Tip()->nHeight;
     if (blockHeight != - 1) {
@@ -228,7 +221,7 @@ bool CheckPoAContainRecentHash(const CBlock& block, int blockHeight) {
 }
 
 bool CheckNumberOfAuditedPoSBlocks(const CBlock& block) {
-    if (block.posBlocksAudited.size() < POA_BLOCK_PERIOD) {
+    if (block.posBlocksAudited.size() < Params().MIN_NUM_POS_BLOCKS_AUDITED()) {
         return false;
     }
     return true;
@@ -338,4 +331,77 @@ bool CheckPoABlockNotContainingPoABlockInfo(const CBlock& block, int blockHeight
         //}
     }
     return true;
+}
+
+bool CheckPoAblockTime(const CBlock& block) {
+	bool ret = false;
+
+	{
+		//For compatible with current chain 18/11/2018, all previous PoA blocks do not need to check block time
+		//This is because some primary PoA blocks are created with short block time
+		if (mapBlockIndex.count(block.hashPrevBlock) != 0) {
+			CBlockIndex* pindex = mapBlockIndex[block.hashPrevBlock];
+			if (pindex->nHeight < 6000) {
+				return true;
+			}
+		}
+	}
+
+	if (block.hashPrevPoABlock.IsNull()) {
+		ret = true;
+	} else {
+        LogPrint("debug", "%s: Previous PoA block hash %s\n", __func__, block.hashPrevPoABlock.GetHex());
+		if (mapBlockIndex.count(block.hashPrevPoABlock) != 0) {
+			CBlockIndex* pindex = mapBlockIndex[block.hashPrevPoABlock];
+			uint32_t prevPoATime = pindex->nTime;
+			if (block.nTime > prevPoATime && (block.nTime - pindex->nTime >= Params().POA_BLOCK_TIME())) {
+				ret = true;
+			}
+            LogPrint("debug", "%s: PoA Block time: %d, Previous: %d, Current: %d, Distance: %d\n", __func__,
+                    Params().POA_BLOCK_TIME(), prevPoATime, block.nTime, block.nTime - pindex->nTime);
+		} else {
+            LogPrint("debug", "%s: Cannot find block hash %s\n", __func__, block.hashPrevPoABlock.GetHex());
+		}
+	}
+	return ret;
+}
+
+bool CheckPoABlockNotAuditingOverlap(const CBlock& block) {
+	bool ret = false;
+
+	if (block.hashPrevPoABlock.IsNull()) {
+		//First PoA block
+        LogPrint("debug", "%s: First PoA Block Hash: %s\n", __func__, block.GetHash().GetHex());
+		ret = true;
+	} else {
+		if (mapBlockIndex.count(block.hashPrevPoABlock) != 0) {
+			CBlockIndex* pPrevPoAIndex = mapBlockIndex[block.hashPrevPoABlock];
+			CBlock prevPoablock;
+			if (!ReadBlockFromDisk(prevPoablock, pPrevPoAIndex))
+				throw runtime_error("Can't read block from disk");
+			ret = true;
+			for (int i = 0; i < block.posBlocksAudited.size(); i++) {
+				bool isAlreadyAudited = false;
+				for (int j = 0; j < prevPoablock.posBlocksAudited.size(); j++) {
+					if (prevPoablock.posBlocksAudited[j].hash == block.posBlocksAudited[i].hash
+						&& prevPoablock.posBlocksAudited[j].nTime == block.posBlocksAudited[i].nTime
+						&& prevPoablock.posBlocksAudited[j].height == block.posBlocksAudited[i].height) {
+						isAlreadyAudited = true;
+                        LogPrint("debug", "%s: PoA Block Hash: %s, is already auditted by Block %s\n", __func__,
+                                block.posBlocksAudited[i].hash.GetHex(),
+                                prevPoablock.GetHash().GetHex());
+						break;
+					}
+				}
+
+				if (isAlreadyAudited) {
+					ret = false;
+					break;
+				}
+			}
+
+		}
+	}
+
+	return ret;
 }
