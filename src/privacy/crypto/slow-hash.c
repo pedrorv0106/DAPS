@@ -35,7 +35,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "monero/common/int-util.h"
+#include "privacy/common/int-util.h"
 #include "hash-ops.h"
 #include "oaes_lib.h"
 #include "variant2_int_sqrt.h"

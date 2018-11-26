@@ -38,8 +38,8 @@
 #include <type_traits>
 #include <vector>
 
-#include "monero/common/pod-class.h"
-#include "monero/common/util.h"
+#include "privacy/common/pod-class.h"
+#include "privacy/common/util.h"
 #include "../epee/include/memwipe.h"
 #include "../epee/include/mlocker.h"
 #include "generic-ops.h"

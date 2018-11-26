@@ -11,7 +11,7 @@ Public domain.
 #endif
 
 #include "chacha.h"
-#include "monero/common/int-util.h"
+#include "privacy/common/int-util.h"
 #include "warnings.h"
 
 /*

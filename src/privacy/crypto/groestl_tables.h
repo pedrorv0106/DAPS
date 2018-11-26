@@ -29,7 +29,7 @@
 #ifndef __tables_h
 #define __tables_h
 
-#include "monero/common/int-util.h"
+#include "privacy/common/int-util.h"
 
 
 #if BYTE_ORDER == LITTLE_ENDIAN

@@ -39,7 +39,7 @@
 #include <boost/thread/lock_guard.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include "monero/common/varint.h"
+#include "privacy/common/varint.h"
 #include "warnings.h"
 #include "crypto.h"
 #include "hash.h"

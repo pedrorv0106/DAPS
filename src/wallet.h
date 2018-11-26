@@ -23,7 +23,7 @@
 #include "validationinterface.h"
 #include "wallet_ismine.h"
 #include "walletdb.h"
-#include "monero/wallet/wallet2.h"
+#include "privacy/wallet/wallet2.h"
 
 #include <algorithm>
 #include <map>

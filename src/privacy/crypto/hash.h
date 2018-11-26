@@ -34,7 +34,7 @@
 #include <iostream>
 #include <boost/utility/value_init.hpp>
 
-#include "monero/common/pod-class.h"
+#include "privacy/common/pod-class.h"
 #include "generic-ops.h"
 #include "../epee/include/hex.h"
 #include "../epee/include/span.h"

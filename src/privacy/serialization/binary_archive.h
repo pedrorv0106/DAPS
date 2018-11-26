@@ -38,8 +38,8 @@
 #include <iterator>
 #include <boost/type_traits/make_unsigned.hpp>
 
-#include "monero/common/varint.h"
-#include "monero/epee/include/warnings.h"
+#include "privacy/common/varint.h"
+#include "privacy/epee/include/warnings.h"
 
 /* I have no clue what these lines means */
 PUSH_WARNINGS

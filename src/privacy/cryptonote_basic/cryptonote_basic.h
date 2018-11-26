@@ -36,20 +36,20 @@
 #include <cstring>  // memcmp
 #include <sstream>
 #include <atomic>
-#include "monero/serialization/variant.h"
-#include "monero/serialization/vector.h"
-#include "monero/serialization/binary_archive.h"
-#include "monero/serialization/json_archive.h"
-#include "monero/serialization/debug_archive.h"
-#include "monero/serialization/crypto.h"
-#include "monero/epee/include/serialization/keyvalue_serialization.h" // eepe named serialization
-#include "monero/cryptonote_config.h"
-#include "monero/crypto/crypto.h"
-#include "monero/crypto/hash.h"
-#include "monero/epee/include/misc_language.h"
+#include "privacy/serialization/variant.h"
+#include "privacy/serialization/vector.h"
+#include "privacy/serialization/binary_archive.h"
+#include "privacy/serialization/json_archive.h"
+#include "privacy/serialization/debug_archive.h"
+#include "privacy/serialization/crypto.h"
+#include "privacy/epee/include/serialization/keyvalue_serialization.h" // eepe named serialization
+#include "privacy/cryptonote_config.h"
+#include "privacy/crypto/crypto.h"
+#include "privacy/crypto/hash.h"
+#include "privacy/epee/include/misc_language.h"
 #include "tx_extra.h"
-#include "monero/ringct/rctTypes.h"
-#include "monero/device/device.hpp"
+#include "privacy/ringct/rctTypes.h"
+#include "privacy/device/device.hpp"
 
 namespace cryptonote
 {
