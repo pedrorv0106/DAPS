@@ -2898,3 +2898,41 @@ Value createprivacywallet(const Array& params, bool fHelp)
     ret.emplace_back(Pair("wallet file", wallet_file));
     return ret;
 }
+
+Value createprivacyaccount(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw runtime_error(
+                "createprivacyaccount \"label\" \n"
+                "\nCreate a new wallet account for privacy.\n"
+                "\nArguments:\n"
+                "1. \"label\"        (string, required) label for the wallet \n"
+                "\nResult:\n"
+                "\"account address\"    (string) the address of the created account\n"
+                "\"account index\"    (string) the index of the created account\n"
+                "\nExamples:\n" +
+                HelpExampleCli("createprivacyaccount", "") + HelpExampleCli("createprivacyaccount", "\"\"") + HelpExampleCli("createprivacyaccount", "\"account1\"") + HelpExampleRpc("createprivacyaccount", "\"account1\""));
+
+    if (!pwalletMain || !pwalletMain->privacyWallet) {
+        //privacy wallet is already created
+        throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
+                           "Error: There is no privacy wallet, please use createprivacywallet to create one.");
+    }
+
+    std::string label = params[0].get_str();
+
+    Object ret;
+    try
+    {
+        pwalletMain->privacyWallet->add_subaddress_account(label);
+        size_t account_index = pwalletMain->privacyWallet->get_num_subaddress_accounts() - 1;
+        ret.emplace_back(Pair("account_index", account_index));
+        ret.emplace_back(Pair("address", pwalletMain->privacyWallet->get_subaddress_as_str({account_index, 0});
+    }
+    catch (const std::exception& e)
+    {
+        throw JSONRPCError(WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR,
+                           "Error: Cannot create privacy wallet account.");
+    }
+    ret;
+}

@@ -364,6 +364,7 @@ static const CRPCCommand vRPCCommands[] =
         {"wallet", "bip38decrypt", &bip38decrypt, true, false, true},
         {"wallet", "encryptwallet", &encryptwallet, true, false, true},
         {"wallet", "createprivacywallet", &createprivacywallet, true, false, true},
+        {"wallet", "createprivacyaccount", &createprivacyaccount, true, false, true},
         {"wallet", "getaccountaddress", &getaccountaddress, true, false, true},
         {"wallet", "getaccount", &getaccount, true, false, true},
         {"wallet", "getaddressesbyaccount", &getaddressesbyaccount, true, false, true},
