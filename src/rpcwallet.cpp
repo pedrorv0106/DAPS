@@ -25,6 +25,8 @@
 #include "json/json_spirit_value.h"
 #include "spork.h"
 #include <boost/assign/list_of.hpp>
+#include "privacy/mnemonics/electrum-words.h"
+#include "privacy/rpc/core_rpc_server_commands_defs.h"
 
 using namespace std;
 using namespace boost;
@@ -2804,4 +2806,93 @@ Value reconsiderzerocoins(const Array& params, bool fHelp)
     }
 
     return arrRet;
+}
+
+Value createprivacywallet(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() >2 || params.size() < 1)
+        throw runtime_error(
+                "createprivacywallet \"password\" (\"language\") \n"
+                "\nCreate a new wallet for privacy with dual-key stealth address.\n"
+                "If 'language' is specified, it is used, otherwise english \n"
+                "\nArguments:\n"
+                "1. \"account\"        (string, required) password for the wallet \n"
+                "2. \"language\"        (string, optional) language for the wallet's mnemmonics \n"
+                "\nResult:\n"
+                "\"privacy wallet created\"    (string) the base address of the wallet\n"
+                "\nExamples:\n" +
+                HelpExampleCli("createprivacywallet", "") + HelpExampleCli("createprivacywallet", "\"\"") + HelpExampleCli("createprivacywallet", "\"1234567890\"") + HelpExampleRpc("createprivacywallet", "\"1234567890\""));
+
+    if (pwalletMain && pwalletMain->privacyWallet) {
+        //privacy wallet is already created
+        throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
+                           "Error: Privacy wallet is alread created.");
+    }
+
+    std::string dataDir = GetDataDir().string();
+
+    std::string filepath = dataDir + std::string("privacywallet.dat");
+    std::string password = params[0].get_str();
+    std::string language("english");
+    if (params.size() == 2) {
+        language = params[0].get_str();
+    }
+
+    std::string wallet_file = filepath;
+    {
+        std::vector<std::string> languages;
+        crypto::ElectrumWords::get_language_list(languages);
+        std::vector<std::string>::iterator it;
+        std::string wallet_file;
+        char *ptr;
+
+        it = std::find(languages.begin(), languages.end(), req.language);
+        if (it == languages.end())
+        {
+            throw JSONRPCError(RPC_ERROR_CODE_UNKNOWN_ERROR,
+                               "Error: Unknown language.");
+        }
+    }
+    /*{
+        po::options_description desc("dummy");
+        const command_line::arg_descriptor<std::string, true> arg_password = {"password", "password"};
+        const char *argv[4];
+        int argc = 3;
+        argv[0] = "wallet-rpc";
+        argv[1] = "--password";
+        argv[2] = req.password.c_str();
+        argv[3] = NULL;
+        vm2 = *m_vm;
+        command_line::add_arg(desc, arg_password);
+        po::store(po::parse_command_line(argc, argv, desc), vm2);
+    }*/
+    std::unique_ptr<tools::wallet2> wal = tools::wallet2::make_new(pwalletMain->vm, true, nullptr).first;
+    if (!wal)
+    {
+        throw JSONRPCError(RPC_ERROR_CODE_UNKNOWN_ERROR,
+                           "Error: Failed to create privacy wallet.");
+    }
+    wal->set_seed_language(language);
+    cryptonote::COMMAND_RPC_GET_HEIGHT::request hreq;
+    cryptonote::COMMAND_RPC_GET_HEIGHT::response hres;
+    hres.height = 0;
+    bool r = wal->invoke_http_json("/getheight", hreq, hres);
+    wal->set_refresh_from_block_height(hres.height);
+    crypto::secret_key dummy_key;
+    try {
+        wal->generate(wallet_file, password, dummy_key, false, false);
+    }
+    catch (const std::exception& e)
+    {
+        throw JSONRPCError(RPC_ERROR_CODE_UNKNOWN_ERROR,
+                           "Error: Failed to generate dummy key.");
+    }
+    if (!wal)
+    {
+        throw JSONRPCError(RPC_ERROR_CODE_UNKNOWN_ERROR,
+                           "Error: Failed to generate wallet.");
+    }
+
+    pwalletMain->privacyWallet = wal.release();
+    return true;
 }
