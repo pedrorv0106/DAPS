@@ -2894,5 +2894,7 @@ Value createprivacywallet(const Array& params, bool fHelp)
     }
 
     pwalletMain->privacyWallet = wal.release();
-    return true;
+    Object ret;
+    ret.emplace_back(Pair("wallet file", wallet_file));
+    return ret;
 }
