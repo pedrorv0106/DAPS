@@ -120,8 +120,10 @@ public:
 
         /** Height or Time Based Activations **/
         nLastPOWBlock = 500;
-        nStartPOABlock = 100000;
+        nStartPOABlock = 1000;
         nModifierUpdateBlock = 615800;
+        nPoABlockTime = 30 * 60; //a PoA block every 30 minutes
+        nMinNumPoSBlocks = 59;
 
         /**
     * @author Wang
@@ -273,8 +275,10 @@ public:
         nMinerThreads = 0;
         nTargetTimespan = 1 * 60; // DAPScoin: 1 day
         nTargetSpacing = 1 * 60;  // DAPScoin: 1 minute
-        nLastPOWBlock = 210;
+        nLastPOWBlock = 220;
         nStartPOABlock = 300;
+        nPoABlockTime = 15 * 60;  //1 PoA block every 15 minutes
+        nMinNumPoSBlocks = 20;
         nMaturity = 15;
         nMasternodeCountDrift = 4;
         nModifierUpdateBlock = 51197; //approx Mon, 17 Apr 2017 04:00:00 GMT

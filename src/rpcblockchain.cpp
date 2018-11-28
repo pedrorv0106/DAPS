@@ -90,21 +90,27 @@ Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDe
         result.push_back(Pair("nextblockhash", pnext->GetBlockHash().GetHex()));
 
     result.push_back(Pair("moneysupply",ValueFromAmount(blockindex->nMoneySupply)));
+    std::string minetype = "PoW";
+    if (blockindex->IsProofOfStake()) {
+    	minetype = "PoS";
+    } else if (blockindex->IsProofOfAudit()) {
+    	minetype = "PoA";
+    }
 
-    if (blockindex->nHeight > Params().START_POA_BLOCK() && (blockindex->nHeight - 1) % 60 == 0) {
+    result.push_back(Pair("minetype", minetype));
+
+    if (blockindex->IsProofOfAudit()) {
         //This is a PoA block
         //Read information of PoS blocks audited by this PoA block
+    	result.push_back(Pair("previouspoahash", block.hashPrevPoABlock.GetHex()));
         Array posBlockInfos;
-        int posStart = blockindex->nHeight - 59;
-        int posStop = posStart + 60 - 1;
 
-        for (int i = posStart; i < posStop; i++) {
-            CBlockIndex* pPoSBlockindex = chainActive[i];
+        for (int i = 0; i < block.posBlocksAudited.size(); i++) {
             Object objPoSBlockInfo;
 
-            PoSBlockInfoToJSON(pPoSBlockindex->GetBlockHash(),
-                               pPoSBlockindex->GetBlockTime(), i, objPoSBlockInfo);
-            posBlockInfos.push_back(objPoSBlockInfo);
+            PoSBlockInfoToJSON(block.posBlocksAudited[i].hash,
+                        		block.posBlocksAudited[i].nTime, block.posBlocksAudited[i].height, objPoSBlockInfo);
+                        posBlockInfos.push_back(objPoSBlockInfo);
         }
 
         result.push_back(Pair("posblocks", posBlockInfos));

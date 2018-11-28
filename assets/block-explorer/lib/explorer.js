@@ -394,6 +394,6 @@ module.exports = {
     }, function(){
       return cb(arr_vin);
     });
-  }
+  },
 };
 

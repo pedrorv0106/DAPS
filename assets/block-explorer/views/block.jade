@@ -23,6 +23,7 @@ block content
         thead
           tr
             th #{settings.locale.height}
+            th #{settings.locale.blocktype}
             th #{settings.locale.difficulty}
             th #{settings.locale.confirmations}
             if settings.heavy == true
@@ -36,6 +37,7 @@ block content
             tr.success
               - var block_size = block.size/1024
               td #{block.height}
+              td #{block.minetype}
               td #{block.difficulty.toFixed(4)}
               td #{block.confirmations}
               if settings.heavy == true
@@ -49,6 +51,7 @@ block content
               tr.danger
                 - var block_size = block.size/1024
                 td #{block.height}
+                td #{block.minetype}
                 td #{block.difficulty.toFixed(4)}
                 td #{block.confirmations}
                 if settings.heavy == true
@@ -61,6 +64,7 @@ block content
               tr.warning
                 - var block_size = block.size/1024
                 td #{block.height}
+                td #{block.minetype}
                 td #{block.difficulty.toFixed(4)}
                 td #{block.confirmations}
                 if settings.heavy == true

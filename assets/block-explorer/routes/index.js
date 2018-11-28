@@ -14,12 +14,12 @@ function route_get_block(res, blockhash) {
       } else {
         db.get_txs(block, function(txs) {
           if (txs.length > 0) {
-            res.render('block', { active: 'block', block: block, confirmations: settings.confirmations, txs: txs});
+            res.render('block', { active: 'block', block: block, confirmations: settings.confirmations, txs: txs });
           } else {
             db.create_txs(block, function(){
               db.get_txs(block, function(ntxs) {
                 if (ntxs.length > 0) {
-                  res.render('block', { active: 'block', block: block, confirmations: settings.confirmations, txs: ntxs});
+                  res.render('block', { active: 'block', block: block, confirmations: settings.confirmations, txs: ntxs });
                 } else {
                   route_get_index(res, 'Block not found: ' + blockhash);
                 }
@@ -51,27 +51,24 @@ function route_get_tx(res, txid) {
             lib.prepare_vin(rtx, function(vin) {
               lib.prepare_vout(rtx.vout, rtx.txid, vin, function(rvout, rvin) {
                 lib.calculate_total(rvout, function(total){
+                  var utx = {
+                    txid: rtx.txid,
+                    vin: rvin,
+                    vout: rvout,
+                    total: total.toFixed(8),
+                    timestamp: rtx.time,
+                  };
                   if (!rtx.confirmations > 0) {
-                    var utx = {
-                      txid: rtx.txid,
-                      vin: rvin,
-                      vout: rvout,
-                      total: total.toFixed(8),
-                      timestamp: rtx.time,
+                    Object.assign(utx, {
                       blockhash: '-',
                       blockindex: -1,
-                    };
+                    });
                     res.render('tx', { active: 'tx', tx: utx, confirmations: settings.confirmations, blockcount:-1});
                   } else {
-                    var utx = {
-                      txid: rtx.txid,
-                      vin: rvin,
-                      vout: rvout,
-                      total: total.toFixed(8),
-                      timestamp: rtx.time,
+                    Object.assign(utx, {
                       blockhash: rtx.blockhash,
                       blockindex: rtx.blockheight,
-                    };
+                    });
                     lib.get_blockcount(function(blockcount) {
                       res.render('tx', { active: 'tx', tx: utx, confirmations: settings.confirmations, blockcount: blockcount});
                     });
@@ -137,7 +134,6 @@ router.get('/markets/:market', function(req, res) {
       /*if (market === 'bittrex') {
         data = JSON.parse(data);
       }*/
-      console.log(data);
       res.render('./markets/' + market, {
         active: 'markets',
         marketdata: {
