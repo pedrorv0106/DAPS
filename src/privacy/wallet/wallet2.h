@@ -1376,7 +1376,8 @@ namespace tools
 
     std::shared_ptr<tools::Notify> m_tx_notify;
   };
-}
+};
+
 BOOST_CLASS_VERSION(tools::wallet2, 25)
 BOOST_CLASS_VERSION(tools::wallet2::transfer_details, 9)
 BOOST_CLASS_VERSION(tools::wallet2::multisig_info, 1)

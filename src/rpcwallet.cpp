@@ -2823,7 +2823,7 @@ Value createprivacywallet(const Array& params, bool fHelp)
                 "\nExamples:\n" +
                 HelpExampleCli("createprivacywallet", "") + HelpExampleCli("createprivacywallet", "\"\"") + HelpExampleCli("createprivacywallet", "\"1234567890\"") + HelpExampleRpc("createprivacywallet", "\"1234567890\""));
 
-    if (pwalletMain && pwalletMain->privacyWallet) {
+    if (pwalletMain) {
         //privacy wallet is already created
         throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
                            "Error: Privacy wallet is alread created.");
@@ -2831,7 +2831,7 @@ Value createprivacywallet(const Array& params, bool fHelp)
 
     std::string dataDir = GetDataDir().string();
 
-    std::string filepath = dataDir + std::string("privacywallet.dat");
+    std::string filepath = dataDir + std::string("wallet.dat");
     std::string password = params[0].get_str();
     std::string language("english");
     if (params.size() == 2) {
@@ -2846,7 +2846,7 @@ Value createprivacywallet(const Array& params, bool fHelp)
         std::string wallet_file;
         char *ptr;
 
-        it = std::find(languages.begin(), languages.end(), req.language);
+        it = std::find(languages.begin(), languages.end(), language);
         if (it == languages.end())
         {
             throw JSONRPCError(RPC_ERROR_CODE_UNKNOWN_ERROR,
@@ -2866,7 +2866,7 @@ Value createprivacywallet(const Array& params, bool fHelp)
         command_line::add_arg(desc, arg_password);
         po::store(po::parse_command_line(argc, argv, desc), vm2);
     }*/
-    std::unique_ptr<tools::wallet2> wal = tools::wallet2::make_new(pwalletMain->vm, true, nullptr).first;
+    std::unique_ptr<CWallet> wal = CWallet::make_new(pwalletMain->vm, true, nullptr).first;
     if (!wal)
     {
         throw JSONRPCError(RPC_ERROR_CODE_UNKNOWN_ERROR,
@@ -2893,7 +2893,7 @@ Value createprivacywallet(const Array& params, bool fHelp)
                            "Error: Failed to generate wallet.");
     }
 
-    pwalletMain->privacyWallet = wal.release();
+    pwalletMain = wal.release();
     Object ret;
     ret.emplace_back(Pair("wallet file", wallet_file));
     return ret;
@@ -2913,7 +2913,7 @@ Value createprivacyaccount(const Array& params, bool fHelp)
                 "\nExamples:\n" +
                 HelpExampleCli("createprivacyaccount", "") + HelpExampleCli("createprivacyaccount", "\"\"") + HelpExampleCli("createprivacyaccount", "\"account1\"") + HelpExampleRpc("createprivacyaccount", "\"account1\""));
 
-    if (!pwalletMain || !pwalletMain->privacyWallet) {
+    if (!pwalletMain) {
         //privacy wallet is already created
         throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
                            "Error: There is no privacy wallet, please use createprivacywallet to create one.");
@@ -2924,14 +2924,14 @@ Value createprivacyaccount(const Array& params, bool fHelp)
     Object ret;
     try
     {
-        pwalletMain->privacyWallet->add_subaddress_account(label);
-        size_t account_index = pwalletMain->privacyWallet->get_num_subaddress_accounts() - 1;
-        ret.emplace_back(Pair("account_index", account_index));
-        ret.emplace_back(Pair("address", pwalletMain->privacyWallet->get_subaddress_as_str({account_index, 0})));
+        pwalletMain->add_subaddress_account(label);
+        size_t account_index = pwalletMain->get_num_subaddress_accounts() - 1;
+        ret.emplace_back(Pair("account_index", (int) account_index));
+        ret.emplace_back(Pair("address", pwalletMain->get_subaddress_as_str({(uint32_t)account_index, 0})));
     }
     catch (const std::exception& e)
     {
-        throw JSONRPCError(WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR,
+        throw JSONRPCError(RPC_ERROR_CODE_UNKNOWN_ERROR,
                            "Error: Cannot create privacy wallet account.");
     }
     return ret;
@@ -2950,9 +2950,9 @@ Value createprivacysubaddress(const Array& params, bool fHelp)
                 "\"account address\"    (string) the created address for the corresponding account\n"
                 "\"address index\"    (string) the index of the created address for the account\n"
                 "\nExamples:\n" +
-                HelpExampleCli("createprivacysubaddress", "") + HelpExampleCli("createprivacysubaddress", "\"\"") + HelpExampleCli("createprivacysubaddress", 1 "\"address1\"") + HelpExampleRpc("createprivacyaccount", 1 "\"address1\""));
+                HelpExampleCli("createprivacysubaddress", "") + HelpExampleCli("createprivacysubaddress", "\"\"") + HelpExampleCli("createprivacysubaddress", "1 \"address1\"") + HelpExampleRpc("createprivacyaccount", "1 \"address1\""));
 
-    if (!pwalletMain || !pwalletMain->privacyWallet) {
+    if (!pwalletMain) {
         //privacy wallet is already created
         throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
                            "Error: There is no privacy wallet, please use createprivacywallet to create one.");
@@ -2964,14 +2964,14 @@ Value createprivacysubaddress(const Array& params, bool fHelp)
     Object ret;
     try
     {
-        pwalletMain->privacyWallet->add_subaddress(account_index, label);
-        size_t address_index = pwalletMain->privacyWallet->get_num_subaddresses(req.account_index) - 1;
-        ret.emplace_back(Pair("address_index", address_index));
-        ret.emplace_back(Pair("address", pwalletMain->privacyWallet->get_subaddress_as_str({account_index, address_index})));
+        pwalletMain->add_subaddress(account_index, label);
+        size_t address_index = pwalletMain->get_num_subaddresses(account_index) - 1;
+        ret.emplace_back(Pair("address_index", (int)address_index));
+        ret.emplace_back(Pair("address", pwalletMain->get_subaddress_as_str({(uint32_t)account_index, (uint32_t)address_index})));
     }
     catch (const std::exception& e)
     {
-        throw JSONRPCError(WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR,
+        throw JSONRPCError(RPC_ERROR_CODE_UNKNOWN_ERROR,
                            "Error: Cannot create subaddress for the corresponding account.");
     }
     return ret;
