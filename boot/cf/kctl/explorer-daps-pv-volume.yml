@@ -1,0 +1,17 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: explorer-daps-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 0.1Gi
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    namespace: default
+    name: explorer-pv-claim
+  hostPath:
+    path: "/tmp/pv/explorer/daps"
