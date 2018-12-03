@@ -1,0 +1,16 @@
+version: '1.0'
+steps:
+  BuildingOSLibs:
+    title: Building OS and Libs
+    type: build
+    image_name: macioa/build_os_libs
+    working_directory: ./
+    tag: '${{CF_BRANCH_TAG_NORMALIZED}}'
+    dockerfile: boot/cf/Dockerfile.oslibs
+  BuildingDepenencies:
+    title: Building Dependencies
+    type: build
+    image_name: macioa/build_deps
+    working_directory: ./
+    tag: '${{CF_BRANCH_TAG_NORMALIZED}}'
+    dockerfile: boot/cf/Dockerfile.deps

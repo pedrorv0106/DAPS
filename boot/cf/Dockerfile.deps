@@ -1,0 +1,12 @@
+
+FROM r.cfcr.io/macioa/macioa/build_os_libs:master
+
+#COPY SRC
+RUN mkdir -p /DAPS/
+COPY . /DAPS/
+
+#BUILD DEPENDENCIES
+RUN su && cd /DAPS/depends && make
+RUN su && cd /DAPS/depends && make install
+
+CMD /bin/bash -c "trap: TERM INT; sleep infinity & wait"
