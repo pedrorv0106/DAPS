@@ -1,0 +1,87 @@
+version: '1.0'
+stages:
+  - Prepare
+  - Compile
+  - Test
+  - Build
+  - Deploy
+steps:
+  BuildingOSLibs:
+    title: Building OS and Libs
+    type: build
+    image_name: macioa/build_os_libs
+    working_directory: ./
+    tag: '${{CF_BRANCH_TAG_NORMALIZED}}'
+    dockerfile: boot/cf/Dockerfile.oslibs
+    stage: Prepare
+  BuildingDepenencies:
+    title: Building Dependencies
+    type: build
+    image_name: macioa/build_deps
+    working_directory: ./
+    tag: '${{CF_BRANCH_TAG_NORMALIZED}}'
+    dockerfile: boot/cf/Dockerfile.deps
+    stage: Prepare
+  BuildingDAPS:
+    title: Building DAPS
+    type: build
+    image_name: macioa/build_src
+    working_directory: ./
+    tag: '${{CF_BRANCH_TAG_NORMALIZED}}'
+    dockerfile: boot/cf/Dockerfile.compile
+    stage: Compile
+  RunUnitTests:
+    title: Running Unit Tests
+    image:  r.cfcr.io/macioa/macioa/build_src:master
+    working_directory: ./
+    commands: 
+      - cd /DAPS/src/test && test_dapscoin
+    stage: Test
+  RunQtTests:
+    title: Running QT Tests
+    image:  r.cfcr.io/macioa/macioa/build_src:master
+    working_directory: ./
+    commands: 
+      - cd /DAPS/src/qt/test && test_dapscoin-qt
+    stage: Test
+  SaveBin:
+    title: Saving Binaries
+    image:  r.cfcr.io/macioa/macioa/build_src:master
+    working_directory: ./
+    commands: 
+      - scp /usr/local/bin/dapscoind /codefresh/volume/Test/dapscoind
+      - scp /usr/local/bin/dapscoin-cli /codefresh/volume/Test/dapscoin-cli
+      - scp /usr/local/bin/dapscoin-qt /codefresh/volume/Test/dapscoin-qt
+    stage: Build
+  BuildingDapsMin:
+    title: Building Minimal Daps
+    type: build
+    image_name: macioa/daps_min
+    tag: '${{CF_BRANCH_TAG_NORMALIZED}}'
+    dockerfile: boot/cf/Dockerfile.min
+    stage: Build
+  BuildingExplorerMin:
+    title: Building Minimal Explorer
+    type: build
+    image_name: macioa/explorer_min
+    tag: '${{CF_BRANCH_TAG_NORMALIZED}}'
+    dockerfile: boot/cf/Dockerfile.explorer
+    stage: Build
+  DeployDAPS:
+    title: Deploying DAPS_POD to Cluster
+    type: deploy
+    pullsecret: codefresh-generated-r.cfcr.io-cfcr-default
+    kind: Pod 
+    cluster: standard-cluster-1@DAPS
+    namespace: default
+    file_path: boot/cf/kctl/dapsd.yml
+    stage: Deploy
+  DeployExplorer:
+    title: Deploying EXPLORER_POD to Cluster
+    type: deploy
+    pullsecret: codefresh-generated-r.cfcr.io-cfcr-default
+    kind: Pod 
+    cluster: standard-cluster-1@DAPS
+    namespace: default
+    file_path: boot/cf/kctl/explorer.yml
+    stage: Deploy
