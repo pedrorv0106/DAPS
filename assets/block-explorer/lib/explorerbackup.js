@@ -1,5 +1,5 @@
 var request = require('request')
-  , settings = require('./settings')
+  , settings = require('../config/settings')
   , Address = require('../models/address');
 
 var base_server = 'http://127.0.0.1:' + settings.port + "/";
