@@ -5,21 +5,88 @@ metadata:
   labels:
     app: explorer
 spec:
-  type: NodePort
   ports:
+    - port: 3001
+      targetPort: 3001
+      nodePort: 31234
+      name: explorer
     - port: 53575
       name: regtest
     - port: 53573
       name: testnet
     - port: 53572
       name: mainnet
-    - port: 3001
-      name: explorer
-    - nodePort: 31234
-      port: 3001
-      name: expose-explorer
   selector:
     app: explorer
+  sessionAffinity: None
+  type: LoadBalancer
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: explorer-settings-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 0.01Gi
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    namespace: default
+    name: explorer-settings-pv-claim
+  hostPath:
+    path: "/tmp/pv/explorer/settings"
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: explorer-daps-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 0.1Gi
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    namespace: default
+    name: explorer-pv-claim
+  hostPath:
+    path: "/tmp/pv/explorer/daps"
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: explorer-mongo-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 0.2Gi
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    namespace: default
+    name: mongo-pv-claim
+  hostPath:
+    path: "/tmp/pv/explorer/mongo"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: explorer-settings-pv-claim
+  labels:
+    app: explorer
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 0.01Gi
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -64,6 +131,10 @@ spec:
       labels:
         app: explorer
     spec:
+      hostAliases:
+      - ip: "10.10.10.5"
+        hostnames:
+        - "explorer"
       containers:
       - image:  r.cfcr.io/macioa/macioa/explorer_min:master
         imagePullPolicy: Always
@@ -71,15 +142,13 @@ spec:
         ports:
         - containerPort: 3001
           name: explorer
+        volumeMounts:
+        - name: explorersettings
+          mountPath: /DAPS/config/
+        command: ["/bin/bash","-c","cd /DAPS/ && npm start"]
       - image: r.cfcr.io/macioa/macioa/daps_min:master
         imagePullPolicy: Always
         name: dapsd
-#        env:
-#        - name: DAPS_PASSWORD
-#          valueFrom:
-#            secretKeyRef:
-#              name: daps-pass
-#              key: password
         ports:
         - containerPort: 53575
           name: regtest
@@ -90,6 +159,7 @@ spec:
         volumeMounts:
         - name: dapsdata
           mountPath: ~/.dapscoin/
+        command: ["/bin/bash","-c","dapscoind"]
       - image:  mongo:latest
         name: mongo
         ports:
@@ -105,5 +175,9 @@ spec:
         - name: mongodata
           persistentVolumeClaim:
             claimName: mongo-pv-claim
+        - name: explorersettings
+          persistentVolumeClaim:
+            claimName: explorer-settings-pv-claim
+      dnsPolicy: ClusterFirst
       imagePullSecrets:
       - name: regcred

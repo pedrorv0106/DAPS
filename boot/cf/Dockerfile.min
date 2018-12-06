@@ -5,9 +5,9 @@ RUN apt-get install software-properties-common -y --fix-missing
 RUN add-apt-repository ppa:bitcoin/bitcoin -y
 RUN apt-get update
 RUN apt-get install libminiupnpc-dev libevent-dev libzmq3-dev libboost-all-dev libdb4.8++-dev libdb4.8-dev nano -y --fix-missing
-RUN mkdir -p /usr/local && mkdir -p /usr/local/bin
-COPY dapscoind /usr/local/bin/dapscoind
-COPY dapscoin-cli /usr/local/bin/dapscoin-cli
+RUN mkdir -p /usr/bin
+COPY dapscoind /usr/bin/dapscoind
+COPY dapscoin-cli /usr/bin/dapscoin-cli
 
 RUN mkdir -p ~/.dapscoin/
 
