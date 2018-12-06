@@ -935,7 +935,7 @@ void BitcoinGUI::setNumBlocks(int count)
 
 #ifdef ENABLE_WALLET
             if (walletFrame)
-                walletFrame->showOutOfSyncWarning(false);
+                walletFrame->showSyncStatus(false);
 #endif // ENABLE_WALLET
 
             nAttempt = masternodeSync.RequestedMasternodeAttempt < MASTERNODE_SYNC_THRESHOLD ?
@@ -987,7 +987,7 @@ void BitcoinGUI::setNumBlocks(int count)
 
 #ifdef ENABLE_WALLET
         if (walletFrame)
-            walletFrame->showOutOfSyncWarning(true);
+            walletFrame->showSyncStatus(true);
 #endif // ENABLE_WALLET
 
         tooltip += QString("<br>");
