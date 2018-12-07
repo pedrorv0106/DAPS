@@ -29,12 +29,12 @@
 #include "privacy/common/password.h"
 #include "privacy/device/device.hpp"
 #include "privacy/cryptonote_config.h"
-#include "privacy/cryptonote_basic/account.h
+#include "privacy/cryptonote_basic/account.h"
 #include <unordered_map>
 //#include "privacy/cryptonote_basic/cryptonote_basic.h"
 //#include "privacy/cryptonote_core/cryptonote_tx_utils.h"
 //#include "privacy/epee/include/net/http_auth.h"
-#//include "privacy/epee/include/net/http_client.h"
+//include "privacy/epee/include/net/http_client.h"
 //#include "privacy/epee/include/storages/http_abstract_invoke.h"
 #include "privacy/wallet/ringdb.h"
 #include "privacy/wallet/node_rpc_proxy.h"
@@ -1849,14 +1849,14 @@ private:
     std::string m_daemon_address;
     std::string m_wallet_file;
     std::string m_keys_file;
-    epee::net_utils::http::http_simple_client m_http_client;
-    hashchain m_blockchain;
-    std::unordered_map<crypto::hash, unconfirmed_transfer_details> m_unconfirmed_txs;
-    std::unordered_map<crypto::hash, confirmed_transfer_details> m_confirmed_txs;
-    std::unordered_multimap<crypto::hash, pool_payment_details> m_unconfirmed_payments;
-    std::unordered_map<crypto::hash, crypto::secret_key> m_tx_keys;
-    cryptonote::checkpoints m_checkpoints;
-    std::unordered_map<crypto::hash, std::vector<crypto::secret_key>> m_additional_tx_keys;
+    //epee::net_utils::http::http_simple_client m_http_client;
+    //hashchain m_blockchain;
+    //std::unordered_map<crypto::hash, unconfirmed_transfer_details> m_unconfirmed_txs;
+    //std::unordered_map<crypto::hash, confirmed_transfer_details> m_confirmed_txs;
+    //std::unordered_multimap<crypto::hash, pool_payment_details> m_unconfirmed_payments;
+    //std::unordered_map<crypto::hash, crypto::secret_key> m_tx_keys;
+    //cryptonote::checkpoints m_checkpoints;
+    //std::unordered_map<crypto::hash, std::vector<crypto::secret_key>> m_additional_tx_keys;
 
     //transfer_container m_transfers;
     //payment_container m_payments;
@@ -1933,7 +1933,7 @@ private:
     uint64_t m_light_wallet_unlocked_balance;
     // Light wallet info needed to populate m_payment requires 2 separate api calls (get_address_txs and get_unspent_outs)
     // We save the info from the first call in m_light_wallet_address_txs for easier lookup.
-    std::unordered_map<crypto::hash, address_tx> m_light_wallet_address_txs;
+    //std::unordered_map<crypto::hash, address_tx> m_light_wallet_address_txs;
     // store calculated key image for faster lookup
     std::unordered_map<crypto::public_key, std::map<uint64_t, crypto::key_image> > m_key_image_cache;
 
