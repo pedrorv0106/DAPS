@@ -46,7 +46,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include "hex.h"
 #include "memwipe.h"
-#include "mlocker.h"
+//#include "mlocker.h"
 #include "span.h"
 #include "warnings.h"
 
@@ -329,7 +329,7 @@ POP_WARNINGS
     return s;
   }
   //----------------------------------------------------------------------------
-  template<class t_pod_type>
+  /*template<class t_pod_type>
   std::string pod_to_hex(const t_pod_type& s)
   {
     static_assert(std::is_standard_layout<t_pod_type>(), "expected standard layout type");
@@ -363,7 +363,7 @@ POP_WARNINGS
   bool hex_to_pod(const std::string& hex_str, epee::mlocked<t_pod_type>& s)
   {
     return hex_to_pod(hex_str, unwrap(s));
-  }
+  }*/
   //----------------------------------------------------------------------------
   bool validate_hex(uint64_t length, const std::string& str);
   //----------------------------------------------------------------------------
