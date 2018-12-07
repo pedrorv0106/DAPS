@@ -34,9 +34,9 @@
 #if defined HAVE_MLOCK
 #include <sys/mman.h>
 #endif
-#include "misc_log_ex.h"
-#include "syncobj.h"
-#include "mlocker.h"
+#include "../include/misc_log_ex.h"
+#include "../include/syncobj.h"
+#include "../include/mlocker.h"
 
 static size_t query_page_size()
 {

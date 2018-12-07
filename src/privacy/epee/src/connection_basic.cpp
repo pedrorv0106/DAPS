@@ -32,7 +32,7 @@
 
 /* rfree: implementation for the non-template base, can be used by connection<> template class in abstract_tcp_server2 file  */
 
-#include "net/connection_basic.hpp"
+#include "../include/net/connection_basic.hpp"
 
 #include <boost/asio.hpp>
 #include <string>
@@ -51,10 +51,10 @@
 
 #include <memory>
 
-#include "syncobj.h"
+#include "../include/syncobj.h"
 
-#include "net/net_utils_base.h" 
-#include "misc_log_ex.h" 
+#include "../include/net/net_utils_base.h"
+#include "../include/misc_log_ex.h"
 #include <boost/lambda/bind.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -64,8 +64,8 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/filesystem.hpp>
-#include "misc_language.h"
-#include "pragma_comp_defs.h"
+#include "../include/misc_language.h"
+#include "../include/pragma_comp_defs.h"
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -74,7 +74,7 @@
 
 #include <boost/asio/basic_socket.hpp>
 #include <boost/asio/ip/unicast.hpp>
-#include "net/abstract_tcp_server2.h"
+#include "../include/net/abstract_tcp_server2.h"
 
 // TODO:
 #include "net/network_throttle-detail.hpp"
