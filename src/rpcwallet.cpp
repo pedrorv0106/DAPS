@@ -2876,7 +2876,7 @@ Value createprivacywallet(const Array& params, bool fHelp)
     cryptonote::COMMAND_RPC_GET_HEIGHT::request hreq;
     cryptonote::COMMAND_RPC_GET_HEIGHT::response hres;
     hres.height = 0;
-    bool r = wal->invoke_http_json("/getheight", hreq, hres);
+    //bool r = wal->invoke_http_json("/getheight", hreq, hres);
     wal->set_refresh_from_block_height(hres.height);
     crypto::secret_key dummy_key;
     try {

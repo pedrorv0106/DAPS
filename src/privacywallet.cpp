@@ -52,7 +52,7 @@ using namespace epee;
 #include "privacy/crypto/crypto.h"
 #include "privacy/serialization/binary_utils.h"
 #include "privacy/serialization/string.h"
-#include "privacy/cryptonote_basic/blobdatatype.h"
+//#include "privacy/cryptonote_basic/blobdatatype.h"
 #include "privacy/mnemonics/electrum-words.h"
 #include "privacy/common/i18n.h"
 #include "privacy/common/util.h"
@@ -940,7 +940,7 @@ std::unique_ptr<CWallet> CWallet::make_dummy(const boost::program_options::varia
 }
 
 //----------------------------------------------------------------------------------------------------
-bool CWallet::init(std::string daemon_address, boost::optional<epee::net_utils::http::login> daemon_login, uint64_t upper_transaction_weight_limit, bool ssl, bool trusted_daemon)
+/*bool CWallet::init(std::string daemon_address, boost::optional<epee::net_utils::http::login> daemon_login, uint64_t upper_transaction_weight_limit, bool ssl, bool trusted_daemon)
 {
   m_checkpoints.init_default_checkpoints(m_nettype);
   if(m_http_client.is_connected())
@@ -952,7 +952,7 @@ bool CWallet::init(std::string daemon_address, boost::optional<epee::net_utils::
   m_trusted_daemon = trusted_daemon;
   // When switching from light wallet to full wallet, we need to reset the height we got from lw node.
   return m_http_client.set_server(get_daemon_address(), get_daemon_login(), ssl);
-}
+}*/
 //----------------------------------------------------------------------------------------------------
 bool CWallet::is_deterministic() const
 {
@@ -988,7 +988,7 @@ bool CWallet::get_seed(epee::wipeable_string& electrum_words, const epee::wipeab
   return true;
 }
 //----------------------------------------------------------------------------------------------------
-bool CWallet::get_multisig_seed(epee::wipeable_string& seed, const epee::wipeable_string &passphrase, bool raw) const
+/*bool CWallet::get_multisig_seed(epee::wipeable_string& seed, const epee::wipeable_string &passphrase, bool raw) const
 {
   bool ready;
   uint32_t threshold, total;
@@ -1049,7 +1049,7 @@ bool CWallet::get_multisig_seed(epee::wipeable_string& seed, const epee::wipeabl
   }
 
   return true;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
 bool CWallet::reconnect_device()
 {
@@ -1205,7 +1205,7 @@ bool CWallet::is_deprecated() const
   return is_old_file_format;
 }
 //----------------------------------------------------------------------------------------------------
-void CWallet::set_spent(size_t idx, uint64_t height)
+/*void CWallet::set_spent(size_t idx, uint64_t height)
 {
   transfer_details &td = m_transfers[idx];
   LOG_PRINT_L2("Setting SPENT at " << height << ": ki " << td.m_key_image << ", amount " << print_money(td.m_amount));
@@ -1219,9 +1219,9 @@ void CWallet::set_unspent(size_t idx)
   LOG_PRINT_L2("Setting UNSPENT: ki " << td.m_key_image << ", amount " << print_money(td.m_amount));
   td.m_spent = false;
   td.m_spent_height = 0;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::check_acc_out_precomp(const tx_out &o, const crypto::key_derivation &derivation, const std::vector<crypto::key_derivation> &additional_derivations, size_t i, tx_scan_info_t &tx_scan_info) const
+/*void CWallet::check_acc_out_precomp(const tx_out &o, const crypto::key_derivation &derivation, const std::vector<crypto::key_derivation> &additional_derivations, size_t i, tx_scan_info_t &tx_scan_info) const
 {
   hw::device &hwdev = m_account.get_device();
   boost::unique_lock<hw::device> hwdev_lock (hwdev);
@@ -1242,9 +1242,9 @@ void CWallet::check_acc_out_precomp(const tx_out &o, const crypto::key_derivatio
     tx_scan_info.money_transfered = 0;
   }
   tx_scan_info.error = false;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::check_acc_out_precomp(const tx_out &o, const crypto::key_derivation &derivation, const std::vector<crypto::key_derivation> &additional_derivations, size_t i, const is_out_data *is_out_data, tx_scan_info_t &tx_scan_info) const
+/*void CWallet::check_acc_out_precomp(const tx_out &o, const crypto::key_derivation &derivation, const std::vector<crypto::key_derivation> &additional_derivations, size_t i, const is_out_data *is_out_data, tx_scan_info_t &tx_scan_info) const
 {
   if (!is_out_data || i >= is_out_data->received.size())
     return check_acc_out_precomp(o, derivation, additional_derivations, i, tx_scan_info);
@@ -1259,9 +1259,9 @@ void CWallet::check_acc_out_precomp(const tx_out &o, const crypto::key_derivatio
     tx_scan_info.money_transfered = 0;
   }
   tx_scan_info.error = false;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::check_acc_out_precomp_once(const tx_out &o, const crypto::key_derivation &derivation, const std::vector<crypto::key_derivation> &additional_derivations, size_t i, const is_out_data *is_out_data, tx_scan_info_t &tx_scan_info, bool &already_seen) const
+/*void CWallet::check_acc_out_precomp_once(const tx_out &o, const crypto::key_derivation &derivation, const std::vector<crypto::key_derivation> &additional_derivations, size_t i, const is_out_data *is_out_data, tx_scan_info_t &tx_scan_info, bool &already_seen) const
 {
   tx_scan_info.received = boost::none;
   if (already_seen)
@@ -1269,7 +1269,7 @@ void CWallet::check_acc_out_precomp_once(const tx_out &o, const crypto::key_deri
   check_acc_out_precomp(o, derivation, additional_derivations, i, is_out_data, tx_scan_info);
   if (tx_scan_info.received)
     already_seen = true;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
 static uint64_t decodeRct(const rct::rctSig & rv, const crypto::key_derivation &derivation, unsigned int i, rct::key & mask, hw::device &hwdev)
 {
@@ -1296,7 +1296,7 @@ static uint64_t decodeRct(const rct::rctSig & rv, const crypto::key_derivation &
   }
 }
 //----------------------------------------------------------------------------------------------------
-void CWallet::scan_output(const cryptonote::transaction &tx, const crypto::public_key &tx_pub_key, size_t i, tx_scan_info_t &tx_scan_info, int &num_vouts_received, std::unordered_map<cryptonote::subaddress_index, uint64_t> &tx_money_got_in_outs, std::vector<size_t> &outs)
+/*void CWallet::scan_output(const cryptonote::transaction &tx, const crypto::public_key &tx_pub_key, size_t i, tx_scan_info_t &tx_scan_info, int &num_vouts_received, std::unordered_map<cryptonote::subaddress_index, uint64_t> &tx_money_got_in_outs, std::vector<size_t> &outs)
 {
   THROW_WALLET_EXCEPTION_IF(i >= tx.vout.size(), error::wallet_internal_error, "Invalid vout index");
 
@@ -1337,9 +1337,9 @@ void CWallet::scan_output(const cryptonote::transaction &tx, const crypto::publi
   tx_money_got_in_outs[tx_scan_info.received->index] += tx_scan_info.money_transfered;
   tx_scan_info.amount = tx_scan_info.money_transfered;
   ++num_vouts_received;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::cache_tx_data(const cryptonote::transaction& tx, const crypto::hash &txid, tx_cache_data &tx_cache_data) const
+/*void CWallet::cache_tx_data(const cryptonote::transaction& tx, const crypto::hash &txid, tx_cache_data &tx_cache_data) const
 {
   const cryptonote::account_keys& keys = m_account.get_keys();
 
@@ -1376,9 +1376,9 @@ void CWallet::cache_tx_data(const cryptonote::transaction& tx, const crypto::has
       }
     }
   }
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::process_new_transaction(const crypto::hash &txid, const cryptonote::transaction& tx, const std::vector<uint64_t> &o_indices, uint64_t height, uint64_t ts, bool miner_tx, bool pool, bool double_spend_seen, const tx_cache_data &tx_cache_data)
+/*void CWallet::process_new_transaction(const crypto::hash &txid, const cryptonote::transaction& tx, const std::vector<uint64_t> &o_indices, uint64_t height, uint64_t ts, bool miner_tx, bool pool, bool double_spend_seen, const tx_cache_data &tx_cache_data)
 {
   // In this function, tx (probably) only contains the base information
   // (that is, the prunable stuff may or may not be included)
@@ -1863,9 +1863,9 @@ void CWallet::process_new_transaction(const crypto::hash &txid, const cryptonote
     if (tx_notify)
       tx_notify->notify(epee::string_tools::pod_to_hex(txid).c_str());
   }
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::process_unconfirmed(const crypto::hash &txid, const cryptonote::transaction& tx, uint64_t height)
+/*void CWallet::process_unconfirmed(const crypto::hash &txid, const cryptonote::transaction& tx, uint64_t height)
 {
   if (m_unconfirmed_txs.empty())
     return;
@@ -1883,9 +1883,9 @@ void CWallet::process_unconfirmed(const crypto::hash &txid, const cryptonote::tr
     }
     m_unconfirmed_txs.erase(unconf_it);
   }
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::process_outgoing(const crypto::hash &txid, const cryptonote::transaction &tx, uint64_t height, uint64_t ts, uint64_t spent, uint64_t received, uint32_t subaddr_account, const std::set<uint32_t>& subaddr_indices)
+/*void CWallet::process_outgoing(const crypto::hash &txid, const cryptonote::transaction &tx, uint64_t height, uint64_t ts, uint64_t spent, uint64_t received, uint32_t subaddr_account, const std::set<uint32_t>& subaddr_indices)
 {
   std::pair<std::unordered_map<crypto::hash, confirmed_transfer_details>::iterator, bool> entry = m_confirmed_txs.insert(std::make_pair(txid, confirmed_transfer_details()));
   // fill with the info we know, some info might already be there
@@ -1925,9 +1925,9 @@ void CWallet::process_outgoing(const crypto::hash &txid, const cryptonote::trans
   entry.first->second.m_unlock_time = tx.unlock_time;
 
   add_rings(tx);
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::process_new_blockchain_entry(const cryptonote::block& b, const cryptonote::block_complete_entry& bche, const parsed_block &parsed_block, const crypto::hash& bl_id, uint64_t height, const std::vector<tx_cache_data> &tx_cache_data, size_t tx_cache_data_offset)
+/*void CWallet::process_new_blockchain_entry(const cryptonote::block& b, const cryptonote::block_complete_entry& bche, const parsed_block &parsed_block, const crypto::hash& bl_id, uint64_t height, const std::vector<tx_cache_data> &tx_cache_data, size_t tx_cache_data_offset)
 {
   THROW_WALLET_EXCEPTION_IF(bche.txs.size() + 1 != parsed_block.o_indices.indices.size(), error::wallet_internal_error,
       "block transactions=" + std::to_string(bche.txs.size()) +
@@ -1963,9 +1963,9 @@ void CWallet::process_new_blockchain_entry(const cryptonote::block& b, const cry
 
   if (0 != m_callback)
     m_callback->on_new_block(height, b);
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::get_short_chain_history(std::list<crypto::hash>& ids, uint64_t granularity) const
+/*void CWallet::get_short_chain_history(std::list<crypto::hash>& ids, uint64_t granularity) const
 {
   size_t i = 0;
   size_t current_multiplier = 1;
@@ -1996,16 +1996,16 @@ void CWallet::get_short_chain_history(std::list<crypto::hash>& ids, uint64_t gra
     ids.push_back(m_blockchain[m_blockchain.offset()]);
   if(m_blockchain.offset())
     ids.push_back(m_blockchain.genesis());
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::parse_block_round(const cryptonote::blobdata &blob, cryptonote::block &bl, crypto::hash &bl_id, bool &error) const
+/*void CWallet::parse_block_round(const cryptonote::blobdata &blob, cryptonote::block &bl, crypto::hash &bl_id, bool &error) const
 {
   error = !cryptonote::parse_and_validate_block_from_blob(blob, bl);
   if (!error)
     bl_id = get_block_hash(bl);
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::pull_blocks(uint64_t start_height, uint64_t &blocks_start_height, const std::list<crypto::hash> &short_chain_history, std::vector<cryptonote::block_complete_entry> &blocks, std::vector<cryptonote::COMMAND_RPC_GET_BLOCKS_FAST::block_output_indices> &o_indices)
+/*void CWallet::pull_blocks(uint64_t start_height, uint64_t &blocks_start_height, const std::list<crypto::hash> &short_chain_history, std::vector<cryptonote::block_complete_entry> &blocks, std::vector<cryptonote::COMMAND_RPC_GET_BLOCKS_FAST::block_output_indices> &o_indices)
 {
   cryptonote::COMMAND_RPC_GET_BLOCKS_FAST::request req = AUTO_VAL_INIT(req);
   cryptonote::COMMAND_RPC_GET_BLOCKS_FAST::response res = AUTO_VAL_INIT(res);
@@ -2027,9 +2027,9 @@ void CWallet::pull_blocks(uint64_t start_height, uint64_t &blocks_start_height, 
   blocks_start_height = res.start_height;
   blocks = std::move(res.blocks);
   o_indices = std::move(res.output_indices);
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::pull_hashes(uint64_t start_height, uint64_t &blocks_start_height, const std::list<crypto::hash> &short_chain_history, std::vector<crypto::hash> &hashes)
+/*void CWallet::pull_hashes(uint64_t start_height, uint64_t &blocks_start_height, const std::list<crypto::hash> &short_chain_history, std::vector<crypto::hash> &hashes)
 {
   cryptonote::COMMAND_RPC_GET_HASHES_FAST::request req = AUTO_VAL_INIT(req);
   cryptonote::COMMAND_RPC_GET_HASHES_FAST::response res = AUTO_VAL_INIT(res);
@@ -2045,9 +2045,9 @@ void CWallet::pull_hashes(uint64_t start_height, uint64_t &blocks_start_height, 
 
   blocks_start_height = res.start_height;
   hashes = std::move(res.m_block_ids);
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::process_parsed_blocks(uint64_t start_height, const std::vector<cryptonote::block_complete_entry> &blocks, const std::vector<parsed_block> &parsed_blocks, uint64_t& blocks_added)
+/*void CWallet::process_parsed_blocks(uint64_t start_height, const std::vector<cryptonote::block_complete_entry> &blocks, const std::vector<parsed_block> &parsed_blocks, uint64_t& blocks_added)
 {
   size_t current_index = start_height;
   blocks_added = 0;
@@ -2175,9 +2175,9 @@ void CWallet::process_parsed_blocks(uint64_t start_height, const std::vector<cry
     ++current_index;
     tx_cache_data_offset += 1 + parsed_blocks[i].txes.size();
   }
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::refresh(bool trusted_daemon)
+/*void CWallet::refresh(bool trusted_daemon)
 {
   uint64_t blocks_fetched = 0;
   refresh(trusted_daemon, 0, blocks_fetched);
@@ -2252,9 +2252,9 @@ void CWallet::pull_and_parse_next_blocks(uint64_t start_height, uint64_t &blocks
   {
     error = true;
   }
-}
+}*/
 
-void CWallet::remove_obsolete_pool_txs(const std::vector<crypto::hash> &tx_hashes)
+/*void CWallet::remove_obsolete_pool_txs(const std::vector<crypto::hash> &tx_hashes)
 {
   // remove pool txes to us that aren't in the pool anymore
   std::unordered_multimap<crypto::hash, CWallet::pool_payment_details>::iterator uit = m_unconfirmed_payments.begin();
@@ -2279,10 +2279,10 @@ void CWallet::remove_obsolete_pool_txs(const std::vector<crypto::hash> &tx_hashe
         m_callback->on_pool_tx_removed(txid);
     }
   }
-}
+}*/
 
 //----------------------------------------------------------------------------------------------------
-void CWallet::update_pool_state(bool refreshed)
+/*void CWallet::update_pool_state(bool refreshed)
 {
   MDEBUG("update_pool_state start");
 
@@ -2507,9 +2507,9 @@ void CWallet::update_pool_state(bool refreshed)
     }
   }
   MDEBUG("update_pool_state end");
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::fast_refresh(uint64_t stop_height, uint64_t &blocks_start_height, std::list<crypto::hash> &short_chain_history, bool force)
+/*void CWallet::fast_refresh(uint64_t stop_height, uint64_t &blocks_start_height, std::list<crypto::hash> &short_chain_history, bool force)
 {
   std::vector<crypto::hash> hashes;
 
@@ -2571,7 +2571,7 @@ void CWallet::fast_refresh(uint64_t stop_height, uint64_t &blocks_start_height, 
         return;
     }
   }
-}
+}*/
 
 
 bool CWallet::add_address_book_row(const cryptonote::account_public_address &address, const crypto::hash &payment_id, const std::string &description, bool is_subaddress)
@@ -2802,7 +2802,7 @@ bool CWallet::refresh(bool trusted_daemon, uint64_t & blocks_fetched, bool& rece
   return ok;
 }
 //----------------------------------------------------------------------------------------------------
-bool CWallet::get_rct_distribution(uint64_t &start_height, std::vector<uint64_t> &distribution)
+/*bool CWallet::get_rct_distribution(uint64_t &start_height, std::vector<uint64_t> &distribution)
 {
   uint32_t rpc_version;
   boost::optional<std::string> result = m_node_rpc_proxy.get_rpc_version(rpc_version);
@@ -2868,9 +2868,9 @@ bool CWallet::get_rct_distribution(uint64_t &start_height, std::vector<uint64_t>
   start_height = res.distributions[0].start_height;
   distribution = std::move(res.distributions[0].distribution);
   return true;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::detach_blockchain(uint64_t height)
+/*void CWallet::detach_blockchain(uint64_t height)
 {
   LOG_PRINT_L0("Detaching blockchain on height " << height);
 
@@ -2932,7 +2932,7 @@ void CWallet::detach_blockchain(uint64_t height)
   }
 
   LOG_PRINT_L0("Detached blockchain on height " << height << ", transfers detached " << transfers_detached << ", blocks detached " << blocks_detached);
-}
+}*/
 //----------------------------------------------------------------------------------------------------
 bool CWallet::deinit()
 {
@@ -2942,7 +2942,7 @@ bool CWallet::deinit()
 }
 //----------------------------------------------------------------------------------------------------
 bool CWallet::clear()
-{
+{/*
   m_blockchain.clear();
   m_transfers.clear();
   m_key_images.clear();
@@ -2958,7 +2958,7 @@ bool CWallet::clear()
   m_address_book.clear();
   m_subaddresses.clear();
   m_subaddress_labels.clear();
-  m_multisig_rounds_passed = 0;
+  m_multisig_rounds_passed = 0;*/
   return true;
 }
 
@@ -3559,14 +3559,14 @@ void CWallet::decrypt_keys(const epee::wipeable_string &password)
   decrypt_keys(key);
 }
 
-void CWallet::setup_new_blockchain()
+/*void CWallet::setup_new_blockchain()
 {
   cryptonote::block b;
   generate_genesis(b);
   m_blockchain.push_back(get_block_hash(b));
   m_last_block_reward = cryptonote::get_outs_money_amount(b.miner_tx);
   add_subaddress_account(tr("Primary account"));
-}
+}*/
 
 void CWallet::create_keys_file(const std::string &wallet_, bool watch_only, const epee::wipeable_string &password, bool create_address_file)
 {
@@ -3770,7 +3770,7 @@ crypto::secret_key CWallet::generate(const std::string& wallet_, const epee::wip
   return retval;
 }
 
- uint64_t CWallet::estimate_blockchain_height()
+ /*uint64_t CWallet::estimate_blockchain_height()
  {
    // -1 month for fluctuations in block time and machine date/time setup.
    // avg seconds per block
@@ -3810,7 +3810,7 @@ crypto::secret_key CWallet::generate(const std::string& wallet_, const epee::wip
    if (err.empty() && local_height > height)
      height = local_height;
    return height;
- }
+ }*/
 
 /*!
 * \brief Creates a watch only wallet from a public address and a view secret key.
@@ -4476,7 +4476,7 @@ bool CWallet::wallet_valid_path_format(const std::string& file_path)
   return !file_path.empty();
 }
 //----------------------------------------------------------------------------------------------------
-bool CWallet::parse_long_payment_id(const std::string& payment_id_str, crypto::hash& payment_id)
+/*bool CWallet::parse_long_payment_id(const std::string& payment_id_str, crypto::hash& payment_id)
 {
   cryptonote::blobdata payment_id_data;
   if(!epee::string_tools::parse_hexstr_to_binbuff(payment_id_str, payment_id_data))
@@ -4487,9 +4487,9 @@ bool CWallet::parse_long_payment_id(const std::string& payment_id_str, crypto::h
 
   payment_id = *reinterpret_cast<const crypto::hash*>(payment_id_data.data());
   return true;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-bool CWallet::parse_short_payment_id(const std::string& payment_id_str, crypto::hash8& payment_id)
+/*bool CWallet::parse_short_payment_id(const std::string& payment_id_str, crypto::hash8& payment_id)
 {
   cryptonote::blobdata payment_id_data;
   if(!epee::string_tools::parse_hexstr_to_binbuff(payment_id_str, payment_id_data))
@@ -4500,9 +4500,9 @@ bool CWallet::parse_short_payment_id(const std::string& payment_id_str, crypto::
 
   payment_id = *reinterpret_cast<const crypto::hash8*>(payment_id_data.data());
   return true;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-bool CWallet::parse_payment_id(const std::string& payment_id_str, crypto::hash& payment_id)
+/*bool CWallet::parse_payment_id(const std::string& payment_id_str, crypto::hash& payment_id)
 {
   if (parse_long_payment_id(payment_id_str, payment_id))
     return true;
@@ -4514,7 +4514,7 @@ bool CWallet::parse_payment_id(const std::string& payment_id_str, crypto::hash& 
     return true;
   }
   return false;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
 bool CWallet::prepare_file_names(const std::string& file_path)
 {
@@ -4522,7 +4522,7 @@ bool CWallet::prepare_file_names(const std::string& file_path)
   return true;
 }
 //----------------------------------------------------------------------------------------------------
-bool CWallet::check_connection(uint32_t *version, uint32_t timeout)
+/*bool CWallet::check_connection(uint32_t *version, uint32_t timeout)
 {
   THROW_WALLET_EXCEPTION_IF(!m_is_initialized, error::wallet_not_initialized);
 
@@ -4557,7 +4557,7 @@ bool CWallet::check_connection(uint32_t *version, uint32_t timeout)
   }
 
   return true;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
 bool CWallet::generate_chacha_key_from_secret_keys(crypto::chacha_key &key) const
 {
@@ -4713,7 +4713,7 @@ void CWallet::load(const std::string& wallet_, const epee::wipeable_string& pass
   }
 }
 //----------------------------------------------------------------------------------------------------
-void CWallet::trim_hashchain()
+/*void CWallet::trim_hashchain()
 {
   uint64_t height = m_checkpoints.get_max_height();
 
@@ -4747,13 +4747,13 @@ void CWallet::trim_hashchain()
     MDEBUG("trimming to " << height << ", offset " << m_blockchain.offset());
     m_blockchain.trim(height);
   }
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::check_genesis(const crypto::hash& genesis_hash) const {
+/*void CWallet::check_genesis(const crypto::hash& genesis_hash) const {
   std::string what("Genesis block mismatch. You probably use wallet without testnet (or stagenet) flag with blockchain from test (or stage) network or vice versa");
 
   THROW_WALLET_EXCEPTION_IF(genesis_hash != m_blockchain.genesis(), error::wallet_internal_error, what);
-}
+}*/
 //----------------------------------------------------------------------------------------------------
 std::string CWallet::path() const
 {
@@ -4872,7 +4872,7 @@ void CWallet::store_to(const std::string &path, const epee::wipeable_string &pas
   }
 }
 //----------------------------------------------------------------------------------------------------
-uint64_t CWallet::balance(uint32_t index_major) const
+/*uint64_t CWallet::balance(uint32_t index_major) const
 {
   uint64_t amount = 0;
   if(m_light_wallet)
@@ -4921,7 +4921,7 @@ std::map<uint32_t, uint64_t> CWallet::balance_per_subaddress(uint32_t index_majo
   return amount_per_subaddr;
 }
 //----------------------------------------------------------------------------------------------------
-std::map<uint32_t, uint64_t> CWallet::unlocked_balance_per_subaddress(uint32_t index_major) const
+/*std::map<uint32_t, uint64_t> CWallet::unlocked_balance_per_subaddress(uint32_t index_major) const
 {
   std::map<uint32_t, uint64_t> amount_per_subaddr;
   for(const transfer_details& td: m_transfers)
@@ -4936,17 +4936,17 @@ std::map<uint32_t, uint64_t> CWallet::unlocked_balance_per_subaddress(uint32_t i
     }
   }
   return amount_per_subaddr;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-uint64_t CWallet::balance_all() const
+/*uint64_t CWallet::balance_all() const
 {
   uint64_t r = 0;
   for (uint32_t index_major = 0; index_major < get_num_subaddress_accounts(); ++index_major)
     r += balance(index_major);
   return r;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-uint64_t CWallet::unlocked_balance_all() const
+/*uint64_t CWallet::unlocked_balance_all() const
 {
   uint64_t r = 0;
   for (uint32_t index_major = 0; index_major < get_num_subaddress_accounts(); ++index_major)
@@ -4983,9 +4983,9 @@ void CWallet::get_payments(std::list<std::pair<crypto::hash,CWallet::payment_det
       payments.push_back(x);
     }
   });
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::get_payments_out(std::list<std::pair<crypto::hash,CWallet::confirmed_transfer_details>>& confirmed_payments,
+/*void CWallet::get_payments_out(std::list<std::pair<crypto::hash,CWallet::confirmed_transfer_details>>& confirmed_payments,
     uint64_t min_height, uint64_t max_height, const boost::optional<uint32_t>& subaddr_account, const std::set<uint32_t>& subaddr_indices) const
 {
   for (auto i = m_confirmed_txs.begin(); i != m_confirmed_txs.end(); ++i) {
@@ -4997,9 +4997,9 @@ void CWallet::get_payments_out(std::list<std::pair<crypto::hash,CWallet::confirm
       continue;
     confirmed_payments.push_back(*i);
   }
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::get_unconfirmed_payments_out(std::list<std::pair<crypto::hash,CWallet::unconfirmed_transfer_details>>& unconfirmed_payments, const boost::optional<uint32_t>& subaddr_account, const std::set<uint32_t>& subaddr_indices) const
+/*void CWallet::get_unconfirmed_payments_out(std::list<std::pair<crypto::hash,CWallet::unconfirmed_transfer_details>>& unconfirmed_payments, const boost::optional<uint32_t>& subaddr_account, const std::set<uint32_t>& subaddr_indices) const
 {
   for (auto i = m_unconfirmed_txs.begin(); i != m_unconfirmed_txs.end(); ++i) {
     if (subaddr_account && *subaddr_account != i->second.m_subaddr_account)
@@ -5008,18 +5008,18 @@ void CWallet::get_unconfirmed_payments_out(std::list<std::pair<crypto::hash,CWal
       continue;
     unconfirmed_payments.push_back(*i);
   }
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::get_unconfirmed_payments(std::list<std::pair<crypto::hash,CWallet::pool_payment_details>>& unconfirmed_payments, const boost::optional<uint32_t>& subaddr_account, const std::set<uint32_t>& subaddr_indices) const
+/*void CWallet::get_unconfirmed_payments(std::list<std::pair<crypto::hash,CWallet::pool_payment_details>>& unconfirmed_payments, const boost::optional<uint32_t>& subaddr_account, const std::set<uint32_t>& subaddr_indices) const
 {
   for (auto i = m_unconfirmed_payments.begin(); i != m_unconfirmed_payments.end(); ++i) {
     if ((!subaddr_account || *subaddr_account == i->second.m_pd.m_subaddr_index.major) &&
       (subaddr_indices.empty() || subaddr_indices.count(i->second.m_pd.m_subaddr_index.minor) == 1))
     unconfirmed_payments.push_back(*i);
   }
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::rescan_spent()
+/*void CWallet::rescan_spent()
 {
   // This is RPC call that can take a long time if there are many outputs,
   // so we call it several times, in stripes, so we don't time out spuriously
@@ -5069,8 +5069,8 @@ void CWallet::rescan_spent()
       }
     }
   }
-}
-//----------------------------------------------------------------------------------------------------
+}*/
+/*//----------------------------------------------------------------------------------------------------
 void CWallet::rescan_blockchain(bool refresh)
 {
   clear();
@@ -5079,14 +5079,14 @@ void CWallet::rescan_blockchain(bool refresh)
 
   if (refresh)
     this->refresh(false);
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-bool CWallet::is_transfer_unlocked(const transfer_details& td) const
+/*bool CWallet::is_transfer_unlocked(const transfer_details& td) const
 {
   return is_transfer_unlocked(td.m_tx.unlock_time, td.m_block_height);
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-bool CWallet::is_transfer_unlocked(uint64_t unlock_time, uint64_t block_height) const
+/*bool CWallet::is_transfer_unlocked(uint64_t unlock_time, uint64_t block_height) const
 {
   if(!is_tx_spendtime_unlocked(unlock_time, block_height))
     return false;
@@ -5095,9 +5095,9 @@ bool CWallet::is_transfer_unlocked(uint64_t unlock_time, uint64_t block_height) 
     return false;
 
   return true;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-bool CWallet::is_tx_spendtime_unlocked(uint64_t unlock_time, uint64_t block_height) const
+/*bool CWallet::is_tx_spendtime_unlocked(uint64_t unlock_time, uint64_t block_height) const
 {
   if(unlock_time < CRYPTONOTE_MAX_BLOCK_NUMBER)
   {
@@ -5120,7 +5120,7 @@ bool CWallet::is_tx_spendtime_unlocked(uint64_t unlock_time, uint64_t block_heig
       return false;
   }
   return false;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
 namespace
 {
@@ -5177,7 +5177,7 @@ namespace
 // If they're from the same tx, then they're fully related. From close block
 // heights, they're kinda related. The actual values don't matter, just
 // their ordering, but it could become more murky if we add scores later.
-float CWallet::get_output_relatedness(const transfer_details &td0, const transfer_details &td1) const
+/*float CWallet::get_output_relatedness(const transfer_details &td0, const transfer_details &td1) const
 {
   int dh;
 
@@ -5202,9 +5202,9 @@ float CWallet::get_output_relatedness(const transfer_details &td0, const transfe
 
   // don't think these are particularly related
   return 0.0f;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-size_t CWallet::pop_best_value_from(const transfer_container &transfers, std::vector<size_t> &unused_indices, const std::vector<size_t>& selected_transfers, bool smallest) const
+/*size_t CWallet::pop_best_value_from(const transfer_container &transfers, std::vector<size_t> &unused_indices, const std::vector<size_t>& selected_transfers, bool smallest) const
 {
   std::vector<size_t> candidates;
   float best_relatedness = 1.0f;
@@ -5251,18 +5251,18 @@ size_t CWallet::pop_best_value_from(const transfer_container &transfers, std::ve
     idx = crypto::rand<size_t>() % candidates.size();
   }
   return pop_index (unused_indices, candidates[idx]);
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-size_t CWallet::pop_best_value(std::vector<size_t> &unused_indices, const std::vector<size_t>& selected_transfers, bool smallest) const
+/*size_t CWallet::pop_best_value(std::vector<size_t> &unused_indices, const std::vector<size_t>& selected_transfers, bool smallest) const
 {
   return pop_best_value_from(m_transfers, unused_indices, selected_transfers, smallest);
-}
+}*/
 //----------------------------------------------------------------------------------------------------
 // Select random input sources for transaction.
 // returns:
 //    direct return: amount of money found
 //    modified reference: selected_transfers, a list of iterators/indices of input sources
-uint64_t CWallet::select_transfers(uint64_t needed_money, std::vector<size_t> unused_transfers_indices, std::vector<size_t>& selected_transfers) const
+/*uint64_t CWallet::select_transfers(uint64_t needed_money, std::vector<size_t> unused_transfers_indices, std::vector<size_t>& selected_transfers) const
 {
   uint64_t found_money = 0;
   selected_transfers.reserve(unused_transfers_indices.size());
@@ -5276,9 +5276,9 @@ uint64_t CWallet::select_transfers(uint64_t needed_money, std::vector<size_t> un
   }
 
   return found_money;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::add_unconfirmed_tx(const cryptonote::transaction& tx, uint64_t amount_in, const std::vector<cryptonote::tx_destination_entry> &dests, const crypto::hash &payment_id, uint64_t change_amount, uint32_t subaddr_account, const std::set<uint32_t>& subaddr_indices)
+/*void CWallet::add_unconfirmed_tx(const cryptonote::transaction& tx, uint64_t amount_in, const std::vector<cryptonote::tx_destination_entry> &dests, const crypto::hash &payment_id, uint64_t change_amount, uint32_t subaddr_account, const std::set<uint32_t>& subaddr_indices)
 {
   unconfirmed_transfer_details& utd = m_unconfirmed_txs[cryptonote::get_transaction_hash(tx)];
   utd.m_amount_in = amount_in;
@@ -5302,10 +5302,10 @@ void CWallet::add_unconfirmed_tx(const cryptonote::transaction& tx, uint64_t amo
     const auto &txin = boost::get<cryptonote::txin_to_key>(in);
     utd.m_rings.push_back(std::make_pair(txin.k_image, txin.key_offsets));
   }
-}
+}*/
 
 //----------------------------------------------------------------------------------------------------
-crypto::hash CWallet::get_payment_id(const pending_tx &ptx) const
+/*crypto::hash CWallet::get_payment_id(const pending_tx &ptx) const
 {
   std::vector<tx_extra_field> tx_extra_fields;
   parse_tx_extra(ptx.tx.extra, tx_extra_fields); // ok if partially parsed
@@ -5332,11 +5332,11 @@ crypto::hash CWallet::get_payment_id(const pending_tx &ptx) const
     }
   }
   return payment_id;
-}
+}*/
 
 //----------------------------------------------------------------------------------------------------
 // take a pending tx and actually send it to the daemon
-void CWallet::commit_tx(pending_tx& ptx)
+/*void CWallet::commit_tx(pending_tx& ptx)
 {
   using namespace cryptonote;
   
@@ -5459,7 +5459,7 @@ std::string CWallet::dump_tx_to_str(const std::vector<pending_tx> &ptx_vector) c
   return std::string(UNSIGNED_TX_PREFIX) + ciphertext;
 }
 //----------------------------------------------------------------------------------------------------
-bool CWallet::load_unsigned_tx(const std::string &unsigned_filename, unsigned_tx_set &exported_txs) const
+/*bool CWallet::load_unsigned_tx(const std::string &unsigned_filename, unsigned_tx_set &exported_txs) const
 {
   std::string s;
   boost::system::error_code errcode;
@@ -5859,7 +5859,7 @@ std::string CWallet::save_multisig_tx(const std::vector<pending_tx>& ptx_vector)
   return save_multisig_tx(make_multisig_tx_set(ptx_vector));
 }
 //----------------------------------------------------------------------------------------------------
-bool CWallet::save_multisig_tx(const std::vector<pending_tx>& ptx_vector, const std::string &filename)
+/*bool CWallet::save_multisig_tx(const std::vector<pending_tx>& ptx_vector, const std::string &filename)
 {
   std::string ciphertext = save_multisig_tx(ptx_vector);
   if (ciphertext.empty())
@@ -5958,7 +5958,7 @@ bool CWallet::load_multisig_tx_from_file(const std::string &filename, multisig_t
   return true;
 }
 //----------------------------------------------------------------------------------------------------
-bool CWallet::sign_multisig_tx(multisig_tx_set &exported_txs, std::vector<crypto::hash> &txids)
+/*bool CWallet::sign_multisig_tx(multisig_tx_set &exported_txs, std::vector<crypto::hash> &txids)
 {
   THROW_WALLET_EXCEPTION_IF(exported_txs.m_ptx.empty(), error::wallet_internal_error, "No tx found");
 
@@ -6066,17 +6066,17 @@ bool CWallet::sign_multisig_tx(multisig_tx_set &exported_txs, std::vector<crypto
   exported_txs.m_signers.insert(get_multisig_signer_public_key());
 
   return true;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-bool CWallet::sign_multisig_tx_to_file(multisig_tx_set &exported_txs, const std::string &filename, std::vector<crypto::hash> &txids)
+/*bool CWallet::sign_multisig_tx_to_file(multisig_tx_set &exported_txs, const std::string &filename, std::vector<crypto::hash> &txids)
 {
   bool r = sign_multisig_tx(exported_txs, txids);
   if (!r)
     return false;
   return save_multisig_tx(exported_txs, filename);
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-bool CWallet::sign_multisig_tx_from_file(const std::string &filename, std::vector<crypto::hash> &txids, std::function<bool(const multisig_tx_set&)> accept_func)
+/*bool CWallet::sign_multisig_tx_from_file(const std::string &filename, std::vector<crypto::hash> &txids, std::function<bool(const multisig_tx_set&)> accept_func)
 {
   multisig_tx_set exported_txs;
   if(!load_multisig_tx_from_file(filename, exported_txs))
@@ -6088,9 +6088,9 @@ bool CWallet::sign_multisig_tx_from_file(const std::string &filename, std::vecto
     return false;
   }
   return sign_multisig_tx_to_file(exported_txs, filename, txids);
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-uint64_t CWallet::get_fee_multiplier(uint32_t priority, int fee_algorithm) const
+/*uint64_t CWallet::get_fee_multiplier(uint32_t priority, int fee_algorithm) const
 {
   static const struct
   {
@@ -6130,9 +6130,9 @@ uint64_t CWallet::get_fee_multiplier(uint32_t priority, int fee_algorithm) const
 
   THROW_WALLET_EXCEPTION_IF (false, error::invalid_priority);
   return 1;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-uint64_t CWallet::get_dynamic_base_fee_estimate() const
+/*uint64_t CWallet::get_dynamic_base_fee_estimate() const
 {
   uint64_t fee;
   boost::optional<std::string> result = m_node_rpc_proxy.get_dynamic_base_fee_estimate(FEE_ESTIMATE_GRACE_BLOCKS, fee);
@@ -6141,9 +6141,9 @@ uint64_t CWallet::get_dynamic_base_fee_estimate() const
   const uint64_t base_fee = use_fork_rules(HF_VERSION_PER_BYTE_FEE) ? FEE_PER_BYTE : FEE_PER_KB;
   LOG_PRINT_L1("Failed to query base fee, using " << print_money(base_fee));
   return base_fee;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-uint64_t CWallet::get_base_fee() const
+/*uint64_t CWallet::get_base_fee() const
 {
   if(m_light_wallet)
   {
@@ -6157,9 +6157,9 @@ uint64_t CWallet::get_base_fee() const
     return FEE_PER_KB;
 
   return get_dynamic_base_fee_estimate();
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-uint64_t CWallet::get_fee_quantization_mask() const
+/*uint64_t CWallet::get_fee_quantization_mask() const
 {
   if(m_light_wallet)
   {
@@ -6174,9 +6174,9 @@ uint64_t CWallet::get_fee_quantization_mask() const
   if (result)
     return 1;
   return fee_quantization_mask;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-int CWallet::get_fee_algorithm() const
+/*int CWallet::get_fee_algorithm() const
 {
   // changes at v3, v5, v8
   if (use_fork_rules(HF_VERSION_PER_BYTE_FEE, 0))
@@ -6186,9 +6186,9 @@ int CWallet::get_fee_algorithm() const
   if (use_fork_rules(3, -720 * 14))
    return 1;
   return 0;
-}
+}*/
 //------------------------------------------------------------------------------------------------------------------------------
-uint64_t CWallet::get_min_ring_size() const
+/*uint64_t CWallet::get_min_ring_size() const
 {
   if (use_fork_rules(8, 10))
     return 11;
@@ -6199,16 +6199,16 @@ uint64_t CWallet::get_min_ring_size() const
   if (use_fork_rules(2, 10))
     return 3;
   return 0;
-}
+}*/
 //------------------------------------------------------------------------------------------------------------------------------
-uint64_t CWallet::get_max_ring_size() const
+/*uint64_t CWallet::get_max_ring_size() const
 {
   if (use_fork_rules(8, 10))
     return 11;
   return 0;
-}
+}*/
 //------------------------------------------------------------------------------------------------------------------------------
-uint64_t CWallet::adjust_mixin(uint64_t mixin) const
+/*uint64_t CWallet::adjust_mixin(uint64_t mixin) const
 {
   const uint64_t min_ring_size = get_min_ring_size();
   if (mixin + 1 < min_ring_size)
@@ -6223,9 +6223,9 @@ uint64_t CWallet::adjust_mixin(uint64_t mixin) const
     mixin = max_ring_size-1;
   }
   return mixin;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-uint32_t CWallet::adjust_priority(uint32_t priority)
+/*uint32_t CWallet::adjust_priority(uint32_t priority)
 {
   if (priority == 0 && m_default_priority == 0 && auto_low_priority())
   {
@@ -6299,7 +6299,7 @@ uint32_t CWallet::adjust_priority(uint32_t priority)
     }
   }
   return priority;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
 bool CWallet::set_ring_database(const std::string &filename)
 {
@@ -6336,7 +6336,7 @@ crypto::chacha_key CWallet::get_ringdb_key()
   return *m_ringdb_key;
 }
 
-bool CWallet::add_rings(const crypto::chacha_key &key, const cryptonote::transaction_prefix &tx)
+/*bool CWallet::add_rings(const crypto::chacha_key &key, const cryptonote::transaction_prefix &tx)
 {
   if (!m_ringdb)
     return false;
@@ -6471,7 +6471,7 @@ bool CWallet::find_and_save_rings(bool force)
   MINFO("Found and saved rings for " << txs_hashes.size() << " transactions");
   m_ring_history_saved = true;
   return true;
-}
+}*/
 
 bool CWallet::blackball_output(const std::pair<uint64_t, uint64_t> &output)
 {
@@ -6539,7 +6539,7 @@ bool CWallet::is_keys_file_locked() const
   return m_keys_file_locker->locked();
 }
 
-bool CWallet::tx_add_fake_output(std::vector<std::vector<CWallet::get_outs_entry>> &outs, uint64_t global_index, const crypto::public_key& output_public_key, const rct::key& mask, uint64_t real_index, bool unlocked) const
+/*bool CWallet::tx_add_fake_output(std::vector<std::vector<CWallet::get_outs_entry>> &outs, uint64_t global_index, const crypto::public_key& output_public_key, const rct::key& mask, uint64_t real_index, bool unlocked) const
 {
   if (!unlocked) // don't add locked outs
     return false;
@@ -6553,7 +6553,7 @@ bool CWallet::tx_add_fake_output(std::vector<std::vector<CWallet::get_outs_entry
 //    return false;
   outs.back().push_back(item);
   return true;
-}
+}*/
 
 void CWallet::light_wallet_get_outs(std::vector<std::vector<CWallet::get_outs_entry>> &outs, const std::vector<size_t> &selected_transfers, size_t fake_outputs_count) {
   
@@ -6659,7 +6659,7 @@ void CWallet::light_wallet_get_outs(std::vector<std::vector<CWallet::get_outs_en
   }
 }
 
-void CWallet::get_outs(std::vector<std::vector<CWallet::get_outs_entry>> &outs, const std::vector<size_t> &selected_transfers, size_t fake_outputs_count)
+/*void CWallet::get_outs(std::vector<std::vector<CWallet::get_outs_entry>> &outs, const std::vector<size_t> &selected_transfers, size_t fake_outputs_count)
 {
   LOG_PRINT_L2("fake_outputs_count: " << fake_outputs_count);
   outs.clear();
@@ -6779,7 +6779,7 @@ void CWallet::get_outs(std::vector<std::vector<CWallet::get_outs_entry>> &outs, 
       result_type operator()() { return crypto::rand<result_type>(); }
     } engine;
     static const double shape = 19.28/*16.94*/;
-    //static const double shape = m_testnet ? 17.02 : 17.28;
+    /*//static const double shape = m_testnet ? 17.02 : 17.28;
     static const double scale = 1/1.61;
     std::gamma_distribution<double> gamma(shape, scale);
     auto pick_gamma = [&]()
@@ -7235,8 +7235,8 @@ void CWallet::get_outs(std::vector<std::vector<CWallet::get_outs_entry>> &outs, 
       outs.push_back(v);
     }
   }
-}
-
+}*/
+    /*
 template<typename T>
 void CWallet::transfer_selected(const std::vector<cryptonote::tx_destination_entry>& dsts, const std::vector<size_t>& selected_transfers, size_t fake_outputs_count,
   std::vector<std::vector<CWallet::get_outs_entry>> &outs,
@@ -7653,7 +7653,7 @@ void CWallet::transfer_selected_rct(std::vector<cryptonote::tx_destination_entry
   LOG_PRINT_L2("transfer_selected_rct done");
 }
 
-std::vector<size_t> CWallet::pick_preferred_rct_inputs(uint64_t needed_money, uint32_t subaddr_account, const std::set<uint32_t> &subaddr_indices) const
+/*std::vector<size_t> CWallet::pick_preferred_rct_inputs(uint64_t needed_money, uint32_t subaddr_account, const std::set<uint32_t> &subaddr_indices) const
 {
   std::vector<size_t> picks;
   float current_output_relatdness = 1.0f;
@@ -7711,9 +7711,9 @@ std::vector<size_t> CWallet::pick_preferred_rct_inputs(uint64_t needed_money, ui
   }
 
   return picks;
-}
+}*/
 
-bool CWallet::should_pick_a_second_output(bool use_rct, size_t n_transfers, const std::vector<size_t> &unused_transfers_indices, const std::vector<size_t> &unused_dust_indices) const
+/*bool CWallet::should_pick_a_second_output(bool use_rct, size_t n_transfers, const std::vector<size_t> &unused_transfers_indices, const std::vector<size_t> &unused_dust_indices) const
 {
   if (!use_rct)
     return false;
@@ -7744,8 +7744,8 @@ bool CWallet::should_pick_a_second_output(bool use_rct, size_t n_transfers, cons
   if (!found)
     return false;
   return true;
-}
-
+}*/
+/*
 std::vector<size_t> CWallet::get_only_rct(const std::vector<size_t> &unused_dust_indices, const std::vector<size_t> &unused_transfers_indices) const
 {
   std::vector<size_t> indices;
@@ -7765,9 +7765,9 @@ static uint32_t get_count_above(const std::vector<CWallet::transfer_details> &tr
     if (transfers[idx].amount() >= threshold)
       ++count;
   return count;
-}
+}*/
 
-bool CWallet::light_wallet_login(bool &new_address)
+/*bool CWallet::light_wallet_login(bool &new_address)
 {
   MDEBUG("Light wallet login request");
   m_light_wallet_connected = false;
@@ -7794,9 +7794,9 @@ bool CWallet::light_wallet_login(bool &new_address)
     // m_unconfirmed_payments.clear();
   }
   return m_light_wallet_connected;
-}
+}*/
 
-bool CWallet::light_wallet_import_wallet_request(cryptonote::COMMAND_RPC_IMPORT_WALLET_REQUEST::response &response)
+/*bool CWallet::light_wallet_import_wallet_request(cryptonote::COMMAND_RPC_IMPORT_WALLET_REQUEST::response &response)
 {
   MDEBUG("Light wallet import wallet request");
   cryptonote::COMMAND_RPC_IMPORT_WALLET_REQUEST::request oreq;
@@ -7809,9 +7809,9 @@ bool CWallet::light_wallet_import_wallet_request(cryptonote::COMMAND_RPC_IMPORT_
 
 
   return true;
-}
+}*/
 
-void CWallet::light_wallet_get_unspent_outs()
+/*void CWallet::light_wallet_get_unspent_outs()
 {
   MDEBUG("Getting unspent outs");
   
@@ -7961,9 +7961,9 @@ void CWallet::light_wallet_get_unspent_outs()
     m_key_images[td.m_key_image] = m_transfers.size()-1;
     m_pub_keys[td.get_public_key()] = m_transfers.size()-1;
   }
-}
+}*/
 
-bool CWallet::light_wallet_get_address_info(cryptonote::COMMAND_RPC_GET_ADDRESS_INFO::response &response)
+/*bool CWallet::light_wallet_get_address_info(cryptonote::COMMAND_RPC_GET_ADDRESS_INFO::response &response)
 {
   MTRACE(__FUNCTION__);
   
@@ -7977,9 +7977,9 @@ bool CWallet::light_wallet_get_address_info(cryptonote::COMMAND_RPC_GET_ADDRESS_
   THROW_WALLET_EXCEPTION_IF(!r, error::no_connection_to_daemon, "get_address_info");
   // TODO: Validate result
   return true;
-}
+}*/
 
-void CWallet::light_wallet_get_address_txs()
+/*void CWallet::light_wallet_get_address_txs()
 {
   MDEBUG("Refreshing light wallet");
   
@@ -8166,9 +8166,9 @@ void CWallet::light_wallet_get_address_txs()
     m_light_wallet_unlocked_balance = ires.total_received_unlocked-wallet_total_sent;
   else
     m_light_wallet_unlocked_balance = m_light_wallet_balance;
-}
+}*/
 
-bool CWallet::light_wallet_parse_rct_str(const std::string& rct_string, const crypto::public_key& tx_pub_key, uint64_t internal_output_index, rct::key& decrypted_mask, rct::key& rct_commit, bool decrypt) const
+/*bool CWallet::light_wallet_parse_rct_str(const std::string& rct_string, const crypto::public_key& tx_pub_key, uint64_t internal_output_index, rct::key& decrypted_mask, rct::key& rct_commit, bool decrypt) const
 {
   // rct string is empty if output is non RCT
   if (rct_string.empty())
@@ -8191,9 +8191,9 @@ bool CWallet::light_wallet_parse_rct_str(const std::string& rct_string, const cr
     sc_sub(decrypted_mask.bytes,encrypted_mask.bytes,rct::hash_to_scalar(rct::sk2rct(scalar)).bytes);
   }
   return true;
-}
+}*/
 
-bool CWallet::light_wallet_key_image_is_ours(const crypto::key_image& key_image, const crypto::public_key& tx_public_key, uint64_t out_index)
+/*bool CWallet::light_wallet_key_image_is_ours(const crypto::key_image& key_image, const crypto::public_key& tx_public_key, uint64_t out_index)
 {
   // Lookup key image from cache
   std::map<uint64_t, crypto::key_image> index_keyimage_map;
@@ -8234,7 +8234,7 @@ bool CWallet::light_wallet_key_image_is_ours(const crypto::key_image& key_image,
   index_keyimage_map.emplace(out_index, calculated_key_image);
   m_key_image_cache.emplace(tx_public_key, index_keyimage_map);
   return key_image == calculated_key_image;
-}
+}*/
 
 // Another implementation of transaction creation that is hopefully better
 // While there is anything left to pay, it goes through random outputs and tries
@@ -8251,7 +8251,7 @@ bool CWallet::light_wallet_key_image_is_ours(const crypto::key_image& key_image,
 // This system allows for sending (almost) the entire balance, since it does
 // not generate spurious change in all txes, thus decreasing the instantaneous
 // usable balance.
-std::vector<CWallet::pending_tx> CWallet::create_transactions_2(std::vector<cryptonote::tx_destination_entry> dsts, const size_t fake_outs_count, const uint64_t unlock_time, uint32_t priority, const std::vector<uint8_t>& extra, uint32_t subaddr_account, std::set<uint32_t> subaddr_indices)
+/*std::vector<CWallet::pending_tx> CWallet::create_transactions_2(std::vector<cryptonote::tx_destination_entry> dsts, const size_t fake_outs_count, const uint64_t unlock_time, uint32_t priority, const std::vector<uint8_t>& extra, uint32_t subaddr_account, std::set<uint32_t> subaddr_indices)
 {
   //ensure device is let in NONE mode in any case
   hw::device &hwdev = m_account.get_device();
@@ -8594,7 +8594,7 @@ std::vector<CWallet::pending_tx> CWallet::create_transactions_2(std::vector<cryp
       if (adding_fee)
       {
         /* might not actually be enough if adding this output bumps size to next kB, but we need to try */
-        try_tx = available_for_fee >= needed_fee;
+/*        try_tx = available_for_fee >= needed_fee;
       }
       else
       {
@@ -8645,7 +8645,7 @@ std::vector<CWallet::pending_tx> CWallet::create_transactions_2(std::vector<cryp
         if (i->amount > needed_fee)
         {
           uint64_t new_paid_amount = i->amount /*+ test_ptx.fee*/ - needed_fee;
-          LOG_PRINT_L2("Adjusting amount paid to " << get_account_address_as_str(m_nettype, i->is_subaddress, i->addr) << " from " <<
+/*          LOG_PRINT_L2("Adjusting amount paid to " << get_account_address_as_str(m_nettype, i->is_subaddress, i->addr) << " from " <<
             print_money(i->amount) << " to " << print_money(new_paid_amount) << " to accommodate " <<
             print_money(needed_fee) << " fee");
           dsts[0].amount += i->amount - new_paid_amount;
@@ -8732,16 +8732,16 @@ skip_tx:
     pending_tx test_ptx;
     if (use_rct) {
       transfer_selected_rct(tx.dsts,                    /* NOMOD std::vector<cryptonote::tx_destination_entry> dsts,*/
-                            tx.selected_transfers,      /* const std::list<size_t> selected_transfers */
-                            fake_outs_count,            /* CONST size_t fake_outputs_count, */
-                            tx.outs,                    /* MOD   std::vector<std::vector<CWallet::get_outs_entry>> &outs, */
-                            unlock_time,                /* CONST uint64_t unlock_time,  */
-                            tx.needed_fee,              /* CONST uint64_t fee, */
-                            extra,                      /* const std::vector<uint8_t>& extra, */
-                            test_tx,                    /* OUT   cryptonote::transaction& tx, */
-                            test_ptx,                   /* OUT   cryptonote::transaction& tx, */
-                            range_proof_type);
-    } else {
+  //                          tx.selected_transfers,      /* const std::list<size_t> selected_transfers */
+  //                          fake_outs_count,            /* CONST size_t fake_outputs_count, */
+  //                          tx.outs,                    /* MOD   std::vector<std::vector<CWallet::get_outs_entry>> &outs, */
+  //                          unlock_time,                /* CONST uint64_t unlock_time,  */
+  //                          tx.needed_fee,              /* CONST uint64_t fee, */
+  //                          extra,                      /* const std::vector<uint8_t>& extra, */
+  //                          test_tx,                    /* OUT   cryptonote::transaction& tx, */
+  //                          test_ptx,                   /* OUT   cryptonote::transaction& tx, */
+  //                          range_proof_type);
+   /* } else {
       transfer_selected(tx.dsts,
                         tx.selected_transfers,
                         fake_outs_count,
@@ -9061,13 +9061,13 @@ std::vector<CWallet::pending_tx> CWallet::create_transactions_from(const crypton
   return ptx_vector;
 }
 //----------------------------------------------------------------------------------------------------
-void CWallet::get_hard_fork_info(uint8_t version, uint64_t &earliest_height) const
+/*void CWallet::get_hard_fork_info(uint8_t version, uint64_t &earliest_height) const
 {
   boost::optional<std::string> result = m_node_rpc_proxy.get_earliest_height(version, earliest_height);
   throw_on_rpc_response_error(result, "get_hard_fork_info");
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-bool CWallet::use_fork_rules(uint8_t version, int64_t early_blocks) const
+/*bool CWallet::use_fork_rules(uint8_t version, int64_t early_blocks) const
 {
   // TODO: How to get fork rule info from light wallet node?
   if(m_light_wallet)
@@ -9084,9 +9084,9 @@ bool CWallet::use_fork_rules(uint8_t version, int64_t early_blocks) const
   else
     LOG_PRINT_L2("Not using v" << (unsigned)version << " rules");
   return close_enough;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-uint64_t CWallet::get_upper_transaction_weight_limit() const
+/*uint64_t CWallet::get_upper_transaction_weight_limit() const
 {
   if (m_upper_transaction_weight_limit > 0)
     return m_upper_transaction_weight_limit;
@@ -9095,9 +9095,9 @@ uint64_t CWallet::get_upper_transaction_weight_limit() const
     return full_reward_zone / 2 - CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE;
   else
     return full_reward_zone - CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-std::vector<size_t> CWallet::select_available_outputs(const std::function<bool(const transfer_details &td)> &f) const
+/*std::vector<size_t> CWallet::select_available_outputs(const std::function<bool(const transfer_details &td)> &f) const
 {
   std::vector<size_t> outputs;
   size_t n = 0;
@@ -9113,9 +9113,9 @@ std::vector<size_t> CWallet::select_available_outputs(const std::function<bool(c
       outputs.push_back(n);
   }
   return outputs;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-std::vector<uint64_t> CWallet::get_unspent_amounts_vector() const
+/*std::vector<uint64_t> CWallet::get_unspent_amounts_vector() const
 {
   std::set<uint64_t> set;
   for (const auto &td: m_transfers)
@@ -9130,9 +9130,9 @@ std::vector<uint64_t> CWallet::get_unspent_amounts_vector() const
     vector.push_back(i);
   }
   return vector;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-std::vector<size_t> CWallet::select_available_outputs_from_histogram(uint64_t count, bool atleast, bool unlocked, bool allow_rct)
+/*std::vector<size_t> CWallet::select_available_outputs_from_histogram(uint64_t count, bool atleast, bool unlocked, bool allow_rct)
 {
   cryptonote::COMMAND_RPC_GET_OUTPUT_HISTOGRAM::request req_t = AUTO_VAL_INIT(req_t);
   cryptonote::COMMAND_RPC_GET_OUTPUT_HISTOGRAM::response resp_t = AUTO_VAL_INIT(resp_t);
@@ -9169,9 +9169,9 @@ std::vector<size_t> CWallet::select_available_outputs_from_histogram(uint64_t co
     }
     return false;
   });
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-uint64_t CWallet::get_num_rct_outputs()
+/*uint64_t CWallet::get_num_rct_outputs()
 {
   cryptonote::COMMAND_RPC_GET_OUTPUT_HISTOGRAM::request req_t = AUTO_VAL_INIT(req_t);
   cryptonote::COMMAND_RPC_GET_OUTPUT_HISTOGRAM::response resp_t = AUTO_VAL_INIT(resp_t);
@@ -9190,27 +9190,27 @@ uint64_t CWallet::get_num_rct_outputs()
   THROW_WALLET_EXCEPTION_IF(resp_t.histogram[0].amount != 0, error::get_histogram_error, "Expected 0 amount");
 
   return resp_t.histogram[0].total_instances;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-const CWallet::transfer_details &CWallet::get_transfer_details(size_t idx) const
+/*const CWallet::transfer_details &CWallet::get_transfer_details(size_t idx) const
 {
   THROW_WALLET_EXCEPTION_IF(idx >= m_transfers.size(), error::wallet_internal_error, "Bad transfer index");
   return m_transfers[idx];
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-std::vector<size_t> CWallet::select_available_unmixable_outputs()
+/*std::vector<size_t> CWallet::select_available_unmixable_outputs()
 {
   // request all outputs with less instances than the min ring size
   return select_available_outputs_from_histogram(get_min_ring_size(), false, true, false);
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-std::vector<size_t> CWallet::select_available_mixable_outputs()
+/*std::vector<size_t> CWallet::select_available_mixable_outputs()
 {
   // request all outputs with at least as many instances as the min ring size
   return select_available_outputs_from_histogram(get_min_ring_size(), true, true, true);
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-std::vector<CWallet::pending_tx> CWallet::create_unmixable_sweep_transactions()
+/*std::vector<CWallet::pending_tx> CWallet::create_unmixable_sweep_transactions()
 {
   // From hard fork 1, we don't consider small amounts to be dust anymore
   const bool hf1_rules = use_fork_rules(2, 10); // first hard fork has version 2
@@ -9240,7 +9240,7 @@ std::vector<CWallet::pending_tx> CWallet::create_unmixable_sweep_transactions()
   return create_transactions_from(m_account_public_address, false, 1, unmixable_transfer_outputs, unmixable_dust_outputs, 0 /*fake_outs_count */, 0 /* unlock_time */, 1 /*priority */, std::vector<uint8_t>());
 }
 //----------------------------------------------------------------------------------------------------
-void CWallet::discard_unmixable_outputs()
+/*void CWallet::discard_unmixable_outputs()
 {
   // may throw
   std::vector<size_t> unmixable_outputs = select_available_unmixable_outputs();
@@ -9248,9 +9248,9 @@ void CWallet::discard_unmixable_outputs()
   {
     m_transfers[idx].m_spent = true;
   }
-}
+}*/
 
-bool CWallet::get_tx_key(const crypto::hash &txid, crypto::secret_key &tx_key, std::vector<crypto::secret_key> &additional_tx_keys) const
+/*bool CWallet::get_tx_key(const crypto::hash &txid, crypto::secret_key &tx_key, std::vector<crypto::secret_key> &additional_tx_keys) const
 {
   additional_tx_keys.clear();
   const std::unordered_map<crypto::hash, crypto::secret_key>::const_iterator i = m_tx_keys.find(txid);
@@ -9261,9 +9261,9 @@ bool CWallet::get_tx_key(const crypto::hash &txid, crypto::secret_key &tx_key, s
   if (j != m_additional_tx_keys.end())
     additional_tx_keys = j->second;
   return true;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::set_tx_key(const crypto::hash &txid, const crypto::secret_key &tx_key, const std::vector<crypto::secret_key> &additional_tx_keys)
+/*void CWallet::set_tx_key(const crypto::hash &txid, const crypto::secret_key &tx_key, const std::vector<crypto::secret_key> &additional_tx_keys)
 {
   // fetch tx from daemon and check if secret keys agree with corresponding public keys
   COMMAND_RPC_GET_TRANSACTIONS::request req = AUTO_VAL_INIT(req);
@@ -9309,9 +9309,9 @@ void CWallet::set_tx_key(const crypto::hash &txid, const crypto::secret_key &tx_
   THROW_WALLET_EXCEPTION_IF(additional_tx_keys.size() != additional_tx_pub_keys.data.size(), error::wallet_internal_error, "The number of additional tx secret keys doesn't agree with the number of additional tx public keys in the blockchain" );
   m_tx_keys.insert(std::make_pair(txid, tx_key));
   m_additional_tx_keys.insert(std::make_pair(txid, additional_tx_keys));
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-std::string CWallet::get_spend_proof(const crypto::hash &txid, const std::string &message)
+/*std::string CWallet::get_spend_proof(const crypto::hash &txid, const std::string &message)
 {
   THROW_WALLET_EXCEPTION_IF(m_watch_only, error::wallet_internal_error,
     "get_spend_proof requires spend secret key and is not available for a watch-only wallet");
@@ -9427,9 +9427,9 @@ std::string CWallet::get_spend_proof(const crypto::hash &txid, const std::string
     for (const crypto::signature& sig : ring_sig)
        sig_str += tools::base58::encode(std::string((const char *)&sig, sizeof(crypto::signature)));
   return sig_str;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-bool CWallet::check_spend_proof(const crypto::hash &txid, const std::string &message, const std::string &sig_str)
+/*bool CWallet::check_spend_proof(const crypto::hash &txid, const std::string &message, const std::string &sig_str)
 {
   const std::string header = "SpendProofV1";
   const size_t header_len = header.size();
@@ -9541,10 +9541,10 @@ bool CWallet::check_spend_proof(const crypto::hash &txid, const std::string &mes
   }
   THROW_WALLET_EXCEPTION_IF(sig_iter != signatures.cend(), error::wallet_internal_error, "Signature iterator didn't reach the end");
   return true;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
 
-void CWallet::check_tx_key(const crypto::hash &txid, const crypto::secret_key &tx_key, const std::vector<crypto::secret_key> &additional_tx_keys, const cryptonote::account_public_address &address, uint64_t &received, bool &in_pool, uint64_t &confirmations)
+/*void CWallet::check_tx_key(const crypto::hash &txid, const crypto::secret_key &tx_key, const std::vector<crypto::secret_key> &additional_tx_keys, const cryptonote::account_public_address &address, uint64_t &received, bool &in_pool, uint64_t &confirmations)
 {
   crypto::key_derivation derivation;
   THROW_WALLET_EXCEPTION_IF(!crypto::generate_key_derivation(address.m_view_public_key, tx_key, derivation), error::wallet_internal_error,
@@ -9557,9 +9557,9 @@ void CWallet::check_tx_key(const crypto::hash &txid, const crypto::secret_key &t
       "Failed to generate key derivation from supplied parameters");
 
   check_tx_key_helper(txid, derivation, additional_derivations, address, received, in_pool, confirmations);
-}
+}*/
 
-void CWallet::check_tx_key_helper(const crypto::hash &txid, const crypto::key_derivation &derivation, const std::vector<crypto::key_derivation> &additional_derivations, const cryptonote::account_public_address &address, uint64_t &received, bool &in_pool, uint64_t &confirmations)
+/*void CWallet::check_tx_key_helper(const crypto::hash &txid, const crypto::key_derivation &derivation, const std::vector<crypto::key_derivation> &additional_derivations, const cryptonote::account_public_address &address, uint64_t &received, bool &in_pool, uint64_t &confirmations)
 {
   COMMAND_RPC_GET_TRANSACTIONS::request req;
   COMMAND_RPC_GET_TRANSACTIONS::response res;
@@ -9645,9 +9645,9 @@ void CWallet::check_tx_key_helper(const crypto::hash &txid, const crypto::key_de
     if (err.empty())
       confirmations = bc_height - (res.txs.front().block_height + 1);
   }
-}
+}*/
 
-std::string CWallet::get_tx_proof(const crypto::hash &txid, const cryptonote::account_public_address &address, bool is_subaddress, const std::string &message)
+/*std::string CWallet::get_tx_proof(const crypto::hash &txid, const cryptonote::account_public_address &address, bool is_subaddress, const std::string &message)
 {
   // determine if the address is found in the subaddress hash table (i.e. whether the proof is outbound or inbound)
   const bool is_out = m_subaddresses.count(address.m_spend_public_key) == 0;
@@ -9777,9 +9777,9 @@ std::string CWallet::get_tx_proof(const crypto::hash &txid, const cryptonote::ac
       tools::base58::encode(std::string((const char *)&shared_secret[i], sizeof(crypto::public_key))) +
       tools::base58::encode(std::string((const char *)&sig[i], sizeof(crypto::signature)));
   return sig_str;
-}
+}*/
 
-bool CWallet::check_tx_proof(const crypto::hash &txid, const cryptonote::account_public_address &address, bool is_subaddress, const std::string &message, const std::string &sig_str, uint64_t &received, bool &in_pool, uint64_t &confirmations)
+/*bool CWallet::check_tx_proof(const crypto::hash &txid, const cryptonote::account_public_address &address, bool is_subaddress, const std::string &message, const std::string &sig_str, uint64_t &received, bool &in_pool, uint64_t &confirmations)
 {
   const bool is_out = sig_str.substr(0, 3) == "Out";
   const std::string header = is_out ? "OutProofV1" : "InProofV1";
@@ -9893,9 +9893,9 @@ bool CWallet::check_tx_proof(const crypto::hash &txid, const cryptonote::account
     return true;
   }
   return false;
-}
+}*/
 
-std::string CWallet::get_reserve_proof(const boost::optional<std::pair<uint32_t, uint64_t>> &account_minreserve, const std::string &message)
+/*std::string CWallet::get_reserve_proof(const boost::optional<std::pair<uint32_t, uint64_t>> &account_minreserve, const std::string &message)
 {
   THROW_WALLET_EXCEPTION_IF(m_watch_only || m_multisig, error::wallet_internal_error, "Reserve proof can only be generated by a full wallet");
   THROW_WALLET_EXCEPTION_IF(balance_all() == 0, error::wallet_internal_error, "Zero balance");
@@ -10012,9 +10012,9 @@ std::string CWallet::get_reserve_proof(const boost::optional<std::pair<uint32_t,
   boost::archive::portable_binary_oarchive ar(oss);
   ar << proofs << subaddr_spendkeys;
   return "ReserveProofV1" + tools::base58::encode(oss.str());
-}
+}*/
 
-bool CWallet::check_reserve_proof(const cryptonote::account_public_address &address, const std::string &message, const std::string &sig_str, uint64_t &total, uint64_t &spent)
+/*bool CWallet::check_reserve_proof(const cryptonote::account_public_address &address, const std::string &message, const std::string &sig_str, uint64_t &total, uint64_t &spent)
 {
   uint32_t rpc_version;
   THROW_WALLET_EXCEPTION_IF(!check_connection(&rpc_version), error::wallet_internal_error, "Failed to connect to daemon: " + get_daemon_address());
@@ -10141,7 +10141,7 @@ bool CWallet::check_reserve_proof(const cryptonote::account_public_address &addr
       return false;
   }
   return true;
-}
+}*/
 
 std::string CWallet::get_wallet_file() const
 {
@@ -10158,7 +10158,7 @@ std::string CWallet::get_daemon_address() const
   return m_daemon_address;
 }
 
-uint64_t CWallet::get_daemon_blockchain_height(string &err) const
+/*uint64_t CWallet::get_daemon_blockchain_height(string &err) const
 {
   uint64_t height;
 
@@ -10171,9 +10171,9 @@ uint64_t CWallet::get_daemon_blockchain_height(string &err) const
 
   err = "";
   return height;
-}
+}*/
 
-uint64_t CWallet::get_daemon_blockchain_target_height(string &err)
+/*uint64_t CWallet::get_daemon_blockchain_target_height(string &err)
 {
   err = "";
   uint64_t target_height = 0;
@@ -10202,9 +10202,9 @@ uint64_t CWallet::get_approximate_blockchain_height() const
     approx_blockchain_height -= approximate_testnet_rolled_back_blocks;
   LOG_PRINT_L2("Calculated blockchain height: " << approx_blockchain_height);
   return approx_blockchain_height;
-}
+}*/
 
-void CWallet::set_tx_note(const crypto::hash &txid, const std::string &note)
+/*void CWallet::set_tx_note(const crypto::hash &txid, const std::string &note)
 {
   m_tx_notes[txid] = note;
 }
@@ -10215,7 +10215,7 @@ std::string CWallet::get_tx_note(const crypto::hash &txid) const
   if (i == m_tx_notes.end())
     return std::string();
   return i->second;
-}
+}*/
 
 void CWallet::set_attribute(const std::string &key, const std::string &value)
 {
@@ -10313,7 +10313,7 @@ bool CWallet::verify(const std::string &data, const cryptonote::account_public_a
   return crypto::check_signature(hash, address.m_spend_public_key, s);
 }
 
-std::string CWallet::sign_multisig_participant(const std::string& data) const
+/*std::string CWallet::sign_multisig_participant(const std::string& data) const
 {
   CHECK_AND_ASSERT_THROW_MES(m_multisig, "Wallet is not multisig");
 
@@ -10323,7 +10323,7 @@ std::string CWallet::sign_multisig_participant(const std::string& data) const
   crypto::signature signature;
   crypto::generate_signature(hash, get_multisig_signer_public_key(), keys.m_spend_secret_key, signature);
   return MULTISIG_SIGNATURE_MAGIC + tools::base58::encode(std::string((const char *)&signature, sizeof(signature)));
-}
+}*/
 
 bool CWallet::verify_with_public_key(const std::string &data, const crypto::public_key &public_key, const std::string &signature) const
 {
@@ -10347,7 +10347,7 @@ bool CWallet::verify_with_public_key(const std::string &data, const crypto::publ
   return crypto::check_signature(hash, public_key, s);
 }
 //----------------------------------------------------------------------------------------------------
-crypto::public_key CWallet::get_tx_pub_key_from_received_outs(const CWallet::transfer_details &td) const
+/*crypto::public_key CWallet::get_tx_pub_key_from_received_outs(const CWallet::transfer_details &td) const
 {
   std::vector<tx_extra_field> tx_extra_fields;
   if(!parse_tx_extra(td.m_tx.extra, tx_extra_fields))
@@ -10403,9 +10403,9 @@ crypto::public_key CWallet::get_tx_pub_key_from_received_outs(const CWallet::tra
   THROW_WALLET_EXCEPTION_IF(true, error::wallet_internal_error,
       "Public key yielding at least one output wasn't found in the transaction extra");
   return crypto::null_pkey;
-}
+}*/
 
-bool CWallet::export_key_images(const std::string &filename) const
+/*bool CWallet::export_key_images(const std::string &filename) const
 {
   std::vector<std::pair<crypto::key_image, crypto::signature>> ski = export_key_images();
   std::string magic(KEY_IMAGE_EXPORT_FILE_MAGIC, strlen(KEY_IMAGE_EXPORT_FILE_MAGIC));
@@ -10423,10 +10423,10 @@ bool CWallet::export_key_images(const std::string &filename) const
   // encrypt data, keep magic plaintext
   std::string ciphertext = encrypt_with_view_secret_key(data);
   return epee::file_io_utils::save_string_to_file(filename, magic + ciphertext);    
-}
+}*/
 
 //----------------------------------------------------------------------------------------------------
-std::vector<std::pair<crypto::key_image, crypto::signature>> CWallet::export_key_images() const
+/*std::vector<std::pair<crypto::key_image, crypto::signature>> CWallet::export_key_images() const
 {
   std::vector<std::pair<crypto::key_image, crypto::signature>> ski;
 
@@ -10476,9 +10476,9 @@ std::vector<std::pair<crypto::key_image, crypto::signature>> CWallet::export_key
     ski.push_back(std::make_pair(td.m_key_image, signature));
   }
   return ski;
-}
+}*/
 
-uint64_t CWallet::import_key_images(const std::string &filename, uint64_t &spent, uint64_t &unspent)
+/*uint64_t CWallet::import_key_images(const std::string &filename, uint64_t &spent, uint64_t &unspent)
 {
   std::string data;
   bool r = epee::file_io_utils::load_file_to_string(filename, data);
@@ -10526,10 +10526,10 @@ uint64_t CWallet::import_key_images(const std::string &filename, uint64_t &spent
   }
   
   return import_key_images(ski, spent, unspent);    
-}
+}*/
 
 //----------------------------------------------------------------------------------------------------
-uint64_t CWallet::import_key_images(const std::vector<std::pair<crypto::key_image, crypto::signature>> &signed_key_images, uint64_t &spent, uint64_t &unspent, bool check_spent)
+/*uint64_t CWallet::import_key_images(const std::vector<std::pair<crypto::key_image, crypto::signature>> &signed_key_images, uint64_t &spent, uint64_t &unspent, bool check_spent)
 {
   COMMAND_RPC_IS_KEY_IMAGE_SPENT::request req = AUTO_VAL_INIT(req);
   COMMAND_RPC_IS_KEY_IMAGE_SPENT::response daemon_resp = AUTO_VAL_INIT(daemon_resp);
@@ -10761,8 +10761,8 @@ uint64_t CWallet::import_key_images(const std::vector<std::pair<crypto::key_imag
   }
 
   return m_transfers[signed_key_images.size() - 1].m_block_height;
-}
-CWallet::payment_container CWallet::export_payments() const
+}*/
+/*CWallet::payment_container CWallet::export_payments() const
 {
   payment_container payments;
   for (auto const &p : m_payments)
@@ -10770,8 +10770,8 @@ CWallet::payment_container CWallet::export_payments() const
     payments.emplace(p);
   }
   return payments;
-}
-void CWallet::import_payments(const payment_container &payments)
+}*/
+/*void CWallet::import_payments(const payment_container &payments)
 {
   m_payments.clear();
   for (auto const &p : payments)
@@ -10786,9 +10786,9 @@ void CWallet::import_payments_out(const std::list<std::pair<crypto::hash,CWallet
   {
     m_confirmed_txs.emplace(p);
   }
-}
+}*/
 
-std::tuple<size_t,crypto::hash,std::vector<crypto::hash>> CWallet::export_blockchain() const
+/*std::tuple<size_t,crypto::hash,std::vector<crypto::hash>> CWallet::export_blockchain() const
 {
   std::tuple<size_t, crypto::hash, std::vector<crypto::hash>> bc;
   std::get<0>(bc) = m_blockchain.offset();
@@ -10798,9 +10798,9 @@ std::tuple<size_t,crypto::hash,std::vector<crypto::hash>> CWallet::export_blockc
     std::get<2>(bc).push_back(m_blockchain[n]);
   }
   return bc;
-}
+}*/
 
-void CWallet::import_blockchain(const std::tuple<size_t, crypto::hash, std::vector<crypto::hash>> &bc)
+/*void CWallet::import_blockchain(const std::tuple<size_t, crypto::hash, std::vector<crypto::hash>> &bc)
 {
   m_blockchain.clear();
   if (std::get<0>(bc))
@@ -10818,9 +10818,9 @@ void CWallet::import_blockchain(const std::tuple<size_t, crypto::hash, std::vect
   crypto::hash genesis_hash = get_block_hash(genesis);
   check_genesis(genesis_hash);
   m_last_block_reward = cryptonote::get_outs_money_amount(genesis.miner_tx);
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-std::vector<CWallet::transfer_details> CWallet::export_outputs() const
+/*std::vector<CWallet::transfer_details> CWallet::export_outputs() const
 {
   std::vector<CWallet::transfer_details> outs;
 
@@ -10833,9 +10833,9 @@ std::vector<CWallet::transfer_details> CWallet::export_outputs() const
   }
 
   return outs;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-std::string CWallet::export_outputs_to_str() const
+/*std::string CWallet::export_outputs_to_str() const
 {
   std::vector<CWallet::transfer_details> outs = export_outputs();
 
@@ -10850,9 +10850,9 @@ std::string CWallet::export_outputs_to_str() const
   header += std::string((const char *)&keys.m_view_public_key, sizeof(crypto::public_key));
   std::string ciphertext = encrypt_with_view_secret_key(header + oss.str());
   return magic + ciphertext;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-size_t CWallet::import_outputs(const std::vector<CWallet::transfer_details> &outputs)
+/*size_t CWallet::import_outputs(const std::vector<CWallet::transfer_details> &outputs)
 {
   m_transfers.clear();
   m_transfers.reserve(outputs.size());
@@ -10884,9 +10884,9 @@ size_t CWallet::import_outputs(const std::vector<CWallet::transfer_details> &out
   }
 
   return m_transfers.size();
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-size_t CWallet::import_outputs_from_str(const std::string &outputs_st)
+/*size_t CWallet::import_outputs_from_str(const std::string &outputs_st)
 {
   std::string data = outputs_st;
   const size_t magiclen = strlen(OUTPUT_EXPORT_FILE_MAGIC);
@@ -10945,9 +10945,9 @@ size_t CWallet::import_outputs_from_str(const std::string &outputs_st)
   }
 
   return imported_outputs;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-crypto::public_key CWallet::get_multisig_signer_public_key(const crypto::secret_key &spend_skey) const
+/*crypto::public_key CWallet::get_multisig_signer_public_key(const crypto::secret_key &spend_skey) const
 {
   crypto::public_key pkey;
   crypto::secret_key_to_public_key(get_multisig_blinded_secret_key(spend_skey), pkey);
@@ -11047,9 +11047,9 @@ crypto::key_image CWallet::get_multisig_composite_key_image(size_t n) const
   bool r = cryptonote::generate_multisig_composite_key_image(get_account().get_keys(), m_subaddresses, td.get_public_key(), tx_key, additional_tx_keys, td.m_internal_output_index, pkis, ki);
   THROW_WALLET_EXCEPTION_IF(!r, error::wallet_internal_error, "Failed to generate key image");
   return ki;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-cryptonote::blobdata CWallet::export_multisig()
+/*cryptonote::blobdata CWallet::export_multisig()
 {
   std::vector<CWallet::multisig_info> info;
 
@@ -11097,9 +11097,9 @@ cryptonote::blobdata CWallet::export_multisig()
   std::string ciphertext = encrypt_with_view_secret_key(header + oss.str());
 
   return MULTISIG_EXPORT_FILE_MAGIC + ciphertext;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-void CWallet::update_multisig_rescan_info(const std::vector<std::vector<rct::key>> &multisig_k, const std::vector<std::vector<CWallet::multisig_info>> &info, size_t n)
+/*void CWallet::update_multisig_rescan_info(const std::vector<std::vector<rct::key>> &multisig_k, const std::vector<std::vector<CWallet::multisig_info>> &info, size_t n)
 {
   CHECK_AND_ASSERT_THROW_MES(n < m_transfers.size(), "Bad index in update_multisig_info");
   CHECK_AND_ASSERT_THROW_MES(multisig_k.size() >= m_transfers.size(), "Mismatched sizes of multisig_k and info");
@@ -11232,7 +11232,7 @@ size_t CWallet::import_multisig(std::vector<cryptonote::blobdata> blobs)
   m_multisig_rescan_k = NULL;
 
   return n_outputs;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
 std::string CWallet::encrypt(const char *plaintext, size_t len, const crypto::secret_key &skey, bool authenticated) const
 {
@@ -11305,7 +11305,7 @@ template epee::wipeable_string CWallet::decrypt(const std::string &ciphertext, c
 //----------------------------------------------------------------------------------------------------
 std::string CWallet::decrypt_with_view_secret_key(const std::string &ciphertext, bool authenticated) const
 {
-  return decrypt(ciphertext, get_account().get_keys().m_view_secret_key, authenticated);
+  return decrypt(ciphertext, gget_blockchain_height_by_dateet_account().get_keys().m_view_secret_key, authenticated);
 }
 //----------------------------------------------------------------------------------------------------
 std::string CWallet::make_uri(const std::string &address, const std::string &payment_id, uint64_t amount, const std::string &tx_description, const std::string &recipient_name, std::string &error) const
@@ -11446,7 +11446,7 @@ bool CWallet::parse_uri(const std::string &uri, std::string &address, std::strin
   return true;
 }
 //----------------------------------------------------------------------------------------------------
-uint64_t CWallet::get_blockchain_height_by_date(uint16_t year, uint8_t month, uint8_t day)
+/*uint64_t CWallet::get_blockchain_height_by_date(uint16_t year, uint8_t month, uint8_t day)
 {
   uint32_t version;
   if (!check_connection(&version))
@@ -11531,18 +11531,18 @@ uint64_t CWallet::get_blockchain_height_by_date(uint16_t year, uint8_t month, ui
       return height_min;
     }
   }
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-bool CWallet::is_synced() const
+/*bool CWallet::is_synced() const
 {
   uint64_t height;
   boost::optional<std::string> result = m_node_rpc_proxy.get_target_height(height);
   if (result && *result != CORE_RPC_STATUS_OK)
     return false;
   return get_blockchain_current_height() >= height;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-std::vector<std::pair<uint64_t, uint64_t>> CWallet::estimate_backlog(const std::vector<std::pair<double, double>> &fee_levels)
+/*std::vector<std::pair<uint64_t, uint64_t>> CWallet::estimate_backlog(const std::vector<std::pair<double, double>> &fee_levels)
 {
   for (const auto &fee_level: fee_levels)
   {
@@ -11594,9 +11594,9 @@ std::vector<std::pair<uint64_t, uint64_t>> CWallet::estimate_backlog(const std::
     blocks.push_back(std::make_pair(nblocks_min, nblocks_max));
   }
   return blocks;
-}
+}*/
 //----------------------------------------------------------------------------------------------------
-std::vector<std::pair<uint64_t, uint64_t>> CWallet::estimate_backlog(uint64_t min_tx_weight, uint64_t max_tx_weight, const std::vector<uint64_t> &fees)
+/*std::vector<std::pair<uint64_t, uint64_t>> CWallet::estimate_backlog(uint64_t min_tx_weight, uint64_t max_tx_weight, const std::vector<uint64_t> &fees)
 {
   THROW_WALLET_EXCEPTION_IF(min_tx_weight == 0, error::wallet_internal_error, "Invalid 0 fee");
   THROW_WALLET_EXCEPTION_IF(max_tx_weight == 0, error::wallet_internal_error, "Invalid 0 fee");
@@ -11611,7 +11611,7 @@ std::vector<std::pair<uint64_t, uint64_t>> CWallet::estimate_backlog(uint64_t mi
     fee_levels.emplace_back(our_fee_byte_min, our_fee_byte_max);
   }
   return estimate_backlog(fee_levels);
-}
+}*/
 //----------------------------------------------------------------------------------------------------
 uint64_t CWallet::get_segregation_fork_height() const
 {
@@ -11665,7 +11665,7 @@ uint64_t CWallet::get_segregation_fork_height() const
   return SEGREGATION_FORK_HEIGHT;
 }
 //----------------------------------------------------------------------------------------------------
-void CWallet::generate_genesis(cryptonote::block& b) const {
+/*void CWallet::generate_genesis(cryptonote::block& b) const {
   cryptonote::generate_genesis_block(b, get_config(m_nettype).GENESIS_TX, get_config(m_nettype).GENESIS_NONCE);
-}
+}*/
 }

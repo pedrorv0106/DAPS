@@ -3279,10 +3279,6 @@ class Writer : base::NoCopy {
     m_logger(nullptr), m_proceed(false), m_dispatchAction(dispatchAction) {
   }
 
-  virtual ~Writer(void) {
-    processDispatch();
-  }
-
   template <typename T>
   inline typename std::enable_if<std::is_integral<T>::value, Writer&>::type
   operator<<(T log) {
@@ -3336,6 +3332,11 @@ class Writer : base::NoCopy {
   void initializeLogger(const std::string& loggerId, bool lookup = true, bool needLock = true);
   void processDispatch();
   void triggerDispatch(void);
+
+public:
+    virtual ~Writer(void) {
+      processDispatch();
+    }
 };
 class PErrorWriter : public base::Writer {
  public:

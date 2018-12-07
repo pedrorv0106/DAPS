@@ -27,7 +27,7 @@
 
 #include "expect.h"
 
-#include <easylogging++.h>
+#include "easylogging++/easylogging++.h"
 #include <string>
 
 namespace detail
