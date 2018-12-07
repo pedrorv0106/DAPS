@@ -30,6 +30,7 @@
 #include "privacy/device/device.hpp"
 #include "privacy/cryptonote_config.h"
 #include "privacy/cryptonote_basic/account.h"
+#include "privacy/cryptonote_basic/subaddress_index.h"
 #include <unordered_map>
 //#include "privacy/cryptonote_basic/cryptonote_basic.h"
 //#include "privacy/cryptonote_core/cryptonote_tx_utils.h"
