@@ -108,6 +108,15 @@ QDateTime ClientModel::getLastBlockDate() const
         return QDateTime::fromTime_t(Params().GenesisBlock().GetBlockTime()); // Genesis block's time of current network
 }
 
+int ClientModel::getChainHeight() const
+{
+    LOCK(cs_main);
+    if (chainActive.Tip())
+        return chainActive.Tip()->nHeight;
+    else 
+        return NULL;
+}
+
 double ClientModel::getVerificationProgress() const
 {
     LOCK(cs_main);

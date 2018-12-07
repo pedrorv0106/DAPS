@@ -77,7 +77,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="labelBlockTotal">
+            <widget class="QLabel" name="labelBlockOf">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
                <horstretch>0</horstretch>
@@ -96,7 +96,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="labelBlocksOf">
+            <widget class="QLabel" name="labelBlocksTotal">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
                <horstretch>0</horstretch>

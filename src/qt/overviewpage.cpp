@@ -136,7 +136,7 @@ OverviewPage::OverviewPage(QWidget* parent) : QWidget(parent),
 
 
     // start with displaying the "out of sync" warnings
-    showSyncStatus(true);
+    // #remove showSyncStatus(true);
 }
 
 void OverviewPage::handleTransactionClicked(const QModelIndex& index)
@@ -212,7 +212,7 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
 
     CAmount nTotalBalance = balance + unconfirmedBalance;
     CAmount nUnlockedBalance = nTotalBalance - nLockedBalance;
-    CAmount matureZerocoinBalance = zerocoinBalance - immatureZerocoinBalance;
+    // #remove CAmount matureZerocoinBalance = zerocoinBalance - immatureZerocoinBalance;
     getPercentage(nUnlockedBalance, zerocoinBalance, sPercentage, szPercentage);
 
 //    ui->labelBalancez->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, nTotalBalance, false, BitcoinUnits::separatorAlways));
@@ -245,8 +245,8 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
 
     // only show immature (newly mined) balance if it's non-zero, so as not to complicate things
     // for the non-mining users
-    bool showImmature = immatureBalance != 0;
-    bool showWatchOnlyImmature = watchImmatureBalance != 0;
+    // #remove bool showImmature = immatureBalance != 0;
+    // #remove bool showWatchOnlyImmature = watchImmatureBalance != 0;
 
     // for symmetry reasons also show immature label when the watch-only one is shown
    // #remove  ui->labelImmature->setVisible(showImmature || showWatchOnlyImmature);
@@ -360,4 +360,8 @@ void OverviewPage::showSyncStatus(bool fShow)
         ui->labelWalletStatus->setText("(" + tr("Synced") + ")");
         ui->labelWalletStatus->setStyleSheet("QLabel { color : green; }");
     }
+
+    ui->labelBlockCurrent->setText(QString::number(clientModel->getNumBlocks()));
+    ui->labelBlocksTotal->setText(QString::number(clientModel->getChainHeight()));
 }
+
