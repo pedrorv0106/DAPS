@@ -29,6 +29,8 @@
 #include "privacy/common/password.h"
 #include "privacy/device/device.hpp"
 #include "privacy/cryptonote_config.h"
+#include "privacy/cryptonote_basic/account.h
+#include <unordered_map>
 //#include "privacy/cryptonote_basic/cryptonote_basic.h"
 //#include "privacy/cryptonote_core/cryptonote_tx_utils.h"
 //#include "privacy/epee/include/net/http_auth.h"
@@ -1856,8 +1858,8 @@ private:
     cryptonote::checkpoints m_checkpoints;
     std::unordered_map<crypto::hash, std::vector<crypto::secret_key>> m_additional_tx_keys;
 
-    transfer_container m_transfers;
-    payment_container m_payments;
+    //transfer_container m_transfers;
+    //payment_container m_payments;
     std::unordered_map<crypto::key_image, size_t> m_key_images;
     std::unordered_map<crypto::public_key, size_t> m_pub_keys;
     cryptonote::account_public_address m_account_public_address;
