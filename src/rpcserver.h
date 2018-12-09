@@ -251,6 +251,9 @@ extern json_spirit::Value getpoolinfo(const json_spirit::Array& params, bool fHe
 extern json_spirit::Value masternode(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value listmasternodes(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getmasternodecount(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value createmasternodebroadcast(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value decodemasternodebroadcast(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value relaymasternodebroadcast(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getcurrentseesawreward(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getseesawrewardratio(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getseesawrewardwithheight(const json_spirit::Array& params, bool fHelp);
