@@ -30,6 +30,8 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/thread.hpp>
 #include <boost/filesystem/operations.hpp>
+#include "../privacyutils/command_line.h"
+#include "../privacyutils/file_io_utils.h"
 
 using namespace std;
 
@@ -60,7 +62,7 @@ int64_t nStartupTime = GetAdjustedTime();
 
 struct CompareValueOnly {
     bool operator()(const pair<CAmount, pair<const CWalletTx*, unsigned int> >& t1,
-        const pair<CAmount, pair<const CWalletTx*, unsigned int> >& t2) const
+                    const pair<CAmount, pair<const CWalletTx*, unsigned int> >& t2) const
     {
         return t1.first < t2.first;
     }
@@ -128,7 +130,7 @@ bool CWallet::AddKeyPubKey(const CKey& secret, const CPubKey& pubkey)
 }
 
 bool CWallet::AddCryptedKey(const CPubKey& vchPubKey,
-    const vector<unsigned char>& vchCryptedSecret)
+                            const vector<unsigned char>& vchCryptedSecret)
 {
     if (!CCryptoKeyStore::AddCryptedKey(vchPubKey, vchCryptedSecret))
         return false;
@@ -138,8 +140,8 @@ bool CWallet::AddCryptedKey(const CPubKey& vchPubKey,
         LOCK(cs_wallet);
         if (pwalletdbEncryption)
             return pwalletdbEncryption->WriteCryptedKey(vchPubKey,
-                vchCryptedSecret,
-                mapKeyMetadata[vchPubKey.GetID()]);
+                                                        vchCryptedSecret,
+                                                        mapKeyMetadata[vchPubKey.GetID()]);
         else
             return CWalletDB(strWalletFile).WriteCryptedKey(vchPubKey, vchCryptedSecret, mapKeyMetadata[vchPubKey.GetID()]);
     }
@@ -178,7 +180,7 @@ bool CWallet::LoadCScript(const CScript& redeemScript)
     if (redeemScript.size() > MAX_SCRIPT_ELEMENT_SIZE) {
         std::string strAddr = CBitcoinAddress(CScriptID(redeemScript)).ToString();
         LogPrintf("%s: Warning: This wallet contains a redeemScript of size %i which exceeds maximum size %i thus can never be redeemed. Do not use address %s.\n",
-            __func__, redeemScript.size(), MAX_SCRIPT_ELEMENT_SIZE, strAddr);
+                  __func__, redeemScript.size(), MAX_SCRIPT_ELEMENT_SIZE, strAddr);
         return true;
     }
 
@@ -456,7 +458,7 @@ void CWallet::AddToSpends(const uint256& wtxid)
         return;
 
     BOOST_FOREACH (const CTxIn& txin, thisTx.vin)
-        AddToSpends(txin.prevout, wtxid);
+    AddToSpends(txin.prevout, wtxid);
 }
 
 bool CWallet::GetMasternodeVinAndKeys(CTxIn& txinRet, CPubKey& pubKeyRet, CKey& keyRet, std::string strTxHash, std::string strOutputIndex)
@@ -487,8 +489,8 @@ bool CWallet::GetMasternodeVinAndKeys(CTxIn& txinRet, CPubKey& pubKeyRet, CKey& 
     }
 
     BOOST_FOREACH (COutput& out, vPossibleCoins)
-        if (out.tx->GetHash() == txHash && out.i == nOutputIndex) // found it!
-            return GetVinAndKeysFromOutput(out, txinRet, pubKeyRet, keyRet);
+    if (out.tx->GetHash() == txHash && out.i == nOutputIndex) // found it!
+        return GetVinAndKeysFromOutput(out, txinRet, pubKeyRet, keyRet);
 
     LogPrintf("CWallet::GetMasternodeVinAndKeys -- Could not locate specified masternode vin\n");
     return false;
@@ -652,7 +654,7 @@ void CWallet::MarkDirty()
     {
         LOCK(cs_wallet);
         BOOST_FOREACH (PAIRTYPE(const uint256, CWalletTx) & item, mapWallet)
-            item.second.MarkDirty();
+        item.second.MarkDirty();
     }
 }
 
@@ -710,8 +712,8 @@ bool CWallet::AddToWallet(const CWalletTx& wtxIn, bool fFromLoadWallet)
                     wtx.nTimeSmart = std::max(latestEntry, std::min(blocktime, latestNow));
                 } else
                     LogPrintf("AddToWallet() : found %s in block %s not in index\n",
-                        wtxIn.GetHash().ToString(),
-                        wtxIn.hashBlock.ToString());
+                              wtxIn.GetHash().ToString(),
+                              wtxIn.hashBlock.ToString());
             }
             AddToSpends(hash);
         }
@@ -861,7 +863,7 @@ int CWallet::GetRealInputObfuscationRounds(CTxIn in, int rounds) const
             LogPrint("obfuscation", "GetInputObfuscationRounds INSERTING %s\n", hash.ToString());
             mDenomWtxes[hash] = CMutableTransaction(*wtx);
         }
-        // found and it's not an initial value, just return it
+            // found and it's not an initial value, just return it
         else if (mDenomWtxes[hash].vout[nout].nRounds != -10) {
             return mDenomWtxes[hash].vout[nout].nRounds;
         }
@@ -913,8 +915,8 @@ int CWallet::GetRealInputObfuscationRounds(CTxIn in, int rounds) const
             }
         }
         mDenomWtxes[hash].vout[nout].nRounds = fDenomFound ? (nShortest >= 15 ? 16 : nShortest + 1) // good, we a +1 to the shortest one but only 16 rounds max allowed
-                                                             :
-                                                             0; // too bad, we are the fist one in that chain
+                                                           :
+                                               0; // too bad, we are the fist one in that chain
         LogPrint("obfuscation", "GetInputObfuscationRounds UPDATED   %s %3d %3d\n", hash.ToString(), nout, mDenomWtxes[hash].vout[nout].nRounds);
         return mDenomWtxes[hash].vout[nout].nRounds;
     }
@@ -961,8 +963,8 @@ bool CWallet::IsDenominated(const CTransaction& tx) const
 bool CWallet::IsDenominatedAmount(CAmount nInputAmount) const
 {
     BOOST_FOREACH (CAmount d, obfuScationDenominations)
-        if (nInputAmount == d)
-            return true;
+    if (nInputAmount == d)
+        return true;
     return false;
 }
 
@@ -1039,10 +1041,10 @@ int CWalletTx::GetRequestCount() const
 }
 
 void CWalletTx::GetAmounts(list<COutputEntry>& listReceived,
-    list<COutputEntry>& listSent,
-    CAmount& nFee,
-    string& strSentAccount,
-    const isminefilter& filter) const
+                           list<COutputEntry>& listSent,
+                           CAmount& nFee,
+                           string& strSentAccount,
+                           const isminefilter& filter) const
 {
     nFee = 0;
     listReceived.clear();
@@ -1106,7 +1108,7 @@ void CWalletTx::GetAccountAmounts(const string& strAccount, CAmount& nReceived, 
 
     if (strAccount == strSentAccount) {
         BOOST_FOREACH (const COutputEntry& s, listSent)
-            nSent += s.amount;
+        nSent += s.amount;
         nFee = allFee;
     }
     {
@@ -1326,7 +1328,7 @@ CAmount CWallet::GetUnconfirmedZerocoinBalance() const
     CAmount nUnconfirmed = 0;
     CWalletDB walletdb(pwalletMain->strWalletFile);
     list<CZerocoinMint> listMints = walletdb.ListMintedCoins(true, false, true);
- 
+
     std::map<libzerocoin::CoinDenomination, int> mapUnconfirmed;
     for (const auto& denom : libzerocoin::zerocoinDenomList){
         mapUnconfirmed.insert(make_pair(denom, 0));
@@ -1948,7 +1950,7 @@ bool CWallet::SelectCoins(const CAmount& nTargetValue, set<pair<const CWalletTx*
             BOOST_FOREACH (const COutput& out, vCoins) {
                 if (out.tx->vout[out.i].nValue == v                                               //make sure it's the denom we're looking for
                     && nValueRet + out.tx->vout[out.i].nValue < nTargetValue + (0.1 * COIN) + 100 //round the amount up to .1 DAPS over
-                    ) {
+                        ) {
                     CTxIn vin = CTxIn(out.tx->GetHash(), out.i);
                     int rounds = GetInputObfuscationRounds(vin);
                     // make sure it's actually anonymized
@@ -1968,7 +1970,7 @@ bool CWallet::SelectCoins(const CAmount& nTargetValue, set<pair<const CWalletTx*
 
 struct CompareByPriority {
     bool operator()(const COutput& t1,
-        const COutput& t2) const
+                    const COutput& t2) const
     {
         return t1.Priority() > t2.Priority();
     }
@@ -2182,7 +2184,7 @@ bool CWallet::HasCollateralInputs(bool fOnlyConfirmed) const
 
     int nFound = 0;
     BOOST_FOREACH (const COutput& out, vCoins)
-        if (IsCollateralAmount(out.tx->vout[out.i].nValue)) nFound++;
+    if (IsCollateralAmount(out.tx->vout[out.i].nValue)) nFound++;
 
     return nFound > 0;
 }
@@ -2220,7 +2222,7 @@ bool CWallet::CreateCollateralTransaction(CMutableTransaction& txCollateral, std
     reservekey.KeepKey();
 
     BOOST_FOREACH (CTxIn v, vCoinsCollateral)
-        txCollateral.vin.push_back(v);
+    txCollateral.vin.push_back(v);
 
     if (nValueIn2 - OBFUSCATION_COLLATERAL - nFeeRet > 0) {
         //pay collateral charge in fees
@@ -2232,7 +2234,7 @@ bool CWallet::CreateCollateralTransaction(CMutableTransaction& txCollateral, std
     BOOST_FOREACH (CTxIn v, txCollateral.vin) {
         if (!SignSignature(*this, v.prevPubKey, txCollateral, vinNumber, int(SIGHASH_ALL | SIGHASH_ANYONECANPAY))) {
             BOOST_FOREACH (CTxIn v, vCoinsCollateral)
-                UnlockCoin(v.prevout);
+            UnlockCoin(v.prevout);
 
             strReason = "CObfuscationPool::Sign - Unable to sign collateral transaction! \n";
             return false;
@@ -2293,14 +2295,14 @@ bool CWallet::ConvertList(std::vector<CTxIn> vCoins, std::vector<CAmount>& vecAm
 }
 
 bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
-    CWalletTx& wtxNew,
-    CReserveKey& reservekey,
-    CAmount& nFeeRet,
-    std::string& strFailReason,
-    const CCoinControl* coinControl,
-    AvailableCoinsType coin_type,
-    bool useIX,
-    CAmount nFeePay)
+                                CWalletTx& wtxNew,
+                                CReserveKey& reservekey,
+                                CAmount& nFeeRet,
+                                std::string& strFailReason,
+                                const CCoinControl* coinControl,
+                                AvailableCoinsType coin_type,
+                                bool useIX,
+                                CAmount nFeePay)
 {
     if (useIX && nFeePay < CENT) nFeePay = CENT;
 
@@ -2420,7 +2422,7 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
                     if (coinControl && !boost::get<CNoDestination>(&coinControl->destChange))
                         scriptChange = GetScriptForDestination(coinControl->destChange);
 
-                    // no coin control: send change to newly generated address
+                        // no coin control: send change to newly generated address
                     else {
                         // Note: We use a new key here to keep it from being obvious which side is the change.
                         //  The drawback is that by not reusing a previous key, the change may be lost if a
@@ -2456,15 +2458,15 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
 
                 // Fill vin
                 BOOST_FOREACH (const PAIRTYPE(const CWalletTx*, unsigned int) & coin, setCoins)
-                    txNew.vin.push_back(CTxIn(coin.first->GetHash(), coin.second));
+                txNew.vin.push_back(CTxIn(coin.first->GetHash(), coin.second));
 
                 // Sign
                 int nIn = 0;
                 BOOST_FOREACH (const PAIRTYPE(const CWalletTx*, unsigned int) & coin, setCoins)
-                    if (!SignSignature(*this, *coin.first, txNew, nIn++)) {
-                        strFailReason = _("Signing transaction failed");
-                        return false;
-                    }
+                if (!SignSignature(*this, *coin.first, txNew, nIn++)) {
+                    strFailReason = _("Signing transaction failed");
+                    return false;
+                }
 
                 // Embed the constructed transaction data in wtxNew.
                 *static_cast<CTransaction*>(&wtxNew) = CTransaction(txNew);
@@ -3013,7 +3015,7 @@ string CWallet::PrepareObfuscationDenominate(int minRounds, int maxRounds)
     {
         LOCK(cs_wallet);
         BOOST_FOREACH (CTxIn v, vCoins)
-            LockCoin(v.prevout);
+        LockCoin(v.prevout);
     }
 
     CAmount nValueLeft = nValueIn;
@@ -3093,14 +3095,14 @@ string CWallet::PrepareObfuscationDenominate(int minRounds, int maxRounds)
         // unlock unused coins
         LOCK(cs_wallet);
         BOOST_FOREACH (CTxIn v, vCoins)
-            UnlockCoin(v.prevout);
+        UnlockCoin(v.prevout);
     }
 
     if (obfuScationPool.GetDenominations(vOut) != obfuScationPool.sessionDenom) {
         // unlock used coins on failure
         LOCK(cs_wallet);
         BOOST_FOREACH (CTxIn v, vCoinsResult)
-            UnlockCoin(v.prevout);
+        UnlockCoin(v.prevout);
         return "Error: can't make current denominated outputs";
     }
 
@@ -3173,7 +3175,7 @@ bool CWallet::SetAddressBook(const CTxDestination& address, const string& strNam
             mapAddressBook[address].purpose = strPurpose;
     }
     NotifyAddressBookChanged(this, address, strName, ::IsMine(*this, address) != ISMINE_NO,
-        strPurpose, (fUpdated ? CT_UPDATED : CT_NEW));
+                             strPurpose, (fUpdated ? CT_UPDATED : CT_NEW));
     if (!fFileBacked)
         return false;
     if (!strPurpose.empty() && !CWalletDB(strWalletFile).WritePurpose(CBitcoinAddress(address).ToString(), strPurpose))
@@ -3224,7 +3226,7 @@ bool CWallet::NewKeyPool()
         LOCK(cs_wallet);
         CWalletDB walletdb(strWalletFile);
         BOOST_FOREACH (int64_t nIndex, setKeyPool)
-            walletdb.ErasePool(nIndex);
+        walletdb.ErasePool(nIndex);
         setKeyPool.clear();
 
         if (IsLocked())
@@ -3413,12 +3415,12 @@ set<set<CTxDestination> > CWallet::GetAddressGroupings()
             // group change with input addresses
             if (any_mine) {
                 BOOST_FOREACH (CTxOut txout, pcoin->vout)
-                    if (IsChange(txout)) {
-                        CTxDestination txoutAddr;
-                        if (!ExtractDestination(txout.scriptPubKey, txoutAddr))
-                            continue;
-                        grouping.insert(txoutAddr);
-                    }
+                if (IsChange(txout)) {
+                    CTxDestination txoutAddr;
+                    if (!ExtractDestination(txout.scriptPubKey, txoutAddr))
+                        continue;
+                    grouping.insert(txoutAddr);
+                }
             }
             if (grouping.size() > 0) {
                 groupings.insert(grouping);
@@ -3445,8 +3447,8 @@ set<set<CTxDestination> > CWallet::GetAddressGroupings()
         set<set<CTxDestination>*> hits;
         map<CTxDestination, set<CTxDestination>*>::iterator it;
         BOOST_FOREACH (CTxDestination address, grouping)
-            if ((it = setmap.find(address)) != setmap.end())
-                hits.insert((*it).second);
+        if ((it = setmap.find(address)) != setmap.end())
+            hits.insert((*it).second);
 
         // merge all hit groups into a new single group and delete old groups
         set<CTxDestination>* merged = new set<CTxDestination>(grouping);
@@ -3459,7 +3461,7 @@ set<set<CTxDestination> > CWallet::GetAddressGroupings()
 
         // update setmap
         BOOST_FOREACH (CTxDestination element, *merged)
-            setmap[element] = merged;
+        setmap[element] = merged;
     }
 
     set<set<CTxDestination> > ret;
@@ -3603,7 +3605,7 @@ public:
         int nRequired;
         if (ExtractDestinations(script, type, vDest, nRequired)) {
             BOOST_FOREACH (const CTxDestination& dest, vDest)
-                boost::apply_visitor(*this, dest);
+            boost::apply_visitor(*this, dest);
         }
     }
 
@@ -3738,7 +3740,7 @@ void CWallet::AutoZeromint()
 
     CAmount nZerocoinBalance = GetZerocoinBalance(false); //false includes both pending and mature zerocoins. Need total balance for this so nothing is overminted.
     CAmount nBalance = GetUnlockedCoins(); // We only consider unlocked coins, this also excludes masternode-vins
-                                           // from being accidentally minted
+    // from being accidentally minted
     CAmount nMintAmount = 0;
     CAmount nToMintAmount = 0;
 
@@ -3754,7 +3756,7 @@ void CWallet::AutoZeromint()
     // Check if minting is actually needed
     if(dPercentage >= nZeromintPercentage){
         LogPrint("zero", "CWallet::AutoZeromint() @block %ld: percentage of existing zDAPS (%lf%%) already >= configured percentage (%d%%). No minting needed...\n",
-                  chainActive.Tip()->nHeight, dPercentage, nZeromintPercentage);
+                 chainActive.Tip()->nHeight, dPercentage, nZeromintPercentage);
         return;
     }
 
@@ -3799,7 +3801,7 @@ void CWallet::AutoZeromint()
     }
 
     if (nMintAmount > 0){
-    CWalletTx wtx;
+        CWalletTx wtx;
         vector<CZerocoinMint> vMints;
         string strError = pwalletMain->MintZerocoin(nMintAmount*COIN, wtx, vMints);
 
@@ -4823,3 +4825,157 @@ bool CWallet::SpendZerocoin(CAmount nAmount, int nSecurityLevel, CWalletTx& wtxN
 
     return true;
 }
+
+
+
+const char* CWallet::tr(const char* str) {
+    return i18n_translate(str, "tools::wallet2");
+}
+
+// Create on-demand to prevent static initialization order fiasco issues.
+struct options {
+    const command_line::arg_descriptor<std::string> daemon_address = {"daemon-address", CWallet::tr("Use daemon instance at <host>:<port>"), ""};
+    const command_line::arg_descriptor<std::string> daemon_host = {"daemon-host", CWallet::tr("Use daemon instance at host <arg> instead of localhost"), ""};
+    const command_line::arg_descriptor<bool> trusted_daemon = {"trusted-daemon", CWallet::tr("Enable commands which rely on a trusted daemon"), false};
+    const command_line::arg_descriptor<bool> untrusted_daemon = {"untrusted-daemon", CWallet::tr("Disable commands which rely on a trusted daemon"), false};
+    const command_line::arg_descriptor<std::string> password = {"password", CWallet::tr("Wallet password (escape/quote as needed)"), "", true};
+    const command_line::arg_descriptor<std::string> password_file = {"password-file", CWallet::tr("Wallet password file"), "", true};
+    const command_line::arg_descriptor<int> daemon_port = {"daemon-port", CWallet::tr("Use daemon instance at port <arg> instead of 18081"), 0};
+    const command_line::arg_descriptor<std::string> daemon_login = {"daemon-login", CWallet::tr("Specify username[:password] for daemon RPC client"), "", true};
+    const command_line::arg_descriptor<bool> testnet = {"testnet", CWallet::tr("For testnet. Daemon must also be launched with --testnet flag"), false};
+    const command_line::arg_descriptor<bool> stagenet = {"stagenet", CWallet::tr("For stagenet. Daemon must also be launched with --stagenet flag"), false};
+    const command_line::arg_descriptor<std::string, false, true, 2> shared_ringdb_dir = {
+            "shared-ringdb-dir", CWallet::tr("Set shared ring database path"),
+            get_default_ringdb_path(),
+            {{ &testnet, &stagenet }},
+            [](std::array<bool, 2> testnet_stagenet, bool defaulted, std::string val)->std::string {
+                if (testnet_stagenet[0])
+                    return (boost::filesystem::path(val) / "testnet").string();
+                else if (testnet_stagenet[1])
+                    return (boost::filesystem::path(val) / "stagenet").string();
+                return val;
+            }
+    };
+    const command_line::arg_descriptor<uint64_t> kdf_rounds = {"kdf-rounds", CWallet::tr("Number of rounds for the key derivation function"), 1};
+    const command_line::arg_descriptor<std::string> hw_device = {"hw-device", CWallet::tr("HW device to use"), ""};
+    const command_line::arg_descriptor<std::string> tx_notify = { "tx-notify" , "Run a program for each new incoming transaction, '%s' will be replaced by the transaction hash" , "" };
+};
+
+std::unique_ptr<CWallet> make_basic(const boost::program_options::variables_map& vm, bool unattended, const options& opts, const std::function<boost::optional<tools::password_container>(const char *, bool)> &password_prompter)
+{
+    const bool testnet = command_line::get_arg(vm, opts.testnet);
+    const bool stagenet = command_line::get_arg(vm, opts.stagenet);
+    const network_type nettype = testnet ? TESTNET : stagenet ? STAGENET : MAINNET;
+    const uint64_t kdf_rounds = command_line::get_arg(vm, opts.kdf_rounds);
+    //THROW_WALLET_EXCEPTION_IF(kdf_rounds == 0, tools::error::wallet_internal_error, "KDF rounds must not be 0");
+
+
+    std::unique_ptr<CWallet> wallet;//wallet(new tools::wallet2(nettype, kdf_rounds, unattended));
+    /*wallet->init(std::move(daemon_address), std::move(login), 0, false, *trusted_daemon);
+    boost::filesystem::path ringdb_path = command_line::get_arg(vm, opts.shared_ringdb_dir);
+    wallet->set_ring_database(ringdb_path.string());
+    wallet->device_name(device_name);
+
+    try
+    {
+        if (!command_line::is_arg_defaulted(vm, opts.tx_notify))
+            wallet->set_tx_notify(std::shared_ptr<tools::Notify>(new tools::Notify(command_line::get_arg(vm, opts.tx_notify).c_str())));
+    }
+    catch (const std::exception &e)
+    {
+        MERROR("Failed to parse tx notify spec");
+    }*/
+
+    return wallet;
+}
+
+boost::optional<tools::password_container> get_password(const boost::program_options::variables_map& vm, const options& opts, const std::function<boost::optional<tools::password_container>(const char*, bool)> &password_prompter, const bool verify)
+{
+    /*if (command_line::has_arg(vm, opts.password) && command_line::has_arg(vm, opts.password_file))
+    {
+        //THROW_WALLET_EXCEPTION(tools::error::wallet_internal_error, tools::wallet2::tr("can't specify more than one of --password and --password-file"));
+    }
+
+    if (command_line::has_arg(vm, opts.password))
+    {
+        return tools::password_container{command_line::get_arg(vm, opts.password)};
+    }
+
+    if (command_line::has_arg(vm, opts.password_file))
+    {
+        std::string password;
+        bool r = epee::file_io_utils::load_file_to_string(command_line::get_arg(vm, opts.password_file),
+                                                          password);
+        //THROW_WALLET_EXCEPTION_IF(!r, tools::error::wallet_internal_error, tools::wallet2::tr("the password file specified could not be read"));
+
+        // Remove line breaks the user might have inserted
+        boost::trim_right_if(password, boost::is_any_of("\r\n"));
+        return {tools::password_container{std::move(password)}};
+    }*/
+
+    //THROW_WALLET_EXCEPTION_IF(!password_prompter, tools::error::wallet_internal_error, tools::wallet2::tr("no password specified; use --prompt-for-password to prompt for a password"));
+
+    return password_prompter(verify ? CWallet::tr("Enter a new password for the wallet") : CWallet::tr("Wallet password"), verify);
+}
+
+std::pair<std::unique_ptr<CWallet>, password_container> CWallet::make_new(const boost::program_options::variables_map& vm, bool unattended, const std::function<boost::optional<password_container>(const char *, bool)> &password_prompter)
+{
+    const options opts{};
+    auto pwd = get_password(vm, opts, password_prompter, true);
+    if (!pwd)
+    {
+        return {nullptr, password_container{}};
+    }
+    return {make_basic(vm, unattended, opts, password_prompter), std::move(*pwd)};
+}
+
+void CWallet::add_subaddress_account(const std::string& label)
+{
+    uint32_t index_major = (uint32_t) get_num_subaddress_accounts();
+    expand_subaddresses({index_major, 0});
+    m_subaddress_labels[index_major][0] = label;
+}
+
+void CWallet::expand_subaddresses(const subaddress_index& index)
+{
+    hw::device &hwdev = m_account.get_device();
+    if (m_subaddress_labels.size() <= index.major)
+    {
+        // add new accounts
+        cryptonote::subaddress_index index2;
+        const uint32_t major_end = get_subaddress_clamped_sum(index.major, m_subaddress_lookahead_major);
+        for (index2.major = m_subaddress_labels.size(); index2.major < major_end; ++index2.major)
+        {
+            const uint32_t end = get_subaddress_clamped_sum((index2.major == index.major ? index.minor : 0), m_subaddress_lookahead_minor);
+            const std::vector<crypto::public_key> pkeys = hwdev.get_subaddress_spend_public_keys(m_account.get_keys(), index2.major, 0, end);
+            for (index2.minor = 0; index2.minor < end; ++index2.minor)
+            {
+                const crypto::public_key &D = pkeys[index2.minor];
+                m_subaddresses[D] = index2;
+            }
+        }
+        m_subaddress_labels.resize(index.major + 1, {"Untitled account"});
+        m_subaddress_labels[index.major].resize(index.minor + 1);
+        get_account_tags();
+    }
+    else if (m_subaddress_labels[index.major].size() <= index.minor)
+    {
+        // add new subaddresses
+        const uint32_t end = get_subaddress_clamped_sum(index.minor, m_subaddress_lookahead_minor);
+        const uint32_t begin = m_subaddress_labels[index.major].size();
+        cryptonote::subaddress_index index2 = {index.major, begin};
+        const std::vector<crypto::public_key> pkeys = hwdev.get_subaddress_spend_public_keys(m_account.get_keys(), index2.major, index2.minor, end);
+        for (; index2.minor < end; ++index2.minor)
+        {
+            const crypto::public_key &D = pkeys[index2.minor - begin];
+            m_subaddresses[D] = index2;
+        }
+        m_subaddress_labels[index.major].resize(index.minor + 1);
+    }
+}
+
+
+
+
+
+
