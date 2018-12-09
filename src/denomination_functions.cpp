@@ -3,7 +3,7 @@
  *
  * @brief      Denomination functions for the Zerocoin library.
  *
- * @copyright  Copyright 2017 DAPScoin Developers
+ * @copyright  Copyright 2018-2019 The DAPScoin developers
  * @license    This project is released under the MIT license.
  **/
 // Copyright (c) 2018-2019 The DAPScoin developers
