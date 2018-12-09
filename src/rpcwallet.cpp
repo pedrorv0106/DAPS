@@ -1262,6 +1262,7 @@ Value listtransactions(const Array& params, bool fHelp)
             "\nList transactions 100 to 120 from the tabby account\n" + HelpExampleCli("listtransactions", "\"tabby\" 20 100") +
             "\nAs a json rpc call\n" + HelpExampleRpc("listtransactions", "\"tabby\", 20, 100"));
 
+    LOCK2(cs_main, pwalletMain->cs_wallet);
     string strAccount = "*";
     if (params.size() > 0)
         strAccount = params[0].get_str();
