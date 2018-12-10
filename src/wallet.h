@@ -1429,7 +1429,7 @@ public:
     void SetNull()
     {
         spendAccount.SetNull();
-        viewAccount.SetNull()
+        viewAccount.SetNull();
     }
 
     ADD_SERIALIZE_METHODS;
