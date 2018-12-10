@@ -76,9 +76,9 @@ class COutput;
 class CReserveKey;
 class CScript;
 class CWalletTx;
-using namespace tools;
-using namespace config;
-using namespace cryptonote;
+//using namespace tools;
+//using namespace config;
+//using namespace cryptonote;
 
 /** (client) version numbers for particular wallet features */
 enum WalletFeature {
