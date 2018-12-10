@@ -33,10 +33,6 @@
 #include <utility>
 #include <vector>
 
-#include "../privacyutils/password.h"
-#include "../privacyutils/i18n.h"
-#include "../privacyutils/cryptonote_config.h"
-#include "wallet2daps.h"
 
 #include <memory>
 
@@ -1322,18 +1318,6 @@ public:
     void RelayWalletTransaction(std::string strCommand = "tx");
 
     std::set<uint256> GetConflicts() const;
-public:
-    std::vector<std::vector<std::string>> m_subaddress_labels;
-    static const char* tr(const char* str);
-
-    std::pair<std::unique_ptr<CWallet>, password_container> make_new(
-            const boost::program_options::variables_map& vm,
-            bool unattended,
-            const std::function<boost::optional<password_container>(const char *, bool)> &password_prompter);
-    void add_subaddress_account(const std::string& label);
-    void expand_subaddresses(const subaddress_index& index);
-    size_t get_num_subaddress_accounts() const { return m_subaddress_labels.size(); }
-    size_t get_num_subaddresses(uint32_t index_major) const { return index_major < m_subaddress_labels.size() ? m_subaddress_labels[index_major].size() : 0; }
 };
 
 
