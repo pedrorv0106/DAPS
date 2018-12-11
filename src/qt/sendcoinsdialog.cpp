@@ -711,7 +711,12 @@ void SendCoinsDialog::updateFeeSectionControls()
     // #REMOVE ui->radioCustomPerKilobyte->setEnabled(!ui->radioCustomAtLeast->isChecked());
     // #REMOVE ui->radioCustomAtLeast->setEnabled(!ui->radioCustomPerKilobyte->isChecked());
     ui->customFee->setEnabled(ui->radioCustomAtLeast->isChecked());
-    ui->sliderSmartFee->setEnabled(ui->radioCustomPerKilobyte->isChecked());
+    ui->sliderSmartFee->setVisible(ui->radioCustomPerKilobyte->isChecked());
+    ui->labelSlow->setVisible(ui->radioCustomPerKilobyte->isChecked());
+    ui->labelMedium->setVisible(ui->radioCustomPerKilobyte->isChecked());
+    ui->labelFast->setVisible(ui->radioCustomPerKilobyte->isChecked());
+    ui->labelFaster->setVisible(ui->radioCustomPerKilobyte->isChecked());
+
 }
 
 void SendCoinsDialog::updateGlobalFeeVariables()
