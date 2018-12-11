@@ -1,0 +1,183 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: explorer
+  labels:
+    app: explorer
+spec:
+  ports:
+    - port: 3001
+      targetPort: 3001
+      nodePort: 31234
+      name: explorer
+    - port: 53575
+      name: regtest
+    - port: 53573
+      name: testnet
+    - port: 53572
+      name: mainnet
+  selector:
+    app: explorer
+  sessionAffinity: None
+  type: LoadBalancer
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: explorer-settings-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 0.01Gi
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    namespace: default
+    name: explorer-settings-pv-claim
+  hostPath:
+    path: "/tmp/pv/explorer/settings"
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: explorer-daps-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 0.1Gi
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    namespace: default
+    name: explorer-pv-claim
+  hostPath:
+    path: "/tmp/pv/explorer/daps"
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: explorer-mongo-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 0.2Gi
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    namespace: default
+    name: mongo-pv-claim
+  hostPath:
+    path: "/tmp/pv/explorer/mongo"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: explorer-settings-pv-claim
+  labels:
+    app: explorer
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 0.01Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: explorer-pv-claim
+  labels:
+    app: explorer
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 0.1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pv-claim
+  labels:
+    app: explorer
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 0.2Gi
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: explorer
+  labels:
+    app: explorer
+spec:
+  selector:
+    matchLabels:
+      app: explorer
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: explorer
+    spec:
+      hostAliases:
+      - ip: "10.10.10.5"
+        hostnames:
+        - "explorer"
+      containers:
+      - image:  r.cfcr.io/macioa/macioa/explorer_min:master
+        imagePullPolicy: Always
+        name: explorer
+        ports:
+        - containerPort: 3001
+          name: explorer
+        volumeMounts:
+        - name: explorersettings
+          mountPath: /DAPS/config/
+        command: ["/bin/bash","-c","cd /DAPS/ && npm start"]
+      - image: r.cfcr.io/macioa/macioa/daps_min:master
+        imagePullPolicy: Always
+        name: dapsd
+        ports:
+        - containerPort: 53575
+          name: regtest
+        - containerPort: 53573
+          name: testnet
+        - containerPort: 53572
+          name: mainnet
+        volumeMounts:
+        - name: dapsdata
+          mountPath: ~/.dapscoin/
+        command: ["/bin/bash","-c","dapscoind"]
+      - image:  mongo:latest
+        name: mongo
+        ports:
+        - containerPort: 27017
+          name: mongo
+        volumeMounts:
+        - name: mongodata
+          mountPath: /data/db/
+      volumes:
+        - name: dapsdata
+          persistentVolumeClaim:
+            claimName: explorer-pv-claim
+        - name: mongodata
+          persistentVolumeClaim:
+            claimName: mongo-pv-claim
+        - name: explorersettings
+          persistentVolumeClaim:
+            claimName: explorer-settings-pv-claim
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+      - name: regcred
