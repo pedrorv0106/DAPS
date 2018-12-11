@@ -33,9 +33,9 @@
 
   // database settings (MongoDB)
   "dbsettings": {
-    "user": "wang",
-    "password": "admin123",
-    "database": "DAPSexplorerdb",
+    "user": "admin",
+    "password": "admin",
+    "database": "dapscoinexplorerdb",
     "address": "localhost",
     "port": 27017
   },
@@ -48,8 +48,8 @@
   "wallet": {
     "host": "localhost",
     "port": 53573,
-    "user": "dapscoinrpc_explorer_coin2",
-    "pass": "DDf3ZKWetFbQGB7RLjG3FXeAaRVjxewKs3EwCf3M3H7Y"
+    "user": "admin",
+    "pass": "admin123"
   },
 
   // confirmations
@@ -138,8 +138,8 @@
   "website": "yourfullwebsiteurl",
 
   //genesis
-  "genesis_tx": "fa6ef9872494fa9662cf0fecf8c0135a6932e76d7a8764e1155207f3205c7c88",
-  "genesis_block": "00000f639db5734b2b861ef8dbccc33aebd7de44d13de000a12d093bcc866c64",
+  "genesis_tx": "ba1bca1de4a5d1d1b3ff9c2bf93048417fefb18f13f8838744cca1ec41fa9a0c",
+  "genesis_block": "00000e9468bba3df97334bfb5015543488a0fb38193c82b101472937590e3037",
 
   //heavy (enable/disable additional heavy features)
   "heavy": false,

@@ -15,9 +15,20 @@
 
 #include <math.h>
 
+unsigned int N_BITS = 0x1e1fffff;
+bool CheckPoAMiningBlockHeight(const CBlockHeader* pblock) {
+    CBlockIndex *pindex = mapBlockIndex[pblock->hashPrevBlock];
+    if (pindex->nHeight < 10800) {
+        return true;
+    }
+    return false;
+}
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader* pblock)
 {
+    if (N_BITS != 0 && pblock->IsPoABlockByVersion() && !CheckPoAMiningBlockHeight(pblock)) {
+       return N_BITS;
+    }
     /* current difficulty formula, dapscoin - DarkGravity v3, written by Evan Duffield - evan@dashpay.io */
     const CBlockIndex* BlockLastSolved = pindexLast;
     const CBlockIndex* BlockReading = pindexLast;
@@ -145,10 +156,6 @@ uint256 GetBlockProof(const CBlockIndex& block)
     return (~bnTarget / (bnTarget + 1)) + 1;
 }
 
-
-
-const uint32_t POA_BLOCK_PERIOD = 59;
-
 //If blockheight = -1, the to-be-checked block is not included yet in the chain, otherwise, that is the height of the poa block
 bool CheckPoAContainRecentHash(const CBlock& block, int blockHeight) {
     //block.Merkle
@@ -225,7 +232,7 @@ bool CheckPoAContainRecentHash(const CBlock& block, int blockHeight) {
 }
 
 bool CheckNumberOfAuditedPoSBlocks(const CBlock& block) {
-    if (block.posBlocksAudited.size() < POA_BLOCK_PERIOD) {
+    if (block.posBlocksAudited.size() < Params().MIN_NUM_POS_BLOCKS_AUDITED()) {
         return false;
     }
     return true;
@@ -233,7 +240,7 @@ bool CheckNumberOfAuditedPoSBlocks(const CBlock& block) {
 
 //Check whether the block is successfully mined and the mined hash satisfy the difficulty
 bool CheckPoABlockMinedHash(const CBlockHeader& block) {
-    const uint256 minedHash = block.ComputeMinedHash();
+    const uint256 minedHash = block.minedHash;//block.ComputeMinedHash();
     if (minedHash == block.minedHash) {
         //Check minedHash satisfy difficulty based on nbits
         bool fNegative;
@@ -241,18 +248,27 @@ bool CheckPoABlockMinedHash(const CBlockHeader& block) {
         uint256 bnTarget;
 
         //As of now, there is no PoA miner, this will let all emulated PoA blocks bypass the check
-        if (Params().SkipProofOfWorkCheck() || Params().NetworkID() == CBaseChainParams::TESTNET || Params().NetworkID() == CBaseChainParams::MAIN)
+        if (Params().SkipProofOfWorkCheck() || Params().NetworkID() == CBaseChainParams::TESTNET)
             return true;
 
-        bnTarget.SetCompact(block.nBits, &fNegative, &fOverflow);
+        //The current mainnet is at 10800 blocks, this check will ignore these first blocks
+        if (mapBlockIndex.count(block.hashPrevBlock) != 0) {
+            if (CheckPoAMiningBlockHeight(&block)) {
+                return true;
+            }
+        }
 
+        bnTarget.SetCompact(block.nBits, &fNegative, &fOverflow);
+	LogPrintf("Target:%s, minedHash:%s", bnTarget.GetHex(), minedHash.GetHex());
         // Check range
-        if (fNegative || bnTarget == 0 || fOverflow || bnTarget > Params().ProofOfWorkLimit())
-            return error("CheckProofOfWork() : nBits below minimum work");
+        //if (fNegative || bnTarget == 0 || fOverflow || bnTarget > Params().ProofOfWorkLimit())
+        //    return error("CheckProofOfWork() : nBits below minimum work");
 
         // Check proof of work matches claimed amount
-        if (minedHash > bnTarget)
+        if (minedHash > bnTarget) {
+            LogPrintf("Block mined hash not satisfied");
             return error("CheckProofOfWork() : hash doesn't match nBits");
+        }
 
         return true;
     }
@@ -261,7 +277,6 @@ bool CheckPoABlockMinedHash(const CBlockHeader& block) {
 
 //A PoA block should contains previous PoA block hash
 bool CheckPrevPoABlockHash(const CBlockHeader& block, int blockHeight) {
-    uint256 blockHash = block.hashPrevPoABlock;
     int currentHeight = chainActive.Tip()->nHeight;
     if (blockHeight != - 1) {
         currentHeight = blockHeight - 1;
@@ -337,7 +352,7 @@ bool CheckPoABlockNotContainingPoABlockInfo(const CBlock& block, int blockHeight
     return true;
 }
 
-bool CheckPoAblockTime(const CBlock& block, int blockHeight) {
+bool CheckPoAblockTime(const CBlock& block) {
 	bool ret = false;
 
 	{
@@ -345,7 +360,7 @@ bool CheckPoAblockTime(const CBlock& block, int blockHeight) {
 		//This is because some primary PoA blocks are created with short block time
 		if (mapBlockIndex.count(block.hashPrevBlock) != 0) {
 			CBlockIndex* pindex = mapBlockIndex[block.hashPrevBlock];
-			if (pindex->nHeight < 4838) {
+			if (pindex->nHeight < 6000) {
 				return true;
 			}
 		}
@@ -354,13 +369,58 @@ bool CheckPoAblockTime(const CBlock& block, int blockHeight) {
 	if (block.hashPrevPoABlock.IsNull()) {
 		ret = true;
 	} else {
+        LogPrint("debug", "%s: Previous PoA block hash %s\n", __func__, block.hashPrevPoABlock.GetHex());
 		if (mapBlockIndex.count(block.hashPrevPoABlock) != 0) {
 			CBlockIndex* pindex = mapBlockIndex[block.hashPrevPoABlock];
 			uint32_t prevPoATime = pindex->nTime;
 			if (block.nTime > prevPoATime && (block.nTime - pindex->nTime >= Params().POA_BLOCK_TIME())) {
 				ret = true;
 			}
+            LogPrint("debug", "%s: PoA Block time: %d, Previous: %d, Current: %d, Distance: %d\n", __func__,
+                    Params().POA_BLOCK_TIME(), prevPoATime, block.nTime, block.nTime - pindex->nTime);
+		} else {
+            LogPrint("debug", "%s: Cannot find block hash %s\n", __func__, block.hashPrevPoABlock.GetHex());
 		}
 	}
+	return ret;
+}
+
+bool CheckPoABlockNotAuditingOverlap(const CBlock& block) {
+	bool ret = false;
+
+	if (block.hashPrevPoABlock.IsNull()) {
+		//First PoA block
+        LogPrint("debug", "%s: First PoA Block Hash: %s\n", __func__, block.GetHash().GetHex());
+		ret = true;
+	} else {
+		if (mapBlockIndex.count(block.hashPrevPoABlock) != 0) {
+			CBlockIndex* pPrevPoAIndex = mapBlockIndex[block.hashPrevPoABlock];
+			CBlock prevPoablock;
+			if (!ReadBlockFromDisk(prevPoablock, pPrevPoAIndex))
+				throw runtime_error("Can't read block from disk");
+			ret = true;
+			for (int i = 0; i < block.posBlocksAudited.size(); i++) {
+				bool isAlreadyAudited = false;
+				for (int j = 0; j < prevPoablock.posBlocksAudited.size(); j++) {
+					if (prevPoablock.posBlocksAudited[j].hash == block.posBlocksAudited[i].hash
+						&& prevPoablock.posBlocksAudited[j].nTime == block.posBlocksAudited[i].nTime
+						&& prevPoablock.posBlocksAudited[j].height == block.posBlocksAudited[i].height) {
+						isAlreadyAudited = true;
+                        LogPrint("debug", "%s: PoA Block Hash: %s, is already auditted by Block %s\n", __func__,
+                                block.posBlocksAudited[i].hash.GetHex(),
+                                prevPoablock.GetHash().GetHex());
+						break;
+					}
+				}
+
+				if (isAlreadyAudited) {
+					ret = false;
+					break;
+				}
+			}
+
+		}
+	}
+
 	return ret;
 }

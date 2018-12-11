@@ -29,12 +29,13 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits);
 uint256 GetBlockProof(const CBlockIndex& block);
 
 extern const uint32_t POA_BLOCK_PERIOD;
+extern unsigned int N_BITS;
 //unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader* pblock);
 
 //Check PoA block header consensus rules
 bool CheckPrevPoABlockHash(const CBlockHeader& block, int blockheight = -1);
 
-bool CheckPoAMerkleRoot(const CBlock& block, bool* fMutate = false);
+bool CheckPoAMerkleRoot(const CBlock& block, bool* fMutate = NULL);
 
 /** Check whether a block hash satisfies the proof-of-work requirement specified by nBits */
 bool CheckPoABlockMinedHash(const CBlockHeader& block);
@@ -43,6 +44,8 @@ bool CheckPoAContainRecentHash(const CBlock& block, int blockHeight = -1);
 bool CheckNumberOfAuditedPoSBlocks(const CBlock& block);
 bool CheckPoABlockNotContainingPoABlockInfo(const CBlock& block, int blockheight = -1);
 
-bool CheckPoAblockTime(const CBlock& block, int blockheight = -1);
+bool CheckPoAblockTime(const CBlock& block);
+bool CheckPoABlockNotAuditingOverlap(const CBlock& block);
+
 
 #endif // BITCOIN_POW_H

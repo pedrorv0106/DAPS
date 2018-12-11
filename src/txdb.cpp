@@ -246,7 +246,6 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
                 pindexNew->nNonce = diskindex.nNonce;
                 pindexNew->nStatus = diskindex.nStatus;
                 pindexNew->nTx = diskindex.nTx;
-                std::cout << "LoadBlockIndex:Height:" << pindexNew->nHeight << std::endl;
 
                 //Proof of Audit
                 pindexNew->hashPoAMerkleRoot = diskindex.hashPoAMerkleRoot;

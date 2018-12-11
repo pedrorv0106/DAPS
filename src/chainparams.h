@@ -121,6 +121,7 @@ public:
 
     //For PoA block time
     int POA_BLOCK_TIME() const { return nPoABlockTime; }
+    int MIN_NUM_POS_BLOCKS_AUDITED() const {return nMinNumPoSBlocks;}
 
 protected:
     CChainParams() {}
@@ -183,6 +184,7 @@ protected:
 
     //For PoA blocks
     int nPoABlockTime;
+    int nMinNumPoSBlocks;
 };
 
 /**
