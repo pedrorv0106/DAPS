@@ -721,16 +721,20 @@ void SendCoinsDialog::updateFeeSectionControls()
 
 void SendCoinsDialog::updateGlobalFeeVariables()
 {
-    // #REMOVE if (ui->radioSmartFee->isChecked()) {
+    QSettings settings;
+    if (ui->radioCustomPerKilobyte->isChecked()) {
         nTxConfirmTarget = (int)25 - (int)std::max(0, std::min(24, ui->sliderSmartFee->value()));
         payTxFee = CFeeRate(0);
-    // #REMOVE } else {
-        nTxConfirmTarget = 25;
+        settings.setValue("nTransactionFee", nTxConfirmTarget);
+
+    } else {
+        nTxConfirmTarget = ui->customFee->value();
         payTxFee = CFeeRate(ui->customFee->value());
         fPayAtLeastCustomFee = ui->radioCustomAtLeast->isChecked();
-    // #REMOVE }
-
-    // #REMOVE fSendFreeTransactions = ui->checkBoxFreeTx->isChecked();
+        settings.setValue("nTransactionFee", nTxConfirmTarget);
+    }
+    ui->labelFeeValue->setText(settings.value("nTransactionFee").toString());
+    fSendFreeTransactions = false;
 }
 
 void SendCoinsDialog::updateFeeMinimizedLabel()

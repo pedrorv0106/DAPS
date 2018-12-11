@@ -816,7 +816,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLabel" name="labelFeeMinimized_2">
+              <widget class="QLabel" name="labelFeeValue">
                <property name="text">
                 <string>0.0001</string>
                </property>
@@ -850,7 +850,7 @@
                <item>
                 <widget class="QSlider" name="sliderSmartFee">
                  <property name="enabled">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
