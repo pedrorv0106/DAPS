@@ -25,8 +25,8 @@
 #include "json/json_spirit_value.h"
 #include "spork.h"
 #include <boost/assign/list_of.hpp>
-#include "privacy/mnemonics/electrum-words.h"
-#include "privacy/rpc/core_rpc_server_commands_defs.h"
+//#include "privacy/mnemonics/electrum-words.h"
+//#include "privacy/rpc/core_rpc_server_commands_defs.h"
 
 using namespace std;
 using namespace boost;
@@ -2838,7 +2838,7 @@ Value createprivacywallet(const Array& params, bool fHelp)
         language = params[0].get_str();
     }
 
-    std::string wallet_file = filepath;
+    /*std::string wallet_file = filepath;
     {
         std::vector<std::string> languages;
         crypto::ElectrumWords::get_language_list(languages);
@@ -2852,7 +2852,7 @@ Value createprivacywallet(const Array& params, bool fHelp)
             throw JSONRPCError(RPC_ERROR_CODE_UNKNOWN_ERROR,
                                "Error: Unknown language.");
         }
-    }
+    }*/
     /*{
         po::options_description desc("dummy");
         const command_line::arg_descriptor<std::string, true> arg_password = {"password", "password"};
@@ -2866,7 +2866,7 @@ Value createprivacywallet(const Array& params, bool fHelp)
         command_line::add_arg(desc, arg_password);
         po::store(po::parse_command_line(argc, argv, desc), vm2);
     }*/
-    std::unique_ptr<CWallet> wal = CWallet::make_new(pwalletMain->vm, true, nullptr).first;
+    /*std::unique_ptr<CWallet> wal = CWallet::make_new(pwalletMain->vm, true, nullptr).first;
     if (!wal)
     {
         throw JSONRPCError(RPC_ERROR_CODE_UNKNOWN_ERROR,
@@ -2893,47 +2893,50 @@ Value createprivacywallet(const Array& params, bool fHelp)
                            "Error: Failed to generate wallet.");
     }
 
-    pwalletMain = wal.release();
+    pwalletMain = wal.release();*/
     Object ret;
-    ret.emplace_back(Pair("wallet file", wallet_file));
+    //ret.emplace_back(Pair("wallet file", wallet_file));
     return ret;
 }
 
 Value createprivacyaccount(const Array& params, bool fHelp)
 {
-    if (fHelp || params.size() != 1)
+    if (fHelp || params.size() != 0)
         throw runtime_error(
-                "createprivacyaccount \"label\" \n"
+                "createprivacyaccount \n"
                 "\nCreate a new wallet account for privacy.\n"
                 "\nArguments:\n"
-                "1. \"label\"        (string, required) label for the wallet \n"
                 "\nResult:\n"
                 "\"account address\"    (string) the address of the created account\n"
-                "\"account index\"    (string) the index of the created account\n"
                 "\nExamples:\n" +
-                HelpExampleCli("createprivacyaccount", "") + HelpExampleCli("createprivacyaccount", "\"\"") + HelpExampleCli("createprivacyaccount", "\"account1\"") + HelpExampleRpc("createprivacyaccount", "\"account1\""));
+                HelpExampleCli("createprivacyaccount", "") + HelpExampleCli("createprivacyaccount", "\"\"") + HelpExampleCli("createprivacyaccount", "") + HelpExampleRpc("createprivacyaccount", ""));
 
     if (!pwalletMain) {
         //privacy wallet is already created
         throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
                            "Error: There is no privacy wallet, please use createprivacywallet to create one.");
     }
-
-    std::string label = params[0].get_str();
-
+    CWalletDB walletdb(pwalletMain->strWalletFile);
     Object ret;
-    try
-    {
-        pwalletMain->add_subaddress_account(label);
-        size_t account_index = pwalletMain->get_num_subaddress_accounts() - 1;
-        ret.emplace_back(Pair("account_index", (int) account_index));
-        ret.emplace_back(Pair("address", pwalletMain->get_subaddress_as_str({(uint32_t)account_index, 0})));
+
+    std::string viewAccountLabel = "viewaccount";
+    std::string spendAccountLabel = "spendaccount";
+
+    CAccount viewAccount;
+    walletdb.ReadAccount(viewAccountLabel, viewAccount);
+    if (!viewAccount.vchPubKey.IsValid()) {
+        std::string viewAccountAddress = GetAccountAddress(viewAccountLabel).ToString();
     }
-    catch (const std::exception& e)
-    {
-        throw JSONRPCError(RPC_ERROR_CODE_UNKNOWN_ERROR,
-                           "Error: Cannot create privacy wallet account.");
+
+    ret.emplace_back(Pair("viewpublickey", viewAccount.vchPubKey.GetHex()));
+
+    CAccount spendAccount;
+    walletdb.ReadAccount(spendAccountLabel, spendAccount);
+    if (!spendAccount.vchPubKey.IsValid()) {
+        std::string spendAccountAddress = GetAccountAddress(spendAccountLabel).ToString();
     }
+    ret.emplace_back(Pair("spendpublickey", spendAccount.vchPubKey.GetHex()));
+
     return ret;
 }
 
@@ -2962,7 +2965,7 @@ Value createprivacysubaddress(const Array& params, bool fHelp)
     std::string label = params[1].get_str();
 
     Object ret;
-    try
+    /*try
     {
         pwalletMain->add_subaddress(account_index, label);
         size_t address_index = pwalletMain->get_num_subaddresses(account_index) - 1;
@@ -2973,7 +2976,7 @@ Value createprivacysubaddress(const Array& params, bool fHelp)
     {
         throw JSONRPCError(RPC_ERROR_CODE_UNKNOWN_ERROR,
                            "Error: Cannot create subaddress for the corresponding account.");
-    }
+    }*/
     return ret;
 }
 

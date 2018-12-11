@@ -216,6 +216,11 @@ public:
     std::vector<CTxIn> vin;
     std::vector<CTxOut> vout;
     const uint32_t nLockTime;
+
+    //For stealth transactions
+    CPubKey txPubKey;
+    char hasPaymentID;
+    uint64_t paymentID;
     //const unsigned int nTime;
 
     /** Construct a CTransaction that qualifies as IsNull() */
@@ -235,6 +240,11 @@ public:
         READWRITE(*const_cast<std::vector<CTxIn>*>(&vin));
         READWRITE(*const_cast<std::vector<CTxOut>*>(&vout));
         READWRITE(*const_cast<uint32_t*>(&nLockTime));
+        READWRITE(txPubKey.vch);
+        READWRITE(hasPaymentID);
+        if (hasPaymentID != 0) {
+            READWRITE(paymentID);
+        }
         if (ser_action.ForRead())
             UpdateHash();
     }

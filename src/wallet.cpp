@@ -30,8 +30,8 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/thread.hpp>
 #include <boost/filesystem/operations.hpp>
-#include "../privacyutils/command_line.h"
-#include "../privacyutils/file_io_utils.h"
+//#include "../privacyutils/command_line.h"
+//#include "../privacyutils/file_io_utils.h"
 
 using namespace std;
 
@@ -4824,6 +4824,14 @@ bool CWallet::SpendZerocoin(CAmount nAmount, int nSecurityLevel, CWalletTx& wtxN
     receipt.SetStatus("Spend Successful", ZDAPS_SPEND_OKAY);  // When we reach this point spending zDAPS was successful
 
     return true;
+}
+
+void CWallet::ComputeStealthPublicAddress(std::vector<char>& pubAddress, int subaddressIndex) {
+
+}
+
+void CWallet::ComputeIntegratedPublicAddress(std::vector<char>& pubAddress, uint64_t paymentID, int subaddressIndex) {
+
 }
 
 

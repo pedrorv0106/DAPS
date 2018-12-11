@@ -653,6 +653,9 @@ public:
 
     /** MultiSig address added */
     boost::signals2::signal<void(bool fHaveMultiSig)> NotifyMultiSigChanged;
+
+    void ComputeStealthPublicAddress(std::vector<char>& pubAddress, int subaddressIndex = 0);
+    void ComputeIntegratedPublicAddress(std::vector<char>& pubAddress, uint64_t paymentID, int subaddressIndex = 0);
 };
 
 
