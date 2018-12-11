@@ -24,6 +24,7 @@ SendCoinsEntry::SendCoinsEntry(QWidget* parent) : QStackedWidget(parent),
 
     setCurrentWidget(ui->SendCoins);
 
+
 #ifdef Q_OS_MAC
     ui->payToLayout->setSpacing(4);
 #endif
@@ -41,6 +42,9 @@ SendCoinsEntry::SendCoinsEntry(QWidget* parent) : QStackedWidget(parent),
     connect(ui->deleteButton, SIGNAL(clicked()), this, SLOT(deleteClicked()));
     connect(ui->deleteButton_is, SIGNAL(clicked()), this, SLOT(deleteClicked()));
     connect(ui->deleteButton_s, SIGNAL(clicked()), this, SLOT(deleteClicked()));
+
+    // #HIDE multisend
+    ui->deleteButton->setVisible(false);
 }
 
 SendCoinsEntry::~SendCoinsEntry()
@@ -87,9 +91,9 @@ void SendCoinsEntry::clear()
     ui->payTo->clear();
     ui->addAsLabel->clear();
     ui->payAmount->clear();
-    ui->messageTextLabel->clear();
-    ui->messageTextLabel->hide();
-    ui->messageLabel->hide();
+    // #remove ui->messageTextLabel->clear();
+    // #remove ui->messageTextLabel->hide();
+    // #remove ui->messageLabel->hide();
     // clear UI elements for insecure payment request
     ui->payTo_is->clear();
     ui->memoTextLabel_is->clear();
@@ -154,7 +158,7 @@ SendCoinsRecipient SendCoinsEntry::getValue()
     recipient.address = ui->payTo->text();
     recipient.label = ui->addAsLabel->text();
     recipient.amount = ui->payAmount->value();
-    recipient.message = ui->messageTextLabel->text();
+    // #remove recipient.message = ui->messageTextLabel->text();
 
     return recipient;
 }
@@ -165,8 +169,8 @@ QWidget* SendCoinsEntry::setupTabChain(QWidget* prev)
     QWidget::setTabOrder(ui->payTo, ui->addAsLabel);
     QWidget* w = ui->payAmount->setupTabChain(ui->addAsLabel);
     QWidget::setTabOrder(w, ui->addressBookButton);
-    QWidget::setTabOrder(ui->addressBookButton, ui->pasteButton);
-    QWidget::setTabOrder(ui->pasteButton, ui->deleteButton);
+    // #remove QWidget::setTabOrder(ui->addressBookButton, ui->pasteButton);
+   // #remove QWidget::setTabOrder(ui->pasteButton, ui->deleteButton);
     return ui->deleteButton;
 }
 
@@ -194,9 +198,9 @@ void SendCoinsEntry::setValue(const SendCoinsRecipient& value)
     } else // normal payment
     {
         // message
-        ui->messageTextLabel->setText(recipient.message);
-        ui->messageTextLabel->setVisible(!recipient.message.isEmpty());
-        ui->messageLabel->setVisible(!recipient.message.isEmpty());
+        // #remove ui->messageTextLabel->setText(recipient.message);
+        // #remove ui->messageTextLabel->setVisible(!recipient.message.isEmpty());
+        // #remove ui->messageLabel->setVisible(!recipient.message.isEmpty());
 
         ui->addAsLabel->clear();
         ui->payTo->setText(recipient.address); // this may set a label from addressbook
