@@ -5,7 +5,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "clientmodel.h"
-
+#include "bantablemodel.h"
 #include "guiconstants.h"
 #include "peertablemodel.h"
 
@@ -31,12 +31,14 @@ static const int64_t nClientStartupTime = GetTime();
 ClientModel::ClientModel(OptionsModel* optionsModel, QObject* parent) : QObject(parent),
                                                                         optionsModel(optionsModel),
                                                                         peerTableModel(0),
+                                                                        banTableModel(0),
                                                                         cachedNumBlocks(0),
                                                                         cachedMasternodeCountString(""),
                                                                         cachedReindexing(0), cachedImporting(0),
                                                                         numBlocksAtStartup(-1), pollTimer(0)
 {
     peerTableModel = new PeerTableModel(this);
+    banTableModel = new BanTableModel(this);
     pollTimer = new QTimer(this);
     connect(pollTimer, SIGNAL(timeout()), this, SLOT(updateTimer()));
     pollTimer->start(MODEL_UPDATE_DELAY);
@@ -214,6 +216,11 @@ PeerTableModel* ClientModel::getPeerTableModel()
     return peerTableModel;
 }
 
+BanTableModel *ClientModel::getBanTableModel()
+{
+    return banTableModel;
+}
+
 QString ClientModel::formatFullVersion() const
 {
     return QString::fromStdString(FormatFullVersion());
@@ -237,6 +244,12 @@ QString ClientModel::clientName() const
 QString ClientModel::formatClientStartupTime() const
 {
     return QDateTime::fromTime_t(nClientStartupTime).toString();
+}
+
+
+void ClientModel::updateBanlist()
+{
+    banTableModel->refresh();
 }
 
 // Handlers for core signals
@@ -263,12 +276,19 @@ static void NotifyAlertChanged(ClientModel* clientmodel, const uint256& hash, Ch
         Q_ARG(int, status));
 }
 
+static void BannedListChanged(ClientModel *clientmodel)
+{
+    qDebug() << QString("%1: Requesting update for peer banlist").arg(__func__);
+    QMetaObject::invokeMethod(clientmodel, "updateBanlist", Qt::QueuedConnection);
+}
+
 void ClientModel::subscribeToCoreSignals()
 {
     // Connect signals to client
     uiInterface.ShowProgress.connect(boost::bind(ShowProgress, this, _1, _2));
     uiInterface.NotifyNumConnectionsChanged.connect(boost::bind(NotifyNumConnectionsChanged, this, _1));
     uiInterface.NotifyAlertChanged.connect(boost::bind(NotifyAlertChanged, this, _1, _2));
+    uiInterface.BannedListChanged.connect(boost::bind(BannedListChanged, this));
 }
 
 void ClientModel::unsubscribeFromCoreSignals()
@@ -276,5 +296,6 @@ void ClientModel::unsubscribeFromCoreSignals()
     // Disconnect signals from client
     uiInterface.ShowProgress.disconnect(boost::bind(ShowProgress, this, _1, _2));
     uiInterface.NotifyNumConnectionsChanged.disconnect(boost::bind(NotifyNumConnectionsChanged, this, _1));
+    uiInterface.BannedListChanged.disconnect(boost::bind(BannedListChanged, this));
     uiInterface.NotifyAlertChanged.disconnect(boost::bind(NotifyAlertChanged, this, _1, _2));
 }
