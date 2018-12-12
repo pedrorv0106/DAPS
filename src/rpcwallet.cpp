@@ -2937,6 +2937,9 @@ Value createprivacyaccount(const Array& params, bool fHelp)
     }
     ret.emplace_back(Pair("spendpublickey", spendAccount.vchPubKey.GetHex()));
 
+    std::string stealthAddr;
+    pwalletMain->EncodeStealthPublicAddress(viewAccount.vchPubKey, spendAccount.vchPubKey, stealthAddr);
+    ret.emplace_back(Pair("stealthaddress", stealthAddr));
     return ret;
 }
 

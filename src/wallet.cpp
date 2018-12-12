@@ -4834,6 +4834,59 @@ void CWallet::ComputeIntegratedPublicAddress(std::vector<char>& pubAddress, uint
 
 }
 
+void add1s(std::string& s, int wantedSize) {
+    for(int i = 0; i < wantedSize - s.length(); i++) {
+        s = "1" + s;
+    }
+}
+
+bool CWallet::EncodeStealthPublicAddress(const std::vector<unsigned char>& pubViewKey, const std::vector<unsigned char>& pubSpendKey, std::string& pubAddrb58) {
+    std::vector<unsigned char> pubAddr;
+    pubAddr.push_back(18);
+    std::copy(pubSpendKey.begin() + 1, pubSpendKey.begin() + 33, std::back_inserter(pubAddr));//copy 32 bytes
+    std::copy(pubViewKey.begin() + 1, pubViewKey.begin() + 33, std::back_inserter(pubAddr));//copy 32 bytes
+    uint256 h = Hash(pubAddr.begin(), pubAddr.end());
+    unsigned char* begin = h.begin();
+    pubAddr.push_back(*(begin));
+    pubAddr.push_back(*(begin + 1));
+    pubAddr.push_back(*(begin + 2));
+    pubAddr.push_back(*(begin + 3));
+
+    pubAddrb58 = "";
+
+    //Encoding Base58 using block=8 bytes
+    int i = 0;
+    while(i < 69) {
+        std::vector<unsigned char> input8;
+        std::copy(pubAddr.begin() + i, pubAddr.begin() + i + 8, std::back_inserter(input8));//copy 8 bytes
+        std::string out = EncodeBase58(input8);
+        if (out.length() < 11) {
+            add1s(out, 11);
+        }
+        pubAddrb58 += out;
+        i += 8;
+        if (i + 8 > 69) {
+            //the last block of 5
+            std::vector<unsigned char> input5;
+            std::copy(pubAddr.begin() + i, pubAddr.begin() + i + 5, std::back_inserter(input5));//copy 8 bytes
+            std::string out7 = EncodeBase58(input5);
+            add1s(out7, 7);
+            pubAddrb58 += out7;
+            i += 5;
+        }
+    }
+
+    return true;
+}
+
+bool CWallet::EncodeStealthPublicAddress(const CPubKey& pubViewKey, const CPubKey& pubSpendKey, std::string& pubAddr) {
+    if (pubViewKey.IsCompressed() && pubSpendKey.IsCompressed()) {
+        return EncodeStealthPublicAddress(pubViewKey.Raw(), pubSpendKey.Raw(), pubAddr);
+    }
+    return false;
+}
+
+
 
 
 
