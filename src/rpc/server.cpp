@@ -1,7 +1,7 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2018 The DAPScoin developers
+// Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -434,26 +434,7 @@ static const CRPCCommand vRPCCommands[] =
         {"wallet", "signmessage", &signmessage, true, false, true},
         {"wallet", "walletlock", &walletlock, true, false, true},
         {"wallet", "walletpassphrasechange", &walletpassphrasechange, true, false, true},
-        {"wallet", "walletpassphrase", &walletpassphrase, true, false, true},
-
-        {"zerocoin", "getzerocoinbalance", &getzerocoinbalance, false, false, true},
-        {"zerocoin", "listmintedzerocoins", &listmintedzerocoins, false, false, true},
-        {"zerocoin", "listspentzerocoins", &listspentzerocoins, false, false, true},
-        {"zerocoin", "listzerocoinamounts", &listzerocoinamounts, false, false, true},
-        {"zerocoin", "mintzerocoin", &mintzerocoin, false, false, true},
-        {"zerocoin", "spendzerocoin", &spendzerocoin, false, false, true},
-        {"zerocoin", "resetmintzerocoin", &resetmintzerocoin, false, false, true},
-        {"zerocoin", "resetspentzerocoin", &resetspentzerocoin, false, false, true},
-        {"zerocoin", "getarchivedzerocoin", &getarchivedzerocoin, false, false, true},
-        {"zerocoin", "importzerocoins", &importzerocoins, false, false, true},
-        {"zerocoin", "exportzerocoins", &exportzerocoins, false, false, true},
-        {"zerocoin", "reconsiderzerocoins", &reconsiderzerocoins, false, false, true},
-        {"zerocoin", "getspentzerocoinamount", &getspentzerocoinamount, false, false, false},
-        {"zerocoin", "getzdapsseed", &getzdapsseed, false, false, true},
-        {"zerocoin", "setzdapsseed", &setzdapsseed, false, false, true},
-        {"zerocoin", "generatemintlist", &generatemintlist, false, false, true},
-        {"zerocoin", "searchdzdaps", &searchdzdaps, false, false, true},
-        {"zerocoin", "dzdapsstate", &dzdapsstate, false, false, true}
+        {"wallet", "walletpassphrase", &walletpassphrase, true, false, true}
 
 #endif // ENABLE_WALLET
 };
