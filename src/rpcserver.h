@@ -211,6 +211,7 @@ extern json_spirit::Value encryptwallet(const json_spirit::Array& params, bool f
 extern json_spirit::Value createprivacywallet(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value createprivacyaccount(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value decodestealthaddress(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value sendtostealthaddress(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value createprivacysubaddress(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getwalletinfo(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getblockchaininfo(const json_spirit::Array& params, bool fHelp);

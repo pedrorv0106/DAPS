@@ -26,6 +26,7 @@
 #include "denomination_functions.h"
 #include "libzerocoin/Denominations.h"
 #include <assert.h>
+#include "secp256k1.h"
 
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/thread.hpp>
@@ -4963,6 +4964,81 @@ bool CWallet::DecodeStealthAddress(const std::string& stealth, CPubKey& pubViewK
     return true;
 }
 
+bool computeStealthDestination(CKey& secret, CPubKey& pubViewKey, CPubKey& pubSpendKey, CPubKey& des) {
+    //generate transaction destination: P = Hs(rA)G+B, A = view pub, B = view spend, r = secret
+    //1. Compute rA
+    unsigned char rA[65];
+    memcpy(rA, pubViewKey.begin(), pubViewKey.size());
+    if (!secp256k1_ec_pubkey_tweak_mul(rA, pubViewKey.size(), secret.begin())) {
+        return false;
+    }
+    uint256 HS = Hash(rA, rA + pubViewKey.size);
+    unsigned char *pHS = HS.begin();
+    CKey temp;
+    temp.Set(pHS, pHS + 32, true);
+    CPubKey HSG = temp.GetPubKey();
+    unsigned char temp1[65], temp2[65];
+    memcpy(temp1, HSG.begin(), HSG.size());
+    memcpy(temp2, pubSpendKey.begin(), pubSpendKey.size());
+    secp256k1_ec_pubkey_tweak_add(temp1, pubSpendKey.size(), temp2);
+    des.Set(temp1, temp1 + 33);
+    return true;
+}
+
+bool CWallet::SendToStealthAddress(const std::string& stealthAddr, CAmount nValue, CWalletTx& wtxNew, bool fUseIX = false) {
+    // Check amount
+    if (nValue <= 0)
+        throw runtime_error("Invalid amount");
+
+    if (nValue > pwalletMain->GetBalance())
+        throw runtime_error("Insufficient funds");
+
+    string strError;
+    if (this->IsLocked()) {
+        strError = "Error: Wallet locked, unable to create transaction!";
+        LogPrintf("SendToStealthAddress() : %s", strError);
+        throw runtime_error(strError);
+    }
+
+    //Parse stealth address
+    CPubKey pubViewKey, pubSpendKey;
+    if (!CWallet::DecodeStealthAddress(stealthAddr, pubViewKey, pubSpendKey)) {
+        throw runtime_error("Stealth address mal-formatted");
+    }
+
+    // Parse DAPScoin address
+    CScript scriptPubKey = GetScriptForDestination(address);
+
+    // Generate transaction public key
+    CKey secret;
+    secret.MakeNewKey(true);
+    SetMinVersion(FEATURE_COMPRPUBKEY);
+    CPubKey pubkey = secret.GetPubKey();
+    assert(secret.VerifyPubKey(pubkey));
+    wtxNew.txPubKey = pubkey;
+
+    //No payment ID for the moment
+    wtxNew.hasPaymentID = 0;
+
+    //Compute stealth destination
+    CPubKey stealthDes;
+    computeStealthDestination(secret, pubViewKey, pubSpendKey, stealthDes);
+    CBitcoinAddress address(stealthDes.GetID());
+    CScript scriptPubKey = GetScriptForDestination(address.Get());
+
+    // Create and send the transaction
+    CReserveKey reservekey(pwalletMain);
+    CAmount nFeeRequired;
+    if (!pwalletMain->CreateTransaction(scriptPubKey, nValue, wtxNew, reservekey, nFeeRequired, strError, NULL, ALL_COINS, fUseIX, (CAmount)0)) {
+        if (nValue + nFeeRequired > pwalletMain->GetBalance())
+            strError = strprintf("Error: This transaction requires a transaction fee of at least %s because of its amount, complexity, or use of recently received funds!", FormatMoney(nFeeRequired));
+        LogPrintf("SendToStealthAddress() : %s\n", strError);
+        throw runtime_error(strError);
+    }
+    if (!pwalletMain->CommitTransaction(wtxNew, reservekey, (!fUseIX ? "tx" : "ix")))
+        throw runtime_error("Error: The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.");
+    return true;
+}
 
 
 
