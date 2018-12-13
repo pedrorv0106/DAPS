@@ -2956,7 +2956,7 @@ Value createprivacysubaddress(const Array& params, bool fHelp)
                 "\"account address\"    (string) the created address for the corresponding account\n"
                 "\"address index\"    (string) the index of the created address for the account\n"
                 "\nExamples:\n" +
-                HelpExampleCli("createprivacysubaddress", "") + HelpExampleCli("createprivacysubaddress", "\"\"") + HelpExampleCli("createprivacysubaddress", "1 \"address1\"") + HelpExampleRpc("createprivacyaccount", "1 \"address1\""));
+                HelpExampleCli("createprivacysubaddress", "") + HelpExampleCli("createprivacysubaddress", "\"\"") + HelpExampleCli("createprivacysubaddress", "1 \"address1\"") + HelpExampleRpc("createprivacysubaddress", "1 \"address1\""));
 
     if (!pwalletMain) {
         //privacy wallet is already created
@@ -2980,6 +2980,40 @@ Value createprivacysubaddress(const Array& params, bool fHelp)
         throw JSONRPCError(RPC_ERROR_CODE_UNKNOWN_ERROR,
                            "Error: Cannot create subaddress for the corresponding account.");
     }*/
+    return ret;
+}
+
+Value decodestealthaddress(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw runtime_error(
+                "decodestealthaddress \n"
+                "\nDecode a stealth address into spend and view public keys.\n"
+                "\nArguments:\n"
+                "1. \"stealth_address\"        (string, required) The Base58 stealth address\n"
+                "\nResult:\n"
+                "\"public view key\"    (string) the view public key\n"
+                "\"public spend key\"   (string) the spend public key"
+                "\nExamples:\n" +
+                HelpExampleCli("decodestealthaddress", "") + HelpExampleCli("decodestealthaddress", "\"\"") + HelpExampleCli("decodestealthaddress", "") + HelpExampleRpc("decodestealthaddress", ""));
+
+    if (!pwalletMain) {
+        //privacy wallet is already created
+        throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
+                           "Error: There is no privacy wallet, please use createprivacywallet to create one.");
+    }
+    std::string addr = params[0].get_str();
+
+    Object ret;
+    CPubKey viewKey, spendKey;
+
+    if (!CWallet::DecodeStealthAddress(addr, viewKey, spendKey)) {
+        throw JSONRPCError(RPC_WALLET_ERROR,
+                           "Error: Stealth address is not correctly formatted.");
+    }
+    ret.emplace_back(Pair("spendpublickey", spendKey.GetHex()));
+    ret.emplace_back(Pair("viewpublickey", viewKey.GetHex()));
+
     return ret;
 }
 

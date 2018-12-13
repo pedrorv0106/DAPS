@@ -4840,41 +4840,51 @@ void add1s(std::string& s, int wantedSize) {
     }
 }
 
+
+bool CWallet::encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth) {
+    //in monero, the size is 69 and 77, respectively
+    if (raw.size() != 71 && raw.size() != 79) {
+        return false;
+    }
+    stealth = "";
+
+    //Encoding Base58 using block=8 bytes
+    int i = 0;
+    while(i < raw.size()) {
+        std::vector<unsigned char> input8;
+        std::copy(raw.begin() + i, raw.begin() + i + 8, std::back_inserter(input8));//copy 8 bytes
+        std::string out = EncodeBase58(input8);
+        if (out.length() < 11) {
+            add1s(out, 11);
+        }
+        stealth += out;
+        i += 8;
+        if (i + 8 > raw.size()) {
+            //the last block of 7
+            std::vector<unsigned char> input7;
+            std::copy(raw.begin() + i, raw.begin() + i + 7, std::back_inserter(input7));//copy 7 bytes
+            std::string out11 = EncodeBase58(input7);
+            add1s(out11, 11);
+            stealth += out11;
+            i += 7;
+        }
+    }
+    return true;
+}
+
 bool CWallet::EncodeStealthPublicAddress(const std::vector<unsigned char>& pubViewKey, const std::vector<unsigned char>& pubSpendKey, std::string& pubAddrb58) {
     std::vector<unsigned char> pubAddr;
-    pubAddr.push_back(18);
-    std::copy(pubSpendKey.begin() + 1, pubSpendKey.begin() + 33, std::back_inserter(pubAddr));//copy 32 bytes
-    std::copy(pubViewKey.begin() + 1, pubViewKey.begin() + 33, std::back_inserter(pubAddr));//copy 32 bytes
+    pubAddr.push_back(18);  //1 byte
+    std::copy(pubSpendKey.begin(), pubSpendKey.begin() + 33, std::back_inserter(pubAddr));//copy 33 bytes
+    std::copy(pubViewKey.begin(), pubViewKey.begin() + 33, std::back_inserter(pubAddr));//copy 33 bytes
     uint256 h = Hash(pubAddr.begin(), pubAddr.end());
     unsigned char* begin = h.begin();
     pubAddr.push_back(*(begin));
     pubAddr.push_back(*(begin + 1));
     pubAddr.push_back(*(begin + 2));
-    pubAddr.push_back(*(begin + 3));
+    pubAddr.push_back(*(begin + 3));//total 71 bytes intead of 69 bytes as monero
 
-    pubAddrb58 = "";
-
-    //Encoding Base58 using block=8 bytes
-    int i = 0;
-    while(i < 69) {
-        std::vector<unsigned char> input8;
-        std::copy(pubAddr.begin() + i, pubAddr.begin() + i + 8, std::back_inserter(input8));//copy 8 bytes
-        std::string out = EncodeBase58(input8);
-        if (out.length() < 11) {
-            add1s(out, 11);
-        }
-        pubAddrb58 += out;
-        i += 8;
-        if (i + 8 > 69) {
-            //the last block of 5
-            std::vector<unsigned char> input5;
-            std::copy(pubAddr.begin() + i, pubAddr.begin() + i + 5, std::back_inserter(input5));//copy 8 bytes
-            std::string out7 = EncodeBase58(input5);
-            add1s(out7, 7);
-            pubAddrb58 += out7;
-            i += 5;
-        }
-    }
+    encodeStealthBase58(pubAddr, pubAddrb58);
 
     return true;
 }
@@ -4886,6 +4896,72 @@ bool CWallet::EncodeStealthPublicAddress(const CPubKey& pubViewKey, const CPubKe
     return false;
 }
 
+bool CWallet::DecodeStealthAddress(const std::string& stealth, CPubKey& pubViewKey, CPubKey& pubSpendKey) {
+    if (stealth.length() != 99 && stealth.length() != 110) {
+        return false;
+    }
+    std::vector<unsigned char> raw;
+    int i = 0;
+    while (i < stealth.length()) {
+        int npos = 11;
+        std::string sub = stealth.substr(i, npos);
+        std::vector<unsigned char> decoded;
+        if (DecodeBase58(sub, decoded) &&
+                ((decoded.size() == 8 && i + 11 < stealth.length() - 1) || (decoded.size() == 7 && i + 11 == stealth.length() - 1))) {
+            std::copy(decoded.begin(), decoded.end(), std::back_inserter(raw));
+        } else if (sub[0] == '1') {
+            //find the last padding character
+            int lastPad = 0;
+            while (lastPad < sub.length() - 1) {
+                if (sub[lastPad + 1] != '1') {
+                    break;
+                }
+                lastPad++;
+            }
+            //check whether '1' is padding
+            int padIdx = lastPad;
+            while (padIdx >= 0 && sub[padIdx] == '1') {
+                std::string str_without_pads = sub.substr(padIdx + 1, sub.length() - padIdx - 1);
+                decoded.clear();
+                if (DecodeBase58(str_without_pads, decoded)) {
+                    if ((decoded.size() == 8 && i + 11 < stealth.length()) || (decoded.size() == 7 && i + 11 == stealth.length())) {
+                        std::copy(decoded.begin(), decoded.end(), std::back_inserter(raw));
+                        break;
+                    } else {
+                        decoded.clear();
+                    }
+                }
+                padIdx--;
+            }
+            if (decoded.size() == 0) {
+                //cannot decode this block of stealth address
+                return false;
+            }
+        } else {
+            return false;
+        }
+        i = i + npos;
+    }
+
+    if (raw.size() != 71 && raw.size() != 79) {
+        return false;
+    }
+
+    //Check checksum
+    uint256 h = Hash(raw.begin(), raw.begin() + raw.size() - 4);
+    unsigned char *h_begin = h.begin();
+    unsigned char *p_raw = &raw[raw.size() - 4];
+    if (memcmp(h_begin, p_raw, 4) != 0) {
+        return false;
+    }
+    std::vector<unsigned char> vchSpend, vchView;
+    std::copy(raw.begin() + 1, raw.begin() + 34,std::back_inserter(vchSpend));
+    std::copy(raw.begin() + 34, raw.begin() + 67,std::back_inserter(vchView));
+    pubSpendKey.Set(vchSpend.begin(), vchSpend.end());
+    pubViewKey.Set(vchView.begin(), vchView.end());
+
+    return true;
+}
 
 
 

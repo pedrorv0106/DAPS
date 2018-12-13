@@ -658,6 +658,9 @@ public:
     void ComputeIntegratedPublicAddress(std::vector<char>& pubAddress, uint64_t paymentID, int subaddressIndex = 0);
     bool EncodeStealthPublicAddress(const std::vector<unsigned char>& pubViewKey, const std::vector<unsigned char>& pubSpendKey, std::string& pubAddr);
     bool EncodeStealthPublicAddress(const CPubKey& pubViewKey, const CPubKey& pubSpendKey, std::string& pubAddr);
+    static bool DecodeStealthAddress(const std::string& stealth, CPubKey& pubViewKey, CPubKey& pubSpendKey);
+private:
+    bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
 };
 
 
