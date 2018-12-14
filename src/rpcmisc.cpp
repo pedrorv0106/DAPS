@@ -16,6 +16,7 @@
 #include "spork.h"
 #include "timedata.h"
 #include "util.h"
+
 #ifdef ENABLE_WALLET
 #include "wallet.h"
 #include "walletdb.h"
@@ -45,48 +46,54 @@ using namespace std;
  *
  * Or alternatively, create a specific query method for the information.
  **/
-Value getinfo(const Array& params, bool fHelp)
-{
+Value getinfo(const Array &params, bool fHelp) {
     if (fHelp || params.size() != 0)
         throw runtime_error(
-            "getinfo\n"
-            "Returns an object containing various state info.\n"
-            "\nResult:\n"
-            "{\n"
-            "  \"version\": xxxxx,           (numeric) the server version\n"
-            "  \"protocolversion\": xxxxx,   (numeric) the protocol version\n"
-            "  \"walletversion\": xxxxx,     (numeric) the wallet version\n"
-            "  \"balance\": xxxxxxx,         (numeric) the total dapscoin balance of the wallet (excluding zerocoins)\n"
-            "  \"zerocoinbalance\": xxxxxxx, (numeric) the total zerocoin balance of the wallet\n"
-            "  \"blocks\": xxxxxx,           (numeric) the current number of blocks processed in the server\n"
-            "  \"timeoffset\": xxxxx,        (numeric) the time offset\n"
-            "  \"connections\": xxxxx,       (numeric) the number of connections\n"
-            "  \"proxy\": \"host:port\",     (string, optional) the proxy used by the server\n"
-            "  \"difficulty\": xxxxxx,       (numeric) the current difficulty\n"
-            "  \"testnet\": true|false,      (boolean) if the server is using testnet or not\n"
-            "  \"moneysupply\" : \"supply\"       (numeric) The money supply when this block was added to the blockchain\n"
-            "  \"zDAPSsupply\" :\n"
-            "  {\n"
-            "     \"1\" : n,            (numeric) supply of 1 zDAPS denomination\n"
-            "     \"5\" : n,            (numeric) supply of 5 zDAPS denomination\n"
-            "     \"10\" : n,           (numeric) supply of 10 zDAPS denomination\n"
-            "     \"50\" : n,           (numeric) supply of 50 zDAPS denomination\n"
-            "     \"100\" : n,          (numeric) supply of 100 zDAPS denomination\n"
-            "     \"500\" : n,          (numeric) supply of 500 zDAPS denomination\n"
-            "     \"1000\" : n,         (numeric) supply of 1000 zDAPS denomination\n"
-            "     \"5000\" : n,         (numeric) supply of 5000 zDAPS denomination\n"
-            "     \"total\" : n,        (numeric) The total supply of all zDAPS denominations\n"
-            "  }\n"
-            "  \"keypoololdest\": xxxxxx,    (numeric) the timestamp (seconds since GMT epoch) of the oldest pre-generated key in the key pool\n"
-            "  \"keypoolsize\": xxxx,        (numeric) how many new keys are pre-generated\n"
-            "  \"unlocked_until\": ttt,      (numeric) the timestamp in seconds since epoch (midnight Jan 1 1970 GMT) that the wallet is unlocked for transfers, or 0 if the wallet is locked\n"
-            "  \"paytxfee\": x.xxxx,         (numeric) the transaction fee set in dapscoin/kb\n"
-            "  \"relayfee\": x.xxxx,         (numeric) minimum relay fee for non-free transactions in dapscoin/kb\n"
-            "  \"staking status\": true|false,  (boolean) if the wallet is staking or not\n"
-            "  \"errors\": \"...\"           (string) any error messages\n"
-            "}\n"
-            "\nExamples:\n" +
-            HelpExampleCli("getinfo", "") + HelpExampleRpc("getinfo", ""));
+                "getinfo\n"
+                "Returns an object containing various state info.\n"
+                "\nResult:\n"
+                "{\n"
+                "  \"version\": xxxxx,           (numeric) the server version\n"
+                "  \"protocolversion\": xxxxx,   (numeric) the protocol version\n"
+                "  \"walletversion\": xxxxx,     (numeric) the wallet version\n"
+                "  \"balance\": xxxxxxx,         (numeric) the total dapscoin balance of the wallet (excluding zerocoins)\n"
+                "  \"zerocoinbalance\": xxxxxxx, (numeric) the total zerocoin balance of the wallet\n"
+                "  \"blocks\": xxxxxx,           (numeric) the current number of blocks processed in the server\n"
+                "  \"timeoffset\": xxxxx,        (numeric) the time offset\n"
+                "  \"connections\": xxxxx,       (numeric) the number of connections\n"
+                "  \"proxy\": \"host:port\",     (string, optional) the proxy used by the server\n"
+                "  \"difficulty\": xxxxxx,       (numeric) the current difficulty\n"
+                "  \"testnet\": true|false,      (boolean) if the server is using testnet or not\n"
+                "  \"moneysupply\" : \"supply\"       (numeric) The money supply when this block was added to the blockchain\n"
+                "  \"zDAPSsupply\" :\n"
+                "  {\n"
+                "     \"1\" : n,            (numeric) supply of 1 zDAPS denomination\n"
+                "     \"5\" : n,            (numeric) supply of 5 zDAPS denomination\n"
+                "     \"10\" : n,           (numeric) supply of 10 zDAPS denomination\n"
+                "     \"50\" : n,           (numeric) supply of 50 zDAPS denomination\n"
+                "     \"100\" : n,          (numeric) supply of 100 zDAPS denomination\n"
+                "     \"500\" : n,          (numeric) supply of 500 zDAPS denomination\n"
+                "     \"1000\" : n,         (numeric) supply of 1000 zDAPS denomination\n"
+                "     \"5000\" : n,         (numeric) supply of 5000 zDAPS denomination\n"
+                "     \"total\" : n,        (numeric) The total supply of all zDAPS denominations\n"
+                "  }\n"
+                "  \"keypoololdest\": xxxxxx,    (numeric) the timestamp (seconds since GMT epoch) of the oldest pre-generated key in the key pool\n"
+                "  \"keypoolsize\": xxxx,        (numeric) how many new keys are pre-generated\n"
+                "  \"unlocked_until\": ttt,      (numeric) the timestamp in seconds since epoch (midnight Jan 1 1970 GMT) that the wallet is unlocked for transfers, or 0 if the wallet is locked\n"
+                "  \"paytxfee\": x.xxxx,         (numeric) the transaction fee set in dapscoin/kb\n"
+                "  \"relayfee\": x.xxxx,         (numeric) minimum relay fee for non-free transactions in dapscoin/kb\n"
+                "  \"staking status\": true|false,  (boolean) if the wallet is staking or not\n"
+                "  \"errors\": \"...\"           (string) any error messages\n"
+                "}\n"
+                "\nExamples:\n" +
+                HelpExampleCli("getinfo", "") + HelpExampleRpc("getinfo", ""));
+
+#ifdef ENABLE_WALLET
+        LOCK2(cs_main, pwalletMain ? &pwalletMain->cs_wallet : NULL);
+#else
+    LOCK(cs_main);
+#endif
+
 
     proxyType proxy;
     GetProxy(NET_IPV4, proxy);
@@ -100,20 +107,21 @@ Value getinfo(const Array& params, bool fHelp)
         obj.push_back(Pair("balance", ValueFromAmount(pwalletMain->GetBalance())));
     }
 #endif
-    obj.push_back(Pair("blocks", (int)chainActive.Height()));
+    obj.push_back(Pair("blocks", (int) chainActive.Height()));
     obj.push_back(Pair("timeoffset", GetTimeOffset()));
-    obj.push_back(Pair("connections", (int)vNodes.size()));
+    obj.push_back(Pair("connections", (int) vNodes.size()));
     obj.push_back(Pair("proxy", (proxy.IsValid() ? proxy.proxy.ToStringIPPort() : string())));
-    obj.push_back(Pair("difficulty", (double)GetDifficulty()));
+    obj.push_back(Pair("difficulty", (double) GetDifficulty()));
     obj.push_back(Pair("testnet", Params().TestnetToBeDeprecatedFieldRPC()));
-    obj.push_back(Pair("moneysupply",ValueFromAmount(chainActive.Tip()->nMoneySupply)));
+    obj.push_back(Pair("moneysupply", ValueFromAmount(chainActive.Tip()->nMoneySupply)));
     Object zdapsObj;
     for (auto denom : libzerocoin::zerocoinDenomList) {
-        zdapsObj.push_back(Pair(to_string(denom), ValueFromAmount(chainActive.Tip()->mapZerocoinSupply.at(denom) * (denom*COIN))));
+        zdapsObj.push_back(Pair(to_string(denom),
+                                ValueFromAmount(chainActive.Tip()->mapZerocoinSupply.at(denom) * (denom * COIN))));
     }
     zdapsObj.emplace_back(Pair("total", ValueFromAmount(chainActive.Tip()->GetZerocoinSupply())));
     obj.emplace_back(Pair("zDAPSsupply", zdapsObj));
-    
+
 #ifdef ENABLE_WALLET
     if (pwalletMain) {
         obj.push_back(Pair("keypoololdest", pwalletMain->GetOldestKeyPoolTime()));
@@ -134,44 +142,43 @@ Value getinfo(const Array& params, bool fHelp)
     return obj;
 }
 
-Value mnsync(const Array& params, bool fHelp)
-{
+Value mnsync(const Array &params, bool fHelp) {
     std::string strMode;
     if (params.size() == 1)
         strMode = params[0].get_str();
 
     if (fHelp || params.size() != 1 || (strMode != "status" && strMode != "reset")) {
         throw runtime_error(
-            "mnsync \"status|reset\"\n"
-            "\nReturns the sync status or resets sync.\n"
+                "mnsync \"status|reset\"\n"
+                "\nReturns the sync status or resets sync.\n"
 
-            "\nArguments:\n"
-            "1. \"mode\"    (string, required) either 'status' or 'reset'\n"
+                "\nArguments:\n"
+                "1. \"mode\"    (string, required) either 'status' or 'reset'\n"
 
-            "\nResult ('status' mode):\n"
-            "{\n"
-            "  \"IsBlockchainSynced\": true|false,    (boolean) 'true' if blockchain is synced\n"
-            "  \"lastMasternodeList\": xxxx,        (numeric) Timestamp of last MN list message\n"
-            "  \"lastMasternodeWinner\": xxxx,      (numeric) Timestamp of last MN winner message\n"
-            "  \"lastBudgetItem\": xxxx,            (numeric) Timestamp of last MN budget message\n"
-            "  \"lastFailure\": xxxx,           (numeric) Timestamp of last failed sync\n"
-            "  \"nCountFailures\": n,           (numeric) Number of failed syncs (total)\n"
-            "  \"sumMasternodeList\": n,        (numeric) Number of MN list messages (total)\n"
-            "  \"sumMasternodeWinner\": n,      (numeric) Number of MN winner messages (total)\n"
-            "  \"sumBudgetItemProp\": n,        (numeric) Number of MN budget messages (total)\n"
-            "  \"sumBudgetItemFin\": n,         (numeric) Number of MN budget finalization messages (total)\n"
-            "  \"countMasternodeList\": n,      (numeric) Number of MN list messages (local)\n"
-            "  \"countMasternodeWinner\": n,    (numeric) Number of MN winner messages (local)\n"
-            "  \"countBudgetItemProp\": n,      (numeric) Number of MN budget messages (local)\n"
-            "  \"countBudgetItemFin\": n,       (numeric) Number of MN budget finalization messages (local)\n"
-            "  \"RequestedMasternodeAssets\": n, (numeric) Status code of last sync phase\n"
-            "  \"RequestedMasternodeAttempt\": n, (numeric) Status code of last sync attempt\n"
-            "}\n"
+                "\nResult ('status' mode):\n"
+                "{\n"
+                "  \"IsBlockchainSynced\": true|false,    (boolean) 'true' if blockchain is synced\n"
+                "  \"lastMasternodeList\": xxxx,        (numeric) Timestamp of last MN list message\n"
+                "  \"lastMasternodeWinner\": xxxx,      (numeric) Timestamp of last MN winner message\n"
+                "  \"lastBudgetItem\": xxxx,            (numeric) Timestamp of last MN budget message\n"
+                "  \"lastFailure\": xxxx,           (numeric) Timestamp of last failed sync\n"
+                "  \"nCountFailures\": n,           (numeric) Number of failed syncs (total)\n"
+                "  \"sumMasternodeList\": n,        (numeric) Number of MN list messages (total)\n"
+                "  \"sumMasternodeWinner\": n,      (numeric) Number of MN winner messages (total)\n"
+                "  \"sumBudgetItemProp\": n,        (numeric) Number of MN budget messages (total)\n"
+                "  \"sumBudgetItemFin\": n,         (numeric) Number of MN budget finalization messages (total)\n"
+                "  \"countMasternodeList\": n,      (numeric) Number of MN list messages (local)\n"
+                "  \"countMasternodeWinner\": n,    (numeric) Number of MN winner messages (local)\n"
+                "  \"countBudgetItemProp\": n,      (numeric) Number of MN budget messages (local)\n"
+                "  \"countBudgetItemFin\": n,       (numeric) Number of MN budget finalization messages (local)\n"
+                "  \"RequestedMasternodeAssets\": n, (numeric) Status code of last sync phase\n"
+                "  \"RequestedMasternodeAttempt\": n, (numeric) Status code of last sync attempt\n"
+                "}\n"
 
-            "\nResult ('reset' mode):\n"
-            "\"status\"     (string) 'success'\n"
-            "\nExamples:\n" +
-            HelpExampleCli("mnsync", "\"status\"") + HelpExampleRpc("mnsync", "\"status\""));
+                "\nResult ('reset' mode):\n"
+                "\"status\"     (string) 'success'\n"
+                "\nExamples:\n" +
+                HelpExampleCli("mnsync", "\"status\"") + HelpExampleRpc("mnsync", "\"status\""));
     }
 
     if (strMode == "status") {
@@ -256,8 +263,7 @@ public:
 /*
     Used for updating/reading spork settings on the network
 */
-Value spork(const Array& params, bool fHelp)
-{
+Value spork(const Array &params, bool fHelp) {
     if (params.size() == 1 && params[0].get_str() == "show") {
         Object ret;
         for (int nSporkID = SPORK_START; nSporkID <= SPORK_END; nSporkID++) {
@@ -290,32 +296,38 @@ Value spork(const Array& params, bool fHelp)
     }
 
     throw runtime_error(
-        "spork <name> [<value>]\n"
-        "<name> is the corresponding spork name, or 'show' to show all current spork settings, active to show which sporks are active"
-        "<value> is a epoch datetime to enable or disable spork" +
-        HelpRequiringPassphrase());
+            "spork <name> [<value>]\n"
+            "<name> is the corresponding spork name, or 'show' to show all current spork settings, active to show which sporks are active"
+            "<value> is a epoch datetime to enable or disable spork" +
+            HelpRequiringPassphrase());
 }
 
-Value validateaddress(const Array& params, bool fHelp)
-{
+Value validateaddress(const Array &params, bool fHelp) {
     if (fHelp || params.size() != 1)
         throw runtime_error(
-            "validateaddress \"dapscoinaddress\"\n"
-            "\nReturn information about the given dapscoin address.\n"
-            "\nArguments:\n"
-            "1. \"dapscoinaddress\"     (string, required) The dapscoin address to validate\n"
-            "\nResult:\n"
-            "{\n"
-            "  \"isvalid\" : true|false,         (boolean) If the address is valid or not. If not, this is the only property returned.\n"
-            "  \"address\" : \"dapscoinaddress\", (string) The dapscoin address validated\n"
-            "  \"ismine\" : true|false,          (boolean) If the address is yours or not\n"
-            "  \"isscript\" : true|false,        (boolean) If the key is a script\n"
-            "  \"pubkey\" : \"publickeyhex\",    (string) The hex value of the raw public key\n"
-            "  \"iscompressed\" : true|false,    (boolean) If the address is compressed\n"
-            "  \"account\" : \"account\"         (string) The account associated with the address, \"\" is the default account\n"
-            "}\n"
-            "\nExamples:\n" +
-            HelpExampleCli("validateaddress", "\"1PSSGeFHDnKNxiEyFrD1wcEaHr9hrQDDWc\"") + HelpExampleRpc("validateaddress", "\"1PSSGeFHDnKNxiEyFrD1wcEaHr9hrQDDWc\""));
+                "validateaddress \"dapscoinaddress\"\n"
+                "\nReturn information about the given dapscoin address.\n"
+                "\nArguments:\n"
+                "1. \"dapscoinaddress\"     (string, required) The dapscoin address to validate\n"
+                "\nResult:\n"
+                "{\n"
+                "  \"isvalid\" : true|false,         (boolean) If the address is valid or not. If not, this is the only property returned.\n"
+                "  \"address\" : \"dapscoinaddress\", (string) The dapscoin address validated\n"
+                "  \"ismine\" : true|false,          (boolean) If the address is yours or not\n"
+                "  \"isscript\" : true|false,        (boolean) If the key is a script\n"
+                "  \"pubkey\" : \"publickeyhex\",    (string) The hex value of the raw public key\n"
+                "  \"iscompressed\" : true|false,    (boolean) If the address is compressed\n"
+                "  \"account\" : \"account\"         (string) The account associated with the address, \"\" is the default account\n"
+                "}\n"
+                "\nExamples:\n" +
+                HelpExampleCli("validateaddress", "\"1PSSGeFHDnKNxiEyFrD1wcEaHr9hrQDDWc\"") +
+                HelpExampleRpc("validateaddress", "\"1PSSGeFHDnKNxiEyFrD1wcEaHr9hrQDDWc\""));
+
+#ifdef ENABLE_WALLET
+        LOCK2(cs_main, pwalletMain ? &pwalletMain->cs_wallet : NULL);
+#else
+    LOCK(cs_main);
+#endif
 
     CBitcoinAddress address(params[0].get_str());
     bool isValid = address.IsValid();
@@ -344,25 +356,25 @@ Value validateaddress(const Array& params, bool fHelp)
 /**
  * Used by addmultisigaddress / createmultisig:
  */
-CScript _createmultisig_redeemScript(const Array& params)
-{
+CScript _createmultisig_redeemScript(const Array &params) {
     int nRequired = params[0].get_int();
-    const Array& keys = params[1].get_array();
+    const Array &keys = params[1].get_array();
 
     // Gather public keys
     if (nRequired < 1)
         throw runtime_error("a multisignature address must require at least one key to redeem");
-    if ((int)keys.size() < nRequired)
+    if ((int) keys.size() < nRequired)
         throw runtime_error(
-            strprintf("not enough keys supplied "
-                      "(got %u keys, but need at least %d to redeem)",
-                keys.size(), nRequired));
+                strprintf("not enough keys supplied "
+                          "(got %u keys, but need at least %d to redeem)",
+                          keys.size(), nRequired));
     if (keys.size() > 16)
-        throw runtime_error("Number of addresses involved in the multisignature address creation > 16\nReduce the number");
-    std::vector<CPubKey> pubkeys;
+        throw runtime_error(
+                "Number of addresses involved in the multisignature address creation > 16\nReduce the number");
+    std::vector <CPubKey> pubkeys;
     pubkeys.resize(keys.size());
     for (unsigned int i = 0; i < keys.size(); i++) {
-        const std::string& ks = keys[i].get_str();
+        const std::string &ks = keys[i].get_str();
 #ifdef ENABLE_WALLET
         // Case 1: DAPScoin address and we have full public key:
         CBitcoinAddress address(ks);
@@ -383,7 +395,7 @@ CScript _createmultisig_redeemScript(const Array& params)
         // Case 2: hex public key
         else
 #endif
-            if (IsHex(ks)) {
+        if (IsHex(ks)) {
             CPubKey vchPubKey(ParseHex(ks));
             if (!vchPubKey.IsFullyValid())
                 throw runtime_error(" Invalid public key: " + ks);
@@ -396,13 +408,12 @@ CScript _createmultisig_redeemScript(const Array& params)
 
     if (result.size() > MAX_SCRIPT_ELEMENT_SIZE)
         throw runtime_error(
-            strprintf("redeemScript exceeds size limit: %d > %d", result.size(), MAX_SCRIPT_ELEMENT_SIZE));
+                strprintf("redeemScript exceeds size limit: %d > %d", result.size(), MAX_SCRIPT_ELEMENT_SIZE));
 
     return result;
 }
 
-Value createmultisig(const Array& params, bool fHelp)
-{
+Value createmultisig(const Array &params, bool fHelp) {
     if (fHelp || params.size() < 2 || params.size() > 2) {
         string msg = "createmultisig nrequired [\"key\",...]\n"
                      "\nCreates a multi-signature address with n signature of m keys required.\n"
@@ -424,8 +435,10 @@ Value createmultisig(const Array& params, bool fHelp)
 
                      "\nExamples:\n"
                      "\nCreate a multisig address from 2 addresses\n" +
-                     HelpExampleCli("createmultisig", "2 \"[\\\"16sSauSf5pF2UkUwvKGq4qjNRzBZYqgEL5\\\",\\\"171sgjn4YtPu27adkKGrdDwzRTxnRkBfKV\\\"]\"") +
-                     "\nAs a json rpc call\n" + HelpExampleRpc("createmultisig", "2, \"[\\\"16sSauSf5pF2UkUwvKGq4qjNRzBZYqgEL5\\\",\\\"171sgjn4YtPu27adkKGrdDwzRTxnRkBfKV\\\"]\"");
+                     HelpExampleCli("createmultisig",
+                                    "2 \"[\\\"16sSauSf5pF2UkUwvKGq4qjNRzBZYqgEL5\\\",\\\"171sgjn4YtPu27adkKGrdDwzRTxnRkBfKV\\\"]\"") +
+                     "\nAs a json rpc call\n" + HelpExampleRpc("createmultisig",
+                                                               "2, \"[\\\"16sSauSf5pF2UkUwvKGq4qjNRzBZYqgEL5\\\",\\\"171sgjn4YtPu27adkKGrdDwzRTxnRkBfKV\\\"]\"");
         throw runtime_error(msg);
     }
 
@@ -441,24 +454,28 @@ Value createmultisig(const Array& params, bool fHelp)
     return result;
 }
 
-Value verifymessage(const Array& params, bool fHelp)
-{
+Value verifymessage(const Array &params, bool fHelp) {
     if (fHelp || params.size() != 3)
         throw runtime_error(
-            "verifymessage \"dapscoinaddress\" \"signature\" \"message\"\n"
-            "\nVerify a signed message\n"
-            "\nArguments:\n"
-            "1. \"dapscoinaddress\"  (string, required) The dapscoin address to use for the signature.\n"
-            "2. \"signature\"       (string, required) The signature provided by the signer in base 64 encoding (see signmessage).\n"
-            "3. \"message\"         (string, required) The message that was signed.\n"
-            "\nResult:\n"
-            "true|false   (boolean) If the signature is verified or not.\n"
-            "\nExamples:\n"
-            "\nUnlock the wallet for 30 seconds\n" +
-            HelpExampleCli("walletpassphrase", "\"mypassphrase\" 30") +
-            "\nCreate the signature\n" + HelpExampleCli("signmessage", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XZ\" \"my message\"") +
-            "\nVerify the signature\n" + HelpExampleCli("verifymessage", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XZ\" \"signature\" \"my message\"") +
-            "\nAs json rpc\n" + HelpExampleRpc("verifymessage", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XZ\", \"signature\", \"my message\""));
+                "verifymessage \"dapscoinaddress\" \"signature\" \"message\"\n"
+                "\nVerify a signed message\n"
+                "\nArguments:\n"
+                "1. \"dapscoinaddress\"  (string, required) The dapscoin address to use for the signature.\n"
+                "2. \"signature\"       (string, required) The signature provided by the signer in base 64 encoding (see signmessage).\n"
+                "3. \"message\"         (string, required) The message that was signed.\n"
+                "\nResult:\n"
+                "true|false   (boolean) If the signature is verified or not.\n"
+                "\nExamples:\n"
+                "\nUnlock the wallet for 30 seconds\n" +
+                HelpExampleCli("walletpassphrase", "\"mypassphrase\" 30") +
+                "\nCreate the signature\n" +
+                HelpExampleCli("signmessage", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XZ\" \"my message\"") +
+                "\nVerify the signature\n" +
+                HelpExampleCli("verifymessage", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XZ\" \"signature\" \"my message\"") +
+                "\nAs json rpc\n" + HelpExampleRpc("verifymessage",
+                                                   "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XZ\", \"signature\", \"my message\""));
+
+    LOCK(cs_main);
 
     string strAddress = params[0].get_str();
     string strSign = params[1].get_str();
@@ -489,18 +506,19 @@ Value verifymessage(const Array& params, bool fHelp)
     return (pubkey.GetID() == keyID);
 }
 
-Value setmocktime(const Array& params, bool fHelp)
-{
+Value setmocktime(const Array &params, bool fHelp) {
     if (fHelp || params.size() != 1)
         throw runtime_error(
-            "setmocktime timestamp\n"
-            "\nSet the local time to given timestamp (-regtest only)\n"
-            "\nArguments:\n"
-            "1. timestamp  (integer, required) Unix seconds-since-epoch timestamp\n"
-            "   Pass 0 to go back to using the system time.");
+                "setmocktime timestamp\n"
+                "\nSet the local time to given timestamp (-regtest only)\n"
+                "\nArguments:\n"
+                "1. timestamp  (integer, required) Unix seconds-since-epoch timestamp\n"
+                "   Pass 0 to go back to using the system time.");
 
     if (!Params().MineBlocksOnDemand())
         throw runtime_error("setmocktime for regression testing (-regtest mode) only");
+
+    LOCK(cs_main);
 
     RPCTypeCheck(params, boost::assign::list_of(int_type));
     SetMockTime(params[0].get_int64());
@@ -527,6 +545,13 @@ Value getstakingstatus(const Array& params, bool fHelp)
             "}\n"
             "\nExamples:\n" +
             HelpExampleCli("getstakingstatus", "") + HelpExampleRpc("getstakingstatus", ""));
+
+#ifdef ENABLE_WALLET
+    LOCK2(cs_main, pwalletMain ? &pwalletMain->cs_wallet : NULL);
+#else
+    LOCK(cs_main);
+#endif
+
 
     Object obj;
     obj.push_back(Pair("validtime", chainActive.Tip()->nTime > 1471482000));
