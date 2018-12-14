@@ -64,6 +64,7 @@ bool AppInit(int argc, char* argv[])
 {
     boost::thread_group threadGroup;
     CScheduler scheduler;
+    boost::thread* detectShutdownThread = NULL;
 
     bool fRet = false;
 
