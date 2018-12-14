@@ -20,7 +20,6 @@
 #include "wallet.h"
 #endif
 
-#include "json/json_spirit_writer_template.h"
 #include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
@@ -30,9 +29,9 @@
 #include <boost/signals2/signal.hpp>
 #include <boost/thread.hpp>
 #include <boost/algorithm/string/case_conv.hpp> // for to_upper()
+#include <univalue.h>
 
 using namespace RPCServer;
-using namespace json_spirit;
 using namespace std;
 
 
@@ -70,37 +69,34 @@ void RPCServer::OnPostCommand(boost::function<void(const CRPCCommand &)> slot) {
     g_rpcSignals.PostCommand.connect(boost::bind(slot, _1));
 }
 
-void RPCTypeCheck(const Array &params,
-                  const list <Value_type> &typesExpected,
-                  bool fAllowNull) {
+void RPCTypeCheck(const UniValue &params, const list <UniValue::VType> &typesExpected, bool fAllowNull) {
     unsigned int i = 0;
-    BOOST_FOREACH(Value_type
-    t, typesExpected) {
+    BOOST_FOREACH(UniValue::VType t, typesExpected) {
         if (params.size() <= i)
             break;
 
-        const Value &v = params[i];
-        if (!((v.type() == t) || (fAllowNull && (v.type() == null_type)))) {
+        const UniValue& v = params[i];
+        if (!((v.type() == t) || (fAllowNull && (v.isNull())))) {
             string err = strprintf("Expected type %s, got %s",
-                                   Value_type_name[t], Value_type_name[v.type()]);
+                                   uvTypeName(t), uvTypeName(v.type()));
             throw JSONRPCError(RPC_TYPE_ERROR, err);
         }
         i++;
     }
 }
 
-void RPCTypeCheck(const Object &o,
-                  const map <string, Value_type> &typesExpected,
-                  bool fAllowNull) {
-    BOOST_FOREACH(
-    const PAIRTYPE(string, Value_type) &t, typesExpected) {
-        const Value &v = find_value(o, t.first);
-        if (!fAllowNull && v.type() == null_type)
+void RPCTypeCheckObj(const UniValue& o,
+                     const map<string, UniValue::VType>& typesExpected,
+                     bool fAllowNull)
+{
+    BOOST_FOREACH(const PAIRTYPE(string, UniValue::VType)& t, typesExpected) {
+        const UniValue& v = find_value(o, t.first);
+        if (!fAllowNull && v.isNull())
             throw JSONRPCError(RPC_TYPE_ERROR, strprintf("Missing %s", t.first));
 
-        if (!((v.type() == t.second) || (fAllowNull && (v.type() == null_type)))) {
+        if (!((v.type() == t.second) || (fAllowNull && (v.isNull())))) {
             string err = strprintf("Expected type %s for %s, got %s",
-                                   Value_type_name[t.second], t.first, Value_type_name[v.type()]);
+                                   uvTypeName(t.second), t.first, uvTypeName(v.type()));
             throw JSONRPCError(RPC_TYPE_ERROR, err);
         }
     }
@@ -110,7 +106,7 @@ static inline int64_t roundint64(double d) {
     return (int64_t)(d > 0 ? d + 0.5 : d - 0.5);
 }
 
-CAmount AmountFromValue(const Value &value) {
+CAmount AmountFromValue(const UniValue& value) {
     double dAmount = value.get_real();
     if (dAmount <= 0.0 || dAmount > 21000000.0)
         throw JSONRPCError(RPC_TYPE_ERROR, "Invalid amount");
@@ -120,13 +116,18 @@ CAmount AmountFromValue(const Value &value) {
     return nAmount;
 }
 
-Value ValueFromAmount(const CAmount &amount) {
-    return (double) amount / (double) COIN;
+UniValue ValueFromAmount(const CAmount &amount) {
+    bool sign = amount < 0;
+    int64_t n_abs = (sign ? -amount : amount);
+    int64_t quotient = n_abs / COIN;
+    int64_t remainder = n_abs % COIN;
+    return UniValue(UniValue::VNUM,
+                    strprintf("%s%d.%08d", sign ? "-" : "", quotient, remainder));
 }
 
-uint256 ParseHashV(const Value &v, string strName) {
+uint256 ParseHashV(const UniValue &v, string strName) {
     string strHex;
-    if (v.type() == str_type)
+    if (v.isStr())
         strHex = v.get_str();
     if (!IsHex(strHex)) // Note: IsHex("") is false
         throw JSONRPCError(RPC_INVALID_PARAMETER, strName + " must be hexadecimal string (not '" + strHex + "')");
@@ -135,34 +136,34 @@ uint256 ParseHashV(const Value &v, string strName) {
     return result;
 }
 
-uint256 ParseHashO(const Object &o, string strKey) {
+uint256 ParseHashO(const UniValue &o, string strKey) {
     return ParseHashV(find_value(o, strKey), strKey);
 }
 
-vector<unsigned char> ParseHexV(const Value &v, string strName) {
+vector<unsigned char> ParseHexV(const UniValue& v, string strName) {
     string strHex;
-    if (v.type() == str_type)
+    if (v.isStr())
         strHex = v.get_str();
     if (!IsHex(strHex))
         throw JSONRPCError(RPC_INVALID_PARAMETER, strName + " must be hexadecimal string (not '" + strHex + "')");
     return ParseHex(strHex);
 }
 
-vector<unsigned char> ParseHexO(const Object &o, string strKey) {
+vector<unsigned char> ParseHexO(const UniValue &o, string strKey) {
     return ParseHexV(find_value(o, strKey), strKey);
 }
 
-int ParseInt(const Object &o, string strKey) {
-    const Value &v = find_value(o, strKey);
-    if (v.type() != int_type)
+int ParseInt(const UniValue &o, string strKey) {
+    const UniValue &v = find_value(o, strKey);
+    if (v.isNum())
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, " + strKey + "is not an int");
 
     return v.get_int();
 }
 
-bool ParseBool(const Object &o, string strKey) {
-    const Value &v = find_value(o, strKey);
-    if (v.type() != bool_type)
+bool ParseBool(const UniValue& o, string strKey) {
+    const UniValue& v = find_value(o, strKey);
+    if (v.isBool())
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, " + strKey + "is not a bool");
 
     return v.get_bool();
@@ -198,7 +199,7 @@ string CRPCTable::help(string strCommand) const {
 #endif
 
         try {
-            Array params;
+            UniValue params;
             rpcfn_type pfn = pcmd->actor;
             if (setDone.insert(pfn).second)
                 (*pfn)(params, true);
@@ -227,7 +228,7 @@ string CRPCTable::help(string strCommand) const {
     return strRet;
 }
 
-Value help(const Array &params, bool fHelp) {
+UniValue help(const UniValue& params, bool fHelp) {
     if (fHelp || params.size() > 1)
         throw runtime_error(
                 "help ( \"command\" )\n"
@@ -245,7 +246,7 @@ Value help(const Array &params, bool fHelp) {
 }
 
 
-Value stop(const Array &params, bool fHelp) {
+UniValue stop(const UniValue& params, bool fHelp) {
     // Accept the deprecated and ignored 'detach' boolean argument
     if (fHelp || params.size() > 1)
         throw runtime_error(
@@ -488,52 +489,52 @@ bool RPCIsInWarmup(std::string *outStatus) {
     return fRPCInWarmup;
 }
 
-void JSONRequest::parse(const Value &valRequest) {
+void JSONRequest::parse(const UniValue& valRequest)
+{
     // Parse request
-    if (valRequest.type() != obj_type)
+    if (!valRequest.isObject())
         throw JSONRPCError(RPC_INVALID_REQUEST, "Invalid Request object");
-    const Object &request = valRequest.get_obj();
+    const UniValue& request = valRequest.get_obj();
 
     // Parse id now so errors from here on will have the id
     id = find_value(request, "id");
 
     // Parse method
-    Value valMethod = find_value(request, "method");
-    if (valMethod.type() == null_type)
+    UniValue valMethod = find_value(request, "method");
+    if (valMethod.isNull())
         throw JSONRPCError(RPC_INVALID_REQUEST, "Missing method");
-    if (valMethod.type() != str_type)
+    if (!valMethod.isStr())
         throw JSONRPCError(RPC_INVALID_REQUEST, "Method must be a string");
     strMethod = valMethod.get_str();
     if (strMethod != "getblocktemplate")
         LogPrint("rpc", "ThreadRPCServer method=%s\n", SanitizeString(strMethod));
-    if (strMethod != "getpoablocktemplate") {
-        LogPrint("rpc", "ThreadRPCServer method=%s\n", SanitizeString(strMethod));
-    }
 
     // Parse params
-    Value valParams = find_value(request, "params");
-    if (valParams.type() == array_type)
+    UniValue valParams = find_value(request, "params");
+    if (valParams.isArray())
         params = valParams.get_array();
-    else if (valParams.type() == null_type)
-        params = Array();
+    else if (valParams.isNull())
+        params = UniValue(UniValue::VARR);
     else
         throw JSONRPCError(RPC_INVALID_REQUEST, "Params must be an array");
 }
 
 
-static Object JSONRPCExecOne(const Value &req) {
-    Object rpc_result;
+
+static UniValue JSONRPCExecOne(const UniValue& req)
+{
+    UniValue rpc_result(UniValue::VOBJ);
 
     JSONRequest jreq;
     try {
         jreq.parse(req);
 
-        Value result = tableRPC.execute(jreq.strMethod, jreq.params);
-        rpc_result = JSONRPCReplyObj(result, Value::null, jreq.id);
-    } catch (Object &objError) {
-        rpc_result = JSONRPCReplyObj(Value::null, objError, jreq.id);
-    } catch (std::exception &e) {
-        rpc_result = JSONRPCReplyObj(Value::null,
+        UniValue result = tableRPC.execute(jreq.strMethod, jreq.params);
+        rpc_result = JSONRPCReplyObj(result, NullUniValue, jreq.id);
+    } catch (const UniValue& objError) {
+        rpc_result = JSONRPCReplyObj(NullUniValue, objError, jreq.id);
+    } catch (std::exception& e) {
+        rpc_result = JSONRPCReplyObj(NullUniValue,
                                      JSONRPCError(RPC_PARSE_ERROR, e.what()), jreq.id);
     }
 
@@ -541,14 +542,14 @@ static Object JSONRPCExecOne(const Value &req) {
 }
 
 std::string JSONRPCExecBatch(const UniValue &vReq) {
-    Array ret;
+    UniValue ret(UniValue::VARR);
     for (unsigned int reqIdx = 0; reqIdx < vReq.size(); reqIdx++)
         ret.push_back(JSONRPCExecOne(vReq[reqIdx]));
 
-    return write_string(Value(ret), false) + "\n";
+    return ret.write() + "\n";
 }
 
-json_spirit::Value CRPCTable::execute(const std::string &strMethod, const json_spirit::Array &params) const {
+UniValue CRPCTable::execute(const std::string &strMethod, const UniValue &params) const {
     // Find method
     const CRPCCommand *pcmd = tableRPC[strMethod];
     if (!pcmd)
