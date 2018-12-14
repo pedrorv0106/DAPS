@@ -14,6 +14,7 @@
 #include "txmempool.h"
 #include "utilstrencodings.h"
 #include "version.h"
+#include <univalue.h>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/dynamic_bitset.hpp>
@@ -21,7 +22,6 @@
 static const size_t MAX_GETUTXOS_OUTPOINTS = 15; //allow a max of 15 outpoints to be queried at once
 
 using namespace std;
-using namespace json_spirit;
 
 enum RetFormat {
     RF_UNDEF,
@@ -56,9 +56,9 @@ struct CCoin {
 };
 
 
-extern void TxToJSON(const CTransaction &tx, const uint256 hashBlock, Object &entry);
+extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, UniValue& entry);
 
-extern Object blockToJSON(const CBlock &block, const CBlockIndex *blockindex, bool txDetails = false);
+extern UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDetails = false);
 
 extern UniValue mempoolInfoToJSON();
 
@@ -71,7 +71,6 @@ extern UniValue blockheaderToJSON(const CBlockIndex *blockindex);
 static bool RESTERR(HTTPRequest *req, enum HTTPStatusCode status, string message) {
     req->WriteHeader("Content-Type", "text/plain");
     req->WriteReply(status, message + "\r\n");
-    re.message = message;
     return false;
 }
 
@@ -238,8 +237,8 @@ static bool rest_block(HTTPRequest *req,
         }
 
         case RF_JSON: {
-            Object objBlock = blockToJSON(block, pblockindex, showTxDetails);
-            string strJSON = write_string(Value(objBlock), false) + "\n";
+            UniValue objTx(UniValue::VOBJ);
+            string strJSON = objTx.write() + "\n";
             req->WriteHeader("Content-Type", "application/json");
             req->WriteReply(HTTP_OK, strJSON);
             return true;
@@ -370,9 +369,9 @@ static bool rest_tx(HTTPRequest *req, const std::string &strURIPart) {
         }
 
         case RF_JSON: {
-            Object objTx;
+            UniValue objTx(UniValue::VOBJ);
             TxToJSON(tx, hashBlock, objTx);
-            string strJSON = write_string(Value(objTx), false) + "\n";
+            string strJSON = objTx.write() + "\n";
             req->WriteHeader("Content-Type", "application/json");
             req->WriteReply(HTTP_OK, strJSON);
             return true;

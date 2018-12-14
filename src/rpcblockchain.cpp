@@ -10,20 +10,19 @@
 #include "rpcserver.h"
 #include "sync.h"
 #include "util.h"
+#include "utilmoneystr.h"
+#include "base58.h"
 
 #include <stdint.h>
 
-#include "json/json_spirit_value.h"
-#include "utilmoneystr.h"
-#include "base58.h"
+#include <univalue.h>
 #include "clientversion.h"
 
-using namespace json_spirit;
 using namespace std;
 
-extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry);
-extern void PoSBlockInfoToJSON(const uint256 hashBlock, int64_t nTime, int height, Object& entry);
-void ScriptPubKeyToJSON(const CScript& scriptPubKey, Object& out, bool fIncludeHex);
+extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, UniValue& entry);
+extern void PoSBlockInfoToJSON(const uint256 hashBlock, int64_t nTime, int height, UniValue& entry);
+void ScriptPubKeyToJSON(const CScript& scriptPubKey, UniValue& out, bool fIncludeHex);
 
 double GetDifficulty(const CBlockIndex* blockindex)
 {
@@ -80,9 +79,9 @@ UniValue blockheaderToJSON(const CBlockIndex* blockindex)
     return result;
 }
 
-Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDetails = false)
+UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDetails = false)
 {
-    Object result;
+    UniValue result(UniValue::VOBJ);
     result.push_back(Pair("hash", block.GetHash().GetHex()));
     int confirmations = -1;
     // Only report confirmations if the block is on the main chain
@@ -94,10 +93,10 @@ Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDe
     result.push_back(Pair("version", block.nVersion));
     result.push_back(Pair("merkleroot", block.hashMerkleRoot.GetHex()));
     result.push_back(Pair("acc_checkpoint", block.nAccumulatorCheckpoint.GetHex()));
-    Array txs;
+    UniValue txs(UniValue::VARR);
     BOOST_FOREACH (const CTransaction& tx, block.vtx) {
         if (txDetails) {
-            Object objTx;
+            UniValue objTx(UniValue::VOBJ);
             TxToJSON(tx, uint256(0), objTx);
             txs.push_back(objTx);
         } else
@@ -130,14 +129,13 @@ Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDe
         //This is a PoA block
         //Read information of PoS blocks audited by this PoA block
     	result.push_back(Pair("previouspoahash", block.hashPrevPoABlock.GetHex()));
-        Array posBlockInfos;
-
+        UniValue posBlockInfos(UniValue::VARR);
         for (int i = 0; i < block.posBlocksAudited.size(); i++) {
-            Object objPoSBlockInfo;
+            UniValue objPoSBlockInfo(UniValue::VOBJ);
 
             PoSBlockInfoToJSON(block.posBlocksAudited[i].hash,
                         		block.posBlocksAudited[i].nTime, block.posBlocksAudited[i].height, objPoSBlockInfo);
-                        posBlockInfos.push_back(objPoSBlockInfo);
+            posBlockInfos.push_back(objPoSBlockInfo);
         }
 
         result.push_back(Pair("posblocks", posBlockInfos));
@@ -146,7 +144,7 @@ Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDe
     return result;
 }
 
-Value getblockcount(const Array& params, bool fHelp)
+UniValue getblockcount(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 0)
         throw runtime_error(
@@ -161,7 +159,7 @@ Value getblockcount(const Array& params, bool fHelp)
     return chainActive.Height();
 }
 
-Value getbestblockhash(const Array& params, bool fHelp)
+UniValue getbestblockhash(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 0)
         throw runtime_error(
@@ -176,7 +174,7 @@ Value getbestblockhash(const Array& params, bool fHelp)
     return chainActive.Tip()->GetBlockHash().GetHex();
 }
 
-Value getdifficulty(const Array& params, bool fHelp)
+UniValue getdifficulty(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 0)
         throw runtime_error(
@@ -196,11 +194,11 @@ UniValue mempoolToJSON(bool fVerbose = false)
 {
     if (fVerbose) {
         LOCK(mempool.cs);
-        Object o;
+        UniValue o(UniValue::VOBJ);
         BOOST_FOREACH (const PAIRTYPE(uint256, CTxMemPoolEntry) & entry, mempool.mapTx) {
             const uint256& hash = entry.first;
             const CTxMemPoolEntry& e = entry.second;
-            Object info;
+            UniValue info(UniValue::VOBJ);
             info.push_back(Pair("size", (int)e.GetTxSize()));
             info.push_back(Pair("fee", ValueFromAmount(e.GetFee())));
             info.push_back(Pair("time", e.GetTime()));
@@ -213,7 +211,12 @@ UniValue mempoolToJSON(bool fVerbose = false)
                 if (mempool.exists(txin.prevout.hash))
                     setDepends.insert(txin.prevout.hash.ToString());
             }
-            Array depends(setDepends.begin(), setDepends.end());
+
+            UniValue depends(UniValue::VARR);
+            BOOST_FOREACH(const string& dep, setDepends) {
+                depends.push_back(dep);
+            }
+
             info.push_back(Pair("depends", depends));
             o.push_back(Pair(hash.ToString(), info));
         }
@@ -222,7 +225,7 @@ UniValue mempoolToJSON(bool fVerbose = false)
         vector<uint256> vtxid;
         mempool.queryHashes(vtxid);
 
-        Array a;
+        UniValue a(UniValue::VARR);
         BOOST_FOREACH (const uint256& hash, vtxid)
             a.push_back(hash.ToString());
 
@@ -270,7 +273,7 @@ UniValue getrawmempool(const UniValue& params, bool fHelp)
 }
 
 
-Value getblockhash(const Array& params, bool fHelp)
+UniValue getblockhash(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
         throw runtime_error(
@@ -293,7 +296,7 @@ Value getblockhash(const Array& params, bool fHelp)
     return pblockindex->GetBlockHash().GetHex();
 }
 
-Value getblock(const Array& params, bool fHelp)
+UniValue getblock(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() < 1 || params.size() > 2)
         throw runtime_error(
@@ -366,7 +369,7 @@ Value getblock(const Array& params, bool fHelp)
     return blockToJSON(block, pblockindex);
 }
 
-Value getblockheader(const Array& params, bool fHelp)
+UniValue getblockheader(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() < 1 || params.size() > 2)
         throw runtime_error(
@@ -416,7 +419,7 @@ Value getblockheader(const Array& params, bool fHelp)
     return blockheaderToJSON(pblockindex);
 }
 
-Value gettxoutsetinfo(const Array& params, bool fHelp)
+UniValue gettxoutsetinfo(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 0)
         throw runtime_error(
@@ -438,7 +441,7 @@ Value gettxoutsetinfo(const Array& params, bool fHelp)
 
     LOCK(cs_main);
 
-    Object ret;
+    UniValue ret(UniValue::VOBJ);
 
     CCoinsStats stats;
     FlushStateToDisk();
@@ -454,7 +457,7 @@ Value gettxoutsetinfo(const Array& params, bool fHelp)
     return ret;
 }
 
-Value gettxout(const Array& params, bool fHelp)
+UniValue gettxout(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() < 2 || params.size() > 3)
         throw runtime_error(
@@ -491,7 +494,7 @@ Value gettxout(const Array& params, bool fHelp)
 
     LOCK(cs_main);
 
-    Object ret;
+    UniValue ret(UniValue::VOBJ);
 
     std::string strHash = params[0].get_str();
     uint256 hash(strHash);
@@ -505,14 +508,14 @@ Value gettxout(const Array& params, bool fHelp)
         LOCK(mempool.cs);
         CCoinsViewMemPool view(pcoinsTip, mempool);
         if (!view.GetCoins(hash, coins))
-            return Value::null;
+            return NullUniValue;
         mempool.pruneSpent(hash, coins); // TODO: this should be done by the CCoinsViewMemPool
     } else {
         if (!pcoinsTip->GetCoins(hash, coins))
-            return Value::null;
+            return NullUniValue;
     }
     if (n < 0 || (unsigned int)n >= coins.vout.size() || coins.vout[n].IsNull())
-        return Value::null;
+        return NullUniValue;
 
     BlockMap::iterator it = mapBlockIndex.find(pcoinsTip->GetBestBlock());
     CBlockIndex* pindex = it->second;
@@ -522,7 +525,7 @@ Value gettxout(const Array& params, bool fHelp)
     else
         ret.push_back(Pair("confirmations", pindex->nHeight - coins.nHeight + 1));
     ret.push_back(Pair("value", ValueFromAmount(coins.vout[n].nValue)));
-    Object o;
+    UniValue o(UniValue::VOBJ);
     ScriptPubKeyToJSON(coins.vout[n].scriptPubKey, o, true);
     ret.push_back(Pair("scriptPubKey", o));
     ret.push_back(Pair("version", coins.nVersion));
@@ -531,7 +534,7 @@ Value gettxout(const Array& params, bool fHelp)
     return ret;
 }
 
-Value verifychain(const Array& params, bool fHelp)
+UniValue verifychain(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() > 2)
         throw runtime_error(
@@ -554,7 +557,7 @@ Value verifychain(const Array& params, bool fHelp)
     return CVerifyDB().VerifyDB(pcoinsTip, nCheckLevel, nCheckDepth);
 }
 
-Value getblockchaininfo(const Array& params, bool fHelp)
+UniValue getblockchaininfo(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 0)
         throw runtime_error(
@@ -575,7 +578,7 @@ Value getblockchaininfo(const Array& params, bool fHelp)
 
     LOCK(cs_main);
 
-    Object obj;
+    UniValue obj(UniValue::VOBJ);
     obj.push_back(Pair("chain", Params().NetworkIDString()));
     obj.push_back(Pair("blocks", (int)chainActive.Height()));
     obj.push_back(Pair("headers", pindexBestHeader ? pindexBestHeader->nHeight : -1));
@@ -600,7 +603,7 @@ struct CompareBlocksByHeight {
     }
 };
 
-Value getchaintips(const Array& params, bool fHelp)
+UniValue getchaintips(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 0)
         throw runtime_error(
@@ -649,9 +652,9 @@ Value getchaintips(const Array& params, bool fHelp)
     setTips.insert(chainActive.Tip());
 
     /* Construct the output array.  */
-    Array res;
+    UniValue res(UniValue::VARR);
     BOOST_FOREACH (const CBlockIndex* block, setTips) {
-        Object obj;
+        UniValue obj(UniValue::VOBJ);
         obj.push_back(Pair("height", block->nHeight));
         obj.push_back(Pair("hash", block->phashBlock->GetHex()));
 
@@ -686,7 +689,7 @@ Value getchaintips(const Array& params, bool fHelp)
     return res;
 }
 
-Value getfeeinfo(const Array& params, bool fHelp)
+UniValue getfeeinfo(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
         throw runtime_error(
@@ -759,7 +762,7 @@ Value getfeeinfo(const Array& params, bool fHelp)
             break;
     }
 
-    Object obj;
+    UniValue obj(UniValue::VOBJ);
     CFeeRate nFeeRate = CFeeRate(nFees, nBytes);
     obj.push_back(Pair("txcount", (int64_t)nTotal));
     obj.push_back(Pair("txbytes", (int64_t)nBytes));
@@ -780,7 +783,7 @@ UniValue mempoolInfoToJSON()
     return ret;
 }
 
-Value getmempoolinfo(const Array& params, bool fHelp)
+UniValue getmempoolinfo(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 0)
         throw runtime_error(
@@ -797,7 +800,7 @@ Value getmempoolinfo(const Array& params, bool fHelp)
     return mempoolInfoToJSON();
 }
 
-Value invalidateblock(const Array& params, bool fHelp)
+UniValue invalidateblock(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
         throw runtime_error(
@@ -830,10 +833,10 @@ Value invalidateblock(const Array& params, bool fHelp)
         throw JSONRPCError(RPC_DATABASE_ERROR, state.GetRejectReason());
     }
 
-    return Value::null;
+    return NullUniValue;
 }
 
-Value reconsiderblock(const Array& params, bool fHelp)
+UniValue reconsiderblock(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
         throw runtime_error(
@@ -867,10 +870,10 @@ Value reconsiderblock(const Array& params, bool fHelp)
         throw JSONRPCError(RPC_DATABASE_ERROR, state.GetRejectReason());
     }
 
-    return Value::null;
+    return NullUniValue;
 }
 
-Value getinvalid (const Array& params, bool fHelp)
+UniValue getinvalid (const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() > 1)
         throw runtime_error(
@@ -887,18 +890,18 @@ Value getinvalid (const Array& params, bool fHelp)
     }
 
     if (strCommand == "serials") {
-        Array ret;
+        UniValue ret(UniValue::VARR);
         CAmount nSerialTotal = 0;
         for (auto it : mapInvalidSerials) {
-            Object objSerial;
-            objSerial.emplace_back(Pair(it.first.GetHex(), FormatMoney(it.second)));
+            UniValue objSerial(UniValue::VOBJ);
+            objSerial.push_back(Pair(it.first.GetHex(), FormatMoney(it.second)));
             nSerialTotal += it.second;
-            ret.emplace_back(objSerial);
+            ret.push_back(objSerial);
         }
 
-        Object objTotal;
-        objTotal.emplace_back(Pair("total_value", FormatMoney(nSerialTotal)));
-        ret.emplace_back(objTotal);
+        UniValue objTotal(UniValue::VOBJ);
+        objTotal.push_back(Pair("total_value", FormatMoney(nSerialTotal)));
+        ret.push_back(objTotal);
         return ret;
     }
 
@@ -912,7 +915,7 @@ Value getinvalid (const Array& params, bool fHelp)
     map<CBitcoinAddress, CAmount> mapBanAddress;
     map<COutPoint, int> mapMixedValid;
 
-    Array ret;
+    UniValue ret(UniValue::VARR);
     for (auto it : mapInvalidOutPoints) {
         COutPoint out = it.first;
         //Get the tx that the outpoint is from
@@ -922,14 +925,14 @@ Value getinvalid (const Array& params, bool fHelp)
             continue;
         }
 
-        Object objTx;
-        objTx.emplace_back(Pair("inv_out", it.first.ToString()));
+        UniValue objTx(UniValue::VOBJ);
+        objTx.push_back(Pair("inv_out", it.first.ToString()));
 
         CAmount nValue = tx.vout[out.n].nValue;
-        objTx.emplace_back(Pair("value", FormatMoney(nValue)));
+        objTx.push_back(Pair("value", FormatMoney(nValue)));
 
         //Search the txin's to see if any of them are "valid".
-        Object objMixedValid;
+        UniValue objMixedValid(UniValue::VOBJ);
 
         //if some of the other inputs are valid
         for(CTxIn in2 : tx.vin) {
@@ -945,7 +948,7 @@ Value getinvalid (const Array& params, bool fHelp)
             //This is a valid outpoint that mixed with an invalid outpoint. Investigate this person.
             //Information leakage, not covering their tracks well enough
             CAmount nValid = txPrev.vout[in2.prevout.n].nValue;
-            objMixedValid.emplace_back(Pair(FormatMoney(nValid), in2.prevout.ToString()));
+            objMixedValid.push_back(Pair(FormatMoney(nValid), in2.prevout.ToString()));
 
             nMixedValid += nValid;
             mapMixedValid[in2.prevout] = 1;
@@ -958,9 +961,9 @@ Value getinvalid (const Array& params, bool fHelp)
         if (!coins || !coins->IsAvailable(out.n))
             fSpent = true;
 
-        objTx.emplace_back(Pair("spent", fSpent));
+        objTx.push_back(Pair("spent", fSpent));
         if (!objMixedValid.empty())
-            objTx.emplace_back(Pair("mixed_with_valid", objMixedValid));
+            objTx.push_back(Pair("mixed_with_valid", objMixedValid));
 
         CScript scriptPubKey = tx.vout[out.n].scriptPubKey;
         if (scriptPubKey.IsZerocoinMint()) {
@@ -978,19 +981,19 @@ Value getinvalid (const Array& params, bool fHelp)
         if (fSpent && !fShowAll)
             continue;
 
-        ret.emplace_back(objTx);
+        ret.push_back(objTx);
     }
 
-    Object objAddresses;
+    UniValue objAddresses(UniValue::VOBJ);
     for (auto it : mapBanAddress)
-        objAddresses.emplace_back(Pair(it.first.ToString(), FormatMoney(it.second)));
+        objAddresses.push_back(Pair(it.first.ToString(), FormatMoney(it.second)));
 
-    Object obj;
-    obj.emplace_back(Pair("addresses_with_invalid", objAddresses));
-    obj.emplace_back(Pair("total_unspent", FormatMoney(nUnspent)));
-    obj.emplace_back(Pair("total_minted", FormatMoney(nMint)));
-    obj.emplace_back(Pair("total_valid_used", FormatMoney(nMixedValid)));
+    UniValue obj(UniValue::VOBJ);
+    obj.push_back(Pair("addresses_with_invalid", objAddresses));
+    obj.push_back(Pair("total_unspent", FormatMoney(nUnspent)));
+    obj.push_back(Pair("total_minted", FormatMoney(nMint)));
+    obj.push_back(Pair("total_valid_used", FormatMoney(nMixedValid)));
 
-    ret.emplace_back(obj);
+    ret.push_back(obj);
     return ret;
 }
