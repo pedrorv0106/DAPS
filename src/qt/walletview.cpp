@@ -289,10 +289,10 @@ bool WalletView::handlePaymentRequest(const SendCoinsRecipient& recipient)
     return sendCoinsPage->handlePaymentRequest(recipient);
 }
 
-void WalletView::showOutOfSyncWarning(bool fShow)
+void WalletView::showSyncStatus(bool fShow)
 {
-    overviewPage->showOutOfSyncWarning(fShow);
-//    privacyPage->showOutOfSyncWarning(fShow);
+    overviewPage->showSyncStatus(fShow);
+//  #remove  privacyPage->showSyncStatus(fShow);
 }
 
 void WalletView::updateEncryptionStatus()

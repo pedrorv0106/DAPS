@@ -98,6 +98,7 @@ private slots:
     void updateFeeSectionControls();
     void updateMinFeeLabel();
     void updateSmartFeeLabel();
+    void updateRingSize();
     void updateGlobalFeeVariables();
 
 signals:
