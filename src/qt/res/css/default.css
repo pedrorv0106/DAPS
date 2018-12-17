@@ -142,6 +142,7 @@ color:#333333;
     width: 25px;
     border-radius: 12px;
     background-color:whitesmoke;
+    margin: 7px;
 }
 .QRadioButton::indicator:checked {
     height: 21px;
@@ -183,29 +184,28 @@ background-color:#f2f2f2;
 /****************************************************************************************/
 
 QPushButton { /* Global Button Style */
-background-color:qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: .01 #64ACD2, stop: .1 #382f44, stop: .95 #382f44, stop: 1 #1D80B5);
-border:0;
-border-radius:3px;
-color:#ffffff;
-font-size:12px;
-font-weight:bold;
-padding-left:25px;
-padding-right:25px;
-padding-top:5px;
-padding-bottom:5px;
+height: 40px;
+box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+border-radius: 10px;
+background-color: #5e0057;
+color: white;
+font-family: Roboto;
+font-size: 20px;
+font-weight: 400;
+padding: 10px 20px;
 }
 
 QPushButton:hover {
-background-color:qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: .01 #5B4C9A, stop: .1 #5B4C86, stop: .95 #5B4C86, stop: 1 #5B4C7C);
+background-color: #4e0049;
+color: #b0fcff;
+font-style: bold;
 }
 
-QPushButton:focus {
-border:none;
-outline:none;
-}
-
-QPushButton:pressed {
-border:1px solid #333;
+QPushButton:pressed{
+background-color:#5e0057;
+border-style:solid;
+border-color: #5e0057;
+border-width: 10px;
 }
 
 QComboBox { /* Dropdown Menus */
@@ -462,8 +462,6 @@ border-radius: 15px;
 background-color: #83faff;
 }
 
-QScrollBar::sub-line:horizontal {
-}
 /* QSlider::sub-page:horizontal {
 background-color:#5B4C7C;
 border-color:#c2c2c2;
