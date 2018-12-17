@@ -136,8 +136,21 @@ font-size:12px;
 color:#333333;
 }
 
-.QRadioButton { /* Radio Button Labels */
-color:#333333;
+
+.QRadioButton::indicator{
+    height: 25px;
+    width: 25px;
+    border-radius: 12px;
+    background-color:whitesmoke;
+}
+.QRadioButton::indicator:checked {
+    height: 21px;
+    width: 21px;
+    background-color: #5e2059;
+    border-style:solid;
+    border-radius: 10px;
+    border-color: whitesmoke;
+    border-width: 2x;
 }
 
 .QCheckBox { /* Checkbox Labels */
