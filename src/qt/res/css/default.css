@@ -373,9 +373,6 @@ alternate-background-color:#f2f2f2;
 color:#333;
 }
 
-QScrollBar { /* Scroll Bar */
-
-}
 
 QScrollBar:vertical { /* Vertical Scroll Bar Attributes */
 border:0;
@@ -384,23 +381,12 @@ width:18px;
 margin:18px 0px 18px 0px;
 }
 
-QScrollBar:horizontal { /* Horizontal Scroll Bar Attributes */
-border:0;
-background:#ffffff;
-height:18px;
-margin:0px 18px 0px 18px;
-}
-
 
 QScrollBar::handle:vertical { /* Scroll Bar Slider - vertical */
 background:#e0e0e0;
 min-height:10px;
 }
 
-QScrollBar::handle:horizontal { /* Scroll Bar Slider - horizontal */
-background:#e0e0e0;
-min-width:10px;
-}
 
 QScrollBar::add-page, QScrollBar::sub-page { /* Scroll Bar Background */
 background:#F8F6F6;
@@ -458,13 +444,27 @@ QScrollBar:right-arrow {
 background-image: url(':/images/rightArrow_small');
 }
 
-QSlider::handle:horizontal {
-background-color:#f2f2f2;
-border:1px solid #c2c2c2;
-border-radius:10px;
+QSlider::horizontal{
+height: 45px;
 }
 
-QSlider::sub-page:horizontal {
+QSlider::groove:horizontal {
+height: 8px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
+background-color: rgba(0, 0, 0, 0.4);
+margin: 13px 0;
+border-radius: 3px;
+}
+
+QSlider::handle:horizontal {
+width: 31px;
+margin: -13px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+border-radius: 15px;
+background-color: #83faff;
+}
+
+QScrollBar::sub-line:horizontal {
+}
+/* QSlider::sub-page:horizontal {
 background-color:#5B4C7C;
 border-color:#c2c2c2;
 border-radius:3px;
@@ -474,7 +474,7 @@ QSlider::add-page:horizontal {
 background-color:#dedede;
 border:1px solid #c2c2c2;
 border-radius:3px;
-}
+} */
 
 /**************************** DIALOG BOXES **********************************************/
 
