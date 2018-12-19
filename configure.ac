@@ -210,7 +210,7 @@ AC_ARG_WITH([daemon],
 
 AC_LANG_PUSH([C++])
 
-AX_CXX_CHECK_LIB([boost_regex-mt],[boost::regex::generic_category()],[BOOST_LIB_SUFFIX="-mt"],[BOOST_LIB_SUFFIX=""])
+#AX_CXX_CHECK_LIB([boost_regex-mt],[boost::regex::generic_category()],[BOOST_LIB_SUFFIX="-mt"],[BOOST_LIB_SUFFIX=""])
 
 use_pkgconfig=yes
 case $host in
