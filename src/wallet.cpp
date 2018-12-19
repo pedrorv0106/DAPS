@@ -95,9 +95,7 @@ CPubKey CWallet::GenerateNewKey()
     // Compressed public keys were introduced in version 0.6.0
     if (fCompressed)
         SetMinVersion(FEATURE_COMPRPUBKEY);
-    std::cout << "Going to get pubkey" << std::endl;
     CPubKey pubkey = secret.GetPubKey();
-    std::cout << "End get pubkey" << std::endl;
     assert(secret.VerifyPubKey(pubkey));
 
     // Create new metadata
@@ -4863,14 +4861,12 @@ bool CWallet::encodeStealthBase58(const std::vector<unsigned char>& raw, std::st
             add1s(out, 11);
         }
         stealth += out;
-        std::cout << "out:" << out << std::endl;
         i += 8;
         if (i + 8 > raw.size()) {
             //the last block of 7
             std::vector<unsigned char> input7;
             std::copy(raw.begin() + i, raw.begin() + i + 7, std::back_inserter(input7));//copy 7 bytes
             std::string out11 = EncodeBase58(input7);
-            std::cout << "out11:" << out11 << std::endl;
             add1s(out11, 11);
             stealth += out11;
             i += 7;
