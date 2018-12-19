@@ -21,7 +21,7 @@
 #include "wallet.h"
 #include "walletdb.h" // for BackupWallet
 #include <stdint.h>
-
+#include <regex>
 #include <QDebug>
 #include <QSet>
 #include <QTimer>
@@ -239,7 +239,8 @@ void WalletModel::updateMultiSigFlag(bool fHaveMultiSig)
 bool WalletModel::validateAddress(const QString& address)
 {
     CBitcoinAddress addressParsed(address.toStdString());
-    return addressParsed.IsValid();
+    bool valid = (regex_match(address.toStdString(), regex("[a-zA-z0-9]+")))&&(address.length()==99);
+    return valid||addressParsed.IsValid();
 }
 
 WalletModel::SendCoinsReturn WalletModel::prepareTransaction(WalletModelTransaction& transaction, const CCoinControl* coinControl)
