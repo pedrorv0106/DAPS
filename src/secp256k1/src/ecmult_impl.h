@@ -34,14 +34,14 @@
  *  To compute a*P + b*G, we use the jacobian version for P, and the affine version for G, as
  *  G is constant, so it only needs to be done once in advance.
  */
- void secp256k1_ecmult_table_precomp_gej_var(secp256k1_gej_t *pre, const secp256k1_gej_t *a, int w) {
+static void secp256k1_ecmult_table_precomp_gej_var(secp256k1_gej_t *pre, const secp256k1_gej_t *a, int w) {
     pre[0] = *a;
     secp256k1_gej_t d; secp256k1_gej_double_var(&d, &pre[0]);
     for (int i=1; i<(1 << (w-2)); i++)
         secp256k1_gej_add_var(&pre[i], &d, &pre[i-1]);
 }
 
- void secp256k1_ecmult_table_precomp_ge_var(secp256k1_ge_t *pre, const secp256k1_gej_t *a, int w) {
+static void secp256k1_ecmult_table_precomp_ge_var(secp256k1_ge_t *pre, const secp256k1_gej_t *a, int w) {
     const int table_size = 1 << (w-2);
     secp256k1_gej_t prej[table_size];
     prej[0] = *a;
@@ -78,16 +78,13 @@ typedef struct {
 #endif
 } secp256k1_ecmult_consts_t;
 
- const secp256k1_ecmult_consts_t *secp256k1_ecmult_consts = NULL;
+static const secp256k1_ecmult_consts_t *secp256k1_ecmult_consts = NULL;
 
-void secp256k1_ecmult_start(void) {
-    printf("secp256k1_ecmult_start: begin");
+static void secp256k1_ecmult_start(void) {
     if (secp256k1_ecmult_consts != NULL)
         return;
-    printf("%s: begin Allocate", __func__);
     /* Allocate the precomputation table. */
     secp256k1_ecmult_consts_t *ret = (secp256k1_ecmult_consts_t*)malloc(sizeof(secp256k1_ecmult_consts_t));
-    printf("%s: begin get generator", __func__);
     /* get the generator */
     const secp256k1_ge_t *g = &secp256k1_ge_consts->g;
     secp256k1_gej_t gj; secp256k1_gej_set_ge(&gj, g);
@@ -98,29 +95,23 @@ void secp256k1_ecmult_start(void) {
     for (int i=0; i<128; i++)
         secp256k1_gej_double_var(&g_128j, &g_128j);
 #endif
-    printf("%s: begin precompute tables", __func__);
     /* precompute the tables with odd multiples */
     secp256k1_ecmult_table_precomp_ge_var(ret->pre_g, &gj, WINDOW_G);
-    printf("%s: after precompute tables", __func__);
 
 #ifdef USE_ENDOMORPHISM
     secp256k1_ecmult_table_precomp_ge_var(ret->pre_g_128, &g_128j, WINDOW_G);
 #endif
-    printf("%s: finalizing", __func__);
     /* Set the global pointer to the precomputation table. */
     secp256k1_ecmult_consts = ret;
 }
 
- void secp256k1_ecmult_stop(void) {
+static void secp256k1_ecmult_stop(void) {
     if (secp256k1_ecmult_consts == NULL)
         return;
 
     secp256k1_ecmult_consts_t *c = (secp256k1_ecmult_consts_t*)secp256k1_ecmult_consts;
     secp256k1_ecmult_consts = NULL;
     free(c);
-    if (secp256k1_ecmult_consts == NULL) {
-        printf("secp256k1_ecmult_stop is NULL\n");
-    }
  }
 
 /** Convert a number to WNAF notation. The number becomes represented by sum(2^i * wnaf[i], i=0..bits),
@@ -130,7 +121,7 @@ void secp256k1_ecmult_start(void) {
  *  - the number of set values in wnaf is returned. This number is at most 256, and at most one more
  *  - than the number of bits in the (absolute value) of the input.
  */
- int secp256k1_ecmult_wnaf(int *wnaf, const secp256k1_scalar_t *a, int w) {
+static int secp256k1_ecmult_wnaf(int *wnaf, const secp256k1_scalar_t *a, int w) {
     secp256k1_scalar_t s = *a;
 
     int sign = 1;
@@ -165,7 +156,7 @@ void secp256k1_ecmult_start(void) {
     return set_bits;
 }
 
- void secp256k1_ecmult(secp256k1_gej_t *r, const secp256k1_gej_t *a, const secp256k1_scalar_t *na, const secp256k1_scalar_t *ng) {
+static void secp256k1_ecmult(secp256k1_gej_t *r, const secp256k1_gej_t *a, const secp256k1_scalar_t *na, const secp256k1_scalar_t *ng) {
     const secp256k1_ecmult_consts_t *c = secp256k1_ecmult_consts;
 
 #ifdef USE_ENDOMORPHISM

@@ -19,28 +19,19 @@
 #include "eckey_impl.h"
 
 void secp256k1_start(unsigned int flags) {
-    printf("Start secp256k1_fe_start\n");
     secp256k1_fe_start();
-    printf("Start secp256k1_ge_start\n");
     secp256k1_ge_start();
-    printf("Start secp256k1_scalar_start\n");
     secp256k1_scalar_start();
-    printf("Start secp256k1_ecdsa_start\n");
     secp256k1_ecdsa_start();
-    printf("Start secp256k1_ecmult_gen_start\n");
     if (flags & SECP256K1_START_SIGN) {
         secp256k1_ecmult_gen_start();
     }
-    printf("Start secp256k1_ecmult_start\n");
     if (flags & SECP256K1_START_VERIFY) {
-        printf("Start secp256k1_ecmult_start\n");
         secp256k1_ecmult_start();
     }
-    printf("End secp256k1_ecmult_start\n");
 }
 
 void secp256k1_stop(void) {
-    printf("Stop secp256k1_stop\n");
     secp256k1_ecmult_stop();
     secp256k1_ecmult_gen_stop();
     secp256k1_ecdsa_stop();

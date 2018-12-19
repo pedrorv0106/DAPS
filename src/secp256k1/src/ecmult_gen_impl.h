@@ -98,9 +98,6 @@ static void secp256k1_ecmult_gen_stop(void) {
     secp256k1_ecmult_gen_consts_t *c = (secp256k1_ecmult_gen_consts_t*)secp256k1_ecmult_gen_consts;
     secp256k1_ecmult_gen_consts = NULL;
     free(c);
-    if (secp256k1_ecmult_gen_consts == NULL) {
-        printf("secp256k1_ecmult_gen_consts is NULL\n");
-    }
 }
 
 static void secp256k1_ecmult_gen(secp256k1_gej_t *r, const secp256k1_scalar_t *gn) {

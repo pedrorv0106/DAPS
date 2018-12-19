@@ -218,7 +218,7 @@ public:
     const uint32_t nLockTime;
 
     //For stealth transactions
-    CPubKey txPubKey;
+    std::vector<unsigned char> txPub;
     char hasPaymentID;
     uint64_t paymentID;
     //const unsigned int nTime;
@@ -240,7 +240,7 @@ public:
         READWRITE(*const_cast<std::vector<CTxIn>*>(&vin));
         READWRITE(*const_cast<std::vector<CTxOut>*>(&vout));
         READWRITE(*const_cast<uint32_t*>(&nLockTime));
-        READWRITE(txPubKey);
+        READWRITE(txPub);
         READWRITE(hasPaymentID);
         if (hasPaymentID != 0) {
             READWRITE(paymentID);
@@ -336,7 +336,7 @@ struct CMutableTransaction
     std::vector<CTxOut> vout;
     uint32_t nLockTime;
     //For stealth transactions
-    CPubKey txPubKey;
+    std::vector<unsigned char> txPub;
     char hasPaymentID;
     uint64_t paymentID;
 
@@ -352,7 +352,7 @@ struct CMutableTransaction
         READWRITE(vin);
         READWRITE(vout);
         READWRITE(nLockTime);
-        READWRITE(txPubKey);
+        READWRITE(txPub);
         READWRITE(hasPaymentID);
         if (hasPaymentID != 0) {
             READWRITE(paymentID);
