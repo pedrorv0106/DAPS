@@ -4918,7 +4918,6 @@ bool CWallet::DecodeStealthAddress(const std::string& stealth, CPubKey& pubViewK
             std::copy(decoded.begin(), decoded.end(), std::back_inserter(raw));
         } else if (sub[0] == '1') {
             //find the last padding character
-            std::cout <<"has padding: " << sub << std::endl;
             int lastPad = 0;
             while (lastPad < sub.length() - 1) {
                 if (sub[lastPad + 1] != '1') {
@@ -4931,9 +4930,7 @@ bool CWallet::DecodeStealthAddress(const std::string& stealth, CPubKey& pubViewK
             while (padIdx >= 0 && sub[padIdx] == '1') {
                 std::string str_without_pads = sub.substr(padIdx + 1, sub.length() - padIdx - 1);
                 decoded.clear();
-                std::cout <<"pad idx: " << padIdx << std::endl;
                 if (DecodeBase58(str_without_pads, decoded)) {
-                    std::cout <<"decoded: " << decoded.size() << std::endl;
                     if ((decoded.size() == 8 && i + 11 < stealth.length()) || (decoded.size() == 7 && i + 11 == stealth.length())) {
                         std::copy(decoded.begin(), decoded.end(), std::back_inserter(raw));
                         break;
@@ -4945,7 +4942,6 @@ bool CWallet::DecodeStealthAddress(const std::string& stealth, CPubKey& pubViewK
             }
             if (decoded.size() == 0) {
                 //cannot decode this block of stealth address
-                std::cout <<"cannot decode: " << sub << std::endl;
                 return false;
             }
         } else {
@@ -4955,7 +4951,6 @@ bool CWallet::DecodeStealthAddress(const std::string& stealth, CPubKey& pubViewK
     }
 
     if (raw.size() != 71 && raw.size() != 79) {
-        std::cout <<"Size = " << raw.size() << std::endl;
         return false;
     }
 
@@ -4977,39 +4972,25 @@ bool CWallet::DecodeStealthAddress(const std::string& stealth, CPubKey& pubViewK
 
 //extern void secp256k1_start(unsigned int flags);
 
-bool computeStealthDestination(CKey& secret, CPubKey& pubViewKey, CPubKey& pubSpendKey, CPubKey& des) {
+bool computeStealthDestination(const CKey& secret, const CPubKey& pubViewKey, const CPubKey& pubSpendKey, CPubKey& des) {
     //generate transaction destination: P = Hs(rA)G+B, A = view pub, B = spend pub, r = secret
     //1. Compute rA
-    std::cout << "Starting secp256k1_start" << std::endl;
-    //secp256k1_start(SECP256K1_START_SIGN | SECP256K1_START_VERIFY);
     unsigned char rA[65];
-    std::cout << "Starting copying pub view key" << std::endl;
+    unsigned char B[65];
     memcpy(rA, pubViewKey.begin(), pubViewKey.size());
-    std::cout << "Starting secp256k1_ec_pubkey_tweak_mul" << std::endl;
     if (!secp256k1_ec_pubkey_tweak_mul(rA, pubViewKey.size(), secret.begin())) {
         return false;
     }
-    std::cout << "Starting Hash" << std::endl;
     uint256 HS = Hash(rA, rA + pubViewKey.size());
-    unsigned char *pHS = HS.begin();
-    CKey temp;
-    std::cout << "Starting Set HSG" << std::endl;
-    temp.Set(pHS, pHS + 32, true);
-    //std::cout << "HS = " << temp << std::endl;
-    CPubKey HSG = temp.GetPubKey();
-    std::cout << "HSG = " << HSG.GetHex() << std::endl;
-    unsigned char temp1[65], temp2[65];
-    memcpy(temp1, HSG.begin(), HSG.size());
-    memcpy(temp2, pubSpendKey.begin(), pubSpendKey.size());
-    std::cout << "Starting secp256k1_ec_pubkey_tweak_add" << std::endl;
-    secp256k1_ec_pubkey_tweak_add(temp1, pubSpendKey.size(), temp2);
-    des.Set(temp1, temp1 + 33);
-    std::cout << "des = " << des.GetHex() << std::endl;
-    //secp256k1_stop();
+
+    memcpy(B, pubSpendKey.begin(), pubSpendKey.size());
+
+    secp256k1_ec_pubkey_tweak_add(B, pubSpendKey.size(), HS.begin());
+    des.Set(B, B + pubSpendKey.size());
     return true;
 }
 
-bool CWallet::SendToStealthAddress(const std::string& stealthAddr, CAmount nValue, CWalletTx& wtxNew, bool fUseIX) {
+bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount nValue, CWalletTx& wtxNew, bool fUseIX) {
     // Check amount
     if (nValue <= 0)
         throw runtime_error("Invalid amount");
@@ -5038,23 +5019,51 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, CAmount nValu
     assert(secret.VerifyPubKey(pubkey));
     std::copy(pubkey.begin(), pubkey.end(), std::back_inserter(wtxNew.txPub));
 
-    CPubKey printed(wtxNew.txPub);
-    std::cout << "transaction public key:" << printed.GetHex() << ", size = " << printed.size() << std::endl;
-
     //No payment ID for the moment
     wtxNew.hasPaymentID = 0;
 
     //Compute stealth destination
     CPubKey stealthDes;
+    CKey spend;
+    mySpendPrivateKey(spend);
     computeStealthDestination(secret, pubViewKey, pubSpendKey, stealthDes);
-    std::cout << "Stealth destination:" << stealthDes.GetHex() << std::endl;
+
+    ///////////////////////////////////////////////////
+    //compute the tx destination
+    //P' = Hs(aR)G+B, a = view private, B = spend pub, R = tx public key
+    /*{
+        unsigned char aR[65];
+        CKey spend, view;
+        mySpendPrivateKey(spend);
+        myViewPrivateKey(view);
+        CPubKey pubSpendKey = spend.GetPubKey();
+        //copy R into a
+        CPubKey wtxNewTxPub(wtxNew.txPub);
+        memcpy(aR, wtxNewTxPub.begin(), wtxNewTxPub.size());
+        if (!secp256k1_ec_pubkey_tweak_mul(aR, wtxNewTxPub.size(), view.begin())) {
+            return false;
+        }
+        uint256 HS = Hash(aR, aR + wtxNewTxPub.size());
+
+        //Compute private key to spend
+        //x = Hs(aR) + b, b = spend private key
+        unsigned char HStemp[32];
+        unsigned char spendTemp[32];
+        memcpy(HStemp, HS.begin(), 32);
+        memcpy(spendTemp, spend.begin(), 32);
+        secp256k1_ec_privkey_tweak_add(HStemp, spendTemp);
+        CKey privKey;
+        privKey.Set(HStemp, HStemp + 32,true);
+        CPubKey computed = privKey.GetPubKey();
+        std::cout << "recomputed Stealth destination:" << computed.GetHex() << std::endl;
+    }*/
+    //////////////////////////////////////////////////
+
+
     CBitcoinAddress address(stealthDes.GetID());
-    std::cout << "Bitcoin address:" << address.ToString() << std::endl;
     CScript scriptPubKey = GetScriptForDestination(address.Get());
-    std::cout << "Bitcoin script:" << scriptPubKey.ToString() << std::endl;
     // Create and send the transaction
     CReserveKey reservekey(pwalletMain);
-    std::cout << "reservekey:" << std::endl;
     CAmount nFeeRequired;
     if (!pwalletMain->CreateTransaction(scriptPubKey, nValue, wtxNew, reservekey, nFeeRequired, strError, NULL, ALL_COINS, fUseIX, (CAmount)0)) {
         if (nValue + nFeeRequired > pwalletMain->GetBalance())
@@ -5062,7 +5071,6 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, CAmount nValu
         LogPrintf("SendToStealthAddress() : %s\n", strError);
         throw runtime_error(strError);
     }
-    std::cout << "after CreateTransaction:" << std::endl;
     if (!pwalletMain->CommitTransaction(wtxNew, reservekey, (!fUseIX ? "tx" : "ix")))
         throw runtime_error("Error: The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.");
     return true;
@@ -5077,34 +5085,28 @@ bool CWallet::IsTransactionForMe(const CTransaction& tx, CKey& privKey) {
     if (!myViewPrivateKey(view)) {
         LogPrintf("Cannot obtain private view key");
     }
-    bool ret = false;
     const CPubKey& pubSpendKey = spend.GetPubKey();
+    bool ret = false;
+    CPubKey txPub(tx.txPub);
+
+    //compute the tx destination
+    //P' = Hs(aR)G+B, a = view private, B = spend pub, R = tx public key
+    unsigned char aR[65];
+    //copy R into a
+    memcpy(aR, txPub.begin(), txPub.size());
+    if (!secp256k1_ec_pubkey_tweak_mul(aR, txPub.size(), view.begin())) {
+        return false;
+    }
+    uint256 HS = Hash(aR, aR + txPub.size());
+    unsigned char *pHS = HS.begin();
+    unsigned char expectedDestination[65];
+    memcpy(expectedDestination, pubSpendKey.begin(), pubSpendKey.size());
+    secp256k1_ec_pubkey_tweak_add(expectedDestination, pubSpendKey.size(), pHS);
+    CPubKey expectedDes(expectedDestination, expectedDestination + 33);
+    LogPrintf("expectedDes Stealth destination:%s", expectedDes.GetHex());
+    CBitcoinAddress address(expectedDes.GetID());
+    CScript scriptPubKey = GetScriptForDestination(address.Get());
     for (const CTxOut& out: tx.vout) {
-        //compute the tx destination
-        //P' = Hs(aR)G+B, a = view private, B = spend pub, R = tx public key
-        unsigned char aR[65];
-        memcpy(aR, txPubKey.begin(), txPubKey.size());
-        if (!secp256k1_ec_pubkey_tweak_mul(aR, txPubKey.size(), view.begin())) {
-            return false;
-        }
-        uint256 HS = Hash(aR, aR + txPubKey.size());
-        unsigned char *pHS = HS.begin();
-        CKey temp;
-        std::cout << "Starting Set HSG" << std::endl;
-        temp.Set(pHS, pHS + 32, true);
-        CPubKey HSG = temp.GetPubKey();
-        unsigned char temp1[65], temp2[65];
-        memcpy(temp1, HSG.begin(), HSG.size());
-        memcpy(temp2, pubSpendKey.begin(), pubSpendKey.size());
-        std::cout << "Starting secp256k1_ec_pubkey_tweak_add" << std::endl;
-        secp256k1_ec_pubkey_tweak_add(temp1, pubSpendKey.size(), temp2);
-
-        CPubKey expectedDes;
-        expectedDes.Set(temp1, temp1 + 33);
-
-        CBitcoinAddress address(expectedDes.GetID());
-        CScript scriptPubKey = GetScriptForDestination(address.Get());
-
         if (scriptPubKey == out.scriptPubKey) {
             ret = true;
         }
@@ -5116,8 +5118,11 @@ bool CWallet::IsTransactionForMe(const CTransaction& tx, CKey& privKey) {
             unsigned char spendTemp[32];
             memcpy(HStemp, HS.begin(), 32);
             memcpy(spendTemp, spend.begin(), 32);
-            secp256k1_ec_pubkey_tweak_add(HStemp, 32, spendTemp);
-            privKey.Set(HStemp, HStemp + 32,true);
+            secp256k1_ec_privkey_tweak_add(HStemp, spendTemp);
+            privKey.Set(HStemp, HStemp + 32, true);
+            CPubKey computed = privKey.GetPubKey();
+            LogPrintf("recomputed Stealth destination: %s", computed.GetHex());
+            AddKey(privKey);
             break;
         }
     }
@@ -5125,10 +5130,28 @@ bool CWallet::IsTransactionForMe(const CTransaction& tx, CKey& privKey) {
 }
 
 bool CWallet::mySpendPrivateKey(CKey& spend) {
-
+    std::string spendAccountLabel = "spendaccount";
+    CAccount spendAccount;
+    CWalletDB pDB(strWalletFile);
+    if (!pDB.ReadAccount(spendAccountLabel, spendAccount)) {
+        LogPrintf("Cannot Load Spend private key");
+        return false;
+    }
+    const CKeyID& keyID = spendAccount.vchPubKey.GetID();
+    GetKey(keyID, spend);
+    return true;
 }
 bool CWallet::myViewPrivateKey(CKey& view) {
-
+    std::string viewAccountLabel = "viewaccount";
+    CAccount viewAccount;
+    CWalletDB pDB(strWalletFile);
+    if (!pDB.ReadAccount(viewAccountLabel, viewAccount)) {
+        LogPrintf("Cannot Load view private key");
+        return false;
+    }
+    const CKeyID& keyID = viewAccount.vchPubKey.GetID();
+    GetKey(keyID, view);
+    return true;
 }
 
 
