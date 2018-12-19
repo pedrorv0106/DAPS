@@ -5073,7 +5073,7 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
     return true;
 }
 
-bool CWallet::IsTransactionForMe(const CTransaction& tx, CKey& privKey) {
+bool CWallet::IsTransactionForMe(const CTransaction& tx) {
     const CPubKey txPubKey(tx.txPub);
     CKey spend, view;
     if (!mySpendPrivateKey(spend)) {
@@ -5116,6 +5116,7 @@ bool CWallet::IsTransactionForMe(const CTransaction& tx, CKey& privKey) {
             memcpy(HStemp, HS.begin(), 32);
             memcpy(spendTemp, spend.begin(), 32);
             secp256k1_ec_privkey_tweak_add(HStemp, spendTemp);
+            CKey privKey;
             privKey.Set(HStemp, HStemp + 32, true);
             CPubKey computed = privKey.GetPubKey();
             LogPrintf("recomputed Stealth destination: %s", computed.GetHex());
