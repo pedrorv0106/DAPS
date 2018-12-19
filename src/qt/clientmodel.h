@@ -58,6 +58,7 @@ public:
 
     double getVerificationProgress() const;
     QDateTime getLastBlockDate() const;
+    int getChainHeight() const;
 
     //! Return true if core is doing initial block download
     bool inInitialBlockDownload() const;

@@ -17,6 +17,7 @@
 #include "optionsdialog.h"
 #include "optionsmodel.h"
 #include "rpcconsole.h"
+#include "overviewpage.h"
 #include "utilitydialog.h"
 
 #ifdef ENABLE_WALLET
@@ -935,7 +936,7 @@ void BitcoinGUI::setNumBlocks(int count)
 
 #ifdef ENABLE_WALLET
             if (walletFrame)
-                walletFrame->showOutOfSyncWarning(false);
+                walletFrame->showSyncStatus(false);
 #endif // ENABLE_WALLET
 
             nAttempt = masternodeSync.RequestedMasternodeAttempt < MASTERNODE_SYNC_THRESHOLD ?
@@ -974,7 +975,7 @@ void BitcoinGUI::setNumBlocks(int count)
         progressBar->setMaximum(1000000000);
         progressBar->setValue(clientModel->getVerificationProgress() * 1000000000.0 + 0.5);
         progressBar->setVisible(true);
-
+ 
         tooltip = tr("Catching up...") + QString("<br>") + tooltip;
         if (count != prevBlocks) {
             labelBlocksIcon->setPixmap(QIcon(QString(
@@ -987,7 +988,7 @@ void BitcoinGUI::setNumBlocks(int count)
 
 #ifdef ENABLE_WALLET
         if (walletFrame)
-            walletFrame->showOutOfSyncWarning(true);
+            walletFrame->showSyncStatus(true);
 #endif // ENABLE_WALLET
 
         tooltip += QString("<br>");

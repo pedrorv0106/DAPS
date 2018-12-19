@@ -31,6 +31,9 @@
 using namespace json_spirit;
 using namespace std;
 
+static bool PoABlockBeingMined = false;
+static uint256 PoAMerkleRoot;
+
 /**
  * Return average network hashes per second based on the last 'lookup' blocks,
  * or from the last difficulty change if 'lookup' is nonpositive.
@@ -668,6 +671,8 @@ Value getpoablocktemplate(const Array& params, bool fHelp)
             "{\n"
             "  \"version\" : n,                    (numeric) The block version\n"
             "  \"previouspoablockhash\" : \"xxxx\",    (string) The hash of current highest block\n"
+            "  \"poamerkleroot\" : \"xxxx\",    (string) The PoA merkle root\n"
+            "  \"poahashintegrated\" : \"xxxx\",    (string) hash of previouspoablockhash and poamerkleroot\n"
             "  \"coinbasevalue\" : n,               (numeric) maximum allowable input to coinbase transaction, including the generation award and transaction fees (in duffs)\n"
             "  \"coinbasetxn\" : { ... },           (json object) information for coinbase transaction\n"
             "  \"noncerange\" : \"00000000ffffffff\",   (string) A range of valid nonces\n"
@@ -721,8 +726,8 @@ Value getpoablocktemplate(const Array& params, bool fHelp)
             delete pblocktemplate;
             pblocktemplate = NULL;
         }
-        CScript scriptDummy = CScript() << OP_TRUE;
-        pblocktemplate = CreateNewPoABlock(scriptDummy, pwalletMain);
+        CReserveKey reservekey(pwalletMain);
+        pblocktemplate = CreateNewPoABlockWithKey(reservekey, pwalletMain);
         if (!pblocktemplate)
             throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");
 
@@ -767,10 +772,14 @@ Value getpoablocktemplate(const Array& params, bool fHelp)
         transactions.push_back(entry);
     }
 
+    Object coinbasetxn;
+    CTransaction& tx = pblock->vtx[0];
+    coinbasetxn.push_back(Pair("data", EncodeHexTx(tx)));
+    coinbasetxn.push_back(Pair("hash", tx.GetHash().GetHex()));
+
     Object aux;
     aux.push_back(Pair("flags", HexStr(COINBASE_FLAGS.begin(), COINBASE_FLAGS.end())));
 
-    uint256 hashTarget = uint256().SetCompact(pblock->nBits);
 
     static Array aMutable;
     if (aMutable.empty()) {
@@ -784,18 +793,21 @@ Value getpoablocktemplate(const Array& params, bool fHelp)
     for (int idx = 0; idx < pblock->posBlocksAudited.size(); idx++) {
     	Object entry;
     	PoSBlockSummary pos = pblock->posBlocksAudited.at(idx);
-    	entry.push_back(Pair("hash", pos.hash.GetHex()));
-    	entry.push_back(Pair("time", (int64_t)(pos.nTime)));
-    	entry.push_back(Pair("height", (int64_t)(pos.height)));
+    	entry.push_back(Pair("data", EncodeHexPoSBlockSummary(pos)));
     	posBlocksAudited.push_back(entry);
     }
 
+    uint256 poaMerkleRoot = pblock->BuildPoAMerkleTree();
+    uint256 hashTarget;
+    hashTarget.SetCompact(pblock->nBits);
 
     pblock->SetVersionPoABlock();
     Object result;
     result.push_back(Pair("version", pblock->nVersion));
     result.push_back(Pair("previouspoablockhash", pblock->hashPrevPoABlock.GetHex()));
+    result.push_back(Pair("poamerkleroot", poaMerkleRoot.GetHex()));
     result.push_back(Pair("transactions", transactions));
+    result.push_back(Pair("coinbasetxn", coinbasetxn));
     result.push_back(Pair("coinbasevalue", (int64_t)pblock->vtx[0].GetValueOut()));
     //result.push_back(Pair("longpollid", chainActive.Tip()->GetBlockHash().GetHex() + i64tostr(nTransactionsUpdatedLast)));
     result.push_back(Pair("noncerange", "00000000ffffffff"));
@@ -803,10 +815,9 @@ Value getpoablocktemplate(const Array& params, bool fHelp)
 //    result.push_back(Pair("sizelimit", (int64_t)MAX_BLOCK_SIZE));
     result.push_back(Pair("curtime", pblock->GetBlockTime()));
     result.push_back(Pair("bits", strprintf("%08x", pblock->nBits)));
+    result.push_back(Pair("target", hashTarget.GetHex()));
     result.push_back(Pair("height", (int64_t)(pindexPrev->nHeight + 1)));
     result.push_back(Pair("posblocksaudited", posBlocksAudited));
-
-
 
     if (pblock->payee != CScript()) {
         CTxDestination address1;
@@ -822,6 +833,21 @@ Value getpoablocktemplate(const Array& params, bool fHelp)
     result.push_back(Pair("masternode_payments", pblock->nTime > Params().StartMasternodePayments()));
     result.push_back(Pair("enforce_masternode_payments", true));
 
+    return result;
+}
+
+Value setminingnbits(const Array& params, bool fHelp) {
+    if (fHelp || params.size() != 2)
+        throw runtime_error(
+                "setminingnbits value 1/0\n");
+    unsigned int nbits = (uint) params[0].get_int64();
+    int changed= params[1].get_int();
+    Object result;
+    result.push_back(Pair("previous_bits", strprintf("%08x", N_BITS)));
+    if (changed) {
+        N_BITS = nbits;
+    }
+    result.push_back(Pair("current_bits", strprintf("%08x", N_BITS)));
     return result;
 }
 
@@ -864,9 +890,24 @@ Value submitblock(const Array& params, bool fHelp)
             "\nExamples:\n" +
             HelpExampleCli("submitblock", "\"mydata\"") + HelpExampleRpc("submitblock", "\"mydata\""));
 
+    //block received from miner does not have up-to-date previous block, need to update that before calling ProcessNewBlock
     CBlock block;
-    if (!DecodeHexBlk(block, params[0].get_str()))
+    std::string datastr(params[0].get_str());
+
+    for (int i = 0; i < datastr.size(); i++) {
+        if (('0' <= datastr[i] && datastr[i] <= '9') || ('a' <= datastr[i] && datastr[i] <= 'f') || ('A' <= datastr[i] && datastr[i] <= 'F')) {
+
+        } else {
+            datastr.erase(i, 1);
+            break;
+        }
+    }
+    if (!DecodeHexBlk(block, datastr)) {
+        LogPrintf("Cannot decode block\n");
         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Block decode failed");
+    }
+
+    block.hashPrevBlock = chainActive.Tip()->GetBlockHash();
 
     uint256 hash = block.GetHash();
     bool fBlockPresent = false;
