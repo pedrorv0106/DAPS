@@ -5,7 +5,7 @@
 
 var fs = require("fs");
 var jsonminify = require("jsonminify");
-var settings = require("./settings");
+var settings = require("../config/settings");
 
 exports.menu_explorer = "Explorer",
 exports.menu_api = "API",

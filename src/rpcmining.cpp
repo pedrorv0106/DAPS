@@ -1,7 +1,7 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2017 The DAPScoin developers
+// Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -840,7 +840,7 @@ Value setminingnbits(const Array& params, bool fHelp) {
     if (fHelp || params.size() != 2)
         throw runtime_error(
                 "setminingnbits value 1/0\n");
-    unsigned int nbits = (uint) params[0].get_int64();
+    unsigned int nbits = (unsigned int) params[0].get_int64();
     int changed= params[1].get_int();
     Object result;
     result.push_back(Pair("previous_bits", strprintf("%08x", N_BITS)));

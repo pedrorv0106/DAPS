@@ -10,7 +10,7 @@
  * @license    This project is released under the MIT license.
  **/
 
-// Copyright (c) 2017 The DAPScoin developers
+// Copyright (c) 2018-2019 The DAPScoin developers
 #include <stdexcept>
 #include <iostream>
 #include "Coin.h"

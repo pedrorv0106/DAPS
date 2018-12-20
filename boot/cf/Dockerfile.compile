@@ -1,0 +1,11 @@
+FROM r.cfcr.io/hysmagus/hysmagus/build_deps:develop
+
+#AUTOGEN AND CONFIGURE DAPS
+RUN su && cd /DAPS/ && bash ./autogen.sh
+RUN su && cd /DAPS/ && bash ./configure --with-libressl
+
+#BUILD AND INSTALL DAPS
+RUN su && cd /DAPS/ && make 
+RUN su && cd /DAPS/ && make install 
+
+CMD /bin/bash
