@@ -27,6 +27,7 @@
 #include "libzerocoin/Denominations.h"
 #include <assert.h>
 #include "secp256k1.h"
+#include <boost/algorithm/string.hpp>
 
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/thread.hpp>
@@ -5142,57 +5143,96 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
 
 bool CWallet::IsTransactionForMe(const CTransaction& tx) {
     const CPubKey txPubKey(tx.txPub);
-    CKey spend, view;
+    /*CKey spend, view;
     if (!mySpendPrivateKey(spend)) {
         LogPrintf("Cannot obtain private spend key");
     }
     if (!myViewPrivateKey(view)) {
         LogPrintf("Cannot obtain private view key");
-    }
-    const CPubKey& pubSpendKey = spend.GetPubKey();
-    bool ret = false;
-    CPubKey txPub(tx.txPub);
-
-    //compute the tx destination
-    //P' = Hs(aR)G+B, a = view private, B = spend pub, R = tx public key
-    unsigned char aR[65];
-    //copy R into a
-    memcpy(aR, txPub.begin(), txPub.size());
-    if (!secp256k1_ec_pubkey_tweak_mul(aR, txPub.size(), view.begin())) {
+    }*/
+    std::vector<CKey> spends, views;
+    allMyPrivateKeys(spends, views);
+    if (spends.size() != views.size()) {
         return false;
     }
-    uint256 HS = Hash(aR, aR + txPub.size());
-    unsigned char *pHS = HS.begin();
-    unsigned char expectedDestination[65];
-    memcpy(expectedDestination, pubSpendKey.begin(), pubSpendKey.size());
-    secp256k1_ec_pubkey_tweak_add(expectedDestination, pubSpendKey.size(), pHS);
-    CPubKey expectedDes(expectedDestination, expectedDestination + 33);
-    LogPrintf("expectedDes Stealth destination:%s", expectedDes.GetHex());
-    CBitcoinAddress address(expectedDes.GetID());
-    CScript scriptPubKey = GetScriptForDestination(address.Get());
     for (const CTxOut& out: tx.vout) {
-        if (scriptPubKey == out.scriptPubKey) {
-            ret = true;
-        }
+        for (int i = 0; i < spends.size(); i++) {
+            CKey& spend = spends[i];
+            CKey& view = views[i];
+            const CPubKey& pubSpendKey = spend.GetPubKey();
+            bool ret = false;
+            CPubKey txPub(tx.txPub);
 
-        if (ret) {
-            //Compute private key to spend
-            //x = Hs(aR) + b, b = spend private key
-            unsigned char HStemp[32];
-            unsigned char spendTemp[32];
-            memcpy(HStemp, HS.begin(), 32);
-            memcpy(spendTemp, spend.begin(), 32);
-            secp256k1_ec_privkey_tweak_add(HStemp, spendTemp);
-            CKey privKey;
-            privKey.Set(HStemp, HStemp + 32, true);
-            CPubKey computed = privKey.GetPubKey();
-            LogPrintf("recomputed Stealth destination: %s", computed.GetHex());
-            AddKey(privKey);
-            break;
+            //compute the tx destination
+            //P' = Hs(aR)G+B, a = view private, B = spend pub, R = tx public key
+            unsigned char aR[65];
+            //copy R into a
+            memcpy(aR, txPub.begin(), txPub.size());
+            if (!secp256k1_ec_pubkey_tweak_mul(aR, txPub.size(), view.begin())) {
+                return false;
+            }
+            uint256 HS = Hash(aR, aR + txPub.size());
+            unsigned char *pHS = HS.begin();
+            unsigned char expectedDestination[65];
+            memcpy(expectedDestination, pubSpendKey.begin(), pubSpendKey.size());
+            secp256k1_ec_pubkey_tweak_add(expectedDestination, pubSpendKey.size(), pHS);
+            CPubKey expectedDes(expectedDestination, expectedDestination + 33);
+            LogPrintf("expectedDes Stealth destination:%s", expectedDes.GetHex());
+            CBitcoinAddress address(expectedDes.GetID());
+            CScript scriptPubKey = GetScriptForDestination(address.Get());
+
+            if (scriptPubKey == out.scriptPubKey) {
+                ret = true;
+            }
+
+            if (ret) {
+                //Compute private key to spend
+                //x = Hs(aR) + b, b = spend private key
+                unsigned char HStemp[32];
+                unsigned char spendTemp[32];
+                memcpy(HStemp, HS.begin(), 32);
+                memcpy(spendTemp, spend.begin(), 32);
+                secp256k1_ec_privkey_tweak_add(HStemp, spendTemp);
+                CKey privKey;
+                privKey.Set(HStemp, HStemp + 32, true);
+                CPubKey computed = privKey.GetPubKey();
+                LogPrintf("recomputed Stealth destination: %s", computed.GetHex());
+                AddKey(privKey);
+                break;
+            }
         }
     }
-    return ret;
+    return true;
 }
+
+bool CWallet::allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views)
+{
+    std::string labelList;
+    CKey spend, view;
+    mySpendPrivateKey(spend);
+    myViewPrivateKey(view);
+    spends.push_back(spend);
+    views.push_back(view);
+
+    if (!ReadAccountList(labelList)) {
+        return true;
+    }
+    std::vector<std::string> results;
+    boost::split(results, labelList, [](char c){return c == ',';});
+    for(int i = 0; i < results.size(); i++) {
+        std::string& accountName = results[i];
+        CStealthAccount stealthAcc;
+        if (ReadStealthAccount(accountName, stealthAcc)) {
+            CKey accSpend, accView;
+            GetKey(stealthAcc.spendAccount.vchPubKey.GetID(), accSpend);
+            GetKey(stealthAcc.viewAccount.vchPubKey.GetID(), accView);
+            spends.push_back(accSpend);
+            views.push_back(accView);
+        }
+    }
+    return true;
+}
+
 
 bool CWallet::mySpendPrivateKey(CKey& spend) {
     std::string spendAccountLabel = "spendaccount";

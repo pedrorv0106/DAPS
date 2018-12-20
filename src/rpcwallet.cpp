@@ -19,6 +19,7 @@
 #include "walletdb.h"
 
 #include <stdint.h>
+#include <boost/algorithm/string.hpp>
 
 #include "libzerocoin/Coin.h"
 #include "json/json_spirit_utils.h"
@@ -2996,6 +2997,7 @@ Value createprivacysubaddress(const Array& params, bool fHelp)
             }
             account.viewAccount = viewAccount;
             account.spendAccount = spendAccount;
+            walletdb.AppendStealthAccountList(label);
             break;
         }
     }

@@ -671,6 +671,7 @@ private:
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool mySpendPrivateKey(CKey& spend);
     bool myViewPrivateKey(CKey& view);
+    bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
 };
 
 
