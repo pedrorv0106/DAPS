@@ -654,13 +654,19 @@ public:
     /** MultiSig address added */
     boost::signals2::signal<void(bool fHaveMultiSig)> NotifyMultiSigChanged;
 
-    void ComputeStealthPublicAddress(std::vector<char>& pubAddress, int subaddressIndex = 0);
-    void ComputeIntegratedPublicAddress(std::vector<char>& pubAddress, uint64_t paymentID, int subaddressIndex = 0);
+    bool ComputeStealthPublicAddress(const std::string& accountName, std::string& pubAddress);
+    bool ComputeIntegratedPublicAddress(const uint64_t paymentID, const std::string& accountName, std::string& pubAddress);
     bool EncodeStealthPublicAddress(const std::vector<unsigned char>& pubViewKey, const std::vector<unsigned char>& pubSpendKey, std::string& pubAddr);
     bool EncodeStealthPublicAddress(const CPubKey& pubViewKey, const CPubKey& pubSpendKey, std::string& pubAddr);
-    static bool DecodeStealthAddress(const std::string& stealth, CPubKey& pubViewKey, CPubKey& pubSpendKey);
+    static bool DecodeStealthAddress(const std::string& stealth, CPubKey& pubViewKey, CPubKey& pubSpendKey, bool& hasPaymentID, uint64_t& paymentID);
     bool SendToStealthAddress(const std::string& stealthAddr, CAmount nValue, CWalletTx& wtxNew, bool fUseIX = false);
     bool IsTransactionForMe(const CTransaction& tx);
+    bool ReadAccountList(std::string& accountList);
+    bool ReadStealthAccount(const std::string& strAccount, CStealthAccount& account);
+    bool EncodeIntegratedAddress(const CPubKey& pubViewKey, const CPubKey& pubSpendKey, uint64_t paymentID, std::string& pubAddr);
+    bool EncodeIntegratedAddress(const std::vector<unsigned char>& pubViewKey, const std::vector<unsigned char>& pubSpendKey, uint64_t paymentID, std::string& pubAddrb58);
+    bool GenerateIntegratedAddress(const std::string& accountName, std::string& pubAddr);
+    bool GenerateIntegratedAddress(const CPubKey& pubViewKey, const CPubKey& pubSpendKey, std::string& pubAddr);
 private:
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool mySpendPrivateKey(CKey& spend);

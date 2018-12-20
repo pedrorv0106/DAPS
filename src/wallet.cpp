@@ -4829,12 +4829,28 @@ bool CWallet::SpendZerocoin(CAmount nAmount, int nSecurityLevel, CWalletTx& wtxN
     return true;
 }
 
-void CWallet::ComputeStealthPublicAddress(std::vector<char>& pubAddress, int subaddressIndex) {
-
+bool CWallet::ReadAccountList(std::string& accountList) {
+    return CWalletDB(strWalletFile).ReadStealthAccountList(accountList);
 }
 
-void CWallet::ComputeIntegratedPublicAddress(std::vector<char>& pubAddress, uint64_t paymentID, int subaddressIndex) {
+bool CWallet::ReadStealthAccount(const std::string& strAccount, CStealthAccount& account) {
+    return CWalletDB(strWalletFile).ReadStealthAccount(strAccount, account);
+}
 
+bool CWallet::ComputeStealthPublicAddress(const std::string& accountName, std::string& pubAddress) {
+    CStealthAccount account;
+    if (CWalletDB(strWalletFile).ReadStealthAccount(accountName, account)) {
+        return EncodeStealthPublicAddress(account.viewAccount.vchPubKey, account.spendAccount.vchPubKey, pubAddress);
+    }
+    return false;
+}
+
+bool CWallet::ComputeIntegratedPublicAddress(const uint64_t paymentID, const std::string& accountName, std::string& pubAddress) {
+    CStealthAccount account;
+    if (CWalletDB(strWalletFile).ReadStealthAccount(accountName, account)) {
+        return EncodeIntegratedAddress(account.viewAccount.vchPubKey, account.spendAccount.vchPubKey, paymentID, pubAddress);
+    }
+    return false;
 }
 
 void add1s(std::string& s, int wantedSize) {
@@ -4893,6 +4909,24 @@ bool CWallet::EncodeStealthPublicAddress(const std::vector<unsigned char>& pubVi
     return true;
 }
 
+bool CWallet::EncodeIntegratedAddress(const std::vector<unsigned char>& pubViewKey, const std::vector<unsigned char>& pubSpendKey, uint64_t paymentID, std::string& pubAddrb58) {
+    std::vector<unsigned char> pubAddr;
+    pubAddr.push_back(19);  //1 byte 19 for integrated address
+    std::copy(pubSpendKey.begin(), pubSpendKey.begin() + 33, std::back_inserter(pubAddr));//copy 33 bytes
+    std::copy(pubViewKey.begin(), pubViewKey.begin() + 33, std::back_inserter(pubAddr));//copy 33 bytes
+    std::copy((char*)&paymentID, (char*)&paymentID + sizeof(paymentID), std::back_inserter(pubAddr));//8 bytes of payment id
+    uint256 h = Hash(pubAddr.begin(), pubAddr.end());
+    unsigned char* begin = h.begin();
+    pubAddr.push_back(*(begin));
+    pubAddr.push_back(*(begin + 1));
+    pubAddr.push_back(*(begin + 2));
+    pubAddr.push_back(*(begin + 3));//total 71 bytes intead of 69 bytes as monero
+
+    encodeStealthBase58(pubAddr, pubAddrb58);
+
+    return true;
+}
+
 bool CWallet::EncodeStealthPublicAddress(const CPubKey& pubViewKey, const CPubKey& pubSpendKey, std::string& pubAddr) {
     if (pubViewKey.IsCompressed() && pubSpendKey.IsCompressed()) {
         return EncodeStealthPublicAddress(pubViewKey.Raw(), pubSpendKey.Raw(), pubAddr);
@@ -4900,7 +4934,27 @@ bool CWallet::EncodeStealthPublicAddress(const CPubKey& pubViewKey, const CPubKe
     return false;
 }
 
-bool CWallet::DecodeStealthAddress(const std::string& stealth, CPubKey& pubViewKey, CPubKey& pubSpendKey) {
+bool CWallet::EncodeIntegratedAddress(const CPubKey& pubViewKey, const CPubKey& pubSpendKey, uint64_t paymentID, std::string& pubAddr) {
+    if (pubViewKey.IsCompressed() && pubSpendKey.IsCompressed()) {
+        return EncodeIntegratedAddress(pubViewKey.Raw(), pubSpendKey.Raw(), paymentID, pubAddr);
+    }
+    return false;
+}
+
+bool CWallet::GenerateIntegratedAddress(const std::string& accountName, std::string& pubAddr) {
+    CStealthAccount account;
+    if (CWalletDB(strWalletFile).ReadStealthAccount(accountName, account)) {
+        return GenerateIntegratedAddress(account.viewAccount.vchPubKey, account.spendAccount.vchPubKey, pubAddr);
+    }
+    return false;
+}
+
+bool CWallet::GenerateIntegratedAddress(const CPubKey& pubViewKey, const CPubKey& pubSpendKey, std::string& pubAddr) {
+    uint64_t paymentID = GetRand(0xFFFFFFFFFFFFFFFF);
+    return EncodeIntegratedAddress(pubViewKey, pubSpendKey, paymentID, pubAddr);
+}
+
+bool CWallet::DecodeStealthAddress(const std::string& stealth, CPubKey& pubViewKey, CPubKey& pubSpendKey, bool& hasPaymentID, uint64_t& paymentID) {
     if (stealth.length() != 99 && stealth.length() != 110) {
         return false;
     }
@@ -4950,6 +5004,10 @@ bool CWallet::DecodeStealthAddress(const std::string& stealth, CPubKey& pubViewK
     if (raw.size() != 71 && raw.size() != 79) {
         return false;
     }
+    hasPaymentID = false;
+    if (raw.size() == 79) {
+        hasPaymentID = true;
+    }
 
     //Check checksum
     uint256 h = Hash(raw.begin(), raw.begin() + raw.size() - 4);
@@ -4958,9 +5016,13 @@ bool CWallet::DecodeStealthAddress(const std::string& stealth, CPubKey& pubViewK
     if (memcmp(h_begin, p_raw, 4) != 0) {
         return false;
     }
+
     std::vector<unsigned char> vchSpend, vchView;
     std::copy(raw.begin() + 1, raw.begin() + 34,std::back_inserter(vchSpend));
     std::copy(raw.begin() + 34, raw.begin() + 67,std::back_inserter(vchView));
+    if (hasPaymentID) {
+        memcpy((char*)&paymentID, &raw[0] + 67, sizeof(paymentID));
+    }
     pubSpendKey.Set(vchSpend.begin(), vchSpend.end());
     pubViewKey.Set(vchView.begin(), vchView.end());
 
@@ -5004,7 +5066,9 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
 
     //Parse stealth address
     CPubKey pubViewKey, pubSpendKey;
-    if (!CWallet::DecodeStealthAddress(stealthAddr, pubViewKey, pubSpendKey)) {
+    bool hasPaymentID;
+    uint64_t paymentID;
+    if (!CWallet::DecodeStealthAddress(stealthAddr, pubViewKey, pubSpendKey, hasPaymentID, paymentID)) {
         throw runtime_error("Stealth address mal-formatted");
     }
 
@@ -5016,8 +5080,11 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
     assert(secret.VerifyPubKey(pubkey));
     std::copy(pubkey.begin(), pubkey.end(), std::back_inserter(wtxNew.txPub));
 
-    //No payment ID for the moment
     wtxNew.hasPaymentID = 0;
+    if (hasPaymentID) {
+        wtxNew.hasPaymentID = 1;
+        wtxNew.paymentID = paymentID;
+    }
 
     //Compute stealth destination
     CPubKey stealthDes;

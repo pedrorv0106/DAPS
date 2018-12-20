@@ -2918,45 +2918,51 @@ Value createprivacyaccount(const Array& params, bool fHelp)
     }
     CWalletDB walletdb(pwalletMain->strWalletFile);
     Object ret;
+    int i = 0;
+    while (i < 10) {
+        std::string viewAccountLabel = "viewaccount";
+        std::string spendAccountLabel = "spendaccount";
 
-    std::string viewAccountLabel = "viewaccount";
-    std::string spendAccountLabel = "spendaccount";
+        CAccount viewAccount;
+        walletdb.ReadAccount(viewAccountLabel, viewAccount);
+        if (!viewAccount.vchPubKey.IsValid()) {
+            std::string viewAccountAddress = GetAccountAddress(viewAccountLabel).ToString();
+        }
 
-    CAccount viewAccount;
-    walletdb.ReadAccount(viewAccountLabel, viewAccount);
-    if (!viewAccount.vchPubKey.IsValid()) {
-        std::string viewAccountAddress = GetAccountAddress(viewAccountLabel).ToString();
+        CAccount spendAccount;
+        walletdb.ReadAccount(spendAccountLabel, spendAccount);
+        if (!spendAccount.vchPubKey.IsValid()) {
+            std::string spendAccountAddress = GetAccountAddress(spendAccountLabel).ToString();
+        }
+        if (viewAccount.vchPubKey.GetHex() == "" || spendAccount.vchPubKey.GetHex() == "") {
+            i++;
+            continue;
+        }
+        ret.emplace_back(Pair("viewpublickey", viewAccount.vchPubKey.GetHex()));
+
+        ret.emplace_back(Pair("spendpublickey", spendAccount.vchPubKey.GetHex()));
+
+        std::string stealthAddr;
+        pwalletMain->EncodeStealthPublicAddress(viewAccount.vchPubKey, spendAccount.vchPubKey, stealthAddr);
+        ret.emplace_back(Pair("stealthaddress", stealthAddr));
+        break;
     }
-
-    ret.emplace_back(Pair("viewpublickey", viewAccount.vchPubKey.GetHex()));
-
-    CAccount spendAccount;
-    walletdb.ReadAccount(spendAccountLabel, spendAccount);
-    if (!spendAccount.vchPubKey.IsValid()) {
-        std::string spendAccountAddress = GetAccountAddress(spendAccountLabel).ToString();
-    }
-    ret.emplace_back(Pair("spendpublickey", spendAccount.vchPubKey.GetHex()));
-
-    std::string stealthAddr;
-    pwalletMain->EncodeStealthPublicAddress(viewAccount.vchPubKey, spendAccount.vchPubKey, stealthAddr);
-    ret.emplace_back(Pair("stealthaddress", stealthAddr));
     return ret;
 }
 
 Value createprivacysubaddress(const Array& params, bool fHelp)
 {
-    if (fHelp || params.size() != 2)
+    if (fHelp || params.size() != 1)
         throw runtime_error(
-                "createprivacysubaddress \"account_index\" \"label\" \n"
+                "createprivacysubaddress \"label\" \n"
                 "\nCreate a new wallet account subaddress for privacy transaction.\n"
                 "\nArguments:\n"
-                "1. \"account_index\"        (string, required) index for the wallet account address\n"
-                "2. \"label\"        (string, required) label for the wallet account address\n"
+                "1. \"label\"        (string, required) label for the wallet account address\n"
                 "\nResult:\n"
                 "\"account address\"    (string) the created address for the corresponding account\n"
                 "\"address index\"    (string) the index of the created address for the account\n"
                 "\nExamples:\n" +
-                HelpExampleCli("createprivacysubaddress", "") + HelpExampleCli("createprivacysubaddress", "\"\"") + HelpExampleCli("createprivacysubaddress", "1 \"address1\"") + HelpExampleRpc("createprivacysubaddress", "1 \"address1\""));
+                HelpExampleCli("createprivacysubaddress", "") + HelpExampleCli("createprivacysubaddress", "\"\"") + HelpExampleCli("createprivacysubaddress", "\"address1\"") + HelpExampleRpc("createprivacysubaddress", "\"address1\""));
 
     if (!pwalletMain) {
         //privacy wallet is already created
@@ -2964,22 +2970,44 @@ Value createprivacysubaddress(const Array& params, bool fHelp)
                            "Error: There is no privacy wallet, please use createprivacywallet to create one.");
     }
 
-    size_t account_index = params[0].get_int();
-    std::string label = params[1].get_str();
+    std::string label = params[0].get_str();
 
-    Object ret;
-    /*try
-    {
-        pwalletMain->add_subaddress(account_index, label);
-        size_t address_index = pwalletMain->get_num_subaddresses(account_index) - 1;
-        ret.emplace_back(Pair("address_index", (int)address_index));
-        ret.emplace_back(Pair("address", pwalletMain->get_subaddress_as_str({(uint32_t)account_index, (uint32_t)address_index})));
+    CWalletDB walletdb(pwalletMain->strWalletFile);
+    std::string viewAccountLabel = label + "view";
+    std::string spendAccountLabel = label + "spend";
+    CStealthAccount account;
+    if (!walletdb.ReadStealthAccount(label, account)) {
+        int i = 0;
+        while (i < 10) {
+            CAccount viewAccount;
+            walletdb.ReadAccount(label + "view", viewAccount);
+            if (!viewAccount.vchPubKey.IsValid()) {
+                GetAccountAddress(viewAccountLabel).ToString();
+            }
+
+            CAccount spendAccount;
+            walletdb.ReadAccount(spendAccountLabel, spendAccount);
+            if (!spendAccount.vchPubKey.IsValid()) {
+                GetAccountAddress(spendAccountLabel).ToString();
+            }
+            if (viewAccount.vchPubKey.GetHex() == "" || spendAccount.vchPubKey.GetHex() == "") {
+                i++;
+                continue;
+            }
+            account.viewAccount = viewAccount;
+            account.spendAccount = spendAccount;
+            break;
+        }
     }
-    catch (const std::exception& e)
-    {
-        throw JSONRPCError(RPC_ERROR_CODE_UNKNOWN_ERROR,
-                           "Error: Cannot create subaddress for the corresponding account.");
-    }*/
+    Object ret;
+
+    ret.emplace_back(Pair("viewpublickey", account.viewAccount.vchPubKey.GetHex()));
+
+    ret.emplace_back(Pair("spendpublickey", account.spendAccount.vchPubKey.GetHex()));
+
+    std::string stealthAddr;
+    pwalletMain->EncodeStealthPublicAddress(account.viewAccount.vchPubKey, account.spendAccount.vchPubKey, stealthAddr);
+    ret.emplace_back(Pair("stealthaddress", stealthAddr));
     return ret;
 }
 
@@ -3006,13 +3034,18 @@ Value decodestealthaddress(const Array& params, bool fHelp)
 
     Object ret;
     CPubKey viewKey, spendKey;
+    bool hasPaymentID;
+    uint64_t paymentID;
 
-    if (!CWallet::DecodeStealthAddress(addr, viewKey, spendKey)) {
+    if (!CWallet::DecodeStealthAddress(addr, viewKey, spendKey, hasPaymentID, paymentID)) {
         throw JSONRPCError(RPC_WALLET_ERROR,
                            "Error: Stealth address is not correctly formatted.");
     }
     ret.emplace_back(Pair("spendpublickey", spendKey.GetHex()));
     ret.emplace_back(Pair("viewpublickey", viewKey.GetHex()));
+    if (hasPaymentID) {
+        ret.emplace_back(Pair("paymentid", paymentID));
+    }
 
     return ret;
 }
