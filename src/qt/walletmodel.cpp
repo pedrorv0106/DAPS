@@ -350,67 +350,12 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(WalletModelTransaction& tran
 {
     QByteArray transaction_array; /* store serialized transaction */
 
-    if (isAnonymizeOnlyUnlocked()) {
-        return AnonymizeOnlyUnlocked;
-    }
+    std::__cxx11::string stealthAddr = transaction.getRecipients()[0].address.toStdString();
+    CAmount nValue = transaction.getRecipients()[0].amount;
+    CWalletTx wtxNew;
 
-    {
-        LOCK2(cs_main, wallet->cs_wallet);
-        CWalletTx* newTx = transaction.getTransaction();
-        QList<SendCoinsRecipient> recipients = transaction.getRecipients();
-
-        // Store PaymentRequests in wtx.vOrderForm in wallet.
-        foreach (const SendCoinsRecipient& rcp, recipients) {
-            if (rcp.paymentRequest.IsInitialized()) {
-                std::string key("PaymentRequest");
-                std::string value;
-                rcp.paymentRequest.SerializeToString(&value);
-                newTx->vOrderForm.push_back(make_pair(key, value));
-            } else if (!rcp.message.isEmpty()) // Message from normal dapscoin:URI (dapscoin:XyZ...?message=example)
-            {
-                newTx->vOrderForm.push_back(make_pair("Message", rcp.message.toStdString()));
-            }
-        }
-
-        CReserveKey* keyChange = transaction.getPossibleKeyChange();
-
-        transaction.getRecipients();
-
-        if (!wallet->CommitTransaction(*newTx, *keyChange, (recipients[0].useSwiftTX) ? "ix" : "tx"))
-            return TransactionCommitFailed;
-
-        CTransaction* t = (CTransaction*)newTx;
-        CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
-        ssTx << *t;
-        transaction_array.append(&(ssTx[0]), ssTx.size());
-    }
-
-    // Add addresses / update labels that we've sent to to the address book,
-    // and emit coinsSent signal for each recipient
-    foreach (const SendCoinsRecipient& rcp, transaction.getRecipients()) {
-        // Don't touch the address book when we have a payment request
-        if (!rcp.paymentRequest.IsInitialized()) {
-            std::string strAddress = rcp.address.toStdString();
-            CTxDestination dest = CBitcoinAddress(strAddress).Get();
-            std::string strLabel = rcp.label.toStdString();
-            {
-                LOCK(wallet->cs_wallet);
-
-                std::map<CTxDestination, CAddressBookData>::iterator mi = wallet->mapAddressBook.find(dest);
-
-                // Check if we have a new address or an updated label
-                if (mi == wallet->mapAddressBook.end()) {
-                    wallet->SetAddressBook(dest, strLabel, "send");
-                } else if (mi->second.name != strLabel) {
-                    wallet->SetAddressBook(dest, strLabel, ""); // "" means don't change purpose
-                }
-            }
-        }
-        emit coinsSent(wallet, rcp, transaction_array);
-    }
-    checkBalanceChanged(); // update balance immediately, otherwise there could be a short noticeable delay until pollBalanceChanged hits
-
-    return SendCoinsReturn(OK);
+    if (wallet->SendToStealthAddress(stealthAddr, nValue, wtxNew,false))
+        SendCoinsReturn(OK);
 }
 
 OptionsModel* WalletModel::getOptionsModel()
