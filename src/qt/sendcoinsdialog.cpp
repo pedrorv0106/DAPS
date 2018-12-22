@@ -1,6 +1,6 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2018-2019 The DAPScoin developers
+// Copyright (c) 2015-2017 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -240,17 +240,6 @@ void SendCoinsDialog::on_sendButton_clicked()
     for (int i = 0; i < ui->entries->count(); ++i) {
         SendCoinsEntry* entry = qobject_cast<SendCoinsEntry*>(ui->entries->itemAt(i)->widget());
 
-        //UTXO splitter - address should be our own
-        CBitcoinAddress address = entry->getValue().address.toStdString();
-        if (!model->isMine(address) && ui->splitBlockCheckBox->checkState() == Qt::Checked) {
-            CoinControlDialog::coinControl->fSplitBlock = false;
-            ui->splitBlockCheckBox->setCheckState(Qt::Unchecked);
-            QMessageBox::warning(this, tr("Send Coins"),
-                tr("The split block tool does not work when sending to outside addresses. Try again."),
-                QMessageBox::Ok, QMessageBox::Ok);
-            return;
-        }
-
         if (entry) {
             if (entry->validate()) {
                 recipients.append(entry->getValue());
@@ -264,69 +253,20 @@ void SendCoinsDialog::on_sendButton_clicked()
         return;
     }
 
-    //set split block in model
-    CoinControlDialog::coinControl->fSplitBlock = ui->splitBlockCheckBox->checkState() == Qt::Checked;
-
-    if (ui->entries->count() > 1 && ui->splitBlockCheckBox->checkState() == Qt::Checked) {
-        CoinControlDialog::coinControl->fSplitBlock = false;
-        ui->splitBlockCheckBox->setCheckState(Qt::Unchecked);
-        QMessageBox::warning(this, tr("Send Coins"),
-            tr("The split block tool does not work with multiple addresses. Try again."),
-            QMessageBox::Ok, QMessageBox::Ok);
-        return;
-    }
-
-    if (CoinControlDialog::coinControl->fSplitBlock)
-        CoinControlDialog::coinControl->nSplitBlock = int(ui->splitBlockLineEdit->text().toInt());
-
-    QString strFunds = tr("using") + " <b>" + tr("anonymous funds") + "</b>";
     QString strFee = "";
-    recipients[0].inputType = ALL_COINS;
-    strFunds = tr("using") + " <b>" + tr("any available funds (not recommended)") + "</b>";
-
-    // #REMOVE if (ui->checkSwiftTX->isChecked()) {
-    // #REMOVE     recipients[0].useSwiftTX = true;
-    // #REMOVE     strFunds += " ";
-    // #REMOVE     strFunds += tr("and SwiftX");
-    // #REMOVE } else {
-        recipients[0].useSwiftTX = false;
-    // #REMOVE }
-
 
     // Format confirmation message
     QStringList formatted;
+    formatted.append("<div style='text-align:center'");
     foreach (const SendCoinsRecipient& rcp, recipients) {
-        // generate bold amount string
-        QString amount = "<b>" + BitcoinUnits::formatHtmlWithUnit(model->getOptionsModel()->getDisplayUnit(), rcp.amount);
-        amount.append("</b> ").append(strFunds);
-
-        // generate monospace address string
-        QString address = "<span style='font-family: monospace;'>" + rcp.address;
-        address.append("</span>");
+        QString amount = "<b>" + BitcoinUnits::formatHtmlWithUnit(model->getOptionsModel()->getDisplayUnit(), rcp.amount)+"</b>";
 
         QString recipientElement;
-
-        if (!rcp.paymentRequest.IsInitialized()) // normal payment
-        {
-            if (rcp.label.length() > 0) // label with address
-            {
-                recipientElement = tr("%1 to %2").arg(amount, GUIUtil::HtmlEscape(rcp.label));
-                recipientElement.append(QString(" (%1)").arg(address));
-            } else // just address
-            {
-                recipientElement = tr("%1 to %2").arg(amount, address);
-            }
-        } else if (!rcp.authenticatedMerchant.isEmpty()) // secure payment request
-        {
-            recipientElement = tr("%1 to %2").arg(amount, GUIUtil::HtmlEscape(rcp.authenticatedMerchant));
-        } else // insecure payment request
-        {
-            recipientElement = tr("%1 to %2").arg(amount, address);
-        }
-
-        if (fSplitBlock) {
-            recipientElement.append(tr(" split into %1 outputs using the UTXO splitter.").arg(CoinControlDialog::coinControl->nSplitBlock));
-        }
+        recipientElement.append("<br/><span class='h1 b'>"+amount+"</span><br/>");
+        recipientElement.append("<br/><br>");
+        if (rcp.label.length() > 0) 
+            recipientElement.append("<br/><span class='h3'>"+tr("Description")+": <br/><b>"+GUIUtil::HtmlEscape(rcp.label)+"</b></span>");
+        recipientElement.append("<br/><span class='h3'>"+tr("Destination")+": <br/><b>"+rcp.address+"</b></span>");
 
         formatted.append(recipientElement);
     }
@@ -372,60 +312,34 @@ void SendCoinsDialog::send(QList<SendCoinsRecipient> recipients, QString strFee,
     }
 
     CAmount txFee = currentTransaction.getTransactionFee();
-    QString questionString = tr("Are you sure you want to send?");
+    QString questionString = "<br/><span class='h2'><b>"+tr("Are you sure?")+"</b></span>";
     questionString.append("<br /><br />%1");
 
-    if (txFee > 0) {
-        // append fee string if a fee is required
-        questionString.append("<hr /><span style='color:#aa0000;'>");
-        questionString.append(BitcoinUnits::formatHtmlWithUnit(model->getOptionsModel()->getDisplayUnit(), txFee));
-        questionString.append("</span> ");
-        questionString.append(tr("are added as transaction fee"));
-        questionString.append(" ");
-        questionString.append(strFee);
+    questionString.append("<br /><span class='h3'>"+tr("Transaction fee")+": <br/><b>");
+    questionString.append(BitcoinUnits::formatHtmlWithUnit(model->getOptionsModel()->getDisplayUnit(), txFee));
+    questionString.append(strFee+"</b></span>");
 
-        // append transaction size
-        questionString.append(" (" + QString::number((double)currentTransaction.getTransactionSize() / 1000) + " kB)");
-    }
+    questionString.append("<br/><br/>");
 
-    // add total amount in all subdivision units
     questionString.append("<hr />");
-    CAmount totalAmount = currentTransaction.getTotalTransactionAmount() + txFee;
-    QStringList alternativeUnits;
-    foreach (BitcoinUnits::Unit u, BitcoinUnits::availableUnits()) {
-        if (u != model->getOptionsModel()->getDisplayUnit())
-            alternativeUnits.append(BitcoinUnits::formatHtmlWithUnit(u, totalAmount));
-    }
-
-    // Show total amount + all alternative units
-    questionString.append(tr("Total Amount = <b>%1</b><br />= %2")
-                              .arg(BitcoinUnits::formatHtmlWithUnit(model->getOptionsModel()->getDisplayUnit(), totalAmount))
-                              .arg(alternativeUnits.join("<br />= ")));
-
-    // Limit number of displayed entries
-    int messageEntries = formatted.size();
-    int displayedEntries = 0;
-    for (int i = 0; i < formatted.size(); i++) {
-        if (i >= MAX_SEND_POPUP_ENTRIES) {
-            formatted.removeLast();
-            i--;
-        } else {
-            displayedEntries = i + 1;
-        }
-    }
-    questionString.append("<hr />");
-    questionString.append(tr("<b>(%1 of %2 entries displayed)</b>").arg(displayedEntries).arg(messageEntries));
 
     // Display message box
-    QMessageBox::StandardButton retval = QMessageBox::question(this, tr("Confirm send coins"),
-        questionString.arg(formatted.join("<br />")),
-        QMessageBox::Yes | QMessageBox::Cancel,
-        QMessageBox::Cancel);
+ 
+    QMessageBox confirmBox;
+    confirmBox.setWindowFlags(Qt::SplashScreen);
+    confirmBox.setStyleSheet(GUIUtil::loadStyleSheet());
+    confirmBox.setStyleSheet("margin-right: 25px;");
 
-    if (retval != QMessageBox::Yes) {
+    confirmBox.setText(questionString.arg(formatted.join("<br />")));
+    confirmBox.addButton(tr("Cancel"), QMessageBox::ActionRole);
+    QPushButton* sendButton = confirmBox.addButton(tr("Send"), QMessageBox::ActionRole);
+
+    confirmBox.exec();
+
+    if (confirmBox.clickedButton() != sendButton) {
         fNewRecipientAllowed = true;
         return;
-    }
+    } 
 
     // now send the prepared transaction
     WalletModel::SendCoinsReturn sendStatus = model->sendCoins(currentTransaction);
