@@ -14,6 +14,7 @@
 #include <QMenu>
 #include <QPoint>
 #include <QVariant>
+#include <QList>
 
 class OptionsModel;
 class WalletModel;
