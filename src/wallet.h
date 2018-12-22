@@ -667,6 +667,7 @@ public:
     bool EncodeIntegratedAddress(const std::vector<unsigned char>& pubViewKey, const std::vector<unsigned char>& pubSpendKey, uint64_t paymentID, std::string& pubAddrb58);
     bool GenerateIntegratedAddress(const std::string& accountName, std::string& pubAddr);
     bool GenerateIntegratedAddress(const CPubKey& pubViewKey, const CPubKey& pubSpendKey, std::string& pubAddr);
+    bool AllMyPublicAddresses(std::vector<std::string>& addresses, std::vector<std::string>& accountNames);
 private:
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool mySpendPrivateKey(CKey& spend);

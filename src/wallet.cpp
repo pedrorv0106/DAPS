@@ -5205,6 +5205,30 @@ bool CWallet::IsTransactionForMe(const CTransaction& tx) {
     return true;
 }
 
+bool CWallet::AllMyPublicAddresses(std::vector<std::string>& addresses, std::vector<std::string>& accountNames)
+{
+    std::string labelList;
+    if (!ReadAccountList(labelList)) {
+        return true;
+    }
+
+    std::vector<std::string> results;
+    boost::split(results, labelList, [](char c){return c == ',';});
+    std::string masterAddr;
+    ComputeStealthPublicAddress("masteraccount", masterAddr);
+    accountNames.push_back("Master Account");
+    results.push_back(masterAddr);
+    for(int i = 0; i < results.size(); i++) {
+        std::string& accountName = results[i];
+        std::string stealthAddr;
+        if (ComputeStealthPublicAddress(accountName, stealthAddr)) {
+            addresses.push_back(stealthAddr);
+            accountNames.push_back(accountName);
+        }
+    }
+    return true;
+}
+
 bool CWallet::allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views)
 {
     std::string labelList;

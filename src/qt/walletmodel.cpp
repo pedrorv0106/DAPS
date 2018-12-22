@@ -621,6 +621,11 @@ WalletModel::UnlockContext::~UnlockContext()
 */
 }
 
+CWallet* WalletModel::getCWallet()
+{
+    return this->wallet;
+}
+
 void WalletModel::UnlockContext::CopyFrom(const UnlockContext& rhs)
 {
     // Transfer context; old object no longer relocks wallet
