@@ -239,7 +239,7 @@ void WalletModel::updateMultiSigFlag(bool fHaveMultiSig)
 bool WalletModel::validateAddress(const QString& address)
 {
     CBitcoinAddress addressParsed(address.toStdString());
-    bool valid = (regex_match(address.toStdString(), regex("[a-zA-z0-9]+")))&&(address.length()==99);
+    bool valid = (regex_match(address.toStdString(), regex("[a-zA-z0-9]+")))&&(address.length()==99||address.length()==110);
     return valid||addressParsed.IsValid();
 }
 
