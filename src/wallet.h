@@ -673,6 +673,7 @@ private:
     bool mySpendPrivateKey(CKey& spend);
     bool myViewPrivateKey(CKey& view);
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
+    void createMasterKey();
 };
 
 

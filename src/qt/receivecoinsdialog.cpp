@@ -63,16 +63,7 @@ void ReceiveCoinsDialog::setModel(WalletModel* model)
         connect(model->getOptionsModel(), SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit()));
         updateDisplayUnit();
 
-        //Set reqAddress as the master stealth address
-        std::vector<std::string> addrList, accountList;
-        CWallet* wl = model->getCWallet();
-        QList<QString> stringsList;
-        wl->AllMyPublicAddresses(addrList, accountList);
-        for(int i = 0; i < addrList.size(); i++) {
-            stringsList.append(QString(accountList[i].c_str()) + " - " + QString(addrList[i].c_str()));
-        }
-
-        ui->reqAddress->addItems(stringsList);
+        loadAccount();
         // #REMOVE QTableView* tableView = ui->recentRequestsView;
 
         // #REMOVE tableView->verticalHeader()->hide();
@@ -90,6 +81,19 @@ void ReceiveCoinsDialog::setModel(WalletModel* model)
         // Last 2 columns are set by the columnResizingFixer, when the table geometry is ready.
         // #REMOVE columnResizingFixer = new GUIUtil::TableViewLastColumnResizingFixer(tableView, AMOUNT_MINIMUM_COLUMN_WIDTH, DATE_COLUMN_WIDTH);
     }
+}
+
+void ReceiveCoinsDialog::loadAccount() {
+    //Set reqAddress as the master stealth address
+    std::vector<std::string> addrList, accountList;
+    CWallet* wl = model->getCWallet();
+    QList<QString> stringsList;
+    wl->AllMyPublicAddresses(addrList, accountList);
+    for(int i = 0; i < addrList.size(); i++) {
+        stringsList.append(QString(accountList[i].c_str()) + " - " + QString(addrList[i].c_str()));
+    }
+
+    ui->reqAddress->addItems(stringsList);
 }
 
 ReceiveCoinsDialog::~ReceiveCoinsDialog()

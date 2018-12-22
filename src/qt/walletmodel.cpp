@@ -350,7 +350,7 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(WalletModelTransaction& tran
 {
     QByteArray transaction_array; /* store serialized transaction */
 
-    std::__cxx11::string stealthAddr = transaction.getRecipients()[0].address.toStdString();
+    std::string stealthAddr = transaction.getRecipients()[0].address.toStdString();
     CAmount nValue = transaction.getRecipients()[0].amount;
     CWalletTx wtxNew;
 

@@ -45,6 +45,7 @@ public:
     ~ReceiveCoinsDialog();
 
     void setModel(WalletModel* model);
+    void loadAccount();
 
 public slots:
     void clear();

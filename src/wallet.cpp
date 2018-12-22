@@ -5257,14 +5257,57 @@ bool CWallet::allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& vie
     return true;
 }
 
+CBitcoinAddress GetAccountAddress(string strAccount, CWallet* pwalletMain)
+{
+    CWalletDB walletdb(pwalletMain->strWalletFile);
+
+    CAccount account;
+
+    // Generate a new key
+    if (!pwalletMain->GetKeyFromPool(account.vchPubKey))
+        throw runtime_error("Error: Keypool ran out, please call keypoolrefill first");
+
+    pwalletMain->SetAddressBook(account.vchPubKey.GetID(), strAccount, "receive");
+    walletdb.WriteAccount(strAccount, account);
+
+    return CBitcoinAddress(account.vchPubKey.GetID());
+}
+
+void CWallet::createMasterKey() {
+    int i = 0;
+    CWalletDB pDB(strWalletFile);
+    while (i < 10) {
+        std::string viewAccountLabel = "viewaccount";
+        std::string spendAccountLabel = "spendaccount";
+
+        CAccount viewAccount;
+        pDB.ReadAccount(viewAccountLabel, viewAccount);
+        if (!viewAccount.vchPubKey.IsValid()) {
+            std::string viewAccountAddress = GetAccountAddress(viewAccountLabel, this).ToString();
+        }
+
+        CAccount spendAccount;
+        pDB.ReadAccount(spendAccountLabel, spendAccount);
+        if (!spendAccount.vchPubKey.IsValid()) {
+            std::string spendAccountAddress = GetAccountAddress(spendAccountLabel, this).ToString();
+        }
+        if (viewAccount.vchPubKey.GetHex() == "" || spendAccount.vchPubKey.GetHex() == "") {
+            i++;
+            continue;
+        }
+        LogPrintf("Created master account");
+        break;
+    }
+}
 
 bool CWallet::mySpendPrivateKey(CKey& spend) {
     std::string spendAccountLabel = "spendaccount";
     CAccount spendAccount;
     CWalletDB pDB(strWalletFile);
     if (!pDB.ReadAccount(spendAccountLabel, spendAccount)) {
-        LogPrintf("Cannot Load Spend private key");
-        return false;
+        LogPrintf("Cannot Load Spend private key, now create the master keys");
+        createMasterKey();
+        pDB.ReadAccount(spendAccountLabel, spendAccount);
     }
     const CKeyID& keyID = spendAccount.vchPubKey.GetID();
     GetKey(keyID, spend);
@@ -5275,8 +5318,9 @@ bool CWallet::myViewPrivateKey(CKey& view) {
     CAccount viewAccount;
     CWalletDB pDB(strWalletFile);
     if (!pDB.ReadAccount(viewAccountLabel, viewAccount)) {
-        LogPrintf("Cannot Load view private key");
-        return false;
+        LogPrintf("Cannot Load view private key, now create the master keys");
+        createMasterKey();
+        pDB.ReadAccount(viewAccountLabel, viewAccount);
     }
     const CKeyID& keyID = viewAccount.vchPubKey.GetID();
     GetKey(keyID, view);
