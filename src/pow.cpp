@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
-// Copyright (c) 2015-2017 The DAPScoin developers
+// Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -15,9 +15,20 @@
 
 #include <math.h>
 
+unsigned int N_BITS = 0x1e1fffff;
+bool CheckPoAMiningBlockHeight(const CBlockHeader* pblock) {
+    CBlockIndex *pindex = mapBlockIndex[pblock->hashPrevBlock];
+    if (pindex->nHeight < 10800) {
+        return true;
+    }
+    return false;
+}
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader* pblock)
 {
+    if (N_BITS != 0 && pblock->IsPoABlockByVersion() && !CheckPoAMiningBlockHeight(pblock)) {
+       return N_BITS;
+    }
     /* current difficulty formula, dapscoin - DarkGravity v3, written by Evan Duffield - evan@dashpay.io */
     const CBlockIndex* BlockLastSolved = pindexLast;
     const CBlockIndex* BlockReading = pindexLast;
@@ -229,7 +240,7 @@ bool CheckNumberOfAuditedPoSBlocks(const CBlock& block) {
 
 //Check whether the block is successfully mined and the mined hash satisfy the difficulty
 bool CheckPoABlockMinedHash(const CBlockHeader& block) {
-    const uint256 minedHash = block.ComputeMinedHash();
+    const uint256 minedHash = block.minedHash;//block.ComputeMinedHash();
     if (minedHash == block.minedHash) {
         //Check minedHash satisfy difficulty based on nbits
         bool fNegative;
@@ -237,18 +248,27 @@ bool CheckPoABlockMinedHash(const CBlockHeader& block) {
         uint256 bnTarget;
 
         //As of now, there is no PoA miner, this will let all emulated PoA blocks bypass the check
-        if (Params().SkipProofOfWorkCheck() || Params().NetworkID() == CBaseChainParams::TESTNET || Params().NetworkID() == CBaseChainParams::MAIN)
+        if (Params().SkipProofOfWorkCheck() || Params().NetworkID() == CBaseChainParams::TESTNET)
             return true;
 
-        bnTarget.SetCompact(block.nBits, &fNegative, &fOverflow);
+        //The current mainnet is at 10800 blocks, this check will ignore these first blocks
+        if (mapBlockIndex.count(block.hashPrevBlock) != 0) {
+            if (CheckPoAMiningBlockHeight(&block)) {
+                return true;
+            }
+        }
 
+        bnTarget.SetCompact(block.nBits, &fNegative, &fOverflow);
+	LogPrintf("Target:%s, minedHash:%s", bnTarget.GetHex(), minedHash.GetHex());
         // Check range
-        if (fNegative || bnTarget == 0 || fOverflow || bnTarget > Params().ProofOfWorkLimit())
-            return error("CheckProofOfWork() : nBits below minimum work");
+        //if (fNegative || bnTarget == 0 || fOverflow || bnTarget > Params().ProofOfWorkLimit())
+        //    return error("CheckProofOfWork() : nBits below minimum work");
 
         // Check proof of work matches claimed amount
-        if (minedHash > bnTarget)
+        if (minedHash > bnTarget) {
+            LogPrintf("Block mined hash not satisfied");
             return error("CheckProofOfWork() : hash doesn't match nBits");
+        }
 
         return true;
     }
@@ -257,7 +277,6 @@ bool CheckPoABlockMinedHash(const CBlockHeader& block) {
 
 //A PoA block should contains previous PoA block hash
 bool CheckPrevPoABlockHash(const CBlockHeader& block, int blockHeight) {
-    uint256 blockHash = block.hashPrevPoABlock;
     int currentHeight = chainActive.Tip()->nHeight;
     if (blockHeight != - 1) {
         currentHeight = blockHeight - 1;

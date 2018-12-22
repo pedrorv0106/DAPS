@@ -1,7 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2017 The DAPScoin developers
+// Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -4285,7 +4285,7 @@ bool CheckBlockHeader(const CBlockHeader &block, CValidationState &state, bool f
 
     //Check that the PoA header contains valid for PoA previous block hash, this check will use a PoA consensus rule
     if (block.IsPoABlockByVersion() && !CheckPrevPoABlockHash(block)) {
-        return state.DoS(50, error("CheckBlockHeader() : proof of work PoA failed"),
+        return state.DoS(50, error("CheckBlockHeader() : Previous PoA block hash is not matched => failed"),
         	                         REJECT_INVALID, "high-hash");
     }
 
@@ -4311,7 +4311,7 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
     if (!CheckBlockHeader(block, state, block.IsProofOfWork()))
         return state.DoS(100, error("CheckBlock() : CheckBlockHeader failed"),
                          REJECT_INVALID, "bad-header", true);
-
+    LogPrintf("%s:Time stamp", __func__);
     // Check timestamp
     LogPrint("debug", "%s: block=%s  is proof of stake=%d, is proof of audit=%d\n", __func__, block.GetHash().ToString().c_str(),
              block.IsProofOfStake(), block.IsProofOfAudit());
@@ -4320,6 +4320,7 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
         return state.Invalid(error("CheckBlock() : block timestamp too far in the future"),
                              REJECT_INVALID, "time-too-new");
 
+    LogPrintf("%s:PoA block time", __func__);
     //Check PoA block time
     if (block.IsPoABlockByVersion() && !CheckPoAblockTime(block)) {
     	return state.Invalid(error("CheckBlock() : Time elapsed between two PoA blocks is too short"),
@@ -6111,7 +6112,9 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
                   pfrom->nStartingHeight, addrMe.ToString(), pfrom->id,
                   remoteAddr);
 
-        AddTimeData(pfrom->addr, nTime);
+        int64_t nTimeOffset = nTime - GetTime();
+        pfrom->nTimeOffset = nTimeOffset;
+        AddTimeData(pfrom->addr, nTimeOffset);
     } else if (pfrom->nVersion == 0) {
         // Must have a version message before anything else
         Misbehaving(pfrom->GetId(), 1);
@@ -7008,7 +7011,7 @@ bool SendMessages(CNode *pto, bool fSendTrickle) {
                 if (pto->addr.IsLocal())
                     LogPrintf("Warning: not banning local peer %s!\n", pto->addr.ToString());
                 else {
-                    CNode::Ban(pto->addr);
+                    CNode::Ban(pto->addr, BanReasonNodeMisbehaving);
                 }
             }
             state.fShouldBan = false;

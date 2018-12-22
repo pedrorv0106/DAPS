@@ -1,7 +1,7 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2017 The DAPScoin developers
+// Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -259,11 +259,15 @@ static const CRPCCommand vRPCCommands[] =
         /* P2P networking */
         {"network", "getnetworkinfo", &getnetworkinfo, true, false, false},
         {"network", "addnode", &addnode, true, true, false},
+        {"network", "disconnectnode", &disconnectnode, true, true, false},
         {"network", "getaddednodeinfo", &getaddednodeinfo, true, true, false},
         {"network", "getconnectioncount", &getconnectioncount, true, false, false},
         {"network", "getnettotals", &getnettotals, true, true, false},
         {"network", "getpeerinfo", &getpeerinfo, true, false, false},
         {"network", "ping", &ping, true, false, false},
+        {"network", "setban", &setban, true, false, false},
+        {"network", "listbanned", &listbanned, true, false, false},
+        {"network", "clearbanned", &clearbanned, true, false, false},
 
         /* Block chain and UTXO */
         {"blockchain", "getblockchaininfo", &getblockchaininfo, true, false, false},
@@ -274,6 +278,7 @@ static const CRPCCommand vRPCCommands[] =
         {"blockchain", "getblockheader", &getblockheader, false, false, false},
         {"blockchain", "getchaintips", &getchaintips, true, false, false},
         {"blockchain", "getdifficulty", &getdifficulty, true, false, false},
+        {"blockchain", "getfeeinfo", &getfeeinfo, true, false, false},
         {"blockchain", "getmempoolinfo", &getmempoolinfo, true, true, false},
         {"blockchain", "getrawmempool", &getrawmempool, true, false, false},
         {"blockchain", "gettxout", &gettxout, true, false, false},
@@ -286,6 +291,7 @@ static const CRPCCommand vRPCCommands[] =
         /* Mining */
         {"mining", "getblocktemplate", &getblocktemplate, true, false, false},
 		{"mining", "getpoablocktemplate", &getpoablocktemplate, true, false, false},
+        {"mining", "setminingnbits", &setminingnbits, true, false, false},
         {"mining", "getmininginfo", &getmininginfo, true, false, false},
         {"mining", "getnetworkhashps", &getnetworkhashps, true, false, false},
         {"mining", "prioritisetransaction", &prioritisetransaction, true, false, false},
@@ -337,6 +343,9 @@ static const CRPCCommand vRPCCommands[] =
         {"dapscoin", "getmasternodestatus", &getmasternodestatus, true, true, false},
         {"dapscoin", "getmasternodewinners", &getmasternodewinners, true, true, false},
         {"dapscoin", "getmasternodescores", &getmasternodescores, true, true, false},
+        {"dapscoin", "createmasternodebroadcast", &createmasternodebroadcast, true, true, false},
+        {"dapscoin", "decodemasternodebroadcast", &decodemasternodebroadcast, true, true, false},
+        {"dapscoin", "relaymasternodebroadcast", &relaymasternodebroadcast, true, true, false},
         {"dapscoin", "mnbudget", &mnbudget, true, true, false},
         {"dapscoin", "preparebudget", &preparebudget, true, true, false},
         {"dapscoin", "submitbudget", &submitbudget, true, true, false},
@@ -406,21 +415,7 @@ static const CRPCCommand vRPCCommands[] =
         {"wallet", "signmessage", &signmessage, true, false, true},
         {"wallet", "walletlock", &walletlock, true, false, true},
         {"wallet", "walletpassphrasechange", &walletpassphrasechange, true, false, true},
-        {"wallet", "walletpassphrase", &walletpassphrase, true, false, true},
-
-        {"zerocoin", "getzerocoinbalance", &getzerocoinbalance, false, false, true},
-        {"zerocoin", "listmintedzerocoins", &listmintedzerocoins, false, false, true},
-        {"zerocoin", "listspentzerocoins", &listspentzerocoins, false, false, true},
-        {"zerocoin", "listzerocoinamounts", &listzerocoinamounts, false, false, true},
-        {"zerocoin", "mintzerocoin", &mintzerocoin, false, false, true},
-        {"zerocoin", "spendzerocoin", &spendzerocoin, false, false, true},
-        {"zerocoin", "resetmintzerocoin", &resetmintzerocoin, false, false, true},
-        {"zerocoin", "resetspentzerocoin", &resetspentzerocoin, false, false, true},
-        {"zerocoin", "getarchivedzerocoin", &getarchivedzerocoin, false, false, true},
-        {"zerocoin", "importzerocoins", &importzerocoins, false, false, true},
-        {"zerocoin", "exportzerocoins", &exportzerocoins, false, false, true},
-        {"zerocoin", "reconsiderzerocoins", &reconsiderzerocoins, false, false, true},
-        {"zerocoin", "getspentzerocoinamount", &getspentzerocoinamount, false, false, false}
+        {"wallet", "walletpassphrase", &walletpassphrase, true, false, true}
 
 #endif // ENABLE_WALLET
 };

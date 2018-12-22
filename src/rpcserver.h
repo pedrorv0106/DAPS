@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
-// Copyright (c) 2015-2017 The DAPScoin developers
+// Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -154,8 +154,12 @@ extern json_spirit::Value getconnectioncount(const json_spirit::Array& params, b
 extern json_spirit::Value getpeerinfo(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value ping(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value addnode(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value disconnectnode(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getaddednodeinfo(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getnettotals(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value setban(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value listbanned(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value clearbanned(const json_spirit::Array& params, bool fHelp);
 
 extern json_spirit::Value dumpprivkey(const json_spirit::Array& params, bool fHelp); // in rpcdump.cpp
 extern json_spirit::Value importprivkey(const json_spirit::Array& params, bool fHelp);
@@ -174,6 +178,7 @@ extern json_spirit::Value getmininginfo(const json_spirit::Array& params, bool f
 extern json_spirit::Value prioritisetransaction(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getblocktemplate(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getpoablocktemplate(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value setminingnbits(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value submitblock(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value estimatefee(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value estimatepriority(const json_spirit::Array& params, bool fHelp);
@@ -221,19 +226,6 @@ extern json_spirit::Value setstakesplitthreshold(const json_spirit::Array& param
 extern json_spirit::Value getstakesplitthreshold(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value multisend(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value autocombinerewards(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value getzerocoinbalance(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value listmintedzerocoins(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value listspentzerocoins(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value listzerocoinamounts(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value mintzerocoin(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value spendzerocoin(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value resetmintzerocoin(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value resetspentzerocoin(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value getarchivedzerocoin(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value importzerocoins(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value exportzerocoins(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value reconsiderzerocoins(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value getspentzerocoinamount(const json_spirit::Array& params, bool fHelp);
 
 extern json_spirit::Value getrawtransaction(const json_spirit::Array& params, bool fHelp); // in rcprawtransaction.cpp
 extern json_spirit::Value listunspent(const json_spirit::Array& params, bool fHelp);
@@ -254,6 +246,7 @@ extern json_spirit::Value getrawmempool(const json_spirit::Array& params, bool f
 extern json_spirit::Value getblockhash(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getblock(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getblockheader(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getfeeinfo(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value gettxoutsetinfo(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value gettxout(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value verifychain(const json_spirit::Array& params, bool fHelp);
@@ -267,6 +260,9 @@ extern json_spirit::Value getpoolinfo(const json_spirit::Array& params, bool fHe
 extern json_spirit::Value masternode(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value listmasternodes(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getmasternodecount(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value createmasternodebroadcast(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value decodemasternodebroadcast(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value relaymasternodebroadcast(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getcurrentseesawreward(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getseesawrewardratio(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getseesawrewardwithheight(const json_spirit::Array& params, bool fHelp);

@@ -1,6 +1,6 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2017 The DAPScoin developers
+// Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -132,11 +132,11 @@ OverviewPage::OverviewPage(QWidget* parent) : QWidget(parent),
 
 
     // init "out of sync" warning labels
-    ui->labelWalletStatus->setText("(" + tr("out of sync") + ")");
     ui->labelTransactionsStatus->setText("(" + tr("out of sync") + ")");
 
+
     // start with displaying the "out of sync" warnings
-    showOutOfSyncWarning(true);
+    // #remove showSyncStatus(true);
 }
 
 void OverviewPage::handleTransactionClicked(const QModelIndex& index)
@@ -192,14 +192,15 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance - immatureBalance, false, BitcoinUnits::separatorAlways));
 //    ui->labelzBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, zerocoinBalance, false, BitcoinUnits::separatorAlways));
     ui->labelUnconfirmed->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, unconfirmedBalance, false, BitcoinUnits::separatorAlways));
-    ui->labelImmature->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, immatureBalance, false, BitcoinUnits::separatorAlways));
-    ui->labelTotal->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance + unconfirmedBalance, false, BitcoinUnits::separatorAlways));
+    ui->labelBalance_2->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance - immatureBalance, false, BitcoinUnits::separatorAlways));
+   // #remove ui->labelImmature->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, immatureBalance, false, BitcoinUnits::separatorAlways));
+   // #remove ui->labelTotal->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance + unconfirmedBalance, false, BitcoinUnits::separatorAlways));
 
     // Watchonly labels
-    ui->labelWatchAvailable->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, watchOnlyBalance, false, BitcoinUnits::separatorAlways));
-    ui->labelWatchPending->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, watchUnconfBalance, false, BitcoinUnits::separatorAlways));
-    ui->labelWatchImmature->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, watchImmatureBalance, false, BitcoinUnits::separatorAlways));
-    ui->labelWatchTotal->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, watchOnlyBalance + watchUnconfBalance + watchImmatureBalance, false, BitcoinUnits::separatorAlways));
+    // #remove ui->labelWatchAvailable->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, watchOnlyBalance, false, BitcoinUnits::separatorAlways));
+   // #remove ui->labelWatchPending->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, watchUnconfBalance, false, BitcoinUnits::separatorAlways));
+   // #remove ui->labelWatchImmature->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, watchImmatureBalance, false, BitcoinUnits::separatorAlways));
+   // #remove ui->labelWatchTotal->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, watchOnlyBalance + watchUnconfBalance + watchImmatureBalance, false, BitcoinUnits::separatorAlways));
 
     // zDAPS labels
     QString szPercentage = "";
@@ -212,7 +213,7 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
 
     CAmount nTotalBalance = balance + unconfirmedBalance;
     CAmount nUnlockedBalance = nTotalBalance - nLockedBalance;
-    CAmount matureZerocoinBalance = zerocoinBalance - immatureZerocoinBalance;
+    // #remove CAmount matureZerocoinBalance = zerocoinBalance - immatureZerocoinBalance;
     getPercentage(nUnlockedBalance, zerocoinBalance, sPercentage, szPercentage);
 
 //    ui->labelBalancez->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, nTotalBalance, false, BitcoinUnits::separatorAlways));
@@ -245,13 +246,13 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
 
     // only show immature (newly mined) balance if it's non-zero, so as not to complicate things
     // for the non-mining users
-    bool showImmature = immatureBalance != 0;
-    bool showWatchOnlyImmature = watchImmatureBalance != 0;
+    // #remove bool showImmature = immatureBalance != 0;
+    // #remove bool showWatchOnlyImmature = watchImmatureBalance != 0;
 
     // for symmetry reasons also show immature label when the watch-only one is shown
-    ui->labelImmature->setVisible(showImmature || showWatchOnlyImmature);
-    ui->labelImmatureText->setVisible(showImmature || showWatchOnlyImmature);
-    ui->labelWatchImmature->setVisible(showWatchOnlyImmature); // show watch-only immature balance
+   // #remove  ui->labelImmature->setVisible(showImmature || showWatchOnlyImmature);
+   // #remove  ui->labelImmatureText->setVisible(showImmature || showWatchOnlyImmature);
+   // #remove ui->labelWatchImmature->setVisible(showWatchOnlyImmature); // show watch-only immature balance
 
     static int cachedTxLocks = 0;
 
@@ -264,21 +265,21 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
 // show/hide watch-only labels
 void OverviewPage::updateWatchOnlyLabels(bool showWatchOnly)
 {
-    ui->labelSpendable->setVisible(showWatchOnly);      // show spendable label (only when watch-only is active)
-    ui->labelWatchonly->setVisible(showWatchOnly);      // show watch-only label
-    ui->lineWatchBalance->setVisible(showWatchOnly);    // show watch-only balance separator line
-    ui->labelWatchAvailable->setVisible(showWatchOnly); // show watch-only available balance
-    ui->labelWatchPending->setVisible(showWatchOnly);   // show watch-only pending balance
-    ui->labelWatchTotal->setVisible(showWatchOnly);     // show watch-only total balance
+   // #remove ui->labelSpendable->setVisible(showWatchOnly);      // show spendable label (only when watch-only is active)
+   // #remove  ui->labelWatchonly->setVisible(showWatchOnly);      // show watch-only label
+  // #remove  ui->lineWatchBalance->setVisible(showWatchOnly);    // show watch-only balance separator line
+   // #remove ui->labelWatchAvailable->setVisible(showWatchOnly); // show watch-only available balance
+  // #remove  ui->labelWatchPending->setVisible(showWatchOnly);   // show watch-only pending balance
+  // #remove  ui->labelWatchTotal->setVisible(showWatchOnly);     // show watch-only total balance
 
-    if (!showWatchOnly) {
+  /* #remove  if (!showWatchOnly) {
         ui->labelWatchImmature->hide();
-    } else {
+    } else { */
         ui->labelBalance->setIndent(20);
         ui->labelUnconfirmed->setIndent(20);
-        ui->labelImmature->setIndent(20);
-        ui->labelTotal->setIndent(20);
-    }
+     // #remove   ui->labelImmature->setIndent(20);
+     // #remove   ui->labelTotal->setIndent(20);
+   // #remove }
 }
 
 void OverviewPage::setClientModel(ClientModel* model)
@@ -345,8 +346,23 @@ void OverviewPage::updateAlerts(const QString& warnings)
     this->ui->labelAlerts->setText(warnings);
 }
 
-void OverviewPage::showOutOfSyncWarning(bool fShow)
+void OverviewPage::showSyncStatus(bool fShow)
 {
-    ui->labelWalletStatus->setVisible(fShow);
     ui->labelTransactionsStatus->setVisible(fShow);
+    // #remove ui->labelBlockStatus->setVisible(fShow);
+    if (fShow){
+        ui->labelBlockStatus->setText("(" + tr("Syncing...") + ")");
+        ui->labelBlockStatus->setStyleSheet("QLabel { color : red; }");
+        ui->labelWalletStatus->setText("(" + tr("Syncing...") + ")");
+        ui->labelWalletStatus->setStyleSheet("QLabel { color : red; }");
+    } else {
+        ui->labelBlockStatus->setText("(" + tr("Synced") + ")");
+        ui->labelBlockStatus->setStyleSheet("QLabel { color : green; }");
+        ui->labelWalletStatus->setText("(" + tr("Synced") + ")");
+        ui->labelWalletStatus->setStyleSheet("QLabel { color : green; }");
+    }
+
+    ui->labelBlockCurrent->setText(QString::number(clientModel->getNumBlocks()));
+    ui->labelBlocksTotal->setText(QString::number(clientModel->getChainHeight()));
 }
+

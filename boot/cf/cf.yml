@@ -1,0 +1,128 @@
+version: '1.0'
+stages:
+  - Prepare
+  - Compile
+  - Test
+  - Build
+  - Deploy
+steps:
+  BuildingDAPS:
+    title: Building DAPS
+    type: build
+    image_name: hysmagus/build_src
+    working_directory: ./
+    dockerfile: boot/cf/Dockerfile.compile
+    no_cache: true
+    no_cf_cache: true
+    stage: Compile
+  RunUnitTests:
+    title: Running Unit Tests
+    image:  r.cfcr.io/hysmagus/hysmagus/build_src:develop
+    working_directory: ./
+    commands: 
+      - cd /DAPS/src/test && test_dapscoin
+    no_cache: true
+    no_cf_cache: true
+    stage: Test
+  RunQtTests:
+    title: Running QT Tests
+    image:  r.cfcr.io/hysmagus/hysmagus/build_src:develop
+    working_directory: ./
+    commands: 
+      - cd /DAPS/src/qt/test && test_dapscoin-qt
+    no_cache: true
+    no_cf_cache: true
+    stage: Test
+  SaveBin:
+    title: Saving Binaries
+    image:  r.cfcr.io/hysmagus/hysmagus/build_src:develop
+    working_directory: ./
+    commands: 
+      - scp /usr/local/bin/dapscoind /codefresh/volume/Test/dapscoind
+      - scp /usr/local/bin/dapscoin-cli /codefresh/volume/Test/dapscoin-cli
+      - scp /usr/local/bin/dapscoin-qt /codefresh/volume/Test/dapscoin-qt
+    no_cache: true
+    no_cf_cache: true
+    stage: Build
+  BuildingDapsMin:
+    title: Building Minimal Daps
+    type: build
+    image_name: hysmagus/daps_min
+    dockerfile: boot/cf/Dockerfile.min
+    no_cache: true
+    no_cf_cache: true
+    stage: Build
+  BuildingExplorerMin:
+    title: Building Minimal Explorer
+    type: build
+    image_name: hysmagus/explorer_min
+    dockerfile: boot/cf/Dockerfile.explorer
+    no_cache: true
+    no_cf_cache: true
+    stage: Build
+  DeployControlWallet:
+    title: Deploying CONTROLWALLET_POD to Cluster
+    type: deploy
+    pullsecret: codefresh-generated-r.cfcr.io-cfcr-default
+    kind: Pod 
+    cluster: standard-cluster-1@DAPS
+    namespace: default
+    file_path: boot/cf/kctl/controlwallet.yml
+    no_cache: true
+    no_cf_cache: true
+    stage: Deploy
+  Deploydevelop0:
+    title: Deploying develop0_POD to Cluster
+    type: deploy
+    pullsecret: codefresh-generated-r.cfcr.io-cfcr-default
+    kind: Pod 
+    cluster: standard-cluster-1@DAPS
+    namespace: default
+    file_path: boot/cf/kctl/develop0.yml
+    no_cache: true
+    no_cf_cache: true
+    stage: Deploy
+  Deploydevelop1:
+    title: Deploying develop1_POD to Cluster
+    type: deploy
+    pullsecret: codefresh-generated-r.cfcr.io-cfcr-default
+    kind: Pod 
+    cluster: standard-cluster-1@DAPS
+    namespace: default
+    file_path: boot/cf/kctl/develop1.yml
+    no_cache: true
+    no_cf_cache: true
+    stage: Deploy
+  DeployStaker0:
+    title: Deploying STAKER0_POD to Cluster
+    type: deploy
+    pullsecret: codefresh-generated-r.cfcr.io-cfcr-default
+    kind: Pod 
+    cluster: standard-cluster-1@DAPS
+    namespace: default
+    file_path: boot/cf/kctl/staker0.yml
+    no_cache: true
+    no_cf_cache: true
+    stage: Deploy
+  DeployStaker1:
+    title: Deploying STAKER1_POD to Cluster
+    type: deploy
+    pullsecret: codefresh-generated-r.cfcr.io-cfcr-default
+    kind: Pod 
+    cluster: standard-cluster-1@DAPS
+    namespace: default
+    file_path: boot/cf/kctl/staker1.yml
+    no_cache: true
+    no_cf_cache: true
+    stage: Deploy
+  DeployExplorer:
+    title: Deploying EXPLORER_POD to Cluster
+    type: deploy
+    pullsecret: codefresh-generated-r.cfcr.io-cfcr-default
+    kind: Pod 
+    cluster: standard-cluster-1@DAPS
+    namespace: default
+    file_path: boot/cf/kctl/explorer.yml
+    no_cache: true
+    no_cf_cache: true
+    stage: Deploy
