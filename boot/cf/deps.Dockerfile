@@ -1,5 +1,9 @@
+ARG SRC_PATH=r.cfcr.io/hysmagus
+ARG SRC_NAME=build_os_libs
+ARG SRC_TAG=develop
+FROM ${SRC_PATH}/${SRC_NAME}:${SRC_TAG}
+ENV SRC_IMG=${SRC_PATH}/${SRC_NAME}:${SRC_TAG}
 
-FROM  r.cfcr.io/hysmagus/hysmagus/build_os_libs:develop
 
 #COPY SRC
 RUN mkdir -p /DAPS/

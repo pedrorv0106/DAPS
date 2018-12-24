@@ -9,15 +9,15 @@ steps:
   BuildingDAPS:
     title: Building DAPS
     type: build
-    image_name: hysmagus/build_src
+    image_name: build_src
     working_directory: ./
-    dockerfile: boot/cf/Dockerfile.compile
+    dockerfile: boot/cf/compile.Dockerfile
     no_cache: true
     no_cf_cache: true
     stage: Compile
   RunUnitTests:
     title: Running Unit Tests
-    image:  r.cfcr.io/hysmagus/hysmagus/build_src:develop
+    image:  r.cfcr.io/hysmagus/build_src:develop
     working_directory: ./
     commands: 
       - cd /DAPS/src/test && test_dapscoin
@@ -26,7 +26,7 @@ steps:
     stage: Test
   RunQtTests:
     title: Running QT Tests
-    image:  r.cfcr.io/hysmagus/hysmagus/build_src:develop
+    image:  r.cfcr.io/hysmagus/build_src:develop
     working_directory: ./
     commands: 
       - cd /DAPS/src/qt/test && test_dapscoin-qt
@@ -35,7 +35,7 @@ steps:
     stage: Test
   SaveBin:
     title: Saving Binaries
-    image:  r.cfcr.io/hysmagus/hysmagus/build_src:develop
+    image:  r.cfcr.io/hysmagus/build_src:develop
     working_directory: ./
     commands: 
       - scp /usr/local/bin/dapscoind /codefresh/volume/Test/dapscoind
@@ -47,16 +47,16 @@ steps:
   BuildingDapsMin:
     title: Building Minimal Daps
     type: build
-    image_name: hysmagus/daps_min
-    dockerfile: boot/cf/Dockerfile.min
+    image_name: daps_min
+    dockerfile: boot/cf/min.Dockerfile
     no_cache: true
     no_cf_cache: true
     stage: Build
   BuildingExplorerMin:
     title: Building Minimal Explorer
     type: build
-    image_name: hysmagus/explorer_min
-    dockerfile: boot/cf/Dockerfile.explorer
+    image_name: explorer_min
+    dockerfile: boot/cf/explorer.Dockerfile
     no_cache: true
     no_cf_cache: true
     stage: Build

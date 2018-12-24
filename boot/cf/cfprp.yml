@@ -3,16 +3,16 @@ steps:
   BuildingOSLibs:
     title: Building OS and Libs
     type: build
-    image_name: hysmagus/build_os_libs
+    image_name: build_os_libs
     working_directory: ./
-    dockerfile: boot/cf/Dockerfile.oslibs
+    dockerfile: boot/cf/oslibs.Dockerfile
     no_cache: true
     no_cf_cache: true
   BuildingDepenencies:
     title: Building Dependencies
     type: build
-    image_name: hysmagus/build_deps
+    image_name: build_deps
     working_directory: ./
-    dockerfile: boot/cf/Dockerfile.deps
+    dockerfile: boot/cf/deps.Dockerfile
     no_cache: true
     no_cf_cache: true

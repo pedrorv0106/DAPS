@@ -1,4 +1,8 @@
-FROM ubuntu:16.04
+
+ARG SRC_PATH=ubuntu
+ARG OS_VERSION=16.04
+FROM ${SRC_PATH}:${OS_VERSION}
+ENV SRC_IMG=${SRC_PATH}:${OS_VERSION}
 
 RUN apt-get update
 RUN apt-get install software-properties-common -y --fix-missing
