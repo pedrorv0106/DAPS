@@ -25,3 +25,4 @@ RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 1
 
 RUN apt-get install libfontconfig1 mesa-common-dev libglu1-mesa-dev -y --fix-missing
 
+CMD /bin/bash -c "trap: TERM INT; sleep infinity & wait"
