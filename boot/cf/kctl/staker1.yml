@@ -69,10 +69,16 @@ spec:
       - ip: "10.10.10.4"
         hostnames:
         - "staker.1"
+      terminationGracePeriodSeconds: 3
       containers:
       - image: r.cfcr.io/hysmagus/hysmagus/daps_min:develop
         imagePullPolicy: Always
         name: dapsd
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/bash","-c","dapscoin-cli stop"]
+        command: ["/bin/bash","-c","sleep 3 && nohup dapscoind -daemon && trap: TERM INT; sleep infinity & wait"]
         ports:
         - containerPort: 53575
           name: regtest
@@ -83,7 +89,6 @@ spec:
         volumeMounts:
         - name: staker1data
           mountPath: /root/.dapscoin/
-        command: ["/bin/bash","-c","dapscoind"]
       volumes:
       - name: staker1data
         persistentVolumeClaim:

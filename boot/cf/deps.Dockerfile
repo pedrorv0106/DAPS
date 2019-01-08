@@ -28,9 +28,9 @@ RUN su && cd /DAPS/depends &&  \
         make HOST=x86_64-w64-mingw32 && cd .. && \
         #
         ./autogen.sh && \
-        CONFIG_SITE=$PWD/depends/i686-w64-mingw32/share/config.site ./configure --with-libressl --prefix=/ BUILD_OS=linux && \
-        make HOST=x86_64-w64-mingw32 && \
-        echo -e "Windows Build complete."; \
+        CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure --prefix=/ && \
+        make && \
+        echo -e "Windows Build complete." && \
 #
     elif [ "$BUILD_TARGET" = "linux" ]; \
       then echo "Building dependencies for linux..." && \
@@ -48,9 +48,9 @@ RUN su && cd /DAPS/depends &&  \
         set -e && make HOST="x86_64-apple-darwin11" DARWIN_SDK_PATH=$PWD/SDKs/MacOSX10.11.sdk/ || true && \
         expect ex.pct && cd .. && \
         #
-        ./autogen.sh --with-gui=yes && CONFIG_SITE=$PWD/depends/x86_64-apple-darwin11/share/config.site ./configure --prefix=/ BUILD_OS=linux && \
+        ./autogen.sh --with-gui=yes && CONFIG_SITE=$PWD/depends/x86_64-apple-darwin11/share/config.site ./configure --prefix=/ && \
         export PATH="/usr/local/bin:/usr/local/sbin:$PATH" && \
-        make HOST=x86_64-apple-darwin11 && \
+        make && \
         echo "Mac Build complete."; \
 #
     else echo "Build target not recognized."; \

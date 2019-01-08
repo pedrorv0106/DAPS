@@ -135,6 +135,7 @@ spec:
       - ip: "10.10.10.5"
         hostnames:
         - "explorer"
+      terminationGracePeriodSeconds: 3
       containers:
       - image:  r.cfcr.io/hysmagus/hysmagus/explorer_min:develop
         imagePullPolicy: Always
@@ -145,10 +146,15 @@ spec:
         volumeMounts:
         - name: explorersettings
           mountPath: /DAPS/config/
-        command: ["/bin/bash","-c","cd /DAPS/ && npm start"]
-      - image: r.cfcr.io//hysmagus/hysmagus/daps_min:develop
+        command: ["/bin/bash","-c","cd /DAPS/ && nohup npm start && trap: TERM INT; sleep infinity & wait"]
+      - image: r.cfcr.io/hysmagus/hysmagus/daps_min:develop
         imagePullPolicy: Always
         name: dapsd
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/bash","-c","dapscoin-cli stop"]
+        command: ["/bin/bash","-c","sleep 3 && nohup dapscoind -daemon && trap: TERM INT; sleep infinity & wait"]
         ports:
         - containerPort: 53575
           name: regtest
@@ -159,7 +165,6 @@ spec:
         volumeMounts:
         - name: dapsdata
           mountPath: ~/.dapscoin/
-        command: ["/bin/bash","-c","dapscoind"]
       - image:  mongo:latest
         name: mongo
         ports:
