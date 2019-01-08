@@ -108,6 +108,8 @@ private:
     QAction* receiveCoinsAction;
 //    QAction* privacyAction;
     QAction* optionsAction;
+    QAction* stakingAction;
+    QAction* networkAction;
     QAction* toggleHideAction;
     QAction* encryptWalletAction;
     QAction* backupWalletAction;

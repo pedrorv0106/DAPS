@@ -51,7 +51,7 @@
 #include <QProgressDialog>
 #include <QSettings>
 #include <QStackedWidget>
-#include <QStatusBar>
+//#include <QStatusBar>
 #include <QStyle>
 #include <QTimer>
 #include <QToolBar>
@@ -178,7 +178,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle* networkStyle, QWidget* parent) : QMai
     createTrayIcon(networkStyle);
 
     // Create status bar
-    statusBar();
+    //statusBar();
 
     // Status bar notification icons
     QFrame* frameBlocks = new QFrame();
@@ -228,9 +228,9 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle* networkStyle, QWidget* parent) : QMai
         progressBar->setStyleSheet("QProgressBar { background-color: #F8F8F8; border: 1px solid grey; border-radius: 7px; padding: 1px; text-align: center; } QProgressBar::chunk { background: QLinearGradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #00CCFF, stop: 1 #33CCFF); border-radius: 7px; margin: 0px; }");
     }
 
-    statusBar()->addWidget(progressBarLabel);
-    statusBar()->addWidget(progressBar);
-    statusBar()->addPermanentWidget(frameBlocks);
+    // #REMOVE statusBar()->addWidget(progressBarLabel);
+    // #REMOVE statusBar()->addWidget(progressBar);
+    // #REMOVE statusBar()->addPermanentWidget(frameBlocks);
 
     // Jump directly to tabs in RPC-console
     connect(openInfoAction, SIGNAL(triggered()), rpcConsole, SLOT(showInfo()));
@@ -392,6 +392,11 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     optionsAction = new QAction(QIcon(":/icons/options"), tr("&Settings"), this);
     optionsAction->setStatusTip(tr("Modify configuration options for DAPScoin"));
     optionsAction->setMenuRole(QAction::PreferencesRole);
+    stakingAction = new QAction(QIcon(":/icons/options"), tr("&Staking"), this);
+    stakingAction->setMenuRole(QAction::NoRole);
+    networkAction = new QAction(QIcon(":/icons/options"), tr("&Network"), this);
+    networkAction->setMenuRole(QAction::NoRole);
+    
     toggleHideAction = new QAction(networkStyle->getAppIcon(), tr("&Show / Hide"), this);
     toggleHideAction->setStatusTip(tr("Show or hide the main Window"));
 
@@ -562,14 +567,14 @@ void BitcoinGUI::createToolBars()
         toolbar->setMovable(false); // remove unused icon in upper left corner
         overviewAction->setChecked(true);
 
-        /** Create additional container for toolbar and walletFrame and make it the central widget.
-            This is a workaround mostly for toolbar styling on Mac OS but should work fine for every other OSes too.
-        */
+        // Create NavBar
         QToolBar* bottomToolbar = new QToolBar;
         bottomToolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         bottomToolbar->setOrientation(Qt::Vertical);
         bottomToolbar->addAction(optionsAction);
-        bottomToolbar->setFixedHeight(36);
+        bottomToolbar->addAction(stakingAction);
+        bottomToolbar->addAction(networkAction);
+        //bottomToolbar->setFixedHeight(36);
         bottomToolbar->setObjectName("bottomToolbar");
 
         QHBoxLayout* layout = new QHBoxLayout;
@@ -588,7 +593,6 @@ void BitcoinGUI::createToolBars()
         navLayout->addWidget(bottomToolbar);
         navWidget->setLayout(navLayout);
 
-        //navWidget->addLayout(navLayout)
         layout->addWidget(navWidget);
         layout->addWidget(walletFrame);
         layout->setSpacing(0);
@@ -600,6 +604,7 @@ void BitcoinGUI::createToolBars()
         auto toolLayout = toolbar->layout();
         for (int i =0; i<toolLayout->count(); i++)
             toolLayout->itemAt(i)->setAlignment(Qt::AlignLeft);
+
     }
 }
 
@@ -905,9 +910,13 @@ void BitcoinGUI::setNumConnections(int count)
         icon = ":/icons/connect_4";
         break;
     }
-    QIcon connectionItem = QIcon(icon).pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE);
-    labelConnectionsIcon->setIcon(connectionItem);
-    labelConnectionsIcon->setToolTip(tr("%n active connection(s) to DAPScoin network", "", count));
+    //QIcon connectionItem = QIcon(icon).pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE);
+    //labelConnectionsIcon->setIcon(connectionItem);
+    //labelConnectionsIcon->setToolTip(tr("%n active connection(s) to DAPScoin network", "", count));
+    networkAction->setText(tr("%n connections", "", count));
+    if (count<1)
+      networkAction->setIcon(QIcon(":icons/staking_disabled"));
+    else networkAction->setIcon(QIcon(":icons/staking_active"));
 }
 
 void BitcoinGUI::setNumBlocks(int count)
@@ -916,7 +925,7 @@ void BitcoinGUI::setNumBlocks(int count)
         return;
 
     // Prevent orphan statusbar messages (e.g. hover Quit in main menu, wait until chain-sync starts -> garbelled text)
-    statusBar()->clearMessage();
+    // #REMOVE statusBar()->clearMessage();
 
     // Acquire current block source
     enum BlockSource blockSource = clientModel->getBlockSource();
@@ -1175,13 +1184,17 @@ void BitcoinGUI::setStakingStatus()
         fMultiSend = pwalletMain->isMultiSendEnabled();
 
     if (nLastCoinStakeSearchInterval) {
-        labelStakingIcon->show();
-        labelStakingIcon->setPixmap(QIcon(":/icons/staking_active").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
-        labelStakingIcon->setToolTip(tr("Staking is active\n MultiSend: %1").arg(fMultiSend ? tr("Active") : tr("Not Active")));
+        // #REMOVE labelStakingIcon->show();
+        // #REMOVE labelStakingIcon->setPixmap(QIcon(":/icons/staking_active").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
+        stakingAction->setText(tr("Staking"));
+        stakingAction->setIcon(QIcon(":/icons/staking_active"));
+        // #REMOVE labelStakingIcon->setToolTip(tr("Staking is active\n MultiSend: %1").arg(fMultiSend ? tr("Active") : tr("Not Active")));
     } else {
-        labelStakingIcon->show();
-        labelStakingIcon->setPixmap(QIcon(":/icons/staking_inactive").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
-        labelStakingIcon->setToolTip(tr("Staking is not active\n MultiSend: %1").arg(fMultiSend ? tr("Active") : tr("Not Active")));
+        // #REMOVE labelStakingIcon->show();
+        // #REMOVE labelStakingIcon->setPixmap(QIcon(":/icons/staking_inactive").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
+        stakingAction->setText(tr("Not staking"));
+        stakingAction->setIcon(QIcon(":/icons/staking_inactive"));
+        // #REMOVE labelStakingIcon->setToolTip(tr("Staking is not active\n MultiSend: %1").arg(fMultiSend ? tr("Active") : tr("Not Active")));
     }
 }
 
