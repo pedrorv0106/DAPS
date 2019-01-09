@@ -56,6 +56,7 @@
 #include <QSettings>
 #include <QTextDocument> // for Qt::mightBeRichText
 #include <QThread>
+#include <QTextStream>
 
 #if QT_VERSION < 0x050000
 #include <QUrl>
@@ -819,45 +820,31 @@ void restoreWindowGeometry(const QString& strSetting, const QSize& defaultSize, 
     parent->move(pos);
 }
 
-// Check whether a theme is not build-in
-bool isExternal(QString theme)
-{
-    if (theme.isEmpty())
-        return false;
-
-    return (theme.operator!=("default"));
-}
-
 // Open CSS when configured
 QString loadStyleSheet()
 {
     QString styleSheet;
     QSettings settings;
     QString cssName;
-    QString theme = settings.value("theme", "").toString();
+    bool theme = settings.value("theme", "").toBool();
 
-    if (isExternal(theme)) {
-        // External CSS
-        settings.setValue("fCSSexternal", true);
-        boost::filesystem::path pathAddr = GetDataDir() / "themes/";
-        cssName = pathAddr.string().c_str() + theme + "/css/theme.css";
-    } else {
         // Build-in CSS
-        settings.setValue("fCSSexternal", false);
-        if (!theme.isEmpty()) {
-            cssName = QString(":/css/") + theme;
-        } else {
-            cssName = QString(":/css/default");
-            settings.setValue("theme", "default");
-        }
+    settings.setValue("fCSSexternal", false);
+    if (!theme) {
+        cssName = QString(":/css/light");
+    } else {
+        cssName = QString(":/css/dark");
     }
 
     QFile qFile(cssName);
-    if (qFile.open(QFile::ReadOnly)) {
+    if (!qFile.exists()){
+        QTextStream qout(stdout);
+        qout << "Error: " << cssName << " not found. Please check qrc." <<endl;
+    } else if (qFile.open(QFile::ReadOnly)) {
         styleSheet = QLatin1String(qFile.readAll());
-    }
-
-    return styleSheet;
+        return styleSheet;
+    } 
+    return 0;
 }
 
 void setClipboard(const QString& str)
