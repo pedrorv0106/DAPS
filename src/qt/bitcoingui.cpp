@@ -390,8 +390,12 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     aboutQtAction->setStatusTip(tr("Show information about Qt"));
     aboutQtAction->setMenuRole(QAction::AboutQtRole);
     optionsAction = new QAction(QIcon(":/icons/options"), tr("&Settings"), this);
-    optionsAction->setStatusTip(tr("Modify configuration options for DAPScoin"));
+    optionsAction->setStatusTip(tr("Modify settings"));
     optionsAction->setMenuRole(QAction::PreferencesRole);
+    optionsAction->setToolTip(optionsAction->statusTip());
+    optionsAction->setCheckable(true);
+    tabGroup->addAction(optionsAction);
+
     stakingAction = new QAction(QIcon(":/icons/options"), tr("&Staking"), this);
     stakingAction->setMenuRole(QAction::NoRole);
     networkAction = new QAction(QIcon(":/icons/options"), tr("&Network"), this);
