@@ -9,7 +9,7 @@
 * @copyright  Copyright 2013 Ian Miers, Christina Garman and Matthew Green
 * @license    This project is released under the MIT license.
 **/
-// Copyright (c) 2018-2019 The DAPScoin developers
+// Copyright (c) 2017 The PIVX developers
 
 #ifndef ZEROCOIN_DEFINES_H_
 #define ZEROCOIN_DEFINES_H_
@@ -37,5 +37,26 @@
 // Uses a fast technique for coin generation. Could be more vulnerable
 // to timing attacks. Turn off if an attacker can measure coin minting time.
 #define	ZEROCOIN_FAST_MINT 1
+
+/** Parameters used in the new protocol.
+ *  !TODO: move where appropriate
+ */
+typedef std::vector<CBigNum> CBN_vector;
+typedef std::vector<CBN_vector> CBN_matrix;
+
+struct preChallengeShifts {
+    CBN_vector nAks, pAks;
+    CBN_vector nBks, pBks;
+    CBN_vector nzks, pzks;
+};
+
+const int ZKP_M = 2;
+const int ZKP_N = 512;
+const int ZKP_M1DASH = 3;
+const int ZKP_M2DASH = 5;
+const int ZKP_NDASH = 2;
+const int ZKP_PADS = 0;
+const std::vector<int> ZKP_MS = {2,2,2,2,2,2,2,2,2};
+const int ZKP_SERIALSIZE = 256;
 
 #endif /* ZEROCOIN_H_ */
