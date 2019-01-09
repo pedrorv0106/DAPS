@@ -11,6 +11,8 @@ ENV BUILD_TARGET=${BUILD_TARGET}
 ARG DESTDIR=/daps/bin/
 ENV DESTDIR=$DESTDIR
 
+#COPY source
+COPY . /DAPS/
 
 RUN cd /DAPS/ && mkdir -p /BUILD/ && \
 #     
