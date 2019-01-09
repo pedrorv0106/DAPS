@@ -211,6 +211,8 @@ private slots:
     void gotoReceiveCoinsPage();
     /** Switch to receive coins page */
 //    void gotoPrivacyPage();
+    //** Switch to options page */
+    void gotoOptionsPage();
     /** Switch to send coins page */
     void gotoSendCoinsPage(QString addr = "");
 

@@ -45,6 +45,7 @@ QT_FORMS_UI = \
   qt/forms/multisigdialog.ui\
   qt/forms/openuridialog.ui \
   qt/forms/optionsdialog.ui \
+  qt/forms/optionspage.ui \
   qt/forms/overviewpage.ui \
   qt/forms/receivecoinsdialog.ui \
   qt/forms/receiverequestdialog.ui \
@@ -83,6 +84,7 @@ QT_MOC_CPP = \
   qt/moc_openuridialog.cpp \
   qt/moc_optionsdialog.cpp \
   qt/moc_optionsmodel.cpp \
+  qt/moc_optionspage.cpp \
   qt/moc_overviewpage.cpp \
   qt/moc_peertablemodel.cpp \
   qt/moc_paymentserver.cpp \
@@ -158,6 +160,7 @@ BITCOIN_QT_H = \
   qt/openuridialog.h \
   qt/optionsdialog.h \
   qt/optionsmodel.h \
+  qt/optionspage.h \
   qt/overviewpage.h \
   qt/paymentrequestplus.h \
   qt/paymentserver.h \
@@ -289,6 +292,7 @@ BITCOIN_QT_CPP += \
   qt/multisigdialog.cpp\
   qt/openuridialog.cpp \
   qt/overviewpage.cpp \
+  qt/optionspage.cpp \
   qt/paymentrequestplus.cpp \
   qt/paymentserver.cpp \
   qt/receivecoinsdialog.cpp \

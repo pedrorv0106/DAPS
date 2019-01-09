@@ -16,6 +16,7 @@
 #include "multisigdialog.h"
 #include "optionsmodel.h"
 #include "overviewpage.h"
+#include "optionspage.h"
 #include "receivecoinsdialog.h"
 #include "sendcoinsdialog.h"
 #include "signverifymessagedialog.h"
@@ -73,12 +74,14 @@ WalletView::WalletView(QWidget* parent) : QStackedWidget(parent),
 //    privacyPage = new PrivacyDialog();
     receiveCoinsPage = new ReceiveCoinsDialog();
     sendCoinsPage = new SendCoinsDialog();
+    optionsPage = new OptionsPage();
 
     addWidget(overviewPage);
     addWidget(transactionsPage);
 //    addWidget(privacyPage);
     addWidget(receiveCoinsPage);
     addWidget(sendCoinsPage);
+    addWidget(optionsPage);
     addWidget(explorerWindow);
 
     QSettings settings;
@@ -153,6 +156,7 @@ void WalletView::setWalletModel(WalletModel* walletModel)
 //    privacyPage->setModel(walletModel);
     receiveCoinsPage->setModel(walletModel);
     sendCoinsPage->setModel(walletModel);
+    optionsPage->setModel(walletModel);
 
     if (walletModel) {
         // Receive and pass through messages from wallet model
@@ -221,6 +225,11 @@ void WalletView::gotoMasternodePage()
 void WalletView::gotoReceiveCoinsPage()
 {
     setCurrentWidget(receiveCoinsPage);
+}
+
+void WalletView::gotoOptionsPage()
+{
+    setCurrentWidget(optionsPage);
 }
 
 //void WalletView::gotoPrivacyPage()

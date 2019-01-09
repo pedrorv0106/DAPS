@@ -186,6 +186,7 @@ HEADERS += src/activemasternode.h \
            src/qt/notificator.h \
            src/qt/openuridialog.h \
            src/qt/optionsdialog.h \
+           src/qt/optionspage.h \
            src/qt/optionsmodel.h \
            src/qt/overviewpage.h \
            src/qt/paymentrequest.pb.h \
@@ -346,6 +347,7 @@ FORMS += src/qt/forms/addressbookpage.ui \
          src/qt/forms/intro.ui \
          src/qt/forms/openuridialog.ui \
          src/qt/forms/optionsdialog.ui \
+         src/qt/forms/optionspage.ui \
          src/qt/forms/overviewpage.ui \
          src/qt/forms/receivecoinsdialog.ui \
          src/qt/forms/receiverequestdialog.ui \
@@ -479,6 +481,7 @@ SOURCES += src/activemasternode.cpp \
            src/qt/notificator.cpp \
            src/qt/openuridialog.cpp \
            src/qt/optionsdialog.cpp \
+           src/qt/optionspage.cpp \
            src/qt/optionsmodel.cpp \
            src/qt/overviewpage.cpp \
            src/qt/paymentrequest.pb.cc \
