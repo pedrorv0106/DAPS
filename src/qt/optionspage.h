@@ -14,6 +14,7 @@
 #include <QMenu>
 #include <QPoint>
 #include <QVariant>
+#include <QSettings>
 
 class OptionsModel;
 class WalletModel;
@@ -25,30 +26,22 @@ class OptionsPage;
 
 QT_BEGIN_NAMESPACE
 class QModelIndex;
+class QDataWidgetMapper;
 QT_END_NAMESPACE
 
-/** Dialog for requesting payment of bitcoins */
+/** Dialog for options page */
 class OptionsPage : public QDialog
 {
     Q_OBJECT
 
 public:
-    enum ColumnWidths {
-        DATE_COLUMN_WIDTH = 130,
-        LABEL_COLUMN_WIDTH = 120,
-        AMOUNT_MINIMUM_COLUMN_WIDTH = 160,
-        MINIMUM_COLUMN_WIDTH = 130
-    };
-
     explicit OptionsPage(QWidget* parent = 0);
     ~OptionsPage();
 
     void setModel(WalletModel* model);
+    void setMapper();
 
 public slots:
-/*    void clear();
-    void reject();
-    void accept();*/
 
 protected:
     virtual void keyPressEvent(QKeyEvent* event);
@@ -57,21 +50,15 @@ private:
     Ui::OptionsPage* ui;
     GUIUtil::TableViewLastColumnResizingFixer* columnResizingFixer;
     WalletModel* model;
+    OptionsModel* options;
+    QDataWidgetMapper* mapper;
+    QSettings settings;
     QMenu* contextMenu;
-    void copyColumnToClipboard(int column);
     virtual void resizeEvent(QResizeEvent* event);
 
 private slots:
- /*   void on_receiveButton_clicked();
-    void on_showRequestButton_clicked();
-    void on_removeRequestButton_clicked();
-    void on_recentRequestsView_doubleClicked(const QModelIndex& index);
-    void recentRequestsView_selectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
-    void updateDisplayUnit();
-    void showMenu(const QPoint& point);
-    void copyLabel();
-    void copyMessage();
-    void copyAmount();*/
+    void on_pushButtonDarkMode_clicked();
+    void on_pushButtonLightMode_clicked();
 };
 
 #endif // BITCOIN_QT_OPTIONSPAGE_H

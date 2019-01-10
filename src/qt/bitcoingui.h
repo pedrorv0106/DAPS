@@ -70,6 +70,7 @@ public:
     bool enableWallet;
     bool fMultiSend = false;
 
+
 protected:
     void changeEvent(QEvent* e);
     void closeEvent(QCloseEvent* event);

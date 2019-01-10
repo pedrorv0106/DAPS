@@ -205,6 +205,8 @@ void restoreWindowGeometry(const QString& strSetting, const QSize& defaultSizeIn
 
 /** Load global CSS theme */
 QString loadStyleSheet();
+/** Refresh App theme */
+void refreshStyleSheet();
 
 /** Check whether a theme is not build-in */
 bool isExternal(QString theme);

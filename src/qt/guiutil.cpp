@@ -825,16 +825,16 @@ QString loadStyleSheet()
 {
     QString styleSheet;
     QSettings settings;
-    QString cssName;
-    bool theme = settings.value("theme", "").toBool();
+    QVariant theme = settings.value("theme", "");
+    QString cssName = QString(":/css/"+theme.toString());
 
         // Build-in CSS
     settings.setValue("fCSSexternal", false);
-    if (!theme) {
-        cssName = QString(":/css/light");
-    } else {
-        cssName = QString(":/css/dark");
-    }
+    // if (theme.toString()=="Dark") {
+    //     cssName = QString(":/css/light");
+    // } else {
+    //     cssName = QString(":/css/dark");
+    // }
 
     QFile qFile(cssName);
     if (!qFile.exists()){
@@ -845,6 +845,14 @@ QString loadStyleSheet()
         return styleSheet;
     } 
     return 0;
+}
+
+void refreshStyleSheet(){
+    qApp->setStyleSheet(GUIUtil::loadStyleSheet());
+    foreach (QWidget *widget, QApplication::allWidgets()){
+        widget->setStyleSheet(GUIUtil::loadStyleSheet());
+        widget->update();
+    }
 }
 
 void setClipboard(const QString& str)
