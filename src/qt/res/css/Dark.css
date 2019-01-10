@@ -140,6 +140,9 @@ WalletFrame {
     font-family: Roboto;
     font-weight: 300;
     }
+    QLabel:disabled {
+    color: slategrey;
+    }
     
     
     .QRadioButton::indicator, QCheckBox::indicator {
@@ -220,6 +223,10 @@ WalletFrame {
     font-size: 20px;
     font-weight: 400;
     padding: 10px 20px;
+    }
+
+    QPushButton:disabled {
+    background-color:lightslategray;
     }
     
     QPushButton:hover {

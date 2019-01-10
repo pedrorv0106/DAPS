@@ -40,6 +40,7 @@ public:
 
     void setModel(WalletModel* model);
     void setMapper();
+    bool matchNewPasswords();
 
 public slots:
 
@@ -57,8 +58,11 @@ private:
     virtual void resizeEvent(QResizeEvent* event);
 
 private slots:
+    void validateNewPass();
+    void validateNewPassRepeat();
     void on_pushButtonDarkMode_clicked();
     void on_pushButtonLightMode_clicked();
+    void on_pushButtonPassword_clicked();
 };
 
 #endif // BITCOIN_QT_OPTIONSPAGE_H

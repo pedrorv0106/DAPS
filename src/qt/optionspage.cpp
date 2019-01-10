@@ -9,6 +9,7 @@
 #include "addresstablemodel.h"
 #include "bitcoinunits.h"
 #include "guiutil.h"
+#include "guiconstants.h"
 #include "bitcoingui.h"
 #include "optionsmodel.h"
 #include "receiverequestdialog.h"
@@ -23,12 +24,6 @@
 #include <QTextDocument>
 #include <QDataWidgetMapper>
 #include <QTextStream>
-
-QTextStream& qouta()
-{
-    static QTextStream ts( stdout );
-    return ts;
-}
 
 OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
                                                           ui(new Ui::OptionsPage),
@@ -51,6 +46,11 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
     ui->pushButtonLightMode->setObjectName("toggleButton");
     ui->pushButtonLightMode->setCheckable(true);
     ui->pushButtonLightMode->setChecked(settings.value("theme")=="light");
+    ui->pushButton2FAOn->setObjectName("toggleButton");
+    ui->pushButton2FAOff->setObjectName("toggleButton");
+
+    connect(ui->lineEditNewPass, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPass()));
+    connect(ui->lineEditNewPassRepeat, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPassRepeat()));
 }
 
 void OptionsPage::setModel(WalletModel* model)
@@ -116,3 +116,51 @@ void OptionsPage::on_pushButtonLightMode_clicked()
     GUIUtil::refreshStyleSheet();
 }
 
+void OptionsPage::on_pushButtonPassword_clicked()
+{
+    SecureString oldPass = SecureString();
+    oldPass.reserve(MAX_PASSPHRASE_SIZE);
+    oldPass.assign( ui->lineEditOldPass->text().toStdString().c_str() );
+    SecureString newPass = SecureString();
+    newPass.reserve(MAX_PASSPHRASE_SIZE);
+    oldPass.assign( ui->lineEditNewPass->text().toStdString().c_str() );
+
+    if ( (ui->lineEditNewPass->text() == ui->lineEditNewPassRepeat->text()) && (ui->lineEditNewPass->text().length()) )
+    {
+        if (!model->getEncryptionStatus()){
+            model->setWalletEncrypted(true, newPass);
+        } else {
+            if (model->changePassphrase(oldPass,newPass)) {
+                ui->lineEditOldPass->setStyleSheet(GUIUtil::loadStyleSheet());
+            } else {
+                ui->lineEditOldPass->setStyleSheet("border-color:red");
+            }
+        }
+        ui->lineEditOldPass->repaint();
+    }
+}
+
+void OptionsPage::validateNewPass()
+{
+    matchNewPasswords();
+}
+
+void OptionsPage::validateNewPassRepeat()
+{
+    matchNewPasswords();
+}
+
+bool OptionsPage::matchNewPasswords()
+{
+    if (ui->lineEditNewPass->text()==ui->lineEditNewPassRepeat->text())
+    {
+        ui->lineEditNewPassRepeat->setStyleSheet(GUIUtil::loadStyleSheet());
+        ui->lineEditNewPassRepeat->repaint();
+        return true;
+    } else
+    {
+        ui->lineEditNewPassRepeat->setStyleSheet("border-color: red");
+        ui->lineEditNewPassRepeat->repaint();
+        return false;
+    }
+}
