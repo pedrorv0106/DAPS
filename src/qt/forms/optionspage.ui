@@ -315,9 +315,6 @@
     </item>
     <item>
      <widget class="QPushButton" name="pushButtonBackup">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
       <property name="sizePolicy">
        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
         <horstretch>0</horstretch>

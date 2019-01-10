@@ -163,14 +163,9 @@ WalletFrame {
     margin: 7px;
     }
     
-    /* .QCheckBox { 
-    color:#333333;
-    background-color:transparent;
+    Line{
+    color:white;
     }
-    
-    .QCheckBox:hover {
-    background-color:transparent;
-    } */
     
     .QValidatedLineEdit, .QLineEdit, QAbstractSpinBox, QComboBox, QListView, QTextEdit { /* Text Entry Fields */
     padding-left: 10px;

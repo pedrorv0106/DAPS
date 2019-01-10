@@ -63,6 +63,7 @@ private slots:
     void on_pushButtonDarkMode_clicked();
     void on_pushButtonLightMode_clicked();
     void on_pushButtonPassword_clicked();
+    void on_pushButtonBackup_clicked();
 };
 
 #endif // BITCOIN_QT_OPTIONSPAGE_H

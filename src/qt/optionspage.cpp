@@ -140,6 +140,13 @@ void OptionsPage::on_pushButtonPassword_clicked()
     }
 }
 
+void OptionsPage::on_pushButtonBackup_clicked(){
+    if (model->backupWallet(QString("BackupWallet")))
+        ui->pushButtonBackup->setStyleSheet("border: 2px solid green");
+    else ui->pushButtonBackup->setStyleSheet("border: 2px solid red");
+    ui->pushButtonBackup->repaint();
+}
+
 void OptionsPage::validateNewPass()
 {
     matchNewPasswords();
