@@ -51,6 +51,7 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
 
     connect(ui->lineEditNewPass, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPass()));
     connect(ui->lineEditNewPassRepeat, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPassRepeat()));
+    connect(ui->lineEditOldPass, SIGNAL(textChanged(const QString &)), this, SLOT(onOldPassChanged()));
 }
 
 void OptionsPage::setModel(WalletModel* model)
@@ -125,19 +126,28 @@ void OptionsPage::on_pushButtonPassword_clicked()
     newPass.reserve(MAX_PASSPHRASE_SIZE);
     oldPass.assign( ui->lineEditNewPass->text().toStdString().c_str() );
 
+    bool success = false;
+
     if ( (ui->lineEditNewPass->text() == ui->lineEditNewPassRepeat->text()) && (ui->lineEditNewPass->text().length()) )
     {
         if (!model->getEncryptionStatus()){
             model->setWalletEncrypted(true, newPass);
+            success = true;
         } else {
             if (model->changePassphrase(oldPass,newPass)) {
                 ui->lineEditOldPass->setStyleSheet(GUIUtil::loadStyleSheet());
+                success = true;
             } else {
                 ui->lineEditOldPass->setStyleSheet("border-color:red");
             }
         }
         ui->lineEditOldPass->repaint();
     }
+
+    if (success)
+        ui->pushButtonPassword->setStyleSheet("border: 2px solid green");
+    else ui->pushButtonPassword->setStyleSheet("border: 2px solid red");
+    ui->pushButtonPassword->repaint();
 }
 
 void OptionsPage::on_pushButtonBackup_clicked(){
@@ -155,6 +165,15 @@ void OptionsPage::validateNewPass()
 void OptionsPage::validateNewPassRepeat()
 {
     matchNewPasswords();
+}
+
+void OptionsPage::onOldPassChanged()
+{
+    QString stylesheet = GUIUtil::loadStyleSheet();
+    ui->lineEditOldPass->setStyleSheet(stylesheet);
+    ui->lineEditOldPass->repaint();
+    ui->pushButtonPassword->setStyleSheet(stylesheet);
+    ui->pushButtonPassword->repaint();
 }
 
 bool OptionsPage::matchNewPasswords()

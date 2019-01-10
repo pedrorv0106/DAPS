@@ -60,6 +60,7 @@ private:
 private slots:
     void validateNewPass();
     void validateNewPassRepeat();
+    void onOldPassChanged();
     void on_pushButtonDarkMode_clicked();
     void on_pushButtonLightMode_clicked();
     void on_pushButtonPassword_clicked();
