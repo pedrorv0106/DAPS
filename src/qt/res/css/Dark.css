@@ -39,9 +39,7 @@ WalletFrame {
     color:#333;
     } */
     
-    #bottomToolbar {
-    padding: 3px 0 15px;
-    }
+
     
     QToolBar > QToolButton {
     font-family: Roboto;
@@ -214,7 +212,7 @@ WalletFrame {
     
     QPushButton { /* Global Button Style */
     height: 40px;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+    /*box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);*/
     border-radius: 10px;
     background-color: #5e0057;
     color: white;
@@ -372,3 +370,18 @@ WalletFrame {
     background-color: #83faff;
     }
     
+    #bottomToolbar {
+    padding: 3px 0 3px;
+    }
+
+    #toggleButton {
+    font-size: 10px;
+    padding: 0;
+    border-radius: 10px;
+    }
+
+    #toggleButton:checked {
+    background-color: black;
+    color: #93faff;
+    border: 1px solid #93faff;
+    }

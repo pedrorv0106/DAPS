@@ -24,6 +24,12 @@
 #include <QDataWidgetMapper>
 #include <QTextStream>
 
+QTextStream& qouta()
+{
+    static QTextStream ts( stdout );
+    return ts;
+}
+
 OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
                                                           ui(new Ui::OptionsPage),
                                                           model(0),
@@ -37,6 +43,14 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
     mapper = new QDataWidgetMapper(this);
     mapper->setSubmitPolicy(QDataWidgetMapper::ManualSubmit);
 
+    ui->pushButtonDarkMode->setObjectName("toggleButton");
+    ui->pushButtonDarkMode->setCheckable(true);
+    ui->pushButtonDarkMode->setChecked(settings.value("theme")=="dark");
+    if (settings.value("theme")=="dark")
+        ui->pushButtonLightMode->stackUnder(ui->pushButtonDarkMode);
+    ui->pushButtonLightMode->setObjectName("toggleButton");
+    ui->pushButtonLightMode->setCheckable(true);
+    ui->pushButtonLightMode->setChecked(settings.value("theme")=="light");
 }
 
 void OptionsPage::setModel(WalletModel* model)
@@ -82,19 +96,23 @@ void OptionsPage::on_pushButtonDarkMode_clicked()
 {
     if (!model || !model->getOptionsModel())
         return;
-    settings.setValue("theme", "dark");
-    GUIUtil::refreshStyleSheet();
     ui->pushButtonDarkMode->setChecked(true);
     ui->pushButtonLightMode->setChecked(false);
+    ui->pushButtonLightMode->stackUnder(ui->pushButtonDarkMode);
+    ui->pushButtonDarkMode->parentWidget()->repaint();
+    settings.setValue("theme", "dark");
+    GUIUtil::refreshStyleSheet();
 }
 
 void OptionsPage::on_pushButtonLightMode_clicked()
 {
     if (!model || !model->getOptionsModel())
         return;
-    settings.setValue("theme", "light");
-    GUIUtil::refreshStyleSheet();
     ui->pushButtonLightMode->setChecked(true);
     ui->pushButtonDarkMode->setChecked(false);
+    ui->pushButtonDarkMode->stackUnder(ui->pushButtonLightMode);
+    ui->pushButtonDarkMode->parentWidget()->repaint();
+    settings.setValue("theme", "light");
+    GUIUtil::refreshStyleSheet();
 }
 

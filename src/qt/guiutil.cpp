@@ -849,7 +849,7 @@ QString loadStyleSheet()
 
 void refreshStyleSheet(){
     qApp->setStyleSheet(GUIUtil::loadStyleSheet());
-    foreach (QWidget *widget, QApplication::allWidgets()){
+    foreach (QWidget *widget, QApplication::topLevelWidgets()){
         widget->setStyleSheet(GUIUtil::loadStyleSheet());
         widget->update();
     }
