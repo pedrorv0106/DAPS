@@ -150,7 +150,7 @@ exports.labels = {};
 exports.reloadSettings = function reloadSettings() {
   // Discover where the settings file lives
   var settingsFilename = "settings.json";
-  settingsFilename = "./" + settingsFilename;
+  settingsFilename = "./config/" + settingsFilename;
 
   var settingsStr;
   try{

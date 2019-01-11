@@ -1,7 +1,7 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2017 The DAPScoin developers
+// Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -95,9 +95,12 @@ static const CRPCConvertParam vRPCConvertParams[] =
         {"keypoolrefill", 0},
         {"getrawmempool", 0},
         {"estimatefee", 0},
+        {"getfeeinfo", 0},
         {"estimatepriority", 0},
         {"prioritisetransaction", 1},
         {"prioritisetransaction", 2},
+        {"setban", 2},
+        {"setban", 3},
         {"spork", 1},
         {"mnbudget", 3},
         {"mnbudget", 4},
@@ -118,21 +121,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
         {"reservebalance", 1},
         {"setstakesplitthreshold", 0},
         {"autocombinerewards", 0},
-        {"autocombinerewards", 1},
-        {"getzerocoinbalance", 0},
-        {"listmintedzerocoins", 0},
-        {"listspentzerocoins", 0},
-        {"listzerocoinamounts", 0},
-        {"mintzerocoin", 0},
-        {"spendzerocoin", 0},
-        {"spendzerocoin", 1},
-        {"spendzerocoin", 2},
-        {"spendzerocoin", 3},
-        {"importzerocoins", 0},
-        {"exportzerocoins", 0},
-        {"exportzerocoins", 1},
-        {"resetmintzerocoin", 0},
-        {"getspentzerocoinamount", 1}
+        {"autocombinerewards", 1}
     };
 
 class CRPCConvertTable

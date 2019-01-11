@@ -1,7 +1,7 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2017 The DAPScoin developers
+// Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -16,6 +16,7 @@
 #include "json/json_spirit_value.h"
 #include "utilmoneystr.h"
 #include "base58.h"
+#include "clientversion.h"
 
 using namespace json_spirit;
 using namespace std;
@@ -659,6 +660,91 @@ Value getchaintips(const Array& params, bool fHelp)
 
     return res;
 }
+
+Value getfeeinfo(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw runtime_error(
+                "getfeeinfo blocks\n"
+                "\nReturns details of transaction fees over the last n blocks.\n"
+
+                "\nArguments:\n"
+                "1. blocks     (int, required) the number of blocks to get transaction data from\n"
+
+                "\nResult:\n"
+                "{\n"
+                "  \"txcount\": xxxxx                (numeric) Current tx count\n"
+                "  \"txbytes\": xxxxx                (numeric) Sum of all tx sizes\n"
+                "  \"ttlfee\": xxxxx                 (numeric) Sum of all fees\n"
+                "  \"feeperkb\": xxxxx               (numeric) Average fee per kb over the block range\n"
+                "  \"rec_highpriorityfee_perkb\": xxxxx    (numeric) Recommended fee per kb to use for a high priority tx\n"
+                "}\n"
+
+                "\nExamples:\n" +
+                HelpExampleCli("getfeeinfo", "5") + HelpExampleRpc("getfeeinfo", "5"));
+
+    LOCK(cs_main);
+
+    int nBlocks = params[0].get_int();
+    int nBestHeight = chainActive.Height();
+    int nStartHeight = nBestHeight - nBlocks;
+    if (nBlocks < 0 || nStartHeight <= 0)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "invalid start height");
+
+    CAmount nFees = 0;
+    int64_t nBytes = 0;
+    int64_t nTotal = 0;
+    for (int i = nStartHeight; i <= nBestHeight; i++) {
+        CBlockIndex* pindex = chainActive[i];
+        CBlock block;
+        if (!ReadBlockFromDisk(block, pindex))
+            throw JSONRPCError(RPC_DATABASE_ERROR, "failed to read block from disk");
+
+        CAmount nValueIn = 0;
+        CAmount nValueOut = 0;
+        for (const CTransaction& tx : block.vtx) {
+            if (tx.IsCoinBase() || tx.IsCoinStake())
+                continue;
+
+            for (unsigned int j = 0; j < tx.vin.size(); j++) {
+                if (tx.vin[j].scriptSig.IsZerocoinSpend()) {
+                    nValueIn += tx.vin[j].nSequence * COIN;
+                    continue;
+                }
+
+                COutPoint prevout = tx.vin[j].prevout;
+                CTransaction txPrev;
+                uint256 hashBlock;
+                if(!GetTransaction(prevout.hash, txPrev, hashBlock, true))
+                    throw JSONRPCError(RPC_DATABASE_ERROR, "failed to read tx from disk");
+                nValueIn += txPrev.vout[prevout.n].nValue;
+            }
+
+            for (unsigned int j = 0; j < tx.vout.size(); j++) {
+                nValueOut += tx.vout[j].nValue;
+            }
+
+            nFees += nValueIn - nValueOut;
+            nBytes += tx.GetSerializeSize(SER_NETWORK, CLIENT_VERSION);
+            nTotal++;
+        }
+
+        pindex = chainActive.Next(pindex);
+        if (!pindex)
+            break;
+    }
+
+    Object obj;
+    CFeeRate nFeeRate = CFeeRate(nFees, nBytes);
+    obj.push_back(Pair("txcount", (int64_t)nTotal));
+    obj.push_back(Pair("txbytes", (int64_t)nBytes));
+    obj.push_back(Pair("ttlfee", FormatMoney(nFees)));
+    obj.push_back(Pair("feeperkb", FormatMoney(nFeeRate.GetFeePerK())));
+    obj.push_back(Pair("rec_highpriorityfee_perkb", FormatMoney(nFeeRate.GetFeePerK() + 1000)));
+
+    return obj;
+}
+
 
 Value getmempoolinfo(const Array& params, bool fHelp)
 {

@@ -44,7 +44,7 @@ Create user with read/write access:
 
 ### Configure
 
-    cp ./settings.json.template ./settings.json
+    cp ./config/settings.json.template ./config/settings.json
 
 *Make required changes in settings.json*
 

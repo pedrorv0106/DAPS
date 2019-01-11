@@ -1,6 +1,6 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2017 The DAPScoin developers
+// Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -287,7 +287,7 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
 {
     QActionGroup* tabGroup = new QActionGroup(this);
 
-    overviewAction = new QAction(QIcon(":/icons/overview"), tr("&Overview"), this);
+    overviewAction = new QAction(QIcon(":/icons/overview"), tr("&   Overview"), this);
     overviewAction->setStatusTip(tr("Show general overview of wallet"));
     overviewAction->setToolTip(overviewAction->statusTip());
     overviewAction->setCheckable(true);
@@ -298,7 +298,7 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
 #endif
     tabGroup->addAction(overviewAction);
 
-    sendCoinsAction = new QAction(QIcon(":/icons/send"), tr("&Send"), this);
+    sendCoinsAction = new QAction(QIcon(":/icons/send"), tr("&   Send"), this);
     sendCoinsAction->setStatusTip(tr("Send coins to a DAPScoin address"));
     sendCoinsAction->setToolTip(sendCoinsAction->statusTip());
     sendCoinsAction->setCheckable(true);
@@ -309,7 +309,7 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
 #endif
     tabGroup->addAction(sendCoinsAction);
 
-    receiveCoinsAction = new QAction(QIcon(":/icons/receiving_addresses"), tr("&Receive"), this);
+    receiveCoinsAction = new QAction(QIcon(":/icons/receiving_addresses"), tr("&   Receive"), this);
     receiveCoinsAction->setStatusTip(tr("Request payments (generates QR codes and dapscoin: URIs)"));
     receiveCoinsAction->setToolTip(receiveCoinsAction->statusTip());
     receiveCoinsAction->setCheckable(true);
@@ -320,7 +320,7 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
 #endif
     tabGroup->addAction(receiveCoinsAction);
 
-    historyAction = new QAction(QIcon(":/icons/history"), tr("&Transactions"), this);
+    historyAction = new QAction(QIcon(":/icons/history"), tr("&   Transactions"), this);
     historyAction->setStatusTip(tr("Browse transaction history"));
     historyAction->setToolTip(historyAction->statusTip());
     historyAction->setCheckable(true);
@@ -346,7 +346,7 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
 
     QSettings settings;
     if (settings.value("fShowMasternodesTab").toBool()) {
-        masternodeAction = new QAction(QIcon(":/icons/masternodes"), tr("&Masternodes"), this);
+        masternodeAction = new QAction(QIcon(":/icons/masternodes"), tr("&   Masternodes"), this);
         masternodeAction->setStatusTip(tr("Browse masternodes"));
         masternodeAction->setToolTip(masternodeAction->statusTip());
         masternodeAction->setCheckable(true);
@@ -388,7 +388,7 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
 #endif
     aboutQtAction->setStatusTip(tr("Show information about Qt"));
     aboutQtAction->setMenuRole(QAction::AboutQtRole);
-    optionsAction = new QAction(QIcon(":/icons/options"), tr("&Options..."), this);
+    optionsAction = new QAction(QIcon(":/icons/options"), tr("&Settings"), this);
     optionsAction->setStatusTip(tr("Modify configuration options for DAPScoin"));
     optionsAction->setMenuRole(QAction::PreferencesRole);
     toggleHideAction = new QAction(networkStyle->getAppIcon(), tr("&Show / Hide"), this);
@@ -517,7 +517,7 @@ void BitcoinGUI::createMenuBar()
         settings->addAction(multiSendAction);
         settings->addSeparator();
     }
-    settings->addAction(optionsAction);
+    //settings->addAction(optionsAction);
 
     if (walletFrame) {
         QMenu* tools = appMenuBar->addMenu(tr("&Tools"));
@@ -544,7 +544,9 @@ void BitcoinGUI::createToolBars()
 {
     if (walletFrame) {
         QToolBar* toolbar = new QToolBar(tr("Tabs toolbar"));
+        toolbar->setOrientation(Qt::Vertical);
         toolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+
         toolbar->addAction(overviewAction);
         toolbar->addAction(sendCoinsAction);
         toolbar->addAction(receiveCoinsAction);
@@ -555,20 +557,48 @@ void BitcoinGUI::createToolBars()
         if (settings.value("fShowMasternodesTab").toBool()) {
             toolbar->addAction(masternodeAction);
         }
+        
         toolbar->setMovable(false); // remove unused icon in upper left corner
         overviewAction->setChecked(true);
 
         /** Create additional container for toolbar and walletFrame and make it the central widget.
             This is a workaround mostly for toolbar styling on Mac OS but should work fine for every other OSes too.
         */
-        QVBoxLayout* layout = new QVBoxLayout;
-        layout->addWidget(toolbar);
+        QToolBar* bottomToolbar = new QToolBar;
+        bottomToolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        bottomToolbar->setOrientation(Qt::Vertical);
+        bottomToolbar->addAction(optionsAction);
+        bottomToolbar->setFixedHeight(36);
+        bottomToolbar->setObjectName("bottomToolbar");
+
+        QHBoxLayout* layout = new QHBoxLayout;
+        QVBoxLayout* navLayout = new QVBoxLayout;
+        QWidget* navWidget = new QWidget;
+        navWidget->setObjectName("navLayout");
+
+        bottomToolbar->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Minimum);
+        toolbar->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Expanding);
+        QLabel* dapsico = new QLabel;
+        dapsico->setPixmap(QIcon(":icons/bitcoin").pixmap(130,107));
+        dapsico->setObjectName("dapsico");
+
+        navLayout->addWidget(dapsico);
+        navLayout->addWidget(toolbar);
+        navLayout->addWidget(bottomToolbar);
+        navWidget->setLayout(navLayout);
+
+        //navWidget->addLayout(navLayout)
+        layout->addWidget(navWidget);
         layout->addWidget(walletFrame);
         layout->setSpacing(0);
         layout->setContentsMargins(QMargins());
         QWidget* containerWidget = new QWidget();
         containerWidget->setLayout(layout);
         setCentralWidget(containerWidget);
+
+        auto toolLayout = toolbar->layout();
+        for (int i =0; i<toolLayout->count(); i++)
+            toolLayout->itemAt(i)->setAlignment(Qt::AlignLeft);
     }
 }
 
@@ -703,7 +733,7 @@ void BitcoinGUI::createTrayIconMenu()
     trayIconMenu->addAction(verifyMessageAction);
     trayIconMenu->addAction(bip38ToolAction);
     trayIconMenu->addSeparator();
-    trayIconMenu->addAction(optionsAction);
+    //trayIconMenu->addAction(optionsAction);
     trayIconMenu->addSeparator();
     trayIconMenu->addAction(openInfoAction);
     trayIconMenu->addAction(openRPCConsoleAction);

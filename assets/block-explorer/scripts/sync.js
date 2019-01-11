@@ -4,7 +4,7 @@ var mongoose = require('mongoose')
   , Address = require('../models/address')  
   , Richlist = require('../models/richlist')  
   , Stats = require('../models/stats')  
-  , settings = require('../lib/settings')
+  , settings = require('../config/settings')
   , fs = require('fs');
 
 var mode = 'update';

@@ -1,5 +1,5 @@
 // Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2015-2017 The DAPScoin developers
+// Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -527,13 +527,14 @@ Value startmasternode (const Array& params, bool fHelp)
                 continue;
             CTxIn vin = CTxIn(uint256(mne.getTxHash()), uint32_t(nIndex));
             CMasternode* pmn = mnodeman.Find(vin);
+            CMasternodeBroadcast mnb;
 
             if (pmn != NULL) {
                 if (strCommand == "missing") continue;
                 if (strCommand == "disabled" && pmn->IsEnabled()) continue;
             }
 
-            bool result = activeMasternode.Register(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage);
+            bool result = activeMasternode.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, mnb);
 
             Object statusObj;
             statusObj.push_back(Pair("alias", mne.getAlias()));
@@ -578,8 +579,9 @@ Value startmasternode (const Array& params, bool fHelp)
                 found = true;
                 std::string errorMessage;
 
-                bool result = activeMasternode.Register(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage);
+                CMasternodeBroadcast mnb;
 
+                bool result = activeMasternode.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, mnb);
                 statusObj.push_back(Pair("result", result ? "successful" : "failed"));
 
                 if (result) {
@@ -1005,4 +1007,240 @@ Value getseesawrewardratio (const Array& params, bool fHelp)
     obj.push_back(Pair("Masternode Reward Ratio", masternodeRatio));
     obj.push_back(Pair("Staking Reward Ratio", 100 - masternodeRatio));
     return obj;
+}
+
+bool DecodeHexMnb(CMasternodeBroadcast& mnb, std::string strHexMnb) {
+
+    if (!IsHex(strHexMnb))
+        return false;
+
+    vector<unsigned char> mnbData(ParseHex(strHexMnb));
+    CDataStream ssData(mnbData, SER_NETWORK, PROTOCOL_VERSION);
+    try {
+        ssData >> mnb;
+    }
+    catch (const std::exception&) {
+        return false;
+    }
+
+    return true;
+}
+
+Value createmasternodebroadcast(const Array & params, bool fHelp)
+{
+    string strCommand;
+    if (params.size() >= 1)
+        strCommand = params[0].get_str();
+    if (fHelp || (strCommand != "alias" && strCommand != "all") || (strCommand == "alias" && params.size() < 2))
+        throw runtime_error(
+                "createmasternodebroadcast \"command\" ( \"alias\")\n"
+                "\nCreates a masternode broadcast message for one or all masternodes configured in masternode.conf\n" +
+                HelpRequiringPassphrase() + "\n"
+
+                                            "\nArguments:\n"
+                                            "1. \"command\"      (string, required) \"alias\" for single masternode, \"all\" for all masternodes\n"
+                                            "2. \"alias\"        (string, required if command is \"alias\") Alias of the masternode\n"
+
+                                            "\nResult (all):\n"
+                                            "{\n"
+                                            "  \"overall\": \"xxx\",        (string) Overall status message indicating number of successes.\n"
+                                            "  \"detail\": [                (array) JSON array of broadcast objects.\n"
+                                            "    {\n"
+                                            "      \"alias\": \"xxx\",      (string) Alias of the masternode.\n"
+                                            "      \"success\": true|false, (boolean) Success status.\n"
+                                            "      \"hex\": \"xxx\"         (string, if success=true) Hex encoded broadcast message.\n"
+                                            "      \"error_message\": \"xxx\"   (string, if success=false) Error message, if any.\n"
+                                            "    }\n"
+                                            "    ,...\n"
+                                            "  ]\n"
+                                            "}\n"
+
+                                            "\nResult (alias):\n"
+                                            "{\n"
+                                            "  \"alias\": \"xxx\",      (string) Alias of the masternode.\n"
+                                            "  \"success\": true|false, (boolean) Success status.\n"
+                                            "  \"hex\": \"xxx\"         (string, if success=true) Hex encoded broadcast message.\n"
+                                            "  \"error_message\": \"xxx\"   (string, if success=false) Error message, if any.\n"
+                                            "}\n"
+
+                                            "\nExamples:\n" +
+                HelpExampleCli("createmasternodebroadcast", "alias mymn1") + HelpExampleRpc("createmasternodebroadcast", "alias mymn1"));
+
+    EnsureWalletIsUnlocked();
+
+    if (strCommand == "alias")
+    {
+        // wait for reindex and/or import to finish
+        if (fImporting || fReindex)
+            throw JSONRPCError(RPC_INTERNAL_ERROR, "Wait for reindex and/or import to finish");
+
+        std::string alias = params[1].get_str();
+        bool found = false;
+
+        Object statusObj;
+        statusObj.push_back(Pair("alias", alias));
+
+        BOOST_FOREACH(CMasternodeConfig::CMasternodeEntry mne, masternodeConfig.getEntries()) {
+            if(mne.getAlias() == alias) {
+                found = true;
+                std::string errorMessage;
+                CMasternodeBroadcast mnb;
+
+                bool success = activeMasternode.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, mnb, true);
+
+                statusObj.push_back(Pair("success", success));
+                if(success) {
+                    CDataStream ssMnb(SER_NETWORK, PROTOCOL_VERSION);
+                    ssMnb << mnb;
+                    statusObj.push_back(Pair("hex", HexStr(ssMnb.begin(), ssMnb.end())));
+                } else {
+                    statusObj.push_back(Pair("error_message", errorMessage));
+                }
+                break;
+            }
+        }
+
+        if(!found) {
+            statusObj.push_back(Pair("success", false));
+            statusObj.push_back(Pair("error_message", "Could not find alias in config. Verify with list-conf."));
+        }
+
+        return statusObj;
+
+    }
+
+    if (strCommand == "all")
+    {
+        // wait for reindex and/or import to finish
+        if (fImporting || fReindex)
+            throw JSONRPCError(RPC_INTERNAL_ERROR, "Wait for reindex and/or import to finish");
+
+        std::vector<CMasternodeConfig::CMasternodeEntry> mnEntries;
+        mnEntries = masternodeConfig.getEntries();
+
+        int successful = 0;
+        int failed = 0;
+
+        Array resultsObj;
+
+        BOOST_FOREACH(CMasternodeConfig::CMasternodeEntry mne, masternodeConfig.getEntries()) {
+            std::string errorMessage;
+
+            CTxIn vin = CTxIn(uint256S(mne.getTxHash()), uint32_t(atoi(mne.getOutputIndex().c_str())));
+            CMasternodeBroadcast mnb;
+
+            bool success = activeMasternode.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, mnb, true);
+
+            Object statusObj;
+            statusObj.push_back(Pair("alias", mne.getAlias()));
+            statusObj.push_back(Pair("success", success));
+
+            if(success) {
+                successful++;
+                CDataStream ssMnb(SER_NETWORK, PROTOCOL_VERSION);
+                ssMnb << mnb;
+                statusObj.push_back(Pair("hex", HexStr(ssMnb.begin(), ssMnb.end())));
+            } else {
+                failed++;
+                statusObj.push_back(Pair("error_message", errorMessage));
+            }
+
+            resultsObj.push_back(statusObj);
+        }
+
+        Object returnObj;
+        returnObj.push_back(Pair("overall", strprintf("Successfully created broadcast messages for %d masternodes, failed to create %d, total %d", successful, failed, successful + failed)));
+        returnObj.push_back(Pair("detail", resultsObj));
+
+        return returnObj;
+    }
+    return Value::null;;
+}
+
+Value decodemasternodebroadcast(const Array & params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw runtime_error(
+                "decodemasternodebroadcast \"hexstring\"\n"
+                "\nCommand to decode masternode broadcast messages\n"
+
+                "\nArgument:\n"
+                "1. \"hexstring\"        (string) The hex encoded masternode broadcast message\n"
+
+                "\nResult:\n"
+                "{\n"
+                "  \"vin\": \"xxxx\"                (string) The unspent output which is holding the masternode collateral\n"
+                "  \"addr\": \"xxxx\"               (string) IP address of the masternode\n"
+                "  \"pubkeycollateral\": \"xxxx\"   (string) Collateral address's public key\n"
+                "  \"pubkeymasternode\": \"xxxx\"   (string) Masternode's public key\n"
+                "  \"vchsig\": \"xxxx\"             (string) Base64-encoded signature of this message (verifiable via pubkeycollateral)\n"
+                "  \"sigtime\": \"nnn\"             (numeric) Signature timestamp\n"
+                "  \"protocolversion\": \"nnn\"     (numeric) Masternode's protocol version\n"
+                "  \"nlastdsq\": \"nnn\"            (numeric) The last time the masternode sent a DSQ message (for mixing) (DEPRECATED)\n"
+                "  \"lastping\" : {                 (object) JSON object with information about the masternode's last ping\n"
+                "      \"vin\": \"xxxx\"            (string) The unspent output of the masternode which is signing the message\n"
+                "      \"blockhash\": \"xxxx\"      (string) Current chaintip blockhash minus 12\n"
+                "      \"sigtime\": \"nnn\"         (numeric) Signature time for this ping\n"
+                "      \"vchsig\": \"xxxx\"         (string) Base64-encoded signature of this ping (verifiable via pubkeymasternode)\n"
+                "}\n"
+
+                "\nExamples:\n" +
+                HelpExampleCli("decodemasternodebroadcast", "hexstring") + HelpExampleRpc("decodemasternodebroadcast", "hexstring"));
+
+    CMasternodeBroadcast mnb;
+
+    if (!DecodeHexMnb(mnb, params[0].get_str()))
+        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Masternode broadcast message decode failed");
+
+    if(!mnb.VerifySignature())
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Masternode broadcast signature verification failed");
+
+    Object resultObj;
+
+    resultObj.push_back(Pair("vin", mnb.vin.prevout.ToString()));
+    resultObj.push_back(Pair("addr", mnb.addr.ToString()));
+    resultObj.push_back(Pair("pubkeycollateral", CBitcoinAddress(mnb.pubKeyCollateralAddress.GetID()).ToString()));
+    resultObj.push_back(Pair("pubkeymasternode", CBitcoinAddress(mnb.pubKeyMasternode.GetID()).ToString()));
+    resultObj.push_back(Pair("vchsig", EncodeBase64(&mnb.sig[0], mnb.sig.size())));
+    resultObj.push_back(Pair("sigtime", mnb.sigTime));
+    resultObj.push_back(Pair("protocolversion", mnb.protocolVersion));
+    resultObj.push_back(Pair("nlastdsq", mnb.nLastDsq));
+
+    Object lastPingObj;
+    lastPingObj.push_back(Pair("vin", mnb.lastPing.vin.prevout.ToString()));
+    lastPingObj.push_back(Pair("blockhash", mnb.lastPing.blockHash.ToString()));
+    lastPingObj.push_back(Pair("sigtime", mnb.lastPing.sigTime));
+    lastPingObj.push_back(Pair("vchsig", EncodeBase64(&mnb.lastPing.vchSig[0], mnb.lastPing.vchSig.size())));
+
+    resultObj.push_back(Pair("lastping", lastPingObj));
+
+    return resultObj;
+}
+
+Value relaymasternodebroadcast(const Array & params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw runtime_error(
+                "relaymasternodebroadcast \"hexstring\"\n"
+                "\nCommand to relay masternode broadcast messages\n"
+
+                "\nArguments:\n"
+                "1. \"hexstring\"        (string) The hex encoded masternode broadcast message\n"
+
+                "\nExamples:\n" +
+                HelpExampleCli("relaymasternodebroadcast", "hexstring") + HelpExampleRpc("relaymasternodebroadcast", "hexstring"));
+
+
+    CMasternodeBroadcast mnb;
+
+    if (!DecodeHexMnb(mnb, params[0].get_str()))
+        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Masternode broadcast message decode failed");
+
+    if(!mnb.VerifySignature())
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Masternode broadcast signature verification failed");
+
+    mnodeman.UpdateMasternodeList(mnb);
+    mnb.Relay();
+
+    return strprintf("Masternode broadcast sent (service %s, vin %s)", mnb.addr.ToString(), mnb.vin.ToString());
 }
