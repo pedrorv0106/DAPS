@@ -199,6 +199,8 @@ public:
 
     UnlockContext requestUnlock(bool relock = false);
 
+    CWallet* getCWallet();
+
     bool getPubKey(const CKeyID& address, CPubKey& vchPubKeyOut) const;
     bool isMine(CBitcoinAddress address);
     void getOutputs(const std::vector<COutPoint>& vOutpoints, std::vector<COutput>& vOutputs);
