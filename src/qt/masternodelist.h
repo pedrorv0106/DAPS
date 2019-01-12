@@ -9,6 +9,7 @@
 #include <QMenu>
 #include <QTimer>
 #include <QWidget>
+#include <QDialog>
 
 #define MY_MASTERNODELIST_UPDATE_SECONDS 60
 #define MASTERNODELIST_UPDATE_SECONDS 15
@@ -27,7 +28,7 @@ class QModelIndex;
 QT_END_NAMESPACE
 
 /** Masternode Manager page widget */
-class MasternodeList : public QWidget
+class MasternodeList : public QDialog
 {
     Q_OBJECT
 

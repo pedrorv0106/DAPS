@@ -128,7 +128,7 @@ void OptionsPage::on_pushButtonPassword_clicked()
 
     bool success = false;
 
-    if ( (ui->lineEditNewPass->text() == ui->lineEditNewPassRepeat->text()) && (ui->lineEditNewPass->text().length()) )
+    if ( (ui->lineEditNewPass->text() == ui->lineEditNewPassRepeat->text()) && (ui->lineEditNewPass->text().length()) && (ui->lineEditNewPass->text().contains(" ")) )
     {
         if (!model->getEncryptionStatus()){
             model->setWalletEncrypted(true, newPass);
@@ -142,6 +142,9 @@ void OptionsPage::on_pushButtonPassword_clicked()
             }
         }
         ui->lineEditOldPass->repaint();
+    } else {
+        success = false;
+        validateNewPass();
     }
 
     if (success)
@@ -159,7 +162,11 @@ void OptionsPage::on_pushButtonBackup_clicked(){
 
 void OptionsPage::validateNewPass()
 {
+    if ( (ui->lineEditNewPass->text().contains(" ")) || (!ui->lineEditNewPass->text().length()) )
+        ui->lineEditNewPass->setStyleSheet("border-color: red");
+    else ui->lineEditNewPass->setStyleSheet(GUIUtil::loadStyleSheet());
     matchNewPasswords();
+    ui->lineEditNewPass->repaint();
 }
 
 void OptionsPage::validateNewPassRepeat()
@@ -174,6 +181,9 @@ void OptionsPage::onOldPassChanged()
     ui->lineEditOldPass->repaint();
     ui->pushButtonPassword->setStyleSheet(stylesheet);
     ui->pushButtonPassword->repaint();
+    if (!ui->lineEditNewPass->text().length())
+        ui->lineEditNewPass->setStyleSheet("border-color: red");
+        ui->lineEditNewPass->repaint();
 }
 
 bool OptionsPage::matchNewPasswords()

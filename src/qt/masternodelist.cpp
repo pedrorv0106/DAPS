@@ -17,7 +17,7 @@
 
 CCriticalSection cs_masternodes;
 
-MasternodeList::MasternodeList(QWidget* parent) : QWidget(parent),
+MasternodeList::MasternodeList(QWidget* parent) : QDialog(parent),
                                                   ui(new Ui::MasternodeList),
                                                   clientModel(0),
                                                   walletModel(0)
@@ -28,14 +28,12 @@ MasternodeList::MasternodeList(QWidget* parent) : QWidget(parent),
 
     int columnAliasWidth = 100;
     int columnAddressWidth = 200;
-    int columnProtocolWidth = 60;
     int columnStatusWidth = 80;
     int columnActiveWidth = 130;
     int columnLastSeenWidth = 130;
 
     ui->tableWidgetMyMasternodes->setColumnWidth(0, columnAliasWidth);
     ui->tableWidgetMyMasternodes->setColumnWidth(1, columnAddressWidth);
-    ui->tableWidgetMyMasternodes->setColumnWidth(2, columnProtocolWidth);
     ui->tableWidgetMyMasternodes->setColumnWidth(3, columnStatusWidth);
     ui->tableWidgetMyMasternodes->setColumnWidth(4, columnActiveWidth);
     ui->tableWidgetMyMasternodes->setColumnWidth(5, columnLastSeenWidth);
@@ -55,6 +53,7 @@ MasternodeList::MasternodeList(QWidget* parent) : QWidget(parent),
     // Fill MN list
     fFilterUpdated = true;
     nTimeFilterUpdated = GetTime();
+
 }
 
 MasternodeList::~MasternodeList()
@@ -197,7 +196,7 @@ void MasternodeList::updateMyNodeList(bool fForce)
     // automatically update my masternode list only once in MY_MASTERNODELIST_UPDATE_SECONDS seconds,
     // this update still can be triggered manually at any time via button click
     int64_t nSecondsTillUpdate = nTimeMyListUpdated + MY_MASTERNODELIST_UPDATE_SECONDS - GetTime();
-    ui->secondsLabel->setText(QString::number(nSecondsTillUpdate));
+    // #REMOVE ui->secondsLabel->setText(QString::number(nSecondsTillUpdate));
 
     if (nSecondsTillUpdate > 0 && !fForce) return;
     nTimeMyListUpdated = GetTime();
@@ -215,7 +214,7 @@ void MasternodeList::updateMyNodeList(bool fForce)
     ui->tableWidgetMyMasternodes->setSortingEnabled(true);
 
     // reset "timer"
-    ui->secondsLabel->setText("0");
+    // #REMOVE ui->secondsLabel->setText("0");
 }
 
 void MasternodeList::on_startButton_clicked()
