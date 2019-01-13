@@ -200,6 +200,8 @@ public:
     }
 };
 
+typedef CPubKey CKeyImage;
+
 struct CExtPubKey {
     unsigned char nDepth;
     unsigned char vchFingerprint[4];

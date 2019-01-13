@@ -11,6 +11,7 @@
 #include "script/script.h"
 #include "serialize.h"
 #include "uint256.h"
+#include "../bip38.h"
 #include <iostream>
 
 #include <list>
@@ -70,7 +71,8 @@ public:
     COutPoint prevout;
     CScript scriptSig;
     uint32_t nSequence;
-    CScript prevPubKey;
+    CKeyImage keyImage; //For ring signature
+
 
     CTxIn()
     {
@@ -87,6 +89,7 @@ public:
         READWRITE(prevout);
         READWRITE(scriptSig);
         READWRITE(nSequence);
+        READDATA(keyImage.Raw());
     }
 
     bool IsFinal() const
@@ -223,6 +226,8 @@ public:
     uint64_t paymentID;
     //const unsigned int nTime;
 
+    std::vector<unsigned char> bulletproofs;
+
     /** Construct a CTransaction that qualifies as IsNull() */
     CTransaction();
 
@@ -245,6 +250,7 @@ public:
         if (hasPaymentID != 0) {
             READWRITE(paymentID);
         }
+        READWRITE(bulletproofs);
         if (ser_action.ForRead())
             UpdateHash();
     }
