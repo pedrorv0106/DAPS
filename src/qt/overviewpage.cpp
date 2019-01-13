@@ -103,7 +103,7 @@ public:
 };
 #include "overviewpage.moc"
 
-OverviewPage::OverviewPage(QWidget* parent) : QWidget(parent),
+OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
                                               ui(new Ui::OverviewPage),
                                               clientModel(0),
                                               walletModel(0),

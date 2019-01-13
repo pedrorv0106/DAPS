@@ -13,7 +13,7 @@
     QWidget:disabled{
     color: slategrey;
     }
-    QAbstractButton:disabled, QAbstractSpinBox:disabled, QLineEdit:disabled, .QValidatedLineEdit:disabled, QComboBox:disabled {
+    QAbstractButton:disabled, QAbstractSpinBox:disabled, QLineEdit:disabled, .QValidatedLineEdit:disabled, QComboBox:disabled, QSlider::handle:horizontal:disabled {
     background: rgb(62, 78, 78);
     border: 1px solid rgb(51, 54, 54);
     }

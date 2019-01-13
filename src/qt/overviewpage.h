@@ -7,7 +7,7 @@
 
 #include "amount.h"
 
-#include <QWidget>
+#include <QDialog>
 
 class ClientModel;
 class TransactionFilterProxy;
@@ -24,7 +24,7 @@ class QModelIndex;
 QT_END_NAMESPACE
 
 /** Overview ("home") page widget */
-class OverviewPage : public QWidget
+class OverviewPage : public QDialog
 {
     Q_OBJECT
 

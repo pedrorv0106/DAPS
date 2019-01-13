@@ -1067,6 +1067,9 @@
             <layout class="QHBoxLayout" name="horizontalLayoutRingSizeTitle">
              <item>
               <widget class="QLabel" name="labelRingSize">
+              <property name="enabled">
+                <bool>false</bool>
+              </property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                  <horstretch>0</horstretch>
@@ -1083,6 +1086,9 @@
              </item>
              <item>
               <widget class="QLabel" name="labelRingSizeValue">
+              <property name="enabled">
+                <bool>false</bool>
+              </property>
                <property name="text">
                 <string>7</string>
                </property>
@@ -1113,6 +1119,9 @@
              </item>
              <item>
               <widget class="QSlider" name="horizontalSliderRingSize">
+              <property name="enabled">
+                <bool>false</bool>
+              </property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
                  <horstretch>0</horstretch>
@@ -1158,6 +1167,9 @@
             <layout class="QHBoxLayout" name="horizontalLayoutRingSizeLabels_2">
              <item>
               <widget class="QLabel" name="labelRingSize6">
+              <property name="enabled">
+                <bool>false</bool>
+              </property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
                  <horstretch>0</horstretch>
@@ -1174,6 +1186,9 @@
              </item>
              <item>
               <widget class="QLabel" name="labelRingSize7">
+              <property name="enabled">
+                <bool>false</bool>
+              </property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
                  <horstretch>0</horstretch>
@@ -1190,6 +1205,9 @@
              </item>
              <item>
               <widget class="QLabel" name="labelRingSize8">
+              <property name="enabled">
+                <bool>false</bool>
+              </property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
                  <horstretch>0</horstretch>
@@ -1206,6 +1224,9 @@
              </item>
              <item>
               <widget class="QLabel" name="labelRingSize9">
+              <property name="enabled">
+                <bool>false</bool>
+              </property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
                  <horstretch>0</horstretch>
@@ -1222,6 +1243,9 @@
              </item>
              <item>
               <widget class="QLabel" name="labelRingSize10">
+              <property name="enabled">
+                <bool>false</bool>
+              </property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
                  <horstretch>0</horstretch>
@@ -1238,6 +1262,9 @@
              </item>
              <item>
               <widget class="QLabel" name="labelRingSize11">
+              <property name="enabled">
+                <bool>false</bool>
+              </property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
                  <horstretch>0</horstretch>
@@ -1254,6 +1281,9 @@
              </item>
              <item>
               <widget class="QLabel" name="labelRingSize12">
+              <property name="enabled">
+                <bool>false</bool>
+              </property>
                <property name="text">
                 <string>12</string>
                </property>
@@ -1265,7 +1295,10 @@
             </layout>
            </item>
            <item>
-            <widget class="QLabel" name="labelRingSizeNote_2">
+            <widget class="QLabel" name="labelRingSizeNote_2">      
+            <property name="enabled">
+               <bool>false</bool>
+            </property>
              <property name="sizePolicy">
               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                <horstretch>0</horstretch>
