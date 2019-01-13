@@ -23,7 +23,6 @@
 #include <QScrollBar>
 #include <QTextDocument>
 #include <QDataWidgetMapper>
-#include <QTextStream>
 
 OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
                                                           ui(new Ui::OptionsPage),
@@ -32,22 +31,11 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
 {
     ui->setupUi(this);
 
-    connect(ui->pushButtonDarkMode, SIGNAL(clicked()), this, SLOT(showRestartWarning()));
-    connect(ui->pushButtonLightMode, SIGNAL(clicked()), this, SLOT(showRestartWarning()));
-
     mapper = new QDataWidgetMapper(this);
     mapper->setSubmitPolicy(QDataWidgetMapper::ManualSubmit);
 
-    ui->pushButtonDarkMode->setObjectName("toggleButton");
-    ui->pushButtonDarkMode->setCheckable(true);
-    ui->pushButtonDarkMode->setChecked(settings.value("theme")=="dark");
-    if (settings.value("theme")=="dark")
-        ui->pushButtonLightMode->stackUnder(ui->pushButtonDarkMode);
-    ui->pushButtonLightMode->setObjectName("toggleButton");
-    ui->pushButtonLightMode->setCheckable(true);
-    ui->pushButtonLightMode->setChecked(settings.value("theme")=="light");
-    ui->pushButton2FAOn->setObjectName("toggleButton");
-    ui->pushButton2FAOff->setObjectName("toggleButton");
+    ui->toggleTheme->setState(settings.value("theme")!="light");
+    connect(ui->toggleTheme, SIGNAL(stateChanged(ToggleButton*)), this, SLOT(changeTheme(ToggleButton*)));
 
     connect(ui->lineEditNewPass, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPass()));
     connect(ui->lineEditNewPassRepeat, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPassRepeat()));
@@ -73,9 +61,6 @@ OptionsPage::~OptionsPage()
     delete ui;
 }
 
-
-// We override the virtual resizeEvent of the QWidget to adjust tables column
-// sizes as the tables width is proportional to the dialogs width.
 void OptionsPage::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
@@ -91,30 +76,6 @@ void OptionsPage::keyPressEvent(QKeyEvent* event)
 void OptionsPage::setMapper()
 {
     //mapper->addMapping([component], OptionsModel::[setting]);
-}
-
-void OptionsPage::on_pushButtonDarkMode_clicked()
-{
-    if (!model || !model->getOptionsModel())
-        return;
-    ui->pushButtonDarkMode->setChecked(true);
-    ui->pushButtonLightMode->setChecked(false);
-    ui->pushButtonLightMode->stackUnder(ui->pushButtonDarkMode);
-    ui->pushButtonDarkMode->parentWidget()->repaint();
-    settings.setValue("theme", "dark");
-    GUIUtil::refreshStyleSheet();
-}
-
-void OptionsPage::on_pushButtonLightMode_clicked()
-{
-    if (!model || !model->getOptionsModel())
-        return;
-    ui->pushButtonLightMode->setChecked(true);
-    ui->pushButtonDarkMode->setChecked(false);
-    ui->pushButtonDarkMode->stackUnder(ui->pushButtonLightMode);
-    ui->pushButtonDarkMode->parentWidget()->repaint();
-    settings.setValue("theme", "light");
-    GUIUtil::refreshStyleSheet();
 }
 
 void OptionsPage::on_pushButtonPassword_clicked()
@@ -199,4 +160,12 @@ bool OptionsPage::matchNewPasswords()
         ui->lineEditNewPassRepeat->repaint();
         return false;
     }
+}
+
+void OptionsPage::changeTheme(ToggleButton* widget)
+{
+    if (widget->getState())
+        settings.setValue("theme", "dark");
+    else settings.setValue("theme", "light");
+    GUIUtil::refreshStyleSheet();
 }

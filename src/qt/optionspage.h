@@ -6,6 +6,7 @@
 #define BITCOIN_QT_OPTIONSPAGE_H
 
 #include "guiutil.h"
+#include "togglebutton.h"
 
 #include <QDialog>
 #include <QHeaderView>
@@ -61,10 +62,11 @@ private slots:
     void validateNewPass();
     void validateNewPassRepeat();
     void onOldPassChanged();
-    void on_pushButtonDarkMode_clicked();
-    void on_pushButtonLightMode_clicked();
+//    void on_pushButtonDarkMode_clicked();
+//    void on_pushButtonLightMode_clicked();
     void on_pushButtonPassword_clicked();
     void on_pushButtonBackup_clicked();
+    void changeTheme(ToggleButton* widget);
 };
 
 #endif // BITCOIN_QT_OPTIONSPAGE_H

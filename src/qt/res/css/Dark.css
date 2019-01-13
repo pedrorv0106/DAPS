@@ -15,7 +15,7 @@
     }
     QAbstractButton:disabled, QAbstractSpinBox:disabled, QLineEdit:disabled, .QValidatedLineEdit:disabled, QComboBox:disabled {
     background: rgb(62, 78, 78);
-    border-color: rgb(51, 54, 54);
+    border: 1px solid rgb(51, 54, 54);
     }
     
     QDialog {
@@ -169,14 +169,14 @@
     }
 
     /*** Toggle Buttons ***/
-    #toggleButton {
+    ToggleButton > QPushButton {
     font-size: 10px;
     padding: 0;
-    border-radius: 10px;
+    border-radius: 10px;    
     }
 
-    #toggleButton:checked {
+    ToggleButton > QPushButton:enabled:checked {
     background-color: black;
     color: #93faff;
-    border: 1px solid #93faff;
+    border: 1px solid #93faff;    
     }

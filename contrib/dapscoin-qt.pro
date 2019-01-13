@@ -203,6 +203,7 @@ HEADERS += src/activemasternode.h \
            src/qt/sendcoinsentry.h \
            src/qt/signverifymessagedialog.h \
            src/qt/splashscreen.h \
+           src/qt/togglebutton.h \
            src/qt/trafficgraphwidget.h \
            src/qt/transactiondesc.h \
            src/qt/transactiondescdialog.h \
@@ -355,6 +356,7 @@ FORMS += src/qt/forms/addressbookpage.ui \
          src/qt/forms/sendcoinsdialog.ui \
          src/qt/forms/sendcoinsentry.ui \
          src/qt/forms/signverifymessagedialog.ui \
+         src/qt/forms/togglebutton.ui \
          src/qt/forms/transactiondescdialog.ui
 SOURCES += src/activemasternode.cpp \
            src/addrman.cpp \
@@ -498,6 +500,7 @@ SOURCES += src/activemasternode.cpp \
            src/qt/sendcoinsentry.cpp \
            src/qt/signverifymessagedialog.cpp \
            src/qt/splashscreen.cpp \
+           src/qt/togglebutton.cpp \
            src/qt/trafficgraphwidget.cpp \
            src/qt/transactiondesc.cpp \
            src/qt/transactiondescdialog.cpp \
