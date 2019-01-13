@@ -18,16 +18,20 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
 #     
     if [ "$BUILD_TARGET" = "windows" ]; \
       then echo "Compiling for win64" && \
+        ./autogen.sh && \
+        CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure --prefix=/ && \
         make HOST=x86_64-w64-mingw32 && \
         make install HOST=x86_64-w64-mingw32 DESTDIR=/BUILD/; \
 #
     elif [ "$BUILD_TARGET" = "linux" ]; \
        then echo "Compiling for linux" && \
+         ./autogen.sh && ./configure && \
          make && \
          make install DESTDIR=/BUILD/; \
 #
     elif [ "$BUILD_TARGET" = "mac" ]; \
        then echo "Compiling for mac" && \
+         ./autogen.sh --with-gui=yes && CONFIG_SITE=$PWD/depends/x86_64-apple-darwin11/share/config.site ./configure --prefix=/ && \
          make HOST="x86_64-apple-darwin11" && \
          make install HOST="x86_64-apple-darwin11" DESTDIR=/BUILD/; \
 #
