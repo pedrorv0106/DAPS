@@ -13,10 +13,18 @@
 #include "uint256.h"
 #include "../bip38.h"
 #include <iostream>
+#inclide "key.h"
 
 #include <list>
 
 class CTransaction;
+
+class ECDHInfo {
+public:
+    static void Encode(std::vector<unsigned char> &encoded, const CKey& mask, const CKey& value, const CPubKey& sharedSec);
+    static void Decode(const std::vector<unsigned char> &encoded, CKey& mask, CKey& value, const CPubKey sharedSec);
+    static void ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey& sharedSec);
+};
 
 /** An outpoint - a combination of a transaction hash and an index n into its vout */
 class COutPoint
@@ -112,6 +120,13 @@ public:
     std::string ToString() const;
 };
 
+typedef UnmaskedValue struct {
+    CPubKey sharedSec;  //secret is computed based on the transaction pubkey, using diffie hellman
+                        //sharedSec = txPub * viewPrivateKey of receiver = txPriv * viewPublicKey of receiver
+    CKey amount;
+    CKey mask;  //Commitment C = mask * G + amount * H, H = Hp(G), Hp = toHashPoint
+};
+
 /** An output of a transaction.  It contains the public key that the next input
  * must be able to sign with to claim it.
  */
@@ -121,6 +136,7 @@ public:
     CAmount nValue;
     CScript scriptPubKey;
     int nRounds;
+    std::vector<unsigned char> maskedValue; //ECDH encoded value for the amout
 
     CTxOut()
     {
@@ -135,6 +151,7 @@ public:
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         READWRITE(nValue);
         READWRITE(scriptPubKey);
+        READWRITE(maskedValue);
     }
 
     void SetNull()
@@ -222,6 +239,7 @@ public:
 
     //For stealth transactions
     std::vector<unsigned char> txPub;
+    CKey txPriv;
     char hasPaymentID;
     uint64_t paymentID;
     //const unsigned int nTime;

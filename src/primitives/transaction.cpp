@@ -13,10 +13,17 @@
 #include "tinyformat.h"
 #include "utilstrencodings.h"
 #include "transaction.h"
+#include "secp256k1.h"
 
 #include <boost/foreach.hpp>
 
 extern bool GetTransaction(const uint256 &hash, CTransaction &txOut, uint256 &hashBlock, bool fAllowSlow);
+
+
+void ECDHInfo::ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey& sharedSec) {
+    sharedSec.Set(pubKey.begin(), pubKey.end());
+    secp256k1_ec_pubkey_tweak_mul(sharedSec.begin(), sharedSec.size(), priv.begin());
+}
 
 std::string COutPoint::ToString() const
 {
