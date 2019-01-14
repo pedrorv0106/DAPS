@@ -23,6 +23,7 @@
 #include <QPainter>
 #include <QSettings>
 #include <QTimer>
+#include <QtMath>
 
 #define DECORATION_SIZE 48
 #define ICON_OFFSET 16
@@ -134,7 +135,7 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
     // init "out of sync" warning labels
     ui->labelTransactionsStatus->setText("(" + tr("out of sync") + ")");
 
-
+    initSyncCircle(.8);
     // start with displaying the "out of sync" warnings
     // #remove showSyncStatus(true);
 }
@@ -362,7 +363,67 @@ void OverviewPage::showSyncStatus(bool fShow)
         ui->labelWalletStatus->setStyleSheet("QLabel { color : green; }");
     }
 
+    isSyncingBalance = fShow;
+    isSyncingBlocks = fShow;
+
     ui->labelBlockCurrent->setText(QString::number(clientModel->getNumBlocks()));
     ui->labelBlocksTotal->setText(QString::number(clientModel->getChainHeight()));
 }
 
+void OverviewPage::initSyncCircle(float ratioToParent)
+{
+    animTicker = new QTimer(this);
+    animTicker->setInterval(17); //17 mSecs or ~60 fps
+    animClock = new QElapsedTimer();
+    connect(animTicker, SIGNAL(timeout()), this, SLOT(onAnimTick()));
+    animTicker->start(); animClock->start();
+
+    blockAnimSyncCircle = new QWidget(ui->widgetSyncBlocks);
+    blockAnimSyncCircle->setStyleSheet("image:url(':/images/syncb')");//"background-image: ./image.png");
+    blockAnimSyncCircle->setGeometry(getCircleGeometry(ui->widgetSyncBlocks, ratioToParent));
+    blockAnimSyncCircle->show();
+
+    blockSyncCircle = new QWidget(ui->widgetSyncBlocks);
+    blockSyncCircle->setStyleSheet("image:url(':/images/syncp')");//"background-image: ./image.png");
+    blockSyncCircle->setGeometry(getCircleGeometry(ui->widgetSyncBlocks, ratioToParent));
+    blockSyncCircle->show();
+
+    balanceAnimSyncCircle = new QWidget(ui->widgetSyncBalance);
+    balanceAnimSyncCircle->setStyleSheet("image:url(':/images/syncb')");//"background-image: ./image.png");
+    balanceAnimSyncCircle->setGeometry(getCircleGeometry(ui->widgetSyncBalance, ratioToParent));
+    balanceAnimSyncCircle->show();
+
+    balanceSyncCircle = new QWidget(ui->widgetSyncBalance);
+    balanceSyncCircle->setStyleSheet("image:url(':/images/syncp')");//"background-image: ./image.png");
+    balanceSyncCircle->setGeometry(getCircleGeometry(ui->widgetSyncBalance, ratioToParent));
+    balanceSyncCircle->show();
+}
+
+void OverviewPage::onAnimTick()
+{
+    if (isSyncingBlocks)
+        moveSyncCircle(blockSyncCircle, blockAnimSyncCircle, 12, 120);
+    if (isSyncingBalance)
+        moveSyncCircle(balanceSyncCircle, balanceAnimSyncCircle, 12, -110,45);
+}
+
+void OverviewPage::moveSyncCircle(QWidget* anchor, QWidget* animated, int deltaRadius, float degreesPerSecond, float angleOffset) //deltaRad in px
+{
+    auto centerX = anchor->parentWidget()->width()/10;  //center of anchor
+    auto centerY = anchor->parentWidget()->height()/10;
+    auto angle = float(animClock->elapsed()/*%3600*/)*degreesPerSecond/1000;
+    angle = qDegreesToRadians(angle+angleOffset); //rotation angle from time elapsed
+    auto newX = centerX+deltaRadius*qCos(angle); //delta position plus anchor position
+    auto newY = centerY+deltaRadius*qSin(angle);
+
+    animated->setGeometry(newX, newY, anchor->width(), anchor->height());
+}
+
+QRect OverviewPage::getCircleGeometry(QWidget* parent, float ratioToParent)
+{
+    auto width = parent->width()*ratioToParent;
+    auto height = parent->height()*ratioToParent;
+    auto x = (parent->width()-width)/2;
+    auto y = (parent->height()-height)/2;
+    return QRect(x,y,width,height);
+}

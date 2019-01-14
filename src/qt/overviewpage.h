@@ -7,6 +7,9 @@
 
 #include "amount.h"
 
+#include <QWidget>
+#include <QTimer>
+#include <QElapsedTimer>
 #include <QDialog>
 
 class ClientModel;
@@ -36,10 +39,14 @@ public:
     void setWalletModel(WalletModel* walletModel);
     void showSyncStatus(bool fShow);
 
+    QTimer* animTicker;
+    QElapsedTimer* animClock;
+
 public slots:
     void setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, 
                     const CAmount& zerocoinBalance, const CAmount& unconfirmedZerocoinBalance, const CAmount& immatureZerocoinBalance,
                     const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance);
+    void onAnimTick();                    
 
 signals:
     void transactionClicked(const QModelIndex& index);
@@ -63,6 +70,17 @@ private:
 
     TxViewDelegate* txdelegate;
     TransactionFilterProxy* filter;
+
+    QWidget* blockSyncCircle;
+    QWidget* blockAnimSyncCircle;
+    bool isSyncingBlocks=true;
+    QWidget* balanceSyncCircle;
+    QWidget* balanceAnimSyncCircle;
+    bool isSyncingBalance=true;
+
+    void initSyncCircle(float percentOfParent);
+    void moveSyncCircle(QWidget* anchor, QWidget* animated, int deltaRadius, float degreesPerSecond, float angleOffset=0);
+    QRect getCircleGeometry(QWidget* parent, float ratioToParent);
 
 private slots:
     void updateDisplayUnit();
