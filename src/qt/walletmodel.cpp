@@ -15,13 +15,13 @@
 #include "db.h"
 #include "keystore.h"
 #include "main.h"
+#include "miner.h"
 #include "spork.h"
 #include "sync.h"
 #include "ui_interface.h"
 #include "wallet.h"
 #include "walletdb.h" // for BackupWallet
 #include <stdint.h>
-
 #include <QDebug>
 #include <QSet>
 #include <QTimer>
@@ -746,4 +746,28 @@ bool WalletModel::saveReceiveRequest(const std::string& sAddress, const int64_t 
 bool WalletModel::isMine(CBitcoinAddress address)
 {
     return IsMine(*wallet, address.Get());
+}
+
+QStringList WalletModel::getStakingStatusError()
+{
+    QStringList errors;
+    int timeRemaining = (1471482000-chainActive.Tip()->nTime)/(60*60); //time remaining in hrs
+    if (timeRemaining>0)
+        errors.push_back(QString(tr("Chain has not matured. Hours remaining: "))+QString(timeRemaining));
+    if (vNodes.empty())
+        errors.push_back(QString(tr("No peer connections. Please check network.")));
+    if (!pwalletMain->MintableCoins() || nReserveBalance > pwalletMain->GetBalance())
+        errors.push_back(QString(tr("Not enough mintable coins. Send coins to this wallet.")));
+    return errors;
+}
+
+void WalletModel::generateCoins(bool fGenerate, int nGenProcLimit)
+{
+    GenerateBitcoins(fGenerate, pwalletMain, nGenProcLimit);
+    if (false/*if regtest*/&&fGenerate) {
+        //regtest generate
+    } else
+    {
+        GenerateBitcoins(fGenerate, pwalletMain, nGenProcLimit);
+    }
 }

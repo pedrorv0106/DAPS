@@ -13,6 +13,7 @@
 #include "walletmodel.h"
 
 #include <QMessageBox>
+#include <QErrorMessage>
 #include <QTimer>
 
 CCriticalSection cs_masternodes;
@@ -54,6 +55,9 @@ MasternodeList::MasternodeList(QWidget* parent) : QDialog(parent),
     fFilterUpdated = true;
     nTimeFilterUpdated = GetTime();
 
+
+    ui->toggleStaking->setState(nLastCoinStakeSearchInterval);
+    connect(ui->toggleStaking, SIGNAL(stateChanged(ToggleButton*)), this, SLOT(on_EnableStaking(ToggleButton*)));
 }
 
 MasternodeList::~MasternodeList()
@@ -316,4 +320,22 @@ void MasternodeList::on_tableWidgetMyMasternodes_itemSelectionChanged()
 void MasternodeList::on_UpdateButton_clicked()
 {
     updateMyNodeList(true);
+}
+
+void MasternodeList::on_EnableStaking(ToggleButton* widget)
+{
+    if (widget->getState()){
+        QStringList errors = walletModel->getStakingStatusError();
+        if (!errors.length())
+            walletModel->generateCoins(true, 1000);
+        else {
+            QString errorString = QString("<br><br>")+errors.join(QString("<br><br>"))+QString("<br><br>");
+            QMessageBox* errorPrompt = new QMessageBox();
+            errorPrompt->setStyleSheet(GUIUtil::loadStyleSheet());
+            errorPrompt->setWindowTitle(QString(tr("Staking Disabled")));
+            errorPrompt->setText(QString(errorString));
+            errorPrompt->exec();
+            widget->setState(false);
+        }
+    } else walletModel->generateCoins(false, 0);
 }
