@@ -13,7 +13,7 @@
 #include "uint256.h"
 #include "../bip38.h"
 #include <iostream>
-#inclide "key.h"
+#include "key.h"
 
 #include <list>
 
@@ -120,11 +120,11 @@ public:
     std::string ToString() const;
 };
 
-typedef UnmaskedValue struct {
+typedef struct MaskValue {
     CPubKey sharedSec;  //secret is computed based on the transaction pubkey, using diffie hellman
                         //sharedSec = txPub * viewPrivateKey of receiver = txPriv * viewPublicKey of receiver
-    CKey amount;
-    CKey mask;  //Commitment C = mask * G + amount * H, H = Hp(G), Hp = toHashPoint
+    uint256 amount;
+    uint256 mask;  //Commitment C = mask * G + amount * H, H = Hp(G), Hp = toHashPoint
 };
 
 /** An output of a transaction.  It contains the public key that the next input
@@ -133,10 +133,12 @@ typedef UnmaskedValue struct {
 class CTxOut
 {
 public:
-    CAmount nValue;
+    CAmount nValue; //should always be 0
     CScript scriptPubKey;
     int nRounds;
-    std::vector<unsigned char> maskedValue; //ECDH encoded value for the amout
+    //ECDH encoded value for the amount: the idea is the use the shared secret and a key derivation function to
+    //encode the value and the mask so that only the sender and the receiver of the tx output can decode the encoded amount
+    MaskValue maskValue;
 
     CTxOut()
     {
@@ -151,7 +153,8 @@ public:
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         READWRITE(nValue);
         READWRITE(scriptPubKey);
-        READWRITE(maskedValue);
+        READWRITE(maskValue.amount);
+        READWRITE(maskValue.mask);
     }
 
     void SetNull()
