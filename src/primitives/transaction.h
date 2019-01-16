@@ -19,13 +19,6 @@
 
 class CTransaction;
 
-class ECDHInfo {
-public:
-    static void Encode(std::vector<unsigned char> &encoded, const CKey& mask, const CKey& value, const CPubKey& sharedSec);
-    static void Decode(const std::vector<unsigned char> &encoded, CKey& mask, CKey& value, const CPubKey sharedSec);
-    static void ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey& sharedSec);
-};
-
 /** An outpoint - a combination of a transaction hash and an index n into its vout */
 class COutPoint
 {
@@ -242,7 +235,7 @@ public:
 
     //For stealth transactions
     std::vector<unsigned char> txPub;
-    CKey txPriv;
+    CKey txPriv;    //only  in-memory
     char hasPaymentID;
     uint64_t paymentID;
     //const unsigned int nTime;
@@ -366,6 +359,7 @@ struct CMutableTransaction
     std::vector<unsigned char> txPub;
     char hasPaymentID;
     uint64_t paymentID;
+    std::vector<unsigned char> bulletproofs;
 
     CMutableTransaction();
     CMutableTransaction(const CTransaction& tx);

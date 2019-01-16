@@ -173,7 +173,7 @@ public:
  */
 class CWallet : public CCryptoKeyStore, public CValidationInterface
 {
-private:
+private:˜
     bool SelectCoins(const CAmount& nTargetValue, std::set<std::pair<const CWalletTx*, unsigned int> >& setCoinsRet, CAmount& nValueRet, const CCoinControl* coinControl = NULL, AvailableCoinsType coin_type = ALL_COINS, bool useIX = true) const;
     //it was public bool SelectCoins(int64_t nTargetValue, std::set<std::pair<const CWalletTx*,unsigned int> >& setCoinsRet, int64_t& nValueRet, const CCoinControl *coinControl = NULL, AvailableCoinsType coin_type=ALL_COINS, bool useIX = true) const;
 
@@ -484,7 +484,7 @@ public:
                            AvailableCoinsType coin_type = ALL_COINS,
                            bool useIX = false,
                            CAmount nFeePay = 0);
-    bool CreateTransactionBulletProof(const std::vector<std::pair<CScript, CAmount> >& vecSend,
+    bool CreateTransactionBulletProof(const CPubKey& recipientViewKey, const std::vector<std::pair<CScript, CAmount> >& vecSend,
                            CWalletTx& wtxNew,
                            CReserveKey& reservekey,
                            CAmount& nFeeRet,
@@ -677,14 +677,17 @@ public:
     bool GenerateIntegratedAddress(const std::string& accountName, std::string& pubAddr);
     bool GenerateIntegratedAddress(const CPubKey& pubViewKey, const CPubKey& pubSpendKey, std::string& pubAddr);
     bool AllMyPublicAddresses(std::vector<std::string>& addresses, std::vector<std::string>& accountNames);
-    bool RevealTxOutAmount(const CTxOut& out, CAmount& amount);
-    bool EncodeTxOutAmount(CTxOut& out, const CAmount& amount);
+    bool RevealTxOutAmount(const CTransaction& tx, const CTxOut& out, CAmount& amount);
+    bool EncodeTxOutAmount(CTxOut& out, const CAmount& amount, const unsigned char * sharedSec);
 private:
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool mySpendPrivateKey(CKey& spend);
     bool myViewPrivateKey(CKey& view);
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
     void createMasterKey();
+    CAmount getCOutPutValue(COutput& output);
+    CAmount getCTxOutValue(const CTransaction& tx, const CTxOut& out); 
+    bool findCorrespondingPrivateKey(const CTransaction& tx, CKey& key);
 };
 
 

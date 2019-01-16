@@ -19,12 +19,6 @@
 
 extern bool GetTransaction(const uint256 &hash, CTransaction &txOut, uint256 &hashBlock, bool fAllowSlow);
 
-
-void ECDHInfo::ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey& sharedSec) {
-    sharedSec.Set(pubKey.begin(), pubKey.end());
-    secp256k1_ec_pubkey_tweak_mul(sharedSec.begin(), sharedSec.size(), priv.begin());
-}
-
 std::string COutPoint::ToString() const
 {
     return strprintf("COutPoint(%s, %u)", hash.ToString()/*.substr(0,10)*/, n);

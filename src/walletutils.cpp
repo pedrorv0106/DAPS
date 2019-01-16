@@ -6,6 +6,11 @@
 #include "ecdhutil.h"
 
 bool CWallet::RevealTxOutAmount(const CTransaction& tx, const CTxOut& out, CAmount& amount) {
+    if (tx.IsCoinBase()) {
+        //Coinbase transaction output is not hidden, not need to decrypt
+        amount = out.nValue;
+        return true;
+    }
     std::set<CKeyID> keyIDs;
     GetKeys(keyIDs);
     unsigned char sharedSec[65];
@@ -16,7 +21,8 @@ bool CWallet::RevealTxOutAmount(const CTransaction& tx, const CTxOut& out, CAmou
         if (scriptPubKey == out.scriptPubKey && GetKey(keyID, privKey)) {
             CPubKey txPub(&(tx.txPub[0]), &(tx.txPub[0]) + 33);
             memcpy(sharedSec, txPub.begin(), txPub.size());
-            if (secp256k1_ec_pubkey_tweak_mul(sharedSec, txPub.size(), privKey.begin())) {
+            CKey view;
+            if (myViewPrivateKey(view) && secp256k1_ec_pubkey_tweak_mul(sharedSec, txPub.size(), view.begin()) {
                 uint256 val = out.maskValue.amount;
                 uint256 mask = out.maskValue.mask;
                 ecdhDecode(mask.begin(), val.begin(), sharedSec, 33);
@@ -30,7 +36,21 @@ bool CWallet::RevealTxOutAmount(const CTransaction& tx, const CTxOut& out, CAmou
     return false;
 }
 
-bool CWallet::EncodeTxOutAmount(CTxOut& out, const CAmount& amount, const char * sharedSec) {
+bool CWallet::findCorrespondingPrivateKey(const CTransaction& tx, CKey& key) {
+    std::set<CKeyID> keyIDs;
+    GetKeys(keyIDs);
+    unsigned char sharedSec[65];
+    BOOST_FOREACH(const CKeyID& keyID, keyIDs) {
+        CBitcoinAddress address(keyID);
+        CScript scriptPubKey = GetScriptForDestination(address.Get());
+        if (scriptPubKey == out.scriptPubKey && GetKey(keyID, key)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CWallet::EncodeTxOutAmount(CTxOut& out, const CAmount& amount, const unsigned char * sharedSec) {
     if (amount < 0) {
         return false;
     }
@@ -42,4 +62,19 @@ bool CWallet::EncodeTxOutAmount(CTxOut& out, const CAmount& amount, const char *
     memcpy(out.maskValue.amount.begin(), tempAmount.begin(), 32);
     ecdhEncode(out.maskValue.mask.begin(), out.maskValue.amount.begin(), sharedSec, 33);
     return true;
+}
+
+CAmount CWallet::getCOutPutValue(COutput& output) 
+{
+    CTxOut& out = output.tx->vout[output.i];
+    CAmount amount;
+    RevealTxOutAmount(output.tx, out, amount);
+    return amount;
+}
+
+CAmount CWallet::getCTxOutValue(const CTransaction& tx, const CTxOut& out) 
+{
+    CAmount amount;
+    RevealTxOutAmount(out, amount);
+    return amount;
 }
