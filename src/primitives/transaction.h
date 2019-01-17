@@ -72,8 +72,6 @@ public:
     COutPoint prevout;
     CScript scriptSig;
     uint32_t nSequence;
-    CKeyImage keyImage; //For ring signature
-
 
     CTxIn()
     {
@@ -90,7 +88,6 @@ public:
         READWRITE(prevout);
         READWRITE(scriptSig);
         READWRITE(nSequence);
-        READDATA(keyImage.Raw());
     }
 
     bool IsFinal() const
@@ -239,6 +236,8 @@ public:
     char hasPaymentID;
     uint64_t paymentID;
     //const unsigned int nTime;
+
+    std::vector<CKeyImage> keyImages; //For ring signature
 
     std::vector<unsigned char> bulletproofs;
 
