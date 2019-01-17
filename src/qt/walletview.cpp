@@ -11,6 +11,7 @@
 #include "blockexplorer.h"
 #include "clientmodel.h"
 #include "guiutil.h"
+#include "historypage.h"
 #include "masternodeconfig.h"
 #include "multisenddialog.h"
 #include "multisigdialog.h"
@@ -69,16 +70,18 @@ WalletView::WalletView(QWidget* parent) : QStackedWidget(parent),
 
     hbox_buttons->addWidget(exportButton);
     vbox->addLayout(hbox_buttons);
-    transactionsPage->setLayout(vbox);
+//    transactionsPage->setLayout(vbox);
 
 //    privacyPage = new PrivacyDialog();
     receiveCoinsPage = new ReceiveCoinsDialog();
     sendCoinsPage = new SendCoinsDialog();
     optionsPage = new OptionsPage();
+    historyPage = new HistoryPage();
 
     addWidget(overviewPage);
-    addWidget(transactionsPage);
+//    addWidget(transactionsPage);
 //    addWidget(privacyPage);
+    addWidget(historyPage);
     addWidget(receiveCoinsPage);
     addWidget(sendCoinsPage);
     addWidget(optionsPage);
@@ -205,7 +208,7 @@ void WalletView::gotoOverviewPage()
 
 void WalletView::gotoHistoryPage()
 {
-    setCurrentWidget(transactionsPage);
+    setCurrentWidget(historyPage);
 }
 
 

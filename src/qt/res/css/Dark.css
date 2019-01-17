@@ -2,6 +2,7 @@
 /* Global CSS */
     QWidget {
     background: transparent;
+    alternate-background-color: transparent;
     border-style: none;
     outline-style: none;
     font-size: 15px;
@@ -22,7 +23,7 @@
     background: qlineargradient( x1:0 y1:0, x2:1 y2:1, stop:0 #5e0057, stop:1 #1f192a);
     }
 
-    QHeader, QHeaderView {
+    QHeader, QHeaderView, QCalendarWidget QAbstractItemView, QMenu, QMenuBar {
     background: rgb(49, 0, 49); 
     }
 
@@ -74,11 +75,10 @@
     margin: 7px;
     }
     
-    /*** Line Edits ***/
+    /*** Line Edits, ComboBoxes ***/
     .QValidatedLineEdit, .QLineEdit, QAbstractSpinBox, QComboBox, QListView, QTextEdit { /* Text Entry Fields */
     padding-left: 10px;
     height: 40px;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
     border-radius: 10px;
     border-width: 1px;
     border-color: #83faff;
@@ -87,11 +87,27 @@
     margin: 5px;
     }
     
-    .QValidatedLineEdit:focus, .QLineEdit:focus, QAbstractSpinBox:focus, QComboBox:focus, QComboBox::item:selected, QMenuBar::item:selected, QMenu::item:selected, QTextEdit:focus, QToolTip {
+    .QValidatedLineEdit:focus, .QLineEdit:focus, QAbstractSpinBox:focus, QComboBox:focus, QComboBox::item:selected, QMenuBar::item:selected, QMenu::item:selected, QTextEdit:focus, QToolTip { 
     font-size:18px;
     border-width:4px;
     background: #31398C;
     }
+    
+    QComboBox QAbstractItemView {
+    margin:0;
+    padding: 8px;
+    border-radius: 0;
+    }
+    QComboBox:checked{
+    color: #83faff;
+    }
+    QComboBox::indicator {
+    background-color:transparent;
+    }
+    /* QComboBox QAbstractItemView::item {
+    min-width: 100%;
+    qproperty-alignment: 'AlignVCenter | AlignHCenter';
+    } */
   
     /*** Buttons ***/
     QPushButton { 
@@ -116,8 +132,8 @@
     border-width: 10px;
     }
 
-    /*** Spin Boxes ***/
-    QAbstractSpinBox::up-button {
+    /*** Spin Boxes, Combo Boxes ***/
+    QWidget::up-button {
     border-radius: 10px 10px 0 0;
     subcontrol-origin: border;
     subcontrol-position: top right;
@@ -125,17 +141,11 @@
     padding-right:1px;
     padding-left:5px;
     padding-top:2px;
+    background:transparent;
+    alternate-background-color: transparent;
     }
-    
-    QAbstractSpinBox::up-arrow {
-    image:url(':/images/upArrow_small');
-    }
-    
-    QAbstractSpinBox::up-arrow:disabled {
-    image:url(':/images/upArrow_small_dark');
-    }
-    
-    QAbstractSpinBox::down-button, QComboBox::drop-down  {
+
+    QWidget::down-button, QWidget::drop-down {
     border-radius: 0 0 10px 10px;
     subcontrol-origin: border;
     subcontrol-position: bottom right;
@@ -143,29 +153,51 @@
     padding-left:5px;
     padding-bottom:2px;
     width: 21px;
+    background:transparent;
+    alternate-background-color: transparent;
     }
     
-    QAbstractSpinBox::down-arrow, QComboBox::down-arrow {
+    QWidget::up-arrow {
+    image:url(':/images/upArrow_small');
+    }
+    QWidget::up-arrow:disabled {
+    image:url(':/images/upArrow_small_dark');
+    }
+
+    QWidget::down-arrow {
     image:url(':/images/downArrow_small');
     }
-    
-    QAbstractSpinBox::down-arrow:disabled, QComboBox::down-arrow:disabled {
+    QWidget::down-arrow:disabled {
     image:url(':/images/downArrow_small_dark');
+    }
+
+    QWidget::left-arrow {
+    image:url(':/images/leftArrow_small');
+    }
+    QWidget::left-arrow {
+    image:url(':/images/leftArrow_small_dark')
+    }
+
+    QWidget::right-arrow {
+    image:url(':/images/rightArrow_small');
+    }
+    QWidget::right-arrow {
+    image:url(':/images/rightArrow_small_dark')
     }
     
     /*** Sliders ***/
-    QSlider::horizontal{
+    QWidget::horizontal{
     height: 45px;
     }
     
-    QSlider::groove:horizontal {
+    QWidget::groove:horizontal {
     height: 8px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
     background-color: rgba(0, 0, 0, 0.4);
     margin: 13px 0;
     border-radius: 3px;
     }
     
-    QSlider::handle:horizontal {
+    QWidget::handle:horizontal {
     width: 31px;
     margin: -13px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
     border-radius: 15px;

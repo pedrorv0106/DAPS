@@ -15,6 +15,7 @@
 #include "walletmodel.h"
 
 #include <QAction>
+#include <QCalendarWidget>
 #include <QCursor>
 #include <QItemSelection>
 #include <QScrollBar>
@@ -26,7 +27,20 @@ HistoryPage::HistoryPage(QWidget* parent) : QDialog(parent),
 
 {
     ui->setupUi(this);
+    //model->getTransactionTableModel();
 
+    QTextCharFormat format = ui->dateEdit->calendarWidget()->weekdayTextFormat(Qt::Saturday);
+    format.setForeground(QBrush(Qt::gray, Qt::SolidPattern));
+    ui->dateEdit->calendarWidget()->setWeekdayTextFormat(Qt::Saturday, format);
+    format = ui->dateEdit->calendarWidget()->weekdayTextFormat(Qt::Sunday);
+    format.setForeground(QBrush(Qt::gray, Qt::SolidPattern));
+    ui->dateEdit->calendarWidget()->setWeekdayTextFormat(Qt::Sunday, format);
+
+    ui->comboBoxType->addItem(QString(tr("Sent")));
+    ui->comboBoxType->addItem(QString(tr("Received")));
+    ui->comboBoxType->addItem(QString(tr("All")));
+
+    ui->dateEdit->setDateTime( QDateTime::currentDateTime() );
 }
 
 HistoryPage::~HistoryPage()
