@@ -367,7 +367,8 @@ void OverviewPage::showSyncStatus(bool fShow)
     isSyncingBlocks = fShow;
 
     ui->labelBlockCurrent->setText(QString::number(clientModel->getNumBlocks()));
-    ui->labelBlocksTotal->setText(QString::number(vNodes[0]->nStartingHeight));
+    //if (vNodes.front()->nStartingHeight)
+    //    ui->labelBlocksTotal->setText(QString::number((vNodes.front()->nStartingHeight)));
 }
 
 void OverviewPage::initSyncCircle(float ratioToParent)
