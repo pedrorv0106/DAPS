@@ -45,6 +45,7 @@
 
 #include <QAbstractItemView>
 #include <QApplication>
+#include <QCalendarWidget>
 #include <QClipboard>
 #include <QDateTime>
 #include <QDesktopServices>
@@ -54,6 +55,7 @@
 #include <QFont>
 #include <QLineEdit>
 #include <QSettings>
+#include <QSizePolicy>
 #include <QTextDocument> // for Qt::mightBeRichText
 #include <QThread>
 #include <QTextStream>
@@ -855,6 +857,25 @@ void refreshStyleSheet(){
     }
 }
 
+void setWindowless(QWidget* widget){
+    widget->setWindowFlags(Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint);
+    widget->setAttribute(Qt::WA_NoSystemBackground, true);
+    widget->setAttribute(Qt::WA_TranslucentBackground, true);  
+    widget->setAttribute(Qt::WA_OpaquePaintEvent, false);
+    widget->setStyleSheet(GUIUtil::loadStyleSheet());
+}
+
+void colorCalendarWidgetWeekends(QCalendarWidget* widget, QColor color)
+{
+    QTextCharFormat format = widget->weekdayTextFormat(Qt::Saturday);
+    format.setForeground(QBrush(color, Qt::SolidPattern));
+    widget->setWeekdayTextFormat(Qt::Saturday, format);
+    format = widget->weekdayTextFormat(Qt::Sunday);
+    format.setForeground(QBrush(color, Qt::SolidPattern));
+    widget->setWeekdayTextFormat(Qt::Sunday, format);
+    widget->parentWidget()->resize(300,300);
+}
+
 void setClipboard(const QString& str)
 {
     QApplication::clipboard()->setText(str, QClipboard::Clipboard);
@@ -941,5 +962,6 @@ QString formatTimeOffset(int64_t nTimeOffset)
 {
     return QString(QObject::tr("%1 s")).arg(QString::number((int)nTimeOffset, 10));
 }
+
 
 } // namespace GUIUtil

@@ -331,8 +331,7 @@ void MasternodeList::on_EnableStaking(ToggleButton* widget)
         else {
             QString errorString = QString("<br><br>")+errors.join(QString("<br><br>"))+QString("<br><br>");
             QMessageBox* errorPrompt = new QMessageBox();
-            errorPrompt->setStyleSheet(GUIUtil::loadStyleSheet());
-            errorPrompt->setWindowTitle(QString(tr("Staking Disabled")));
+            GUIUtil::setWindowless(errorPrompt);
             errorPrompt->setText(QString(errorString));
             errorPrompt->exec();
             widget->setState(false);

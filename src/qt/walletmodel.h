@@ -17,6 +17,7 @@
 #include <vector>
 
 #include <QObject>
+#include <QAbstractTableModel>
 
 class AddressTableModel;
 class OptionsModel;
@@ -129,6 +130,7 @@ public:
     OptionsModel* getOptionsModel();
     AddressTableModel* getAddressTableModel();
     TransactionTableModel* getTransactionTableModel();
+    QAbstractTableModel* getTxTableModel();
     RecentRequestsTableModel* getRecentRequestsTableModel();
 
     CAmount getBalance(const CCoinControl* coinControl = NULL) const;
@@ -231,6 +233,7 @@ private:
     AddressTableModel* addressTableModel;
     TransactionTableModel* transactionTableModel;
     RecentRequestsTableModel* recentRequestsTableModel;
+    QAbstractTableModel* txTableModel;
 
     // Cache some values to be able to detect changes
     CAmount cachedBalance;
@@ -297,5 +300,12 @@ public slots:
     /* Current, immature or unconfirmed balance might have changed - emit 'balanceChanged' if so */
     void pollBalanceChanged();
 };
+
+namespace WalletUtil
+{
+    vector<std::map<QString,QString>> getTXs(CWallet* wallet);
+    std::map<QString,QString> getTx(CWallet* wallet, uint256 hash);
+    std::map<QString,QString> getTx(CWallet* wallet, CWalletTx tx);
+}
 
 #endif // BITCOIN_QT_WALLETMODEL_H

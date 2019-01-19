@@ -3,7 +3,7 @@
 ######################################################################
 
 DEFINES += ENABLE_WALLET
-
+CONFIG += console
 TEMPLATE = app
 TARGET = 
 DEPENDPATH += . \
@@ -179,6 +179,7 @@ HEADERS += src/activemasternode.h \
            src/qt/editaddressdialog.h \
            src/qt/guiconstants.h \
            src/qt/guiutil.h \
+           src/qt/historypage.h \
            src/qt/intro.h \
            src/qt/macdockiconhandler.h \
            src/qt/macnotificationhandler.h \
@@ -345,6 +346,7 @@ FORMS += src/qt/forms/addressbookpage.ui \
          src/qt/forms/obfuscationconfig.ui \
          src/qt/forms/editaddressdialog.ui \
          src/qt/forms/helpmessagedialog.ui \
+         src/qt/forms/historypage.ui \
          src/qt/forms/intro.ui \
          src/qt/forms/openuridialog.ui \
          src/qt/forms/optionsdialog.ui \
@@ -478,6 +480,7 @@ SOURCES += src/activemasternode.cpp \
            src/qt/dapscoinstrings.cpp \
            src/qt/editaddressdialog.cpp \
            src/qt/guiutil.cpp \
+           src/qt/historypage.cpp \
            src/qt/intro.cpp \
            src/qt/networkstyle.cpp \
            src/qt/notificator.cpp \

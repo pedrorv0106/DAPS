@@ -7,6 +7,7 @@
 
 #include "amount.h"
 
+#include <QCalendarWidget>
 #include <QEvent>
 #include <QHeaderView>
 #include <QMessageBox>
@@ -40,6 +41,8 @@ QString dateTimeStr(qint64 nTime);
 
 // Render DAPScoin addresses in monospace font
 QFont bitcoinAddressFont();
+
+
 
 // Set up widgets for address and amounts
 void setupAddressWidget(QValidatedLineEdit* widget, QWidget* parent);
@@ -207,6 +210,10 @@ void restoreWindowGeometry(const QString& strSetting, const QSize& defaultSizeIn
 QString loadStyleSheet();
 /** Refresh App theme */
 void refreshStyleSheet();
+/** Change the color of weekends on calendar widget *Defaults to Red **/
+void colorCalendarWidgetWeekends(QCalendarWidget* widget, QColor color);
+
+void setWindowless(QWidget* widget);
 
 /** Check whether a theme is not build-in */
 bool isExternal(QString theme);

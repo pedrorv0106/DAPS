@@ -7,15 +7,18 @@
 
 #include "guiutil.h"
 #include "togglebutton.h"
+#include "transactiontablemodel.h"
 
+#include <QAbstractTableModel>
 #include <QDialog>
 #include <QHeaderView>
 #include <QItemSelection>
 #include <QKeyEvent>
 #include <QMenu>
 #include <QPoint>
-#include <QVariant>
 #include <QSettings>
+#include <QTimeEdit>
+#include <QVariant>
 
 class WalletModel;
 
@@ -39,6 +42,8 @@ public:
     ~HistoryPage();
 
 public slots:
+    void updateFilter();
+    void syncTime(QDateTimeEdit* calendar, QTimeEdit* clock);
 
 protected:
     virtual void keyPressEvent(QKeyEvent* event);
@@ -47,7 +52,17 @@ private:
     Ui::HistoryPage* ui;
     GUIUtil::TableViewLastColumnResizingFixer* columnResizingFixer;
     WalletModel* model;
+    QAbstractTableModel* tableModel;
+
+    QTimeEdit* timeEditTo;
+    QTimeEdit* timeEditFrom;
+
+    void initWidgets();
+    void connectWidgets();
     virtual void resizeEvent(QResizeEvent* event);
+    void addTableData(std::map<QString, QString>);
+    void updateTableData();
+
 
 private slots:
 };
