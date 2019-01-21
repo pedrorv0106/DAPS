@@ -130,6 +130,32 @@ void SubstituteFonts(const QString& language);
       representation if needed. This assures that Qt can word-wrap long tooltip messages.
       Tooltips longer than the provided size threshold (in characters) are wrapped.
      */
+class ToolTipEventFilter : public QObject
+{
+    Q_OBJECT
+public:
+    explicit ToolTipEventFilter(QObject* parent=0);
+    //explicit ToolTipEventFilter(QObject* parent);
+protected:
+    // bool eventFilter(QObject* object, QEvent* event) override;
+    bool eventFilter(QObject* object, QEvent* event) override
+    {
+        if (event->type() == QEvent::ToolTip)
+            return true;
+        else
+            return object->eventFilter(object, event);
+    }
+};
+// bool ToolTipEventFilter::eventFilter(QObject* object, QEvent* event) override
+// {
+//     if (event->type() == QEvent::ToolTip)
+//         return true;
+//     else
+//         return object->eventFilter(object, event);
+// }
+//ToolTipEventFilter::ToolTipEventFilter(){}
+//ToolTipEventFilter::ToolTipEventFilter(QObject* parent){}
+
 class ToolTipToRichTextFilter : public QObject
 {
     Q_OBJECT
@@ -212,8 +238,10 @@ QString loadStyleSheet();
 void refreshStyleSheet();
 /** Change the color of weekends on calendar widget *Defaults to Red **/
 void colorCalendarWidgetWeekends(QCalendarWidget* widget, QColor color);
-
+/** Hideframes for pop up widgets. Needed for border-radius on pop up widgets **/
 void setWindowless(QWidget* widget);
+/** Disable tooltips **/
+void disableTooltips(QWidget* widget);
 
 /** Check whether a theme is not build-in */
 bool isExternal(QString theme);

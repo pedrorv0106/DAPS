@@ -34,7 +34,8 @@ HistoryPage::HistoryPage(QWidget* parent) : QDialog(parent),
 
     initWidgets();
     connectWidgets();
-    updateTableData();
+    updateTableData(pwalletMain);
+    updateAddressBookData(pwalletMain);
 }
 
 
@@ -44,9 +45,12 @@ HistoryPage::~HistoryPage()
 }
 void HistoryPage::initWidgets()
 {
+    //set String for all addresses
+    allAddressString = "All addresses...";
+    //adjust qt paint flags
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableView->setAttribute(Qt::WA_TranslucentBackground, true);
-    //
+    //set date formats and init date from current timestamp
     ui->dateTimeEditTo->setDisplayFormat("M/d/yy");
     ui->dateTimeEditFrom->setDisplayFormat("M/d/yy");
     ui->dateTimeEditTo->setDateTime(QDateTime::currentDateTime().addDays(1));
@@ -60,6 +64,7 @@ void HistoryPage::initWidgets()
     GUIUtil::setWindowless(ui->dateTimeEditTo->calendarWidget()->parentWidget());
     GUIUtil::setWindowless(ui->dateTimeEditFrom->calendarWidget()->parentWidget());
     GUIUtil::setWindowless(ui->comboBoxType->view()->parentWidget());
+    GUIUtil::setWindowless(ui->lineEditDesc->view()->parentWidget());
     //color calendarwidgets
     GUIUtil::colorCalendarWidgetWeekends(ui->dateTimeEditTo->calendarWidget(), QColor("gray"));
     GUIUtil::colorCalendarWidgetWeekends(ui->dateTimeEditFrom->calendarWidget(), QColor("gray"));
@@ -70,7 +75,8 @@ void HistoryPage::connectWidgets() //add functions to widget signals
     connect(ui->dateTimeEditTo, SIGNAL(dateChanged(const QDate&)), this, SLOT(updateFilter()));
     connect(ui->dateTimeEditFrom, SIGNAL(dateChanged(const QDate&)), this, SLOT(updateFilter()));
     connect(ui->comboBoxType, SIGNAL(currentIndexChanged(const int&)), this, SLOT(updateFilter()));
-    connect(ui->lineEditDesc, SIGNAL(textChanged(const QString&)), this, SLOT(updateFilter()));
+    connect(ui->lineEditDesc, SIGNAL(currentIndexChanged(const int&)), this, SLOT(updateFilter()));
+    connect(ui->lineEditDesc, SIGNAL(textChanged(const int&)), this, SLOT(updateFilter()));
     connect(ui->lineEditAmount, SIGNAL(textChanged(const QString&)), this, SLOT(updateFilter()));
     //
     connect(timeEditFrom, SIGNAL(timeChanged(const QTime&)), this, SLOT(updateFilter()));
@@ -80,7 +86,7 @@ void HistoryPage::connectWidgets() //add functions to widget signals
 void HistoryPage::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
-    ui->tableView->setColumnWidth(2, this->width() * .45);
+    ui->tableView->setColumnWidth(2, this->width() * .65);
     ui->tableView->resizeColumnToContents(QHeaderView::ResizeToContents);
     ui->tableView->resizeColumnsToContents();
 }
@@ -95,9 +101,10 @@ void HistoryPage::addTableData(std::map<QString, QString>)
 {
 }
 
-void HistoryPage::updateTableData()
+void HistoryPage::updateTableData(CWallet* wallet)
 {
-    auto txs = WalletUtil::getTXs(pwalletMain);
+    ui->tableView->setRowCount(0);
+    auto txs = WalletUtil::getTXs(wallet);
     for (int row = 0; row < (short)txs.size(); row++) {
         ui->tableView->insertRow(row);
         int col = 0;
@@ -119,12 +126,22 @@ void HistoryPage::updateTableData()
     }
 }
 
+void HistoryPage::updateAddressBookData(CWallet* wallet)
+{
+    ui->lineEditDesc->clear();
+    ui->lineEditDesc->addItem(allAddressString);
+    QList<QString> addresses = WalletUtil::getAddressBookData(wallet);
+    for (QString address : addresses)
+        ui->lineEditDesc->addItem(address);
+}
+
 void HistoryPage::updateFilter()
 {
     syncTime(ui->dateTimeEditFrom, timeEditFrom);
     syncTime(ui->dateTimeEditFrom, timeEditFrom);
     auto selectedAmount = ui->lineEditAmount->text().toFloat();
     QString selectedType = ui->comboBoxType->currentText();
+    QList<QString> selectedAddresses = ui->lineEditDesc->currentText().split(" | ");
 
     for (int row = 0; row < ui->tableView->rowCount(); row++) {
         bool hide = false;
@@ -135,15 +152,22 @@ void HistoryPage::updateFilter()
 
         if (
             (ui->dateTimeEditFrom->dateTime() > date) || (ui->dateTimeEditTo->dateTime() < date) || //record is not between selected dates
-            (!address.contains(ui->lineEditDesc->text())) ||                                        //record address does not contain selected address
-            (amount < selectedAmount)                                                               //record smaller than selected min amount
+
+            (amount < selectedAmount) //record smaller than selected min amount
         )
             hide = true;
-        if (selectedType != "All") {
-            if (selectedType == "Received") {
-                hide = !(type == "Received" || type == "Masternode Reward" || type == "Staking Reward" || type == "PoA Reward");
+        if (selectedType != tr("All Types")) {
+            if (selectedType == tr("Received")) {
+                hide = !(type == tr("Received") || type == tr("Masternode Reward") || type == tr("Staking Reward") || type == ("PoA Reward"));
             } else
-                hide = (selectedType != type);
+                hide = (selectedType != type) || hide;
+        }
+        if (ui->lineEditDesc->currentText() != allAddressString) {
+            bool found = false;
+            for (QString selectedAddress : selectedAddresses)
+                if (address.contains(selectedAddress))
+                    found = true;
+            hide = !found || hide;
         }
 
         ui->tableView->setRowHidden(row, hide);

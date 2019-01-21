@@ -28,14 +28,6 @@
 #include <QSettings>
 #include <QTextDocument>
 
-#include <QTextStream>
-
-QTextStream& qout()
-{
-    static QTextStream ts( stdout );
-    return ts;
-}
-
 SendCoinsDialog::SendCoinsDialog(QWidget* parent) : QDialog(parent),
                                                     ui(new Ui::SendCoinsDialog),
                                                     clientModel(0),

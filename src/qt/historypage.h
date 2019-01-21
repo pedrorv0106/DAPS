@@ -57,11 +57,14 @@ private:
     QTimeEdit* timeEditTo;
     QTimeEdit* timeEditFrom;
 
+    QString allAddressString="All";
+
     void initWidgets();
     void connectWidgets();
     virtual void resizeEvent(QResizeEvent* event);
     void addTableData(std::map<QString, QString>);
-    void updateTableData();
+    void updateTableData(CWallet *wallet);
+    void updateAddressBookData(CWallet *wallet);
 
 
 private slots:

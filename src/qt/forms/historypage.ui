@@ -66,7 +66,7 @@
            </property>
            <item>
             <property name="text">
-             <string>All</string>
+             <string>All Types</string>
             </property>
            </item>
            <item>
@@ -82,13 +82,16 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEditDesc">
+          <widget class="QComboBox" name="lineEditDesc">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="editable">
+                <bool>true</bool>
+            </property>
           </widget>
          </item>
          <item>

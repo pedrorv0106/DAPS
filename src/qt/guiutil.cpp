@@ -54,6 +54,7 @@
 #include <QFileDialog>
 #include <QFont>
 #include <QLineEdit>
+#include <QObject>
 #include <QSettings>
 #include <QSizePolicy>
 #include <QTextDocument> // for Qt::mightBeRichText
@@ -865,6 +866,11 @@ void setWindowless(QWidget* widget){
     widget->setStyleSheet(GUIUtil::loadStyleSheet());
 }
 
+void disableTooltips(QWidget* widget){
+   // ToolTipEventFilter *ToolTipEventFilter = new GUIUtil::ToolTipEventFilter();
+   // widget->installEventFilter(ToolTipEventFilter);
+}
+
 void colorCalendarWidgetWeekends(QCalendarWidget* widget, QColor color)
 {
     QTextCharFormat format = widget->weekdayTextFormat(Qt::Saturday);
@@ -874,6 +880,7 @@ void colorCalendarWidgetWeekends(QCalendarWidget* widget, QColor color)
     format.setForeground(QBrush(color, Qt::SolidPattern));
     widget->setWeekdayTextFormat(Qt::Sunday, format);
     widget->parentWidget()->resize(300,300);
+    //widget->header
 }
 
 void setClipboard(const QString& str)

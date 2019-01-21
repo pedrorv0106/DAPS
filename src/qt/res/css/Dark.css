@@ -74,6 +74,7 @@ QMessageBox QFrame {
   border: 1px solid #83faff;
   padding: 10px 20px 10px 20px;
   border-radius: 20px;
+  margin: 15px;
 }
 QMessageBox QFrame {
   padding: 0 40px 0 40px;
@@ -84,7 +85,7 @@ QTableWidget {
   selection-background-color: rgba(255, 255, 255, 10%);
 }
 QHeaderView::section,
-QCalendar::section {
+QCalendar::section, QCalendar QHeaderView::section {
   min-height: 55px;
 }
 QTableView::item,
@@ -174,7 +175,7 @@ QPushButton {
   font-size: 20px;
   font-weight: 400;
   padding: 10px 20px;
-  max-width: 350px;
+  max-width: 200px;
 }
 
 QPushButton:hover {

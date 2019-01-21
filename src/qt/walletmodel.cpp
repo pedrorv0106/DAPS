@@ -807,13 +807,23 @@ vector<std::map<QString, QString> > getTXs(CWallet* wallet)
 std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
 {
     QList<TransactionRecord> decomposedTx = TransactionRecord::decomposeTransaction(wallet, tx);
+    QList<QString> addressBook = getAddressBookData(wallet);
     std::map<QString, QString> txData;
     for (TransactionRecord TxRecord : decomposedTx) {
         txData["date"] = QString(GUIUtil::dateTimeStr(TxRecord.time));
-        txData["address"] = QString(TxRecord.address.c_str());
+        // if address is in book, use data from book, else use data from transaction
+        txData["address"]=""; 
+        for (QString addressBookEntry : addressBook)
+            if (addressBookEntry.contains(TxRecord.address.c_str()))
+                txData["address"] = addressBookEntry;
+        if (!txData["address"].length())
+            txData["address"] = QString(TxRecord.address.c_str());
+        //
         CAmount amount = TxRecord.credit + TxRecord.debit;
         txData["amount"] = BitcoinUnits::format(0, (amount > 0 ? amount : -amount)); //absolute value of total amount
+        //
         txData["id"] = QString(TxRecord.idx);
+        // parse transaction type
         switch (TxRecord.type) {
         case TransactionRecord::SendToSelf:
         case TransactionRecord::SendToAddress:
@@ -833,5 +843,20 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
     return txData;
 }
 
+QList<QString> getAddressBookData(CWallet* wallet)
+{
+    std::map<CTxDestination, CAddressBookData> mapAddressBook = pwalletMain->mapAddressBook;
+    QList<QString> AddressBookData;
+    for (std::map<CTxDestination, CAddressBookData>::iterator address = mapAddressBook.begin(); address != mapAddressBook.end(); ++address) {
+        QString desc = address->second.name.c_str();
+        QString addressHash = CBitcoinAddress(address->first).ToString().c_str();
+        if (desc.length())
+            AddressBookData.push_front(desc + " | " + addressHash);
+        else
+            AddressBookData.push_front(addressHash);
+       
+    }
+    return AddressBookData;
+}
 
 } // namespace WalletUtil
