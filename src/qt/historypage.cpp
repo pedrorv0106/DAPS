@@ -75,8 +75,11 @@ void HistoryPage::connectWidgets() //add functions to widget signals
     connect(ui->dateTimeEditTo, SIGNAL(dateChanged(const QDate&)), this, SLOT(updateFilter()));
     connect(ui->dateTimeEditFrom, SIGNAL(dateChanged(const QDate&)), this, SLOT(updateFilter()));
     connect(ui->comboBoxType, SIGNAL(currentIndexChanged(const int&)), this, SLOT(updateFilter()));
+    //
     connect(ui->lineEditDesc, SIGNAL(currentIndexChanged(const int&)), this, SLOT(updateFilter()));
-    connect(ui->lineEditDesc, SIGNAL(textChanged(const int&)), this, SLOT(updateFilter()));
+    connect(ui->lineEditDesc->lineEdit(), SIGNAL(textChanged(const QString&)), this, SLOT(updateFilter()));
+
+    //
     connect(ui->lineEditAmount, SIGNAL(textChanged(const QString&)), this, SLOT(updateFilter()));
     //
     connect(timeEditFrom, SIGNAL(timeChanged(const QTime&)), this, SLOT(updateFilter()));
@@ -133,6 +136,7 @@ void HistoryPage::updateAddressBookData(CWallet* wallet)
     QList<QString> addresses = WalletUtil::getAddressBookData(wallet);
     for (QString address : addresses)
         ui->lineEditDesc->addItem(address);
+    ui->lineEditDesc->lineEdit()->setText(QString(""));
 }
 
 void HistoryPage::updateFilter()
@@ -141,7 +145,7 @@ void HistoryPage::updateFilter()
     syncTime(ui->dateTimeEditFrom, timeEditFrom);
     auto selectedAmount = ui->lineEditAmount->text().toFloat();
     QString selectedType = ui->comboBoxType->currentText();
-    QList<QString> selectedAddresses = ui->lineEditDesc->currentText().split(" | ");
+    QList<QString> selectedAddresses = ui->lineEditDesc->lineEdit()->text().split(" | ");
 
     for (int row = 0; row < ui->tableView->rowCount(); row++) {
         bool hide = false;

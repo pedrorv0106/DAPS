@@ -45,6 +45,8 @@ public slots:
     void updateFilter();
     void syncTime(QDateTimeEdit* calendar, QTimeEdit* clock);
 
+
+
 protected:
     virtual void keyPressEvent(QKeyEvent* event);
 
