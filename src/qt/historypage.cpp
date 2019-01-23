@@ -177,7 +177,7 @@ void HistoryPage::updateFilter()
             hide = !found || hide;
         }
 
-        ui->tableView->setRowHidden(row, hide);
+        ui->tableView->setRowHidden(row, false);
     }
 }
 

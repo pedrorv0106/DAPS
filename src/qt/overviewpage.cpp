@@ -317,14 +317,14 @@ void OverviewPage::showBlockSync(bool fShow)
 
     ui->labelBlockCurrent->setText(QString::number(clientModel->getNumBlocks()));
     try{
-        if (vNodes.size()>=1){
-            int highestCount = 0;
-            for (CNode* node : vNodes)
-                if (node->nStartingHeight>highestCount)
-                    highestCount = node->nStartingHeight;
-            if (highestCount>=clientModel->getNumBlocks())
-                ui->labelBlocksTotal->setText(QString::number(highestCount));
-        }
+        // if (vNodes.size()>=1){
+        //     int highestCount = 0;
+        //     for (CNode* node : vNodes)
+        //         if (node->nStartingHeight>highestCount)
+        //             highestCount = node->nStartingHeight;
+        //     if (highestCount>=clientModel->getNumBlocks())
+        //         ui->labelBlocksTotal->setText(QString::number(highestCount));
+        // }
     }catch(int err_code)
     {
          ui->labelBlocksTotal->setText("Error: "+QString::number(err_code));

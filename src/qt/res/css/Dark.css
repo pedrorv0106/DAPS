@@ -75,12 +75,14 @@ QMessageBox QFrame {
   padding: 10px 20px 10px 20px;
   border-radius: 20px;
   margin: 15px;
+  border-width: 2px;
 }
 QMessageBox QFrame {
   padding: 0 40px 0 40px;
   border-radius: 50px;
   min-height: 100px;
   background: qlineargradient(x1: 0 y1: 0, x2: 1 y2: 1, stop: 0 #5e0057, stop: 1 #1f192a);
+  border-width: 3px;
 }
 QTableWidget {
   alternate-background-color: rgba(0, 0, 0, 20%);
