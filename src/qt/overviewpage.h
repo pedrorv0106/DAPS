@@ -37,7 +37,8 @@ public:
 
     void setClientModel(ClientModel* clientModel);
     void setWalletModel(WalletModel* walletModel);
-    void showSyncStatus(bool fShow);
+    void showBlockSync(bool fShow);
+    void showBalanceSync(bool fShow);
 
     QTimer* animTicker;
     QElapsedTimer* animClock;

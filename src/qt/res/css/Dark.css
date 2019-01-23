@@ -79,6 +79,8 @@ QMessageBox QFrame {
 QMessageBox QFrame {
   padding: 0 40px 0 40px;
   border-radius: 50px;
+  min-height: 100px;
+  background: qlineargradient(x1: 0 y1: 0, x2: 1 y2: 1, stop: 0 #5e0057, stop: 1 #1f192a);
 }
 QTableWidget {
   alternate-background-color: rgba(0, 0, 0, 20%);
@@ -121,7 +123,7 @@ QCheckBox::indicator:checked {
 .QLineEdit,
 QAbstractSpinBox,
 QComboBox,
-QListView,
+/* QListView, */
 QComboBox QAbstractItemView,
 QCalendar QCalendarWidget QWidget,
 QCalendarWidget,
@@ -169,9 +171,9 @@ QComboBox::indicator {
 
 /*** Buttons ***/
 QPushButton {
-  height: 40px;
+  height: 30px;
   border-radius: 10px;
-  background-color: #5e0057;
+  background-color: #470143;
   font-size: 20px;
   font-weight: 400;
   padding: 10px 20px;

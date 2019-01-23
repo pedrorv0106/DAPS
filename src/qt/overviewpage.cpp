@@ -131,13 +131,7 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
 
     connect(ui->listTransactions, SIGNAL(clicked(QModelIndex)), this, SLOT(handleTransactionClicked(QModelIndex)));
 
-
-    // init "out of sync" warning labels
-    ui->labelTransactionsStatus->setText("(" + tr("out of sync") + ")");
-
     initSyncCircle(.8);
-    // start with displaying the "out of sync" warnings
-    // #remove showSyncStatus(true);
 }
 
 void OverviewPage::handleTransactionClicked(const QModelIndex& index)
@@ -191,18 +185,10 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
 
     // DAPS labels
     ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance - immatureBalance, false, BitcoinUnits::separatorAlways));
-//    ui->labelzBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, zerocoinBalance, false, BitcoinUnits::separatorAlways));
     ui->labelUnconfirmed->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, unconfirmedBalance, false, BitcoinUnits::separatorAlways));
     ui->labelBalance_2->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance - immatureBalance, false, BitcoinUnits::separatorAlways));
-   // #remove ui->labelImmature->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, immatureBalance, false, BitcoinUnits::separatorAlways));
-   // #remove ui->labelTotal->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance + unconfirmedBalance, false, BitcoinUnits::separatorAlways));
 
-    // Watchonly labels
-    // #remove ui->labelWatchAvailable->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, watchOnlyBalance, false, BitcoinUnits::separatorAlways));
-   // #remove ui->labelWatchPending->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, watchUnconfBalance, false, BitcoinUnits::separatorAlways));
-   // #remove ui->labelWatchImmature->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, watchImmatureBalance, false, BitcoinUnits::separatorAlways));
-   // #remove ui->labelWatchTotal->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, watchOnlyBalance + watchUnconfBalance + watchImmatureBalance, false, BitcoinUnits::separatorAlways));
-
+  
     // zDAPS labels
     QString szPercentage = "";
     QString sPercentage = "";
@@ -214,18 +200,8 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
 
     CAmount nTotalBalance = balance + unconfirmedBalance;
     CAmount nUnlockedBalance = nTotalBalance - nLockedBalance;
-    // #remove CAmount matureZerocoinBalance = zerocoinBalance - immatureZerocoinBalance;
     getPercentage(nUnlockedBalance, zerocoinBalance, sPercentage, szPercentage);
 
-//    ui->labelBalancez->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, nTotalBalance, false, BitcoinUnits::separatorAlways));
-//    ui->labelzBalancez->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, zerocoinBalance, false, BitcoinUnits::separatorAlways));
-//    ui->labelzBalanceImmature->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, immatureZerocoinBalance, false, BitcoinUnits::separatorAlways));
-//    ui->labelzBalanceUnconfirmed->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, unconfirmedZerocoinBalance, false, BitcoinUnits::separatorAlways));
-//    ui->labelzBalanceMature->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, matureZerocoinBalance, false, BitcoinUnits::separatorAlways));
-//    ui->labelTotalz->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, nTotalBalance + zerocoinBalance, false, BitcoinUnits::separatorAlways));
-//    ui->labelUnLockedBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, nUnlockedBalance, false, BitcoinUnits::separatorAlways));
-//    ui->labelDAPSPercent->setText(sPercentage);
-//    ui->labelzDAPSPercent->setText(szPercentage);
 
     /**
 * @author Wang
@@ -243,17 +219,6 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     else {
         automintHelp += tr("AutoMint is currently disabled.\nTo enable AutoMint change 'enablezeromint=0' to 'enablezeromint=1' in dapscoin.conf");
     }
-//    ui->labelzDAPSPercent->setToolTip(automintHelp);
-
-    // only show immature (newly mined) balance if it's non-zero, so as not to complicate things
-    // for the non-mining users
-    // #remove bool showImmature = immatureBalance != 0;
-    // #remove bool showWatchOnlyImmature = watchImmatureBalance != 0;
-
-    // for symmetry reasons also show immature label when the watch-only one is shown
-   // #remove  ui->labelImmature->setVisible(showImmature || showWatchOnlyImmature);
-   // #remove  ui->labelImmatureText->setVisible(showImmature || showWatchOnlyImmature);
-   // #remove ui->labelWatchImmature->setVisible(showWatchOnlyImmature); // show watch-only immature balance
 
     static int cachedTxLocks = 0;
 
@@ -266,21 +231,8 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
 // show/hide watch-only labels
 void OverviewPage::updateWatchOnlyLabels(bool showWatchOnly)
 {
-   // #remove ui->labelSpendable->setVisible(showWatchOnly);      // show spendable label (only when watch-only is active)
-   // #remove  ui->labelWatchonly->setVisible(showWatchOnly);      // show watch-only label
-  // #remove  ui->lineWatchBalance->setVisible(showWatchOnly);    // show watch-only balance separator line
-   // #remove ui->labelWatchAvailable->setVisible(showWatchOnly); // show watch-only available balance
-  // #remove  ui->labelWatchPending->setVisible(showWatchOnly);   // show watch-only pending balance
-  // #remove  ui->labelWatchTotal->setVisible(showWatchOnly);     // show watch-only total balance
-
-  /* #remove  if (!showWatchOnly) {
-        ui->labelWatchImmature->hide();
-    } else { */
         ui->labelBalance->setIndent(20);
         ui->labelUnconfirmed->setIndent(20);
-     // #remove   ui->labelImmature->setIndent(20);
-     // #remove   ui->labelTotal->setIndent(20);
-   // #remove }
 }
 
 void OverviewPage::setClientModel(ClientModel* model)
@@ -347,28 +299,37 @@ void OverviewPage::updateAlerts(const QString& warnings)
     this->ui->labelAlerts->setText(warnings);
 }
 
-void OverviewPage::showSyncStatus(bool fShow)
-{
-    ui->labelTransactionsStatus->setVisible(fShow);
-    // #remove ui->labelBlockStatus->setVisible(fShow);
-    if (fShow){
-        ui->labelBlockStatus->setText("(" + tr("Syncing...") + ")");
-        ui->labelBlockStatus->setStyleSheet("QLabel { color : red; }");
-        ui->labelWalletStatus->setText("(" + tr("Syncing...") + ")");
-        ui->labelWalletStatus->setStyleSheet("QLabel { color : red; }");
-    } else {
-        ui->labelBlockStatus->setText("(" + tr("Synced") + ")");
-        ui->labelBlockStatus->setStyleSheet("QLabel { color : green; }");
-        ui->labelWalletStatus->setText("(" + tr("Synced") + ")");
-        ui->labelWalletStatus->setStyleSheet("QLabel { color : green; }");
-    }
+void OverviewPage::showBalanceSync(bool fShow){
+        ui->labelWalletStatus->setVisible(fShow);
+        ui->labelPendingText->setVisible(fShow);
+        ui->labelUnconfirmed->setVisible(fShow);
+        ui->labelBalanceText->setVisible(fShow);
+        isSyncingBalance = fShow;
+}
 
-    isSyncingBalance = fShow;
+void OverviewPage::showBlockSync(bool fShow)
+{
+    ui->labelBlockStatus->setVisible(fShow);
+    ui->labelBlockOf->setVisible(fShow);
+    ui->labelBlocksTotal->setVisible(fShow);
+
     isSyncingBlocks = fShow;
 
     ui->labelBlockCurrent->setText(QString::number(clientModel->getNumBlocks()));
-    //if (vNodes.front()->nStartingHeight)
-    //    ui->labelBlocksTotal->setText(QString::number((vNodes.front()->nStartingHeight)));
+    try{
+        if (vNodes.size()>=1){
+            int highestCount = 0;
+            for (CNode* node : vNodes)
+                if (node->nStartingHeight>highestCount)
+                    highestCount = node->nStartingHeight;
+            if (highestCount>=clientModel->getNumBlocks())
+                ui->labelBlocksTotal->setText(QString::number(highestCount));
+        }
+    }catch(int err_code)
+    {
+         ui->labelBlocksTotal->setText("Error: "+QString::number(err_code));
+    }
+
 }
 
 void OverviewPage::initSyncCircle(float ratioToParent)
@@ -402,10 +363,23 @@ void OverviewPage::initSyncCircle(float ratioToParent)
 
 void OverviewPage::onAnimTick()
 {
-    if (isSyncingBlocks)
-        moveSyncCircle(blockSyncCircle, blockAnimSyncCircle, 12, 120);
-    if (isSyncingBalance)
-        moveSyncCircle(balanceSyncCircle, balanceAnimSyncCircle, 12, -110,45);
+    if (isSyncingBlocks){
+        moveSyncCircle(blockSyncCircle, blockAnimSyncCircle, 3, 120);
+        blockSyncCircle->setStyleSheet("image:url(':/images/syncp')");
+        blockAnimSyncCircle->setVisible(true);
+    } else {
+        blockSyncCircle->setStyleSheet("image:url(':/images/syncb')");
+        blockAnimSyncCircle->setVisible(false);
+    }
+    if (isSyncingBalance){
+        moveSyncCircle(balanceSyncCircle, balanceAnimSyncCircle, 3, -100, 130);
+        balanceSyncCircle->setStyleSheet("image:url(':/images/syncp')");
+        balanceAnimSyncCircle->setVisible(true);
+    } else {
+        balanceSyncCircle->setStyleSheet("image:url(':/images/syncb')");
+        balanceAnimSyncCircle->setVisible(false);
+    }
+    showBalanceSync(currentUnconfirmedBalance>0);
 }
 
 void OverviewPage::moveSyncCircle(QWidget* anchor, QWidget* animated, int deltaRadius, float degreesPerSecond, float angleOffset) //deltaRad in px

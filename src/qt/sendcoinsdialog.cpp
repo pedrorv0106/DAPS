@@ -135,10 +135,7 @@ SendCoinsDialog::SendCoinsDialog(QWidget* parent) : QDialog(parent),
     ui->sliderSmartFee->setValue(settings.value("nSmartFeeSliderPosition").toInt());
     ui->horizontalSliderRingSize->setValue(settings.value("nRingSize").toInt());
     ui->customFee->setValue(settings.value("nTransactionFee").toLongLong());
-    // #REMOVE ui->checkBoxMinimumFee->setChecked(settings.value("fPayOnlyMinFee").toBool());
-    // #REMOVE ui->checkBoxFreeTx->setChecked(settings.value("fSendFreeTransactions").toBool());
-    // #REMOVE ui->checkzDAPS->hide();
-    minimizeFeeSection(settings.value("fFeeSectionMinimized").toBool());
+
 
     // #HIDE multisend
     ui->addButton->setVisible(false);
@@ -223,6 +220,7 @@ SendCoinsDialog::~SendCoinsDialog()
 
 void SendCoinsDialog::on_sendButton_clicked()
 {
+
     if (!model || !model->getOptionsModel())
         return;
 
@@ -231,42 +229,15 @@ void SendCoinsDialog::on_sendButton_clicked()
 
     for (int i = 0; i < ui->entries->count(); ++i) {
         SendCoinsEntry* entry = qobject_cast<SendCoinsEntry*>(ui->entries->itemAt(i)->widget());
-
-        //UTXO splitter - address should be our own
-        CBitcoinAddress address = entry->getValue().address.toStdString();
-        if (!model->isMine(address) && ui->splitBlockCheckBox->checkState() == Qt::Checked) {
-            CoinControlDialog::coinControl->fSplitBlock = false;
-            ui->splitBlockCheckBox->setCheckState(Qt::Unchecked);
-            QMessageBox::warning(this, tr("Send Coins"),
-                tr("The split block tool does not work when sending to outside addresses. Try again."),
-                QMessageBox::Ok, QMessageBox::Ok);
-            return;
-        }
-
-        if (entry) {
-            if (entry->validate()) {
-                recipients.append(entry->getValue());
-            } else {
-                valid = false;
-            }
-        }
+        recipients.push_back(entry->getValue());
     }
 
     if (!valid || recipients.isEmpty()) {
         return;
     }
-
+ 
     //set split block in model
     CoinControlDialog::coinControl->fSplitBlock = ui->splitBlockCheckBox->checkState() == Qt::Checked;
-
-    if (ui->entries->count() > 1 && ui->splitBlockCheckBox->checkState() == Qt::Checked) {
-        CoinControlDialog::coinControl->fSplitBlock = false;
-        ui->splitBlockCheckBox->setCheckState(Qt::Unchecked);
-        QMessageBox::warning(this, tr("Send Coins"),
-            tr("The split block tool does not work with multiple addresses. Try again."),
-            QMessageBox::Ok, QMessageBox::Ok);
-        return;
-    }
 
     if (CoinControlDialog::coinControl->fSplitBlock)
         CoinControlDialog::coinControl->nSplitBlock = int(ui->splitBlockLineEdit->text().toInt());
@@ -276,14 +247,7 @@ void SendCoinsDialog::on_sendButton_clicked()
     recipients[0].inputType = ALL_COINS;
     strFunds = tr("using") + " <b>" + tr("any available funds (not recommended)") + "</b>";
 
-    // #REMOVE if (ui->checkSwiftTX->isChecked()) {
-    // #REMOVE     recipients[0].useSwiftTX = true;
-    // #REMOVE     strFunds += " ";
-    // #REMOVE     strFunds += tr("and SwiftX");
-    // #REMOVE } else {
         recipients[0].useSwiftTX = false;
-    // #REMOVE }
-
 
     // Format confirmation message
     QStringList formatted;
@@ -340,6 +304,7 @@ void SendCoinsDialog::on_sendButton_clicked()
         send(recipients, strFee, formatted);
         return;
     }
+
     // already unlocked or not encrypted at all
     send(recipients, strFee, formatted);
 }
@@ -598,89 +563,22 @@ void SendCoinsDialog::updateSwiftTX()
 void SendCoinsDialog::processSendCoinsReturn(const WalletModel::SendCoinsReturn& sendCoinsReturn, const QString& msgArg, bool fPrepare)
 {
     bool fAskForUnlock = false;
-    
-    QPair<QString, CClientUIInterface::MessageBoxFlags> msgParams;
-    // Default to a warning message, override if error message is needed
-    msgParams.second = CClientUIInterface::MSG_WARNING;
+    QString error = "";
 
-    // This comment is specific to SendCoinsDialog usage of WalletModel::SendCoinsReturn.
-    // WalletModel::TransactionCommitFailed is used only in WalletModel::sendCoins()
-    // all others are used only in WalletModel::prepareTransaction()
     switch (sendCoinsReturn.status) {
-    case WalletModel::InvalidAddress:
-        msgParams.first = tr("The recipient address is not valid, please recheck.");
-        break;
-    case WalletModel::InvalidAmount:
-        msgParams.first = tr("The amount to pay must be larger than 0.");
-        break;
-    case WalletModel::AmountExceedsBalance:
-        msgParams.first = tr("The amount exceeds your balance.");
-        break;
-    case WalletModel::AmountWithFeeExceedsBalance:
-        msgParams.first = tr("The total exceeds your balance when the %1 transaction fee is included.").arg(msgArg);
-        break;
-    case WalletModel::DuplicateAddress:
-        msgParams.first = tr("Duplicate address found, can only send to each address once per send operation.");
-        break;
-    case WalletModel::TransactionCreationFailed:
-        msgParams.first = tr("Transaction creation failed!");
-        msgParams.second = CClientUIInterface::MSG_ERROR;
-        break;
-    case WalletModel::TransactionCommitFailed:
-        msgParams.first = tr("The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.");
-        msgParams.second = CClientUIInterface::MSG_ERROR;
-        break;
-    case WalletModel::AnonymizeOnlyUnlocked:
-        // Unlock is only need when the coins are send
-        if(!fPrepare)
-            fAskForUnlock = true;
-        else
-            msgParams.first = tr("Error: The wallet was unlocked only to anonymize coins.");
-        break;
-
-    case WalletModel::InsaneFee:
-        msgParams.first = tr("A fee %1 times higher than %2 per kB is considered an insanely high fee.").arg(10000).arg(BitcoinUnits::formatWithUnit(model->getOptionsModel()->getDisplayUnit(), ::minRelayTxFee.GetFeePerK()));
-        break;
-    // included to prevent a compiler warning.
+    case WalletModel::InvalidAddress:             error = tr("Invalid address.");  break;
+    case WalletModel::InvalidAmount:              error = tr("Invalid amount."); break;
+    case WalletModel::AmountExceedsBalance:       error = tr("Insufficient funds."); break;
+    case WalletModel::AmountWithFeeExceedsBalance:error = tr("The total exceeds your balance when the %1 transaction fee is included.").arg(msgArg);break;
+    case WalletModel::DuplicateAddress:           error = tr("Duplicate address found, can only send to each address once per send operation."); break;
+    case WalletModel::TransactionCreationFailed:  error = CClientUIInterface::MSG_ERROR; break;
+    case WalletModel::TransactionCommitFailed:    error = CClientUIInterface::MSG_ERROR; break;
     case WalletModel::OK:
     default:
         return;
     }
-
-    // Unlock wallet if it wasn't fully unlocked already
-    if(fAskForUnlock) {
-        model->requestUnlock(false);
-        if(model->getEncryptionStatus () != WalletModel::Unlocked) {
-            msgParams.first = tr("Error: The wallet was unlocked only to anonymize coins. Unlock canceled.");
-        }
-        else {
-            // Wallet unlocked
-            return;
-        }
-    }
-
-    emit message(tr("Send Coins"), msgParams.first, msgParams.second);
-}
-
-void SendCoinsDialog::minimizeFeeSection(bool fMinimize)
-{
-    // #REMOVE ui->labelFeeMinimized->setVisible(fMinimize);
-    // #REMOVE ui->buttonChooseFee->setVisible(fMinimize);
-    // #REMOVE ui->buttonMinimizeFee->setVisible(!fMinimize);
-    // #REMOVE ui->frameFeeSelection->setVisible(!fMinimize);
-   // #REMOVE  ui->horizontalLayoutSmartFee->setContentsMargins(0, (fMinimize ? 0 : 6), 0, 0);
-    // #REMOVE fFeeMinimized = fMinimize;
-}
-
-void SendCoinsDialog::on_buttonChooseFee_clicked()
-{
-    minimizeFeeSection(false);
-}
-
-void SendCoinsDialog::on_buttonMinimizeFee_clicked()
-{
-    updateFeeMinimizedLabel();
-    minimizeFeeSection(true);
+    if (error.length())
+        GUIUtil::prompt(error);
 }
 
 void SendCoinsDialog::setMinimumFee()
@@ -691,17 +589,6 @@ void SendCoinsDialog::setMinimumFee()
 
 void SendCoinsDialog::updateFeeSectionControls()
 {
-    // #REMOVE ui->sliderSmartFee->setEnabled(ui->radioSmartFee->isChecked());
-    // #REMOVE ui->labelSmartFee->setEnabled(ui->radioSmartFee->isChecked());
-    // #REMOVE ui->labelSmartFee2->setEnabled(ui->radioSmartFee->isChecked());
-    // #REMOVE ui->labelSmartFee3->setEnabled(ui->radioSmartFee->isChecked());
-    // #REMOVE ui->labelFeeEstimation->setEnabled(ui->radioSmartFee->isChecked());
-    // #REMOVE ui->labelSmartFeeNormal->setEnabled(ui->radioSmartFee->isChecked());
-    // #REMOVE ui->labelSmartFeeFast->setEnabled(ui->radioSmartFee->isChecked());
-    // #REMOVE ui->checkBoxMinimumFee->setEnabled(ui->radioCustomFee->isChecked());
-    // #REMOVE ui->labelMinFeeWarning->setEnabled(ui->radioCustomFee->isChecked());
-    // #REMOVE ui->radioCustomPerKilobyte->setEnabled(!ui->radioCustomAtLeast->isChecked());
-    // #REMOVE ui->radioCustomAtLeast->setEnabled(!ui->radioCustomPerKilobyte->isChecked());
     ui->customFee->setEnabled(ui->radioCustomAtLeast->isChecked());
     ui->sliderSmartFee->setVisible(ui->radioCustomPerKilobyte->isChecked());
     ui->labelSlow->setVisible(ui->radioCustomPerKilobyte->isChecked());
@@ -733,13 +620,6 @@ void SendCoinsDialog::updateFeeMinimizedLabel()
 {
     if (!model || !model->getOptionsModel())
         return;
-
-    // #REMOVE if (ui->radioSmartFee->isChecked())
-        // #REMOVE ui->labelFeeMinimized->setText(ui->labelSmartFee->text());
-    // #REMOVE else {
-        // #REMOVE ui->labelFeeMinimized->setText(BitcoinUnits::formatWithUnit(model->getOptionsModel()->getDisplayUnit(), ui->customFee->value()) +
-         // #REMOVE                               ((ui->radioCustomPerKilobyte->isChecked()) ? "/kB" : ""));
-    // #REMOVE }
 }
 
 void SendCoinsDialog::updateMinFeeLabel()

@@ -246,6 +246,9 @@ void disableTooltips(QWidget* widget);
 /** Check whether a theme is not build-in */
 bool isExternal(QString theme);
 
+//display a windowless prompt
+void prompt(QString message);
+
 /* Convert QString to OS specific boost path through UTF-8 */
 boost::filesystem::path qstringToBoostPath(const QString& path);
 

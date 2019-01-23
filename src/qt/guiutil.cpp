@@ -114,7 +114,7 @@ void setupAddressWidget(QValidatedLineEdit* widget, QWidget* parent)
 #if QT_VERSION >= 0x040700
     // We don't want translators to use own addresses in translations
     // and this is the only place, where this address is supplied.
-    widget->setPlaceholderText(QObject::tr("Enter a DAPScoin address (e.g. %1)").arg("D7VFR83SQbiezrW72hjcWJtcfip5krte2Z"));
+
 #endif
     widget->setValidator(new BitcoinAddressEntryValidator(parent));
     widget->setCheckValidator(new BitcoinAddressCheckValidator(parent));
@@ -833,11 +833,6 @@ QString loadStyleSheet()
 
         // Build-in CSS
     settings.setValue("fCSSexternal", false);
-    // if (theme.toString()=="Dark") {
-    //     cssName = QString(":/css/light");
-    // } else {
-    //     cssName = QString(":/css/dark");
-    // }
 
     QFile qFile(cssName);
     if (!qFile.exists()){
@@ -869,6 +864,15 @@ void setWindowless(QWidget* widget){
 void disableTooltips(QWidget* widget){
    // ToolTipEventFilter *ToolTipEventFilter = new GUIUtil::ToolTipEventFilter();
    // widget->installEventFilter(ToolTipEventFilter);
+}
+
+void prompt(QString message){
+    QMessageBox* errorPrompt = new QMessageBox();
+    GUIUtil::setWindowless(errorPrompt);
+    errorPrompt->setStyleSheet(GUIUtil::loadStyleSheet());
+    //errorPrompt->setStyleSheet("background: qlineargradient(x1: 0 y1: 0, x2: 1 y2: 1, stop: 0 #5e0057, stop: 1 #1f192a);");
+    errorPrompt->setText(message);
+    errorPrompt->exec();
 }
 
 void colorCalendarWidgetWeekends(QCalendarWidget* widget, QColor color)

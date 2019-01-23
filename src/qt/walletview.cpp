@@ -303,7 +303,7 @@ bool WalletView::handlePaymentRequest(const SendCoinsRecipient& recipient)
 
 void WalletView::showSyncStatus(bool fShow)
 {
-    overviewPage->showSyncStatus(fShow);
+    overviewPage->showBlockSync(fShow);
 //  #remove  privacyPage->showSyncStatus(fShow);
 }
 

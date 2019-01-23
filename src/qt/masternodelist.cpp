@@ -329,11 +329,7 @@ void MasternodeList::on_EnableStaking(ToggleButton* widget)
         if (!errors.length())
             walletModel->generateCoins(true, 1000);
         else {
-            QString errorString = QString("<br><br>")+errors.join(QString("<br><br>"))+QString("<br><br>");
-            QMessageBox* errorPrompt = new QMessageBox();
-            GUIUtil::setWindowless(errorPrompt);
-            errorPrompt->setText(QString(errorString));
-            errorPrompt->exec();
+            GUIUtil::prompt(QString("<br><br>")+errors.join(QString("<br><br>"))+QString("<br><br>"));
             widget->setState(false);
         }
     } else walletModel->generateCoins(false, 0);

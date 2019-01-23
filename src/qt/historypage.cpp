@@ -24,6 +24,7 @@
 #include <QSortFilterProxyModel>
 #include <QTextDocument>
 #include <QTime>
+#include <QTextStream>
 
 HistoryPage::HistoryPage(QWidget* parent) : QDialog(parent),
                                             ui(new Ui::HistoryPage),
@@ -68,6 +69,7 @@ void HistoryPage::initWidgets()
     //color calendarwidgets
     GUIUtil::colorCalendarWidgetWeekends(ui->dateTimeEditTo->calendarWidget(), QColor("gray"));
     GUIUtil::colorCalendarWidgetWeekends(ui->dateTimeEditFrom->calendarWidget(), QColor("gray"));
+    ui->horizontalLayout_2->setAlignment(Qt::AlignTop);
 }
 
 void HistoryPage::connectWidgets() //add functions to widget signals
@@ -127,6 +129,7 @@ void HistoryPage::updateTableData(CWallet* wallet)
             col++;
         }
     }
+    ui->tableView->setVisible(ui->tableView->rowCount());
 }
 
 void HistoryPage::updateAddressBookData(CWallet* wallet)
