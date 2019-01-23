@@ -167,6 +167,48 @@ public:
     StringMap destdata;
 };
 
+
+typedef struct CTKey {
+    CPubKey dest;
+    uint256 mask;
+};
+
+typedef struct Keypair {
+    CKey privateKey;
+    CPubKey pubkey;
+    void generatePair() {
+        privateKey.MakeNewKey(true);
+        pubkey = privateKey.GetPubKey();
+    }
+    Keypair() {
+        generatePair();
+    }
+};
+
+//Additional structures for bulletproof tx construction
+typedef struct tx_source_entry {
+    typedef std::pair<uint64_t, CTKey> output_entry;
+
+    std::vector<output_entry> outputs;  //index + key + optional ringct commitment
+    size_t real_output;                 //index in outputs vector of real output_entry
+    CPubKey real_out_tx_key; //incoming real tx public key
+    std::vector<CPubKey> real_out_additional_tx_keys; //incoming real tx additional public keys
+    size_t real_output_in_tx_index;     //index in transaction outputs vector
+    CAmount amount;                    //money
+    uint256 mask;                      //ringct amount mask
+    //void push_output(uint64_t idx, const crypto::public_key &k, CAmount amount) { outputs.push_back(std::make_pair(idx, rct::ctkey({rct::pk2rct(k), rct::zeroCommit(amount)}))); }
+};
+typedef struct tx_destination_entry
+{
+    CAmount amount;                    //money
+    CStealthAccount addr;        //destination address
+    //bool is_subaddress;
+
+    tx_destination_entry() : amount(0) { }
+    tx_destination_entry(CAmount a, const CStealthAccount &ad) : amount(a), addr(ad) { }
+};
+
+
 /**
  * A CWallet is an extension of a keystore, which also maintains a set of transactions and balances,
  * and provides the ability to create new transactions.
@@ -695,7 +737,8 @@ private:
         const std::vector<uint8_t> &extra, 
         CTransaction& tx, 
         CKey& txPrivKey);
-}
+    bool generate_key_image_helper(CPubKey& pub, CKeyImage& img);
+};
 
 
 /** A key allocated from the key pool. */
@@ -1563,46 +1606,6 @@ private:
     std::vector<char> _ssExtra;
 };
 
-typedef struct CTKey {
-    CPubKey dest;
-    uint256 mask;
-}
 
-typedef struct Keypair {
-    CKey privateKey;
-    CPubKey pubkey;
-    void generatePair() {
-        privateKey.MakeNewKey(true);
-        pubkey = privateKey.GetPubKey();
-    }
-    Keypair() {
-        generatePair();
-    }
-}
-
-//Additional structures for bulletproof tx construction
-typedef struct tx_source_entry
-  {
-    typedef std::pair<uint64_t, CTKey> output_entry;
-
-    std::vector<output_entry> outputs;  //index + key + optional ringct commitment
-    size_t real_output;                 //index in outputs vector of real output_entry
-    CPubKey real_out_tx_key; //incoming real tx public key
-    std::vector<CPubKey> real_out_additional_tx_keys; //incoming real tx additional public keys
-    size_t real_output_in_tx_index;     //index in transaction outputs vector
-    CAmount amount;                    //money
-    uint256 mask;                      //ringct amount mask
-
-    //void push_output(uint64_t idx, const crypto::public_key &k, CAmount amount) { outputs.push_back(std::make_pair(idx, rct::ctkey({rct::pk2rct(k), rct::zeroCommit(amount)}))); }
-
-  typedef struct tx_destination_entry
-  {
-    CAmount amount;                    //money
-    CStealthAccount addr;        //destination address
-    //bool is_subaddress;
-
-    tx_destination_entry() : amount(0) { }
-    tx_destination_entry(CAmount a, const CStealthAccount &ad) : amount(a), addr(ad) { }
-  };
 
 #endif // BITCOIN_WALLET_H
