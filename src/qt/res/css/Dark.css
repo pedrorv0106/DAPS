@@ -81,7 +81,7 @@ QMessageBox QFrame {
   padding: 0 40px 0 40px;
   border-radius: 50px;
   min-height: 100px;
-  background: qlineargradient(x1: 0 y1: 0, x2: 1 y2: 1, stop: 0 #5e0057, stop: 1 #1f192a);
+  background: rgba(0,0,0,30%);
   border-width: 3px;
 }
 QTableWidget {

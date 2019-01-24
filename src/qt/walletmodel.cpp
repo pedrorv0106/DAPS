@@ -34,6 +34,8 @@
 #include <QtMath>
 #include <stdint.h>
 
+
+
 using namespace std;
 
 WalletModel::WalletModel(CWallet* wallet, OptionsModel* optionsModel, QObject* parent) : QObject(parent), wallet(wallet), optionsModel(optionsModel), addressTableModel(0),

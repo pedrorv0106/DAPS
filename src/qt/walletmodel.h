@@ -18,6 +18,7 @@
 
 #include <QAbstractTableModel>
 #include <QObject>
+#include <QTimer>
 
 class AddressTableModel;
 class OptionsModel;
@@ -249,7 +250,7 @@ private:
     int cachedNumBlocks;
     int cachedTxLocks;
     int cachedZeromintPercentage;
-
+    QTimer* pingNetworkInterval;
     QTimer* pollTimer;
 
     void subscribeToCoreSignals();
@@ -282,6 +283,7 @@ signals:
 
     // MultiSig address added
     void notifyMultiSigChanged(bool fHaveMultiSig);
+
 public slots:
     /* Wallet status might have changed */
     void updateStatus();

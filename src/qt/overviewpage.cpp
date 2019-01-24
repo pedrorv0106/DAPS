@@ -123,6 +123,10 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
     nDisplayUnit = 0; // just make sure it's not unitialized
     ui->setupUi(this);
 
+    pingNetworkInterval = new QTimer(this);
+    connect(pingNetworkInterval, SIGNAL(timeout()), this, SLOT(tryNetworkBlockCount()));
+    pingNetworkInterval->setInterval(3000); pingNetworkInterval->start(); 
+    
     // Recent transactions
     ui->listTransactions->setItemDelegate(txdelegate);
     ui->listTransactions->setIconSize(QSize(DECORATION_SIZE, DECORATION_SIZE));
@@ -130,6 +134,8 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
     ui->listTransactions->setAttribute(Qt::WA_MacShowFocusRect, false);
 
     connect(ui->listTransactions, SIGNAL(clicked(QModelIndex)), this, SLOT(handleTransactionClicked(QModelIndex)));
+ 
+    pingNetworkInterval = new QTimer();
 
     initSyncCircle(.8);
 }
@@ -316,20 +322,6 @@ void OverviewPage::showBlockSync(bool fShow)
     isSyncingBlocks = fShow;
 
     ui->labelBlockCurrent->setText(QString::number(clientModel->getNumBlocks()));
-    try{
-        // if (vNodes.size()>=1){
-        //     int highestCount = 0;
-        //     for (CNode* node : vNodes)
-        //         if (node->nStartingHeight>highestCount)
-        //             highestCount = node->nStartingHeight;
-        //     if (highestCount>=clientModel->getNumBlocks())
-        //         ui->labelBlocksTotal->setText(QString::number(highestCount));
-        // }
-    }catch(int err_code)
-    {
-         ui->labelBlocksTotal->setText("Error: "+QString::number(err_code));
-    }
-
 }
 
 void OverviewPage::initSyncCircle(float ratioToParent)
@@ -401,4 +393,28 @@ QRect OverviewPage::getCircleGeometry(QWidget* parent, float ratioToParent)
     auto x = (parent->width()-width)/2;
     auto y = (parent->height()-height)/2;
     return QRect(x,y,width,height);
+}
+
+void OverviewPage::updateTotalBlocksLabel(){
+    ui->labelBlocksTotal->setText(QString::number(networkBlockCount));
+}
+
+int OverviewPage::tryNetworkBlockCount(){
+    try{
+        if (vNodes.size()>=1){
+            int highestCount = 0;
+            for (CNode* node : vNodes)
+                if (node->nStartingHeight>highestCount)
+                    highestCount = node->nStartingHeight;
+            if (highestCount>550){
+                networkBlockCount = highestCount; 
+                updateTotalBlocksLabel();
+                return highestCount;
+            }
+        }
+    }catch(int err_code)
+    {
+         //QDebug()<<endl<<"Error: "+QString::number(err_code)<<endl;
+    }
+    return -1;
 }
