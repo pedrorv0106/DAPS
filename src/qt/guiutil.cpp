@@ -44,9 +44,11 @@
 #endif
 
 #include <QAbstractItemView>
+#include <QAbstractButton>
 #include <QApplication>
 #include <QCalendarWidget>
 #include <QClipboard>
+#include <QComboBox>
 #include <QDateTime>
 #include <QDesktopServices>
 #include <QDesktopWidget>
@@ -884,7 +886,11 @@ void colorCalendarWidgetWeekends(QCalendarWidget* widget, QColor color)
     format.setForeground(QBrush(color, Qt::SolidPattern));
     widget->setWeekdayTextFormat(Qt::Sunday, format);
     widget->parentWidget()->resize(300,300);
-    //widget->header
+    widget->findChild<QWidget*>("qt_calendar_navigationbar")->setMinimumHeight(65);
+    widget->findChild<QWidget*>("qt_calendar_calendarview")->setStyleSheet("padding:5px; margin:0;");
+    widget->findChild<QAbstractButton*>("qt_calendar_prevmonth")->setIcon(QIcon(":/images/leftArrow_small"));
+    widget->findChild<QAbstractButton*>("qt_calendar_nextmonth")->setIcon(QIcon(":/images/rightArrow_small"));
+    //widget->findChild<QComboBox*>("qt_calendar_monthbutton");
 }
 
 void setClipboard(const QString& str)
