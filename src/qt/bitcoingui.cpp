@@ -74,9 +74,6 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle* networkStyle, QWidget* parent) : QMai
                                                                             labelEncryptionIcon(0),
                                                                             labelConnectionsIcon(0),
                                                                             labelBlocksIcon(0),
-                                                                            progressBarLabel(0),
-                                                                            progressBar(0),
-                                                                            progressDialog(0),
                                                                             appMenuBar(0),
                                                                             overviewAction(0),
                                                                             historyAction(0),
@@ -215,19 +212,19 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle* networkStyle, QWidget* parent) : QMai
     frameBlocksLayout->addStretch();
 
     // Progress bar and label for blocks download
-    progressBarLabel = new QLabel();
-    progressBarLabel->setVisible(true);
-    progressBar = new GUIUtil::ProgressBar();
-    progressBar->setAlignment(Qt::AlignCenter);
-    progressBar->setVisible(false);
+    // progressBarLabel = new QLabel();
+    // progressBarLabel->setVisible(false);
+    // progressBar = new GUIUtil::ProgressBar();
+    // progressBar->setAlignment(Qt::AlignCenter);
+    // progressBar->setVisible(false);
 
     // Override style sheet for progress bar for styles that have a segmented progress bar,
     // as they make the text unreadable (workaround for issue #1071)
     // See https://qt-project.org/doc/qt-4.8/gallery.html
-    QString curStyle = QApplication::style()->metaObject()->className();
-    if (curStyle == "QWindowsStyle" || curStyle == "QWindowsXPStyle") {
-        progressBar->setStyleSheet("QProgressBar { background-color: #F8F8F8; border: 1px solid grey; border-radius: 7px; padding: 1px; text-align: center; } QProgressBar::chunk { background: QLinearGradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #00CCFF, stop: 1 #33CCFF); border-radius: 7px; margin: 0px; }");
-    }
+    // QString curStyle = QApplication::style()->metaObject()->className();
+    // if (curStyle == "QWindowsStyle" || curStyle == "QWindowsXPStyle") {
+    //     progressBar->setStyleSheet("QProgressBar { background-color: #F8F8F8; border: 1px solid grey; border-radius: 7px; padding: 1px; text-align: center; } QProgressBar::chunk { background: QLinearGradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #00CCFF, stop: 1 #33CCFF); border-radius: 7px; margin: 0px; }");
+    // }
 
     // #REMOVE statusBar()->addWidget(progressBarLabel);
     // #REMOVE statusBar()->addWidget(progressBar);
@@ -549,7 +546,7 @@ void BitcoinGUI::createMenuBar()
     help->addSeparator();
     help->addAction(aboutAction);
     help->addAction(aboutQtAction);
-    appMenuBar->setVisible(true);
+    appMenuBar->setVisible(false);
 }
 
 void BitcoinGUI::createToolBars()
@@ -939,23 +936,23 @@ void BitcoinGUI::setNumBlocks(int count)
     // Prevent orphan statusbar messages (e.g. hover Quit in main menu, wait until chain-sync starts -> garbelled text)
     // #REMOVE statusBar()->clearMessage();
 
-    // Acquire current block source
+    //Acquire current block source
     enum BlockSource blockSource = clientModel->getBlockSource();
-    switch (blockSource) {
-    case BLOCK_SOURCE_NETWORK:
-        progressBarLabel->setText(tr("Synchronizing with network..."));
-        break;
-    case BLOCK_SOURCE_DISK:
-        progressBarLabel->setText(tr("Importing blocks from disk..."));
-        break;
-    case BLOCK_SOURCE_REINDEX:
-        progressBarLabel->setText(tr("Reindexing blocks on disk..."));
-        break;
-    case BLOCK_SOURCE_NONE:
-        // Case: not Importing, not Reindexing and no network connection
-        progressBarLabel->setText(tr("No block source available..."));
-        break;
-    }
+    // switch (blockSource) {
+    // case BLOCK_SOURCE_NETWORK:
+    //     progressBarLabel->setText(tr("Synchronizing with network..."));
+    //     break;
+    // case BLOCK_SOURCE_DISK:
+    //     progressBarLabel->setText(tr("Importing blocks from disk..."));
+    //     break;
+    // case BLOCK_SOURCE_REINDEX:
+    //     progressBarLabel->setText(tr("Reindexing blocks on disk..."));
+    //     break;
+    // case BLOCK_SOURCE_NONE:
+    //     // Case: not Importing, not Reindexing and no network connection
+    //     progressBarLabel->setText(tr("No block source available..."));
+    //     break;
+    // }
 
     QString tooltip;
 
@@ -972,8 +969,8 @@ void BitcoinGUI::setNumBlocks(int count)
         tooltip = tr("Up to date") + QString(".<br>") + tooltip;
 
         if (masternodeSync.IsSynced()) {
-            progressBarLabel->setVisible(false);
-            progressBar->setVisible(false);
+            // progressBarLabel->setVisible(false);
+            // progressBar->setVisible(false);
             labelBlocksIcon->setPixmap(QIcon(":/icons/synced").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
         } else {
             int nAttempt;
@@ -994,13 +991,13 @@ void BitcoinGUI::setNumBlocks(int count)
                            masternodeSync.RequestedMasternodeAttempt + 1 :
                            MASTERNODE_SYNC_THRESHOLD;
             progress = nAttempt + (masternodeSync.RequestedMasternodeAssets - 1) * MASTERNODE_SYNC_THRESHOLD;
-            progressBar->setMaximum(4 * MASTERNODE_SYNC_THRESHOLD);
-            progressBar->setFormat(tr("Synchronizing additional data: %p%"));
-            progressBar->setValue(progress);
+            // progressBar->setMaximum(4 * MASTERNODE_SYNC_THRESHOLD);
+            // progressBar->setFormat(tr("Synchronizing additional data: %p%"));
+            // progressBar->setValue(progress);
         }
 
         strSyncStatus = QString(masternodeSync.GetSyncStatus().c_str());
-        progressBarLabel->setText(strSyncStatus);
+        // progressBarLabel->setText(strSyncStatus);
         tooltip = strSyncStatus + QString("<br>") + tooltip;
     } else {
         // Represent time from last generated block in human readable text
@@ -1021,11 +1018,11 @@ void BitcoinGUI::setNumBlocks(int count)
             timeBehindText = tr("%1 and %2").arg(tr("%n year(s)", "", years)).arg(tr("%n week(s)", "", remainder / WEEK_IN_SECONDS));
         }
 
-        progressBarLabel->setVisible(true);
-        progressBar->setFormat(tr("%1 behind. Scanning block %2").arg(timeBehindText).arg(count));
-        progressBar->setMaximum(1000000000);
-        progressBar->setValue(clientModel->getVerificationProgress() * 1000000000.0 + 0.5);
-        progressBar->setVisible(false);
+        // progressBarLabel->setVisible(true);
+        // progressBar->setFormat(tr("%1 behind. Scanning block %2").arg(timeBehindText).arg(count));
+        // progressBar->setMaximum(1000000000);
+        // progressBar->setValue(clientModel->getVerificationProgress() * 1000000000.0 + 0.5);
+        // progressBar->setVisible(false);
  
         tooltip = tr("Catching up...") + QString("<br>") + tooltip;
         if (count != prevBlocks) {
@@ -1181,12 +1178,12 @@ void BitcoinGUI::dropEvent(QDropEvent* event)
 
 bool BitcoinGUI::eventFilter(QObject* object, QEvent* event)
 {
-    // Catch status tip events
-    if (event->type() == QEvent::StatusTip) {
-        // Prevent adding text from setStatusTip(), if we currently use the status bar for displaying other stuff
-        if (progressBarLabel->isVisible() || progressBar->isVisible())
-            return true;
-    }
+    // // Catch status tip events
+    // if (event->type() == QEvent::StatusTip) {
+    //     // Prevent adding text from setStatusTip(), if we currently use the status bar for displaying other stuff
+    //     if (progressBarLabel->isVisible() || progressBar->isVisible())
+    //         return true;
+    // }
     return QMainWindow::eventFilter(object, event);
 }
 
@@ -1302,20 +1299,21 @@ void BitcoinGUI::detectShutdown()
 
 void BitcoinGUI::showProgress(const QString& title, int nProgress)
 {
-    if (nProgress == 0) {
-        progressDialog = new QProgressDialog(title, "", 0, 100);
-        progressDialog->setWindowModality(Qt::ApplicationModal);
-        progressDialog->setMinimumDuration(0);
-        progressDialog->setCancelButton(0);
-        progressDialog->setAutoClose(false);
-        progressDialog->setValue(0);
-    } else if (nProgress == 100) {
-        if (progressDialog) {
-            progressDialog->close();
-            progressDialog->deleteLater();
-        }
-    } else if (progressDialog)
-        progressDialog->setValue(nProgress);
+    // if (nProgress == 0) {
+    //     progressDialog = new QProgressDialog(title, "", 0, 100);
+    //     progressDialog->setWindowModality(Qt::ApplicationModal);
+    //     progressDialog->setMinimumDuration(0);
+    //     progressDialog->setCancelButton(0);
+    //     progressDialog->setAutoClose(false);
+    //     progressDialog->setValue(0);
+    // } else if (nProgress == 100) {
+    //     if (progressDialog) {
+    //         progressDialog->close();
+    //         progressDialog->deleteLater();
+    //     }
+    // } else if (progressDialog)
+    //     progressDialog->setValue(nProgress);
+    
 }
 
 static bool ThreadSafeMessageBox(BitcoinGUI* gui, const std::string& message, const std::string& caption, unsigned int style)

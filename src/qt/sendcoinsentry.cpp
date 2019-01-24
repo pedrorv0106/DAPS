@@ -34,8 +34,6 @@ SendCoinsEntry::SendCoinsEntry(QWidget* parent) : QStackedWidget(parent),
 
     // normal dapscoin address field
     GUIUtil::setupAddressWidget(ui->payTo, this);
-    // just a label for displaying dapscoin address(es)
-    ui->payTo_is->setFont(GUIUtil::bitcoinAddressFont());
 
     // Connect signals
     connect(ui->payAmount, SIGNAL(valueChanged()), this, SIGNAL(payAmountChanged()));

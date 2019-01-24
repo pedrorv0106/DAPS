@@ -87,9 +87,9 @@ private:
     QPushButton* labelEncryptionIcon;
     QPushButton* labelConnectionsIcon;
     QLabel* labelBlocksIcon;
-    QLabel* progressBarLabel;
-    QProgressBar* progressBar;
-    QProgressDialog* progressDialog;
+//    QLabel* progressBarLabel;
+//    QProgressBar* progressBar;
+//    QProgressDialog* progressDialog;
 
     QMenuBar* appMenuBar;
     QAction* overviewAction;
