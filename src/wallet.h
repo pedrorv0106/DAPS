@@ -42,6 +42,7 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/deque.hpp>
 #include <atomic>
+#include "./crypto/crypto/crypto-ops.h"
 
 
 /**
@@ -79,6 +80,20 @@ class CWalletTx;
 //using namespace tools;
 //using namespace config;
 //using namespace cryptonote;
+
+
+//Elliptic Curve Diffie Helman: encodes and decodes the amount b and mask a
+// where C= aG + bH
+void ecdhEncode(unsigned char * unmasked, unsigned char * amount, unsigned char * sharedSec, int size);
+void ecdhDecode(unsigned char * masked, unsigned char * amount, unsigned char * sharedSec, int size);
+
+class ECDHInfo {
+public:
+    static void Encode(const CKey& mask, const CAmount& amount, const CPubKey& sharedSec, unsigned char* encodedMask, unsigned char* encodedAmount);
+    static void Decode(unsigned char* encodedMask, unsigned char* encodedAmount, const CPubKey sharedSec, CKey& decodedMask, CAmount& decodedAmount);
+    static void ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey& sharedSec);
+};
+
 
 /** (client) version numbers for particular wallet features */
 enum WalletFeature {
@@ -185,6 +200,63 @@ typedef struct Keypair {
     }
 };
 
+/**
+ * Account information.
+ * Stored in wallet with key "acc"+string account name.
+ */
+class CAccount
+{
+public:
+    CPubKey vchPubKey;
+
+    CAccount()
+    {
+        SetNull();
+    }
+
+    void SetNull()
+    {
+        vchPubKey = CPubKey();
+    }
+
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion)
+    {
+        if (!(nType & SER_GETHASH))
+            READWRITE(nVersion);
+        READWRITE(vchPubKey);
+    }
+};
+
+class CStealthAccount
+{
+public:
+    CAccount spendAccount;
+    CAccount viewAccount;
+
+    CStealthAccount()
+    {
+        SetNull();
+    }
+
+    void SetNull()
+    {
+        spendAccount.SetNull();
+        viewAccount.SetNull();
+    }
+
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion)
+    {
+        READWRITE(spendAccount);
+        READWRITE(viewAccount);
+    }
+};
+
 //Additional structures for bulletproof tx construction
 typedef struct tx_source_entry {
     typedef std::pair<uint64_t, CTKey> output_entry;
@@ -215,7 +287,7 @@ typedef struct tx_destination_entry
  */
 class CWallet : public CCryptoKeyStore, public CValidationInterface
 {
-private:˜
+private:
     bool SelectCoins(const CAmount& nTargetValue, std::set<std::pair<const CWalletTx*, unsigned int> >& setCoinsRet, CAmount& nValueRet, const CCoinControl* coinControl = NULL, AvailableCoinsType coin_type = ALL_COINS, bool useIX = true) const;
     //it was public bool SelectCoins(int64_t nTargetValue, std::set<std::pair<const CWalletTx*,unsigned int> >& setCoinsRet, int64_t& nValueRet, const CCoinControl *coinControl = NULL, AvailableCoinsType coin_type=ALL_COINS, bool useIX = true) const;
 
@@ -535,7 +607,16 @@ public:
                            AvailableCoinsType coin_type = ALL_COINS,
                            bool useIX = false,
                            CAmount nFeePay = 0);
-    bool CreateTransaction(CScript scriptPubKey, const CAmount& nValue, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, std::string& strFailReason, const CCoinControl* coinControl = NULL, AvailableCoinsType coin_type = ALL_COINS, bool useIX = false, CAmount nFeePay = 0);
+
+    bool CreateTransactionBulletProof(const CPubKey &recipientViewKey, CScript scriptPubKey, const CAmount &nValue,
+                                      CWalletTx &wtxNew, CReserveKey &reservekey, CAmount &nFeeRet,
+                                      std::string &strFailReason, const CCoinControl *coinControl = NULL,
+                                      AvailableCoinsType coin_type = ALL_COINS, bool useIX = false,
+                                      CAmount nFeePay = 0);
+
+    bool CreateTransaction(CScript scriptPubKey, const CAmount &nValue, CWalletTx &wtxNew, CReserveKey &reservekey,
+                           CAmount &nFeeRet, std::string &strFailReason, const CCoinControl *coinControl = NULL,
+                           AvailableCoinsType coin_type = ALL_COINS, bool useIX = false, CAmount nFeePay = 0);
     bool CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey, std::string strCommand = "tx");
     std::string PrepareObfuscationDenominate(int minRounds, int maxRounds);
     int GenerateObfuscationOutputs(int nTotalValue, std::vector<CTxOut>& vout);
@@ -727,8 +808,8 @@ private:
     bool myViewPrivateKey(CKey& view);
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
     void createMasterKey();
-    CAmount getCOutPutValue(COutput& output);
-    CAmount getCTxOutValue(const CTransaction& tx, const CTxOut& out); 
+    CAmount getCOutPutValue(const COutput& output) const;
+    CAmount getCTxOutValue(const CTransaction& tx, const CTxOut& out) const;
     bool findCorrespondingPrivateKey(const CTransaction& tx, CKey& key);
     bool construct_tx_with_tx_key(std::vector<tx_source_entry>& sources, std::vector<tx_destination_entry>& destinations, const boost::optional<CStealthAccount>& change_addr, const std::vector<uint8_t> &extra, CTransaction& tx, const CKey &tx_key, bool shuffle_outs = true);
     bool construct_tx_and_get_tx_key(std::vector<tx_source_entry>& sources, 
@@ -1470,62 +1551,7 @@ public:
 };
 
 
-/**
- * Account information.
- * Stored in wallet with key "acc"+string account name.
- */
-class CAccount
-{
-public:
-    CPubKey vchPubKey;
 
-    CAccount()
-    {
-        SetNull();
-    }
-
-    void SetNull()
-    {
-        vchPubKey = CPubKey();
-    }
-
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion)
-    {
-        if (!(nType & SER_GETHASH))
-            READWRITE(nVersion);
-        READWRITE(vchPubKey);
-    }
-};
-
-class CStealthAccount
-{
-public:
-    CAccount spendAccount;
-    CAccount viewAccount;
-
-    CStealthAccount()
-    {
-        SetNull();
-    }
-
-    void SetNull()
-    {
-        spendAccount.SetNull();
-        viewAccount.SetNull();
-    }
-
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion)
-    {
-        READWRITE(spendAccount);
-        READWRITE(viewAccount);
-    }
-};
 
 
 /**

@@ -69,7 +69,7 @@ bool CWallet::EncodeTxOutAmount(CTxOut &out, const CAmount &amount, const unsign
     return true;
 }
 
-CAmount CWallet::getCOutPutValue(COutput &output) {
+CAmount CWallet::getCOutPutValue(const COutput &output) {
     CTxOut &out = output.tx->vout[output.i];
     CAmount amount;
     RevealTxOutAmount(output.tx, out, amount);

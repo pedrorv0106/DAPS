@@ -1846,7 +1846,7 @@ bool CWallet::SelectCoinsMinConf(const CAmount& nTargetValue, int nConfMine, int
                 continue;
 
             int i = output.i;
-            CAmount n = getCTxOutValue(pcoin, pcoin->vout[i]);
+            CAmount n = getCTxOutValue(*pcoin, pcoin->vout[i]);
         
             if (tryDenom == 0 && IsDenominatedAmount(n)) continue; // we don't want denom values on first run
 
@@ -1970,7 +1970,7 @@ bool CWallet::SelectCoins(const CAmount& nTargetValue, set<pair<const CWalletTx*
 
     return (SelectCoinsMinConf(nTargetValue, 1, 6, vCoins, setCoinsRet, nValueRet) ||
             SelectCoinsMinConf(nTargetValue, 1, 1, vCoins, setCoinsRet, nValueRet) ||
-            (bSpendZeroConfChange && Select˜CoinsMinConf(nTargetValue, 0, 1, vCoins, setCoinsRet, nValueRet)));
+            (bSpendZeroConfChange && SelectCoinsMinConf(nTargetValue, 0, 1, vCoins, setCoinsRet, nValueRet)));
 }
 
 struct CompareByPriority {
@@ -2049,7 +2049,7 @@ bool CWallet::SelectCoinsByDenominations(int nDenom, CAmount nValueMin, CAmount 
                     fAccepted = true;
                 } else if ((nDenom & (1 << 4)) && getCTxOutValue(*out.tx, out.tx->vout[out.i]) == ((1 * COIN) + 1000)) {
                     fAccepted = true;
-                } else if ((nDenom & (1 << 5)) && getCTxOutValue(out.tx, out.tx->vout[out.i]) == ((.1 * COIN) + 100)) {
+                } else if ((nDenom & (1 << 5)) && getCTxOutValue(*out.tx, out.tx->vout[out.i]) == ((.1 * COIN) + 100)) {
                     fAccepted = true;
                 }
             } else {
@@ -2172,7 +2172,7 @@ int CWallet::CountInputsWithAmount(CAmount nInputAmount)
                     CTxIn vin = CTxIn(out.tx->GetHash(), out.i);
 
                     if (getCOutPutValue(out) != nInputAmount) continue;
-                    if (!IsDenominatedAmount(getCTxOutValue(pcoin, pcoin->vout[i]))) continue;
+                    if (!IsDenominatedAmount(getCTxOutValue(*pcoin, pcoin->vout[i]))) continue;
                     if (IsSpent(out.tx->GetHash(), i) || IsMine(pcoin->vout[i]) != ISMINE_SPENDABLE || !IsDenominated(vin)) continue;
 
                     nTotal++;
@@ -2191,7 +2191,7 @@ bool CWallet::HasCollateralInputs(bool fOnlyConfirmed) const
 
     int nFound = 0;
     BOOST_FOREACH (const COutput& out, vCoins)
-    if (IsCollateralAmount(getCTxOutValue(out))) nFound++;
+    if (IsCollateralAmount(getCOutPutValue(out))) nFound++;
 
     return nFound > 0;
 }
@@ -2236,7 +2236,7 @@ bool CWallet::CreateCollateralTransaction(CMutableTransaction& txCollateral, std
         CTxOut vout3 = CTxOut(nValueIn2 - OBFUSCATION_COLLATERAL, scriptChange);
         CPubKey sharedSec;
         CKey view;
-        myViewPrivateKey(key);
+        myViewPrivateKey(view);
         //FIXME: Collateral transaction needs to be confidential?
         EncodeTxOutAmount(vout3, vout3.nValue, 0);
         txCollateral.vout.push_back(vout3);
@@ -2306,15 +2306,25 @@ bool CWallet::ConvertList(std::vector<CTxIn> vCoins, std::vector<CAmount>& vecAm
     return true;
 }
 
+bool CWallet::CreateTransactionBulletProof(const CPubKey &recipientViewKey, CScript scriptPubKey, const CAmount &nValue,
+                                           CWalletTx &wtxNew, CReserveKey &reservekey, CAmount &nFeeRet,
+                                           std::string &strFailReason, const CCoinControl *coinControl,
+                                           AvailableCoinsType coin_type, bool useIX,
+                                           CAmount nFeePay) {
+    vector<pair<CScript, CAmount> > vecSend;
+    vecSend.push_back(make_pair(scriptPubKey, nValue));
+    return CreateTransactionBulletProof(recipientViewKey, vecSend, wtxNew, reservekey, nFeeRet, strFailReason, coinControl, coin_type, useIX, nFeePay);
+}
+
 bool CWallet::CreateTransactionBulletProof(const CPubKey& recipientViewKey, const std::vector<std::pair<CScript, CAmount> >& vecSend,
                                   CWalletTx& wtxNew,
                                   CReserveKey& reservekey,
                                   CAmount& nFeeRet,
                                   std::string& strFailReason,
-                                  const CCoinControl* coinControl = NULL,
-                                  AvailableCoinsType coin_type = ALL_COINS,
-                                  bool useIX = false,
-                                  CAmount nFeePay = 0)
+                                  const CCoinControl* coinControl,
+                                  AvailableCoinsType coin_type,
+                                  bool useIX,
+                                  CAmount nFeePay)
 {
     if (useIX && nFeePay < CENT) nFeePay = CENT;
 
@@ -2427,7 +2437,7 @@ bool CWallet::CreateTransactionBulletProof(const CPubKey& recipientViewKey, cons
 
 
                 BOOST_FOREACH (PAIRTYPE(const CWalletTx*, unsigned int) pcoin, setCoins) {
-                    CAmount nCredit = getCTxOutValue(pcoin, pcoin.first->vout[pcoin.second]);
+                    CAmount nCredit = getCTxOutValue(*pcoin.first, pcoin.first->vout[pcoin.second]);
                     //The coin age after the next block (depth+1) is used instead of the current,
                     //reflecting an assumption the user would accept a bit more delay for
                     //a chance at a free transaction.
@@ -5398,7 +5408,8 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
     CCoinControl control;
     control.destChange = changeAddress.Get();
     CAmount nFeeRequired;
-    if (!pwalletMain->CreateTransactionBulletProof(view.GetPubKey(), scriptPubKey, nValue, wtxNew, reservekey, nFeeRequired, strError, control, ALL_COINS, fUseIX, (CAmount)0)) {
+    if (!pwalletMain->CreateTransactionBulletProof(pubViewKey, scriptPubKey, nValue, wtxNew, reservekey,
+                                                   nFeeRequired, strError, &control, ALL_COINS, fUseIX, (CAmount)0)) {
         if (nValue + nFeeRequired > pwalletMain->GetBalance())
             strError = strprintf("Error: This transaction requires a transaction fee of at least %s because of its amount, complexity, or use of recently received funds!", FormatMoney(nFeeRequired));
         LogPrintf("SendToStealthAddress() : %s\n", strError);

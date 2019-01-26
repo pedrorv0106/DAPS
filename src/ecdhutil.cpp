@@ -1,7 +1,8 @@
 #include "hash.h"
 #include "./crypto/crypto-ops.h"
-#include "ecdhutil.h"
+#include "wallet.h"
 #include "uint256.h"
+#include "secp256k1.h"
 
 //Elliptic Curve Diffie Helman: encodes and decodes the amount b and mask a
 void ecdhEncode(unsigned char * unmasked, unsigned char * amount, unsigned char * sharedSec, int size)
