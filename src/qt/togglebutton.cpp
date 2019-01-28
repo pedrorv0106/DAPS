@@ -10,6 +10,8 @@
 
 #include <QApplication>
 #include <QPainter>
+#include <QStyle>
+#include <QStyleOption>
 
 ToggleButton::ToggleButton(QWidget* parent) : QWidget(parent),
                                                   ui(new Ui::ToggleButton)
