@@ -105,9 +105,7 @@ void MasternodeList::StartAlias(std::string strAlias)
     }
     strStatusHtml += "</center>";
 
-    QMessageBox msg;
-    msg.setText(QString::fromStdString(strStatusHtml));
-    msg.exec();
+    GUIUtil::prompt(strStatusHtml.c_str());
 
     updateMyNodeList(true);
 }

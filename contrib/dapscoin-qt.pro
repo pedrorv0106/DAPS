@@ -3,7 +3,6 @@
 ######################################################################
 
 DEFINES += ENABLE_WALLET
-CONFIG += console
 TEMPLATE = app
 TARGET = 
 DEPENDPATH += . \
@@ -212,6 +211,7 @@ HEADERS += src/activemasternode.h \
            src/qt/transactionrecord.h \
            src/qt/transactiontablemodel.h \
            src/qt/transactionview.h \
+           src/qt/txentry.h \
            src/qt/utilitydialog.h \
            src/qt/walletframe.h \
            src/qt/walletmodel.h \
@@ -359,7 +359,8 @@ FORMS += src/qt/forms/addressbookpage.ui \
          src/qt/forms/sendcoinsentry.ui \
          src/qt/forms/signverifymessagedialog.ui \
          src/qt/forms/togglebutton.ui \
-         src/qt/forms/transactiondescdialog.ui
+         src/qt/forms/txentry.ui \
+         src/qt/forms/transactiondescdialog.ui \
 SOURCES += src/activemasternode.cpp \
            src/addrman.cpp \
            src/alert.cpp \
@@ -511,6 +512,7 @@ SOURCES += src/activemasternode.cpp \
            src/qt/transactionrecord.cpp \
            src/qt/transactiontablemodel.cpp \
            src/qt/transactionview.cpp \
+           src/qt/txentry.cpp \
            src/qt/utilitydialog.cpp \
            src/qt/walletframe.cpp \
            src/qt/walletmodel.cpp \

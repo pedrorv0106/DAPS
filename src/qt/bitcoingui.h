@@ -87,9 +87,6 @@ private:
     QPushButton* labelEncryptionIcon;
     QPushButton* labelConnectionsIcon;
     QLabel* labelBlocksIcon;
-//    QLabel* progressBarLabel;
-//    QProgressBar* progressBar;
-//    QProgressDialog* progressDialog;
 
     QMenuBar* appMenuBar;
     QAction* overviewAction;
@@ -107,7 +104,6 @@ private:
     QAction* multisigSignAction;
     QAction* aboutAction;
     QAction* receiveCoinsAction;
-//    QAction* privacyAction;
     QAction* optionsAction;
     QAction* stakingAction;
     QAction* networkAction;
@@ -136,6 +132,7 @@ private:
     Notificator* notificator;
     RPCConsole* rpcConsole;
     BlockExplorer* explorerWindow;
+    bool showTooltips = false;
 
     /** Keep track of previous number of blocks, to detect progress */
     int prevBlocks;
@@ -252,9 +249,6 @@ private slots:
 
     /** called by a timer to check if fRequestShutdown has been set **/
     void detectShutdown();
-
-    /** Show progress dialog e.g. for verifychain */
-    void showProgress(const QString& title, int nProgress);
 };
 
 class UnitDisplayStatusBarControl : public QLabel
