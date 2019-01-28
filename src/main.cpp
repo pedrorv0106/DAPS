@@ -1442,9 +1442,12 @@ bool CheckTransaction(const CTransaction &tx, bool fZerocoinActive, bool fReject
         if (txout.nValue < 0)
             return state.DoS(100, error("CheckTransaction() : txout.nValue negative"),
                              REJECT_INVALID, "bad-txns-vout-negative");
-        if (txout.nValue > Params().MaxMoneyOut())
+        if (txout.nValue > Params().MaxMoneyOut())   {
+            LogPrintf("nvalue %d", txout.nValue);
+            LogPrintf("nvalue %d", Params().MaxMoneyOut());
             return state.DoS(100, error("CheckTransaction() : txout.nValue too high"),
                              REJECT_INVALID, "bad-txns-vout-toolarge");
+        }
         nValueOut += txout.nValue;
         if (!MoneyRange(nValueOut))
             return state.DoS(100, error("CheckTransaction() : txout total out of range"),
@@ -2168,31 +2171,17 @@ int64_t GetBlockValue(int nHeight) {
     int64_t nSubsidy = 0;
 
     if (nHeight == 0) {
-        nSubsidy = 60001 * COIN;
+        nSubsidy = 20000000 * COIN; //6M for the first block
     } else {
-        if (Params().NetworkID() == CBaseChainParams::TESTNET) {
-        	if (nHeight < 10) {
+        if (Params().NetworkID() == CBaseChainParams::MAIN) {
+        	if (nHeight < 100) {
         		nSubsidy = 10000000 * COIN;
         	} else if (nHeight < 200 && nHeight > 0)
                 nSubsidy = 250000 * COIN;
-            else if(nHeight > 4800) {
-                if (nHeight % 60 == 0) {
-                    nSubsidy = 60 * 100 * COIN;
-                } else {
-                    nSubsidy = 950 * COIN;
-                }
-            } else if(nHeight > 4500 && nHeight <= 4800) {
-                if (nHeight % 60 == 0) {
-                    nSubsidy = 60 * 100 * COIN;
-                } else {
-                    nSubsidy = 1050 * COIN;
-                }
-            } else if(nHeight > 2990 && nHeight <= 4500 && nHeight % 60 == 0){
-                nSubsidy = 50 * 100 * COIN;
-            } else if(nHeight > Params().START_POA_BLOCK() && nHeight <= 2990 && nHeight % 60 == 0) {
-                nSubsidy = 550 * 59 * COIN;
+            else if(nHeight > Params().nLastPOWBlock) {
+                nSubsidy = 950 * COIN;
             } else {
-                nSubsidy = 550 * COIN;
+                nSubsidy = 950 * COIN;
             }
         } else {
             nSubsidy = 950 * COIN;
@@ -2214,7 +2203,7 @@ CAmount GetSeeSaw(const CAmount& blockValue, int nMasternodeCount, int nHeight)
             nMasternodeCount = mnodeman.size();
     }
 
-    int64_t mNodeCoins = nMasternodeCount * 10000 * COIN;
+    int64_t mNodeCoins = nMasternodeCount * 1000000 * COIN;
 
     // Use this log to compare the masternode count for different clients
     LogPrintf("Adjusting seesaw at height %d with %d masternodes (without drift: %d) at %ld\n", nHeight,
@@ -4311,7 +4300,6 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
     if (!CheckBlockHeader(block, state, block.IsProofOfWork()))
         return state.DoS(100, error("CheckBlock() : CheckBlockHeader failed"),
                          REJECT_INVALID, "bad-header", true);
-    LogPrintf("%s:Time stamp", __func__);
     // Check timestamp
     LogPrint("debug", "%s: block=%s  is proof of stake=%d, is proof of audit=%d\n", __func__, block.GetHash().ToString().c_str(),
              block.IsProofOfStake(), block.IsProofOfAudit());
@@ -4866,8 +4854,8 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
     // ppcoin: check proof-of-stake
     // Limited duplicity on stake: prevents block flood attack
     // Duplicate stake allowed only when there is orphan child block
-    //if (pblock->IsProofOfStake() && setStakeSeen.count(pblock->GetProofOfStake())/* && !mapOrphanBlocksByPrev.count(hash)*/)
-    //    return error("ProcessNewBlock() : duplicate proof-of-stake (%s, %d) for block %s", pblock->GetProofOfStake().first.ToString().c_str(), pblock->GetProofOfStake().second, pblock->GetHash().ToString().c_str());
+    if (pblock->IsProofOfStake() && setStakeSeen.count(pblock->GetProofOfStake())/* && !mapOrphanBlocksByPrev.count(hash)*/)
+        return error("ProcessNewBlock() : duplicate proof-of-stake (%s, %d) for block %s", pblock->GetProofOfStake().first.ToString().c_str(), pblock->GetProofOfStake().second, pblock->GetHash().ToString().c_str());
 
     // NovaCoin: check proof-of-stake block signature
     if (!pblock->IsPoABlockByVersion() && !pblock->CheckBlockSignature())
