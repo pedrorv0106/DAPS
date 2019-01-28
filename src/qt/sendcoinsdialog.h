@@ -74,8 +74,6 @@ private:
 
 private slots:
     void on_sendButton_clicked();
-    void on_buttonChooseFee_clicked();
-    void on_buttonMinimizeFee_clicked();
     void removeEntry(SendCoinsEntry* entry);
     void updateDisplayUnit();
     void updateSwiftTX();
@@ -98,6 +96,7 @@ private slots:
     void updateFeeSectionControls();
     void updateMinFeeLabel();
     void updateSmartFeeLabel();
+    void updateRingSize();
     void updateGlobalFeeVariables();
 
 signals:

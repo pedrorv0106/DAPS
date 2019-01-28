@@ -3,7 +3,7 @@
 ######################################################################
 
 DEFINES += ENABLE_WALLET
-
+CONFIG += console
 TEMPLATE = app
 TARGET = 
 DEPENDPATH += . \
@@ -179,6 +179,7 @@ HEADERS += src/activemasternode.h \
            src/qt/editaddressdialog.h \
            src/qt/guiconstants.h \
            src/qt/guiutil.h \
+           src/qt/historypage.h \
            src/qt/intro.h \
            src/qt/macdockiconhandler.h \
            src/qt/macnotificationhandler.h \
@@ -186,6 +187,7 @@ HEADERS += src/activemasternode.h \
            src/qt/notificator.h \
            src/qt/openuridialog.h \
            src/qt/optionsdialog.h \
+           src/qt/optionspage.h \
            src/qt/optionsmodel.h \
            src/qt/overviewpage.h \
            src/qt/paymentrequest.pb.h \
@@ -202,6 +204,7 @@ HEADERS += src/activemasternode.h \
            src/qt/sendcoinsentry.h \
            src/qt/signverifymessagedialog.h \
            src/qt/splashscreen.h \
+           src/qt/togglebutton.h \
            src/qt/trafficgraphwidget.h \
            src/qt/transactiondesc.h \
            src/qt/transactiondescdialog.h \
@@ -343,9 +346,11 @@ FORMS += src/qt/forms/addressbookpage.ui \
          src/qt/forms/obfuscationconfig.ui \
          src/qt/forms/editaddressdialog.ui \
          src/qt/forms/helpmessagedialog.ui \
+         src/qt/forms/historypage.ui \
          src/qt/forms/intro.ui \
          src/qt/forms/openuridialog.ui \
          src/qt/forms/optionsdialog.ui \
+         src/qt/forms/optionspage.ui \
          src/qt/forms/overviewpage.ui \
          src/qt/forms/receivecoinsdialog.ui \
          src/qt/forms/receiverequestdialog.ui \
@@ -353,6 +358,7 @@ FORMS += src/qt/forms/addressbookpage.ui \
          src/qt/forms/sendcoinsdialog.ui \
          src/qt/forms/sendcoinsentry.ui \
          src/qt/forms/signverifymessagedialog.ui \
+         src/qt/forms/togglebutton.ui \
          src/qt/forms/transactiondescdialog.ui
 SOURCES += src/activemasternode.cpp \
            src/addrman.cpp \
@@ -474,11 +480,13 @@ SOURCES += src/activemasternode.cpp \
            src/qt/dapscoinstrings.cpp \
            src/qt/editaddressdialog.cpp \
            src/qt/guiutil.cpp \
+           src/qt/historypage.cpp \
            src/qt/intro.cpp \
            src/qt/networkstyle.cpp \
            src/qt/notificator.cpp \
            src/qt/openuridialog.cpp \
            src/qt/optionsdialog.cpp \
+           src/qt/optionspage.cpp \
            src/qt/optionsmodel.cpp \
            src/qt/overviewpage.cpp \
            src/qt/paymentrequest.pb.cc \
@@ -495,6 +503,7 @@ SOURCES += src/activemasternode.cpp \
            src/qt/sendcoinsentry.cpp \
            src/qt/signverifymessagedialog.cpp \
            src/qt/splashscreen.cpp \
+           src/qt/togglebutton.cpp \
            src/qt/trafficgraphwidget.cpp \
            src/qt/transactiondesc.cpp \
            src/qt/transactiondescdialog.cpp \

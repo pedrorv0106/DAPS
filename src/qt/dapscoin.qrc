@@ -4,6 +4,7 @@
         <file alias="address-book">res/icons/address-book.png</file>
         <file alias="quit">res/icons/quit.png</file>
         <file alias="send">res/icons/send.png</file>
+        <file alias="cashbook">res/icons/cashbook.png</file>
         <file alias="connect_0">res/icons/connect0_16.png</file>
         <file alias="connect_1">res/icons/connect1_16.png</file>
         <file alias="connect_2">res/icons/connect2_16.png</file>
@@ -51,11 +52,16 @@
         <file alias="qrcode">res/icons/qrcode.png</file>
         <file alias="debugwindow">res/icons/debugwindow.png</file>
         <file alias="browse">res/icons/browse.png</file>
+        <file alias="wallet">res/icons/wallet.png</file>
+        <file alias="qr-code">res/icons/qr-code.png</file>
         <file alias="staking_active">res/icons/staking_active.png</file>
         <file alias="staking_inactive">res/icons/staking_inactive.png</file>
+        <file alias="staking_disabled">res/icons/staking_disabled.png</file>
+        
     </qresource>
     <qresource prefix="/css">
-        <file alias="default">res/css/default.css</file>
+        <file alias="light">res/css/Light.css</file>
+        <file alias="dark">res/css/Dark.css</file>
     </qresource>
     <qresource prefix="/images">
         <file alias="about">res/images/about.png</file>
@@ -64,8 +70,12 @@
         <file alias="downArrow_small">res/images/downArrow_small.png</file>
         <file alias="upArrow_small">res/images/upArrow_small.png</file>
         <file alias="leftArrow_small">res/images/leftArrow_small.png</file>
+        <file alias="background">res/images/background.png</file>
+        <file alias="overviewbackground">res/images/overviewbackground.png</file>
         <file alias="rightArrow_small">res/images/rightArrow_small.png</file>
         <file alias="qtreeview_selected">res/images/qtreeview_selected.png</file>
+        <file alias="syncb">res/images/syncb.png</file>
+        <file alias="syncp">res/images/syncp.png</file>
         <file alias="walletFrame_bg">res/images/walletFrame_bg.png</file>
         <file alias="walletFrame">res/images/walletFrame.png</file>
         <file alias="splash">res/images/splash.png</file>

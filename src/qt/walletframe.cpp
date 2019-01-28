@@ -45,7 +45,7 @@ bool WalletFrame::addWallet(const QString& name, WalletModel* walletModel)
     walletView->setBitcoinGUI(gui);
     walletView->setClientModel(clientModel);
     walletView->setWalletModel(walletModel);
-    walletView->showOutOfSyncWarning(bOutOfSync);
+    walletView->showSyncStatus(bOutOfSync);
 
     /* TODO we should goto the currently selected page once dynamically adding wallets is supported */
     walletView->gotoOverviewPage();
@@ -96,12 +96,12 @@ bool WalletFrame::handlePaymentRequest(const SendCoinsRecipient& recipient)
     return walletView->handlePaymentRequest(recipient);
 }
 
-void WalletFrame::showOutOfSyncWarning(bool fShow)
+void WalletFrame::showSyncStatus(bool fShow)
 {
     bOutOfSync = fShow;
     QMap<QString, WalletView*>::const_iterator i;
     for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
-        i.value()->showOutOfSyncWarning(fShow);
+        i.value()->showSyncStatus(fShow);
 }
 
 void WalletFrame::gotoOverviewPage()
@@ -137,6 +137,13 @@ void WalletFrame::gotoReceiveCoinsPage()
     QMap<QString, WalletView*>::const_iterator i;
     for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
         i.value()->gotoReceiveCoinsPage();
+}
+
+void WalletFrame::gotoOptionsPage()
+{
+    QMap<QString, WalletView*>::const_iterator i;
+    for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
+        i.value()->gotoOptionsPage();
 }
 
 //void WalletFrame::gotoPrivacyPage()
