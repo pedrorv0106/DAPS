@@ -428,7 +428,14 @@ static int secp256k1_bulletproof_abgh_callback(secp256k1_scalar *sc, secp256k1_g
  * The non-bold `h` in the Bulletproofs paper corresponds to our gens->blinding_gen
  * while the non-bold `g` corresponds to the asset type `value_gen`.
  */
-static int secp256k1_bulletproof_rangeproof_prove_impl(const secp256k1_ecmult_context *ecmult_ctx, secp256k1_scratch *scratch, unsigned char *proof, size_t *plen, const size_t nbits, const uint64_t *value, const uint64_t *min_value, const secp256k1_scalar *blind, const secp256k1_ge *commitp, size_t n_commits, const secp256k1_ge *value_gen, const secp256k1_bulletproof_generators *gens, const unsigned char *nonce, const unsigned char *extra_commit, size_t extra_commit_len) {
+static int
+secp256k1_bulletproof_rangeproof_prove_impl(const secp256k1_ecmult_context *ecmult_ctx, secp256k1_scratch *scratch,
+                                            unsigned char *proof, size_t *plen, const size_t nbits,
+                                            const uint64_t *value, const uint64_t *min_value,
+                                            const secp256k1_scalar *blind, const secp256k1_ge *commitp,
+                                            size_t n_commits, const secp256k1_ge *value_gen,
+                                            const secp256k1_bulletproof_generators *gens, const unsigned char *nonce,
+                                            const unsigned char *extra_commit, size_t extra_commit_len) {
     secp256k1_bulletproof_lr_generator lr_gen;
     secp256k1_bulletproof_abgh_data abgh_data;
     secp256k1_scalar zero;

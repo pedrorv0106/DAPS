@@ -299,7 +299,7 @@ int main(void) {
     data.generators = secp256k1_bulletproof_generators_create(data.ctx, &data.blind_gen, 64 * 1024);
 
     rp_data.common = &data;
-    data.generators = secp256k1_bulletproof_generators_create(data.ctx, &data.blind_gen, 64 * 1024, 1);
+    data.generators = secp256k1_bulletproof_generators_create(data.ctx, &data.blind_gen, 64 * 1024);
 
     rp_data.common = &data;
     c_data.common = &data;

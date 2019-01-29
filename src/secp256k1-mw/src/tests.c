@@ -5076,6 +5076,8 @@ void run_ecdsa_openssl(void) {
 # include "modules/surjection/tests_impl.h"
 #endif
 
+#define ENABLE_MODULE_BULLETPROOF 1
+
 int main(int argc, char **argv) {
     unsigned char seed16[16] = {0};
     unsigned char run32[32] = {0};
@@ -5208,6 +5210,7 @@ int main(int argc, char **argv) {
 #endif
 
 #ifdef ENABLE_MODULE_BULLETPROOF
+    printf("Running bulletproofs");
     run_bulletproofs_tests();
 #endif
 
