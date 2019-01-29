@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "qtextdocument": "cpp",
+        "qdatawidgetmapper": "cpp"
+    }
+}

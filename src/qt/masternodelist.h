@@ -1,14 +1,18 @@
 #ifndef MASTERNODELIST_H
 #define MASTERNODELIST_H
 
+#include "guiutil.h"
 #include "masternode.h"
 #include "platformstyle.h"
 #include "sync.h"
+#include "togglebutton.h"
 #include "util.h"
 
 #include <QMenu>
 #include <QTimer>
 #include <QWidget>
+#include <QDialog>
+#include <QTimer>
 
 #define MY_MASTERNODELIST_UPDATE_SECONDS 60
 #define MASTERNODELIST_UPDATE_SECONDS 15
@@ -27,7 +31,7 @@ class QModelIndex;
 QT_END_NAMESPACE
 
 /** Masternode Manager page widget */
-class MasternodeList : public QWidget
+class MasternodeList : public QDialog
 {
     Q_OBJECT
 
@@ -39,6 +43,7 @@ public:
     void setWalletModel(WalletModel* walletModel);
     void StartAlias(std::string strAlias);
     void StartAll(std::string strCommand = "start-all");
+    QString getStakingStatusError();
 
 private:
     QMenu* contextMenu;
@@ -53,6 +58,7 @@ Q_SIGNALS:
 
 private:
     QTimer* timer;
+    QTimer* refreshPageTimer = new QTimer();
     Ui::MasternodeList* ui;
     ClientModel* clientModel;
     WalletModel* walletModel;
@@ -66,5 +72,6 @@ private Q_SLOTS:
     void on_startMissingButton_clicked();
     void on_tableWidgetMyMasternodes_itemSelectionChanged();
     void on_UpdateButton_clicked();
+    void on_EnableStaking(ToggleButton* widget);
 };
 #endif // MASTERNODELIST_H
