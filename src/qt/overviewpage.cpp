@@ -17,11 +17,13 @@
 #include "optionsmodel.h"
 #include "transactionfilterproxy.h"
 #include "transactiontablemodel.h"
+#include "txentry.h"
 #include "walletmodel.h"
 
 #include <QAbstractItemDelegate>
 #include <QPainter>
 #include <QSettings>
+#include <QSizePolicy>
 #include <QTimer>
 #include <QtMath>
 
@@ -127,17 +129,10 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
     connect(pingNetworkInterval, SIGNAL(timeout()), this, SLOT(tryNetworkBlockCount()));
     pingNetworkInterval->setInterval(3000); pingNetworkInterval->start(); 
     
-    // Recent transactions
-    ui->listTransactions->setItemDelegate(txdelegate);
-    ui->listTransactions->setIconSize(QSize(DECORATION_SIZE, DECORATION_SIZE));
-    ui->listTransactions->setMinimumHeight(NUM_ITEMS * (DECORATION_SIZE + 2));
-    ui->listTransactions->setAttribute(Qt::WA_MacShowFocusRect, false);
-
-    connect(ui->listTransactions, SIGNAL(clicked(QModelIndex)), this, SLOT(handleTransactionClicked(QModelIndex)));
- 
     pingNetworkInterval = new QTimer();
 
     initSyncCircle(.8);
+    updateRecentTransactions();
 }
 
 void OverviewPage::handleTransactionClicked(const QModelIndex& index)
@@ -226,12 +221,12 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
         automintHelp += tr("AutoMint is currently disabled.\nTo enable AutoMint change 'enablezeromint=0' to 'enablezeromint=1' in dapscoin.conf");
     }
 
-    static int cachedTxLocks = 0;
+    // REMOVE static int cachedTxLocks = 0;
 
-    if (cachedTxLocks != nCompleteTXLocks) {
-        cachedTxLocks = nCompleteTXLocks;
-        ui->listTransactions->update();
-    }
+    // REMOVE if (cachedTxLocks != nCompleteTXLocks) {
+    // REMOVE     cachedTxLocks = nCompleteTXLocks;
+    // REMOVE     ui->listTransactions->update();
+    // REMOVE }
 }
 
 // show/hide watch-only labels
@@ -264,9 +259,6 @@ void OverviewPage::setWalletModel(WalletModel* model)
         filter->setShowInactive(false);
         filter->sort(TransactionTableModel::Date, Qt::DescendingOrder);
 
-        ui->listTransactions->setModel(filter);
-        ui->listTransactions->setModelColumn(TransactionTableModel::ToAddress);
-
         // Keep up to date with wallet
         setBalance(model->getBalance(), model->getUnconfirmedBalance(), model->getImmatureBalance(),
                    model->getZerocoinBalance(), model->getUnconfirmedZerocoinBalance(), model->getImmatureZerocoinBalance(), 
@@ -295,7 +287,7 @@ void OverviewPage::updateDisplayUnit()
         // Update txdelegate->unit with the current unit
         txdelegate->unit = nDisplayUnit;
 
-        ui->listTransactions->update();
+        // REMOVE ui->listTransactions->update();
     }
 }
 
@@ -311,6 +303,8 @@ void OverviewPage::showBalanceSync(bool fShow){
         ui->labelUnconfirmed->setVisible(fShow);
         ui->labelBalanceText->setVisible(fShow);
         isSyncingBalance = fShow;
+        ui->labelBlockCurrent->setAlignment(!fShow? (Qt::AlignRight | Qt::AlignVCenter) : (Qt::AlignHCenter | Qt::AlignTop));
+
 }
 
 void OverviewPage::showBlockSync(bool fShow)
@@ -417,4 +411,22 @@ int OverviewPage::tryNetworkBlockCount(){
          //QDebug()<<endl<<"Error: "+QString::number(err_code)<<endl;
     }
     return -1;
+}
+
+void OverviewPage::updateRecentTransactions(){
+    QLayoutItem* item;
+    while ( ( item = ui->verticalLayoutRecent->takeAt( 0 ) ) != NULL )
+    {
+        delete item->widget();
+        delete item;
+    }
+    auto txs = WalletUtil::getTXs(pwalletMain);
+
+    for (int i = 0; i< (txs.size()>5)? 5:txs.size(); i++){
+        TxEntry* entry = new TxEntry(this);
+        ui->verticalLayoutRecent->addWidget(entry);
+        entry->setData(txs[i]["date"], txs[i]["address"] , txs[i]["amount"], txs[i]["ID"], txs[i]["type"]);
+    }
+
+    ui->label_4->setVisible(txs.size());
 }

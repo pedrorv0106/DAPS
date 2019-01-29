@@ -12,7 +12,6 @@ QHeaderView::section {
   color: white;
   font-family: Roboto;
   font-weight: 300;
-  text-align: center;
 }
 QWidget:disabled {
   color: slategrey;
@@ -280,3 +279,23 @@ ToggleButton > QPushButton:enabled:checked {
   color: #93faff;
   border: 1px solid #93faff;
 }
+#TxEntry,
+#TxEntry QTableView::item,
+#TxEntry QTableWidgetView::item,
+#TxEntry QHeaderView::section,
+#TxEntry QTableView::selectrows {
+  padding: 0px;
+  margin: 0px;
+}
+#TxEntry QPushButton {
+  border-radius:0; 
+  border: none; 
+  background: transparent;
+}
+
+
+QToolTip{
+max-width:0px;;
+max-height:0px;
+}
+

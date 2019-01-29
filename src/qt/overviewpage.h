@@ -51,6 +51,7 @@ public slots:
     void onAnimTick();   
     void updateTotalBlocksLabel();
     int tryNetworkBlockCount();
+    void updateRecentTransactions();
 
 signals:
     void transactionClicked(const QModelIndex& index);
