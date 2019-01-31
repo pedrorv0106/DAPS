@@ -13,8 +13,10 @@
 class BitcoinGUI;
 class ClientModel;
 class OverviewPage;
+class HistoryPage;
 class ReceiveCoinsDialog;
 class SendCoinsDialog;
+class OptionsPage;
 class SendCoinsRecipient;
 class TransactionView;
 class WalletModel;
@@ -53,7 +55,7 @@ public:
 
     bool handlePaymentRequest(const SendCoinsRecipient& recipient);
 
-    void showOutOfSyncWarning(bool fShow);
+    void showSyncStatus(bool fShow);
 
 private:
     ClientModel* clientModel;
@@ -62,7 +64,9 @@ private:
     OverviewPage* overviewPage;
     QWidget* transactionsPage;
     ReceiveCoinsDialog* receiveCoinsPage;
-//    PrivacyDialog* privacyPage;
+    OptionsPage* optionsPage;
+    HistoryPage* historyPage;
+//  #remove  PrivacyDialog* privacyPage;
     SendCoinsDialog* sendCoinsPage;
     BlockExplorer* explorerWindow;
     MasternodeList* masternodeListPage;
@@ -82,9 +86,11 @@ public slots:
     /** Switch to explorer page */
     void gotoBlockExplorerPage();
     /** Switch to privacy page */
-//    void gotoPrivacyPage();
+//  #remove  void gotoPrivacyPage();
     /** Switch to receive coins page */
     void gotoReceiveCoinsPage();
+    /** Switch to options page */
+    void gotoOptionsPage();
     /** Switch to send coins page */
     void gotoSendCoinsPage(QString addr = "");
 
