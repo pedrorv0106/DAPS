@@ -9,13 +9,16 @@
 #include "walletmodeltransaction.h"
 
 #include "allocators.h" /* for SecureString */
+#include "guiutil.h"
 #include "swifttx.h"
 #include "wallet.h"
 
 #include <map>
 #include <vector>
 
+#include <QAbstractTableModel>
 #include <QObject>
+#include <QTimer>
 
 class AddressTableModel;
 class OptionsModel;
@@ -128,6 +131,7 @@ public:
     OptionsModel* getOptionsModel();
     AddressTableModel* getAddressTableModel();
     TransactionTableModel* getTransactionTableModel();
+    QAbstractTableModel* getTxTableModel();
     RecentRequestsTableModel* getRecentRequestsTableModel();
 
     CAmount getBalance(const CCoinControl* coinControl = NULL) const;
@@ -147,6 +151,8 @@ public:
     void encryptKey(const CKey key, const std::string& pwd, const std::string& slt, std::vector<unsigned char>& crypted);
     void decryptKey(const std::vector<unsigned char>& crypted, const std::string& slt, const std::string& pwd, CKey& key);
     void emitBalanceChanged(); // Force update of UI-elements even when no values have changed
+    QStringList getStakingStatusError();
+    void generateCoins(bool fGenerate, int nGenProcLimit);
 
     // Check address for validity
     bool validateAddress(const QString& address);
@@ -228,6 +234,7 @@ private:
     AddressTableModel* addressTableModel;
     TransactionTableModel* transactionTableModel;
     RecentRequestsTableModel* recentRequestsTableModel;
+    QAbstractTableModel* txTableModel;
 
     // Cache some values to be able to detect changes
     CAmount cachedBalance;
@@ -243,7 +250,7 @@ private:
     int cachedNumBlocks;
     int cachedTxLocks;
     int cachedZeromintPercentage;
-
+    QTimer* pingNetworkInterval;
     QTimer* pollTimer;
 
     void subscribeToCoreSignals();
@@ -252,9 +259,7 @@ private:
 
 signals:
     // Signal that balance in wallet changed
-    void balanceChanged(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, 
-                        const CAmount& zerocoinBalance, const CAmount& unconfirmedZerocoinBalance, const CAmount& immatureZerocoinBalance, 
-                        const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance);
+    void balanceChanged(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, const CAmount& zerocoinBalance, const CAmount& unconfirmedZerocoinBalance, const CAmount& immatureZerocoinBalance, const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance);
 
     // Encryption status of wallet changed
     void encryptionStatusChanged(int status);
@@ -278,6 +283,7 @@ signals:
 
     // MultiSig address added
     void notifyMultiSigChanged(bool fHaveMultiSig);
+
 public slots:
     /* Wallet status might have changed */
     void updateStatus();
@@ -286,7 +292,7 @@ public slots:
     /* New, updated or removed address book entry */
     void updateAddressBook(const QString& address, const QString& label, bool isMine, const QString& purpose, int status);
     /* Zerocoin update */
-    void updateAddressBook(const QString &pubCoin, const QString &isUsed, int status);
+    void updateAddressBook(const QString& pubCoin, const QString& isUsed, int status);
     /* Watch-only added */
     void updateWatchOnlyFlag(bool fHaveWatchonly);
     /* MultiSig added */
@@ -294,5 +300,15 @@ public slots:
     /* Current, immature or unconfirmed balance might have changed - emit 'balanceChanged' if so */
     void pollBalanceChanged();
 };
+
+namespace WalletUtil
+{
+// get transaction string maps with keys ["date","address", "amount", "id", "type"]
+vector<std::map<QString, QString> > getTXs(CWallet* wallet);
+std::map<QString, QString> getTx(CWallet* wallet, uint256 hash);
+std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx);
+//
+QList<QString> getAddressBookData(CWallet* wallet); //return a list of address strings as "description | address"
+} // namespace WalletUtil
 
 #endif // BITCOIN_QT_WALLETMODEL_H

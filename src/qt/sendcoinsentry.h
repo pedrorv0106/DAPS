@@ -30,7 +30,6 @@ public:
     ~SendCoinsEntry();
 
     void setModel(WalletModel* model);
-    bool validate();
     SendCoinsRecipient getValue();
 
     /** Return whether the entry is still empty and unedited */
