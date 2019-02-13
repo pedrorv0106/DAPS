@@ -84,12 +84,12 @@ class CWalletTx;
 
 //Elliptic Curve Diffie Helman: encodes and decodes the amount b and mask a
 // where C= aG + bH
-void ecdhEncode(unsigned char * unmasked, unsigned char * amount, unsigned char * sharedSec, int size);
-void ecdhDecode(unsigned char * masked, unsigned char * amount, unsigned char * sharedSec, int size);
+void ecdhEncode(unsigned char * unmasked, unsigned char * amount, const unsigned char * sharedSec, int size);
+void ecdhDecode(unsigned char * masked, unsigned char * amount, const unsigned char * sharedSec, int size);
 
 class ECDHInfo {
 public:
-    static void Encode(const CKey& mask, const CAmount& amount, const CPubKey& sharedSec, unsigned char* encodedMask, unsigned char* encodedAmount);
+    static void Encode(const CKey& mask, const CAmount& amount, const CPubKey& sharedSec, uint256& encodedMask, uint256 encodedAmount);
     static void Decode(unsigned char* encodedMask, unsigned char* encodedAmount, const CPubKey sharedSec, CKey& decodedMask, CAmount& decodedAmount);
     static void ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey& sharedSec);
 };
@@ -800,17 +800,18 @@ public:
     bool GenerateIntegratedAddress(const std::string& accountName, std::string& pubAddr);
     bool GenerateIntegratedAddress(const CPubKey& pubViewKey, const CPubKey& pubSpendKey, std::string& pubAddr);
     bool AllMyPublicAddresses(std::vector<std::string>& addresses, std::vector<std::string>& accountNames);
-    bool RevealTxOutAmount(const CTransaction& tx, const CTxOut& out, CAmount& amount);
+    bool RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmount &amount) const;
     bool EncodeTxOutAmount(CTxOut& out, const CAmount& amount, const unsigned char * sharedSec);
 private:
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
-    bool mySpendPrivateKey(CKey& spend);
-    bool myViewPrivateKey(CKey& view);
+    bool mySpendPrivateKey(CKey& spend) const;
+    bool myViewPrivateKey(CKey& view) const;
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
-    void createMasterKey();
+    void createMasterKey() const;
     CAmount getCOutPutValue(const COutput& output) const;
-    CAmount getCTxOutValue(const CTransaction& tx, const CTxOut& out) const;
+    CAmount getCTxOutValue(const CTransaction &tx, const CTxOut &out) const;
     bool findCorrespondingPrivateKey(const CTransaction& tx, CKey& key);
+    bool generate_key_image_helper(CPubKey& pub, CKeyImage& img);
     bool construct_tx_with_tx_key(std::vector<tx_source_entry>& sources, std::vector<tx_destination_entry>& destinations, const boost::optional<CStealthAccount>& change_addr, const std::vector<uint8_t> &extra, CTransaction& tx, const CKey &tx_key, bool shuffle_outs = true);
     bool construct_tx_and_get_tx_key(std::vector<tx_source_entry>& sources, 
         std::vector<tx_destination_entry>& destinations, 
@@ -818,7 +819,6 @@ private:
         const std::vector<uint8_t> &extra, 
         CTransaction& tx, 
         CKey& txPrivKey);
-    bool generate_key_image_helper(CPubKey& pub, CKeyImage& img);
 };
 
 
