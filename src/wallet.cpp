@@ -59,8 +59,8 @@ void ecdhEncode(unsigned char * unmasked, unsigned char * amount, const unsigned
     uint256 sharedSec1 = Hash(sharedSec, sharedSec + size);
     uint256 sharedSec2 = Hash(sharedSec1.begin(), sharedSec1.end());
     //encode
-    sc_add(unmasked, unmasked, sharedSec1.begin());
-    sc_add(amount, amount, sharedSec2.begin());
+    sc_add(unmasked, (const unsigned char*) unmasked, (const unsigned char*)sharedSec1.begin());
+    sc_add(amount, (const unsigned char*) amount, (const unsigned char*)sharedSec2.begin());
 }
 void ecdhDecode(unsigned char * masked, unsigned char * amount, const unsigned char * sharedSec, int size)
 {

@@ -42,7 +42,9 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/deque.hpp>
 #include <atomic>
-#include "./crypto/crypto/crypto-ops.h"
+#include "crypto/crypto-ops.h"
+#include "crypto/common.h"
+
 
 
 /**
