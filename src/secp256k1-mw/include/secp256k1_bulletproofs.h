@@ -322,6 +322,9 @@ SECP256K1_API int secp256k1_bulletproof_circuit_prove(
     size_t extra_commit_len
 ) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(3) SECP256K1_ARG_NONNULL(4) SECP256K1_ARG_NONNULL(5) SECP256K1_ARG_NONNULL(6) SECP256K1_ARG_NONNULL(7) SECP256K1_ARG_NONNULL(10) SECP256K1_ARG_NONNULL(11);
 
+int bulletproofs_verify_api(size_t nbits, size_t n_commits, size_t len, unsigned char *proof, unsigned char commits[][64]);
+int bulletproofs_prove_api(uint64_t *v, size_t nbits, size_t n_commits, size_t* plen, unsigned char *proof, unsigned char commits[][64]);
+
 # ifdef __cplusplus
 }
 # endif
