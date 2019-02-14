@@ -5742,7 +5742,7 @@ bool CWallet::construct_tx_with_tx_key(std::vector<tx_source_entry> &sources,
                                        const boost::optional<CStealthAccount> &change_addr,
                                        const std::vector<uint8_t> &extra, CTransaction &tx, const CKey &tx_key,
                                        bool shuffle_outs) {
-    /*if (sources.empty()) {
+    if (sources.empty()) {
         LogPrintf("Empty sources");
         return false;
     }
@@ -6080,7 +6080,7 @@ bool CWallet::construct_tx_with_tx_key(std::vector<tx_source_entry> &sources,
 
     tx.invalidate_hashes();
 
-    return true;*/
+    return true;
 }
 
 //---------------------------------------------------------------
