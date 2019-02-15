@@ -7,14 +7,19 @@
 #include "walletmodel.h"
 
 #include "addresstablemodel.h"
+#include "bitcoinunits.h"
 #include "guiconstants.h"
+#include "guiutil.h"
 #include "recentrequeststablemodel.h"
+#include "transactionrecord.h"
 #include "transactiontablemodel.h"
+
 
 #include "base58.h"
 #include "db.h"
 #include "keystore.h"
 #include "main.h"
+#include "miner.h"
 #include "spork.h"
 #include "sync.h"
 #include "ui_interface.h"
@@ -23,8 +28,14 @@
 #include <stdint.h>
 #include <regex>
 #include <QDebug>
+#include <QLocale>
 #include <QSet>
 #include <QTimer>
+#include <QtCore>
+#include <QtMath>
+#include <stdint.h>
+
+
 
 using namespace std;
 
@@ -161,9 +172,9 @@ void WalletModel::pollBalanceChanged()
 void WalletModel::emitBalanceChanged()
 {
     // Force update of UI elements even when no values have changed
-    emit balanceChanged(cachedBalance, cachedUnconfirmedBalance, cachedImmatureBalance, 
-                        cachedZerocoinBalance, cachedUnconfirmedZerocoinBalance, cachedImmatureZerocoinBalance,
-                        cachedWatchOnlyBalance, cachedWatchUnconfBalance, cachedWatchImmatureBalance);
+    emit balanceChanged(cachedBalance, cachedUnconfirmedBalance, cachedImmatureBalance,
+        cachedZerocoinBalance, cachedUnconfirmedZerocoinBalance, cachedImmatureZerocoinBalance,
+        cachedWatchOnlyBalance, cachedWatchUnconfBalance, cachedWatchImmatureBalance);
 }
 
 void WalletModel::checkBalanceChanged()
@@ -189,7 +200,7 @@ void WalletModel::checkBalanceChanged()
     if (cachedBalance != newBalance || cachedUnconfirmedBalance != newUnconfirmedBalance || cachedImmatureBalance != newImmatureBalance ||
         cachedZerocoinBalance != newZerocoinBalance || cachedUnconfirmedZerocoinBalance != newUnconfirmedZerocoinBalance || cachedImmatureZerocoinBalance != newImmatureZerocoinBalance ||
         cachedWatchOnlyBalance != newWatchOnlyBalance || cachedWatchUnconfBalance != newWatchUnconfBalance || cachedWatchImmatureBalance != newWatchImmatureBalance ||
-        cachedTxLocks != nCompleteTXLocks ) {
+        cachedTxLocks != nCompleteTXLocks) {
         cachedBalance = newBalance;
         cachedUnconfirmedBalance = newUnconfirmedBalance;
         cachedImmatureBalance = newImmatureBalance;
@@ -200,9 +211,9 @@ void WalletModel::checkBalanceChanged()
         cachedWatchOnlyBalance = newWatchOnlyBalance;
         cachedWatchUnconfBalance = newWatchUnconfBalance;
         cachedWatchImmatureBalance = newWatchImmatureBalance;
-        emit balanceChanged(newBalance, newUnconfirmedBalance, newImmatureBalance, 
-                            newZerocoinBalance, newUnconfirmedZerocoinBalance, newImmatureZerocoinBalance,
-                            newWatchOnlyBalance, newWatchUnconfBalance, newWatchImmatureBalance);
+        emit balanceChanged(newBalance, newUnconfirmedBalance, newImmatureBalance,
+            newZerocoinBalance, newUnconfirmedZerocoinBalance, newImmatureZerocoinBalance,
+            newWatchOnlyBalance, newWatchUnconfBalance, newWatchImmatureBalance);
     }
 }
 
@@ -217,9 +228,9 @@ void WalletModel::updateAddressBook(const QString& address, const QString& label
     if (addressTableModel)
         addressTableModel->updateEntry(address, label, isMine, purpose, status);
 }
-void WalletModel::updateAddressBook(const QString &pubCoin, const QString &isUsed, int status)
+void WalletModel::updateAddressBook(const QString& pubCoin, const QString& isUsed, int status)
 {
-    if(addressTableModel)
+    if (addressTableModel)
         addressTableModel->updateEntry(pubCoin, isUsed, status);
 }
 
@@ -389,7 +400,6 @@ WalletModel::EncryptionStatus WalletModel::getEncryptionStatus() const
     } else {
         return Unlocked;
     }
-
 }
 
 bool WalletModel::setWalletEncrypted(bool encrypted, const SecureString& passphrase)
@@ -473,7 +483,8 @@ static void NotifyTransactionChanged(WalletModel* walletmodel, CWallet* wallet, 
     qDebug() << "NotifyTransactionChanged : " + strHash + " status= " + QString::number(status);
     QMetaObject::invokeMethod(walletmodel, "updateTransaction", Qt::QueuedConnection /*,
                               Q_ARG(QString, strHash),
-                              Q_ARG(int, status)*/);
+                              Q_ARG(int, status)*/
+    );
 }
 
 static void ShowProgress(WalletModel* walletmodel, const std::string& title, int nProgress)
@@ -493,19 +504,18 @@ static void NotifyWatchonlyChanged(WalletModel* walletmodel, bool fHaveWatchonly
 static void NotifyMultiSigChanged(WalletModel* walletmodel, bool fHaveMultiSig)
 {
     QMetaObject::invokeMethod(walletmodel, "updateMultiSigFlag", Qt::QueuedConnection,
-                              Q_ARG(bool, fHaveMultiSig));
+        Q_ARG(bool, fHaveMultiSig));
 }
 
-static void NotifyZerocoinChanged(WalletModel* walletmodel, CWallet* wallet, const std::string& hexString,
-                                  const std::string& isUsed, ChangeType status)
+static void NotifyZerocoinChanged(WalletModel* walletmodel, CWallet* wallet, const std::string& hexString, const std::string& isUsed, ChangeType status)
 {
     QString HexStr = QString::fromStdString(hexString);
     QString isUsedStr = QString::fromStdString(isUsed);
     qDebug() << "NotifyZerocoinChanged : " + HexStr + " " + isUsedStr + " status= " + QString::number(status);
     QMetaObject::invokeMethod(walletmodel, "updateAddressBook", Qt::QueuedConnection,
-                              Q_ARG(QString, HexStr),
-                              Q_ARG(QString, isUsedStr),
-                              Q_ARG(int, status));
+        Q_ARG(QString, HexStr),
+        Q_ARG(QString, isUsedStr),
+        Q_ARG(int, status));
 }
 
 void WalletModel::subscribeToCoreSignals()
@@ -560,7 +570,7 @@ WalletModel::UnlockContext::UnlockContext(bool valid, bool relock) : valid(valid
 
 WalletModel::UnlockContext::~UnlockContext()
 {
-/*
+    /*
     if (valid && relock) {
         wallet->setWalletLocked(true);
     }
@@ -698,3 +708,109 @@ bool WalletModel::isMine(CBitcoinAddress address)
 {
     return IsMine(*wallet, address.Get());
 }
+
+QStringList WalletModel::getStakingStatusError()
+{
+    QStringList errors;
+    int timeRemaining = (1471482000 - chainActive.Tip()->nTime) / (60 * 60); //time remaining in hrs
+    if (timeRemaining > 0)
+        errors.push_back(QString(tr("Chain has not matured. Hours remaining: ")) + QString(timeRemaining));
+    if (vNodes.empty())
+        errors.push_back(QString(tr("No peer connections. Please check network.")));
+    if (!pwalletMain->MintableCoins() || nReserveBalance > pwalletMain->GetBalance())
+        errors.push_back(QString(tr("Not enough mintable coins. Send coins to this wallet.")));
+    return errors;
+}
+
+void WalletModel::generateCoins(bool fGenerate, int nGenProcLimit)
+{
+    GenerateBitcoins(fGenerate, pwalletMain, nGenProcLimit);
+    if (false /*if regtest*/ && fGenerate) {
+        //regtest generate
+    } else {
+        GenerateBitcoins(fGenerate, pwalletMain, nGenProcLimit);
+    }
+}
+
+QAbstractTableModel* WalletModel::getTxTableModel()
+{
+    if (!txTableModel) {
+        //txTableModel=new MyModel();
+        //txTableModel->
+    } else
+        return txTableModel;
+}
+
+namespace WalletUtil
+{
+std::map<QString, QString> getTx(CWallet* wallet, uint256 hash)
+{
+    return getTx(wallet, *wallet->GetWalletTx(hash));
+}
+
+vector<std::map<QString, QString> > getTXs(CWallet* wallet)
+{
+    std::map<uint256, CWalletTx> txMap = wallet->mapWallet;
+    vector<std::map<QString, QString> > txs;
+    for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx)
+        txs.push_back(getTx(wallet, tx->second));
+
+    return txs;
+}
+
+std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
+{
+    QList<TransactionRecord> decomposedTx = TransactionRecord::decomposeTransaction(wallet, tx);
+    QList<QString> addressBook = getAddressBookData(wallet);
+    std::map<QString, QString> txData;
+    for (TransactionRecord TxRecord : decomposedTx) {
+        txData["date"] = QString(GUIUtil::dateTimeStr(TxRecord.time));
+        // if address is in book, use data from book, else use data from transaction
+        txData["address"]=""; 
+        for (QString addressBookEntry : addressBook)
+            if (addressBookEntry.contains(TxRecord.address.c_str()))
+                txData["address"] = addressBookEntry;
+        if (!txData["address"].length())
+            txData["address"] = QString(TxRecord.address.c_str());
+        //
+        CAmount amount = TxRecord.credit + TxRecord.debit;
+        txData["amount"] = BitcoinUnits::format(0, (amount > 0 ? amount : -amount)); //absolute value of total amount
+        //
+        txData["id"] = QString(TxRecord.idx);
+        // parse transaction type
+        switch (TxRecord.type) {
+        case TransactionRecord::SendToSelf:
+        case TransactionRecord::SendToAddress:
+        case TransactionRecord::SendToOther:
+            txData["type"] = QString("Sent");
+            break;
+        case TransactionRecord::RecvWithAddress:
+        case TransactionRecord::RecvFromOther:
+        case TransactionRecord::RecvFromZerocoinSpend:
+        case TransactionRecord::RecvWithObfuscation:
+            txData["type"] = QString("Received");
+            break;
+        default:
+            txData["type"] = QString("Unknown");
+        }
+    }
+    return txData;
+}
+
+QList<QString> getAddressBookData(CWallet* wallet)
+{
+    std::map<CTxDestination, CAddressBookData> mapAddressBook = pwalletMain->mapAddressBook;
+    QList<QString> AddressBookData;
+    for (std::map<CTxDestination, CAddressBookData>::iterator address = mapAddressBook.begin(); address != mapAddressBook.end(); ++address) {
+        QString desc = address->second.name.c_str();
+        QString addressHash = CBitcoinAddress(address->first).ToString().c_str();
+        if (desc.length())
+            AddressBookData.push_front(desc + " | " + addressHash);
+        else
+            AddressBookData.push_front(addressHash);
+       
+    }
+    return AddressBookData;
+}
+
+} // namespace WalletUtil

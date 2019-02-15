@@ -136,51 +136,34 @@ void ReceiveCoinsDialog::on_receiveButton_clicked()
     CWallet* wl = model->getCWallet();
     wl->AllMyPublicAddresses(addrList, accountList);
     int selectedIdx = ui->reqAddress->currentIndex();
-    QString address(addrList[selectedIdx].c_str());
-    QString label(accountList[selectedIdx].c_str());
-    QString reqMes = "Request message";
-    QString strPaymentID = ui->reqID->text();
-    if (!strPaymentID.trimmed().isEmpty()) {
-        quint64 paymentID = strPaymentID.toULongLong();
-        uint64_t id = paymentID;
-        std::string integratedAddr;
-        if (selectedIdx == 0) {
-            wl->ComputeIntegratedPublicAddress(id, "masteraccount", integratedAddr);
-        } else {
-            wl->ComputeIntegratedPublicAddress(id, accountList[selectedIdx], integratedAddr);
+    if (addrList.size()>selectedIdx){
+        QString address(addrList[selectedIdx].c_str());
+        QString label(accountList[selectedIdx].c_str());
+        QString reqMes = "Request message";
+        QString strPaymentID = ui->reqID->text();
+        if (!strPaymentID.trimmed().isEmpty()) {
+            quint64 paymentID = strPaymentID.toULongLong();
+            uint64_t id = paymentID;
+            std::string integratedAddr;
+            if (selectedIdx == 0) {
+                wl->ComputeIntegratedPublicAddress(id, "masteraccount", integratedAddr);
+            } else {
+                wl->ComputeIntegratedPublicAddress(id, accountList[selectedIdx], integratedAddr);
+            }
+            address = QString(integratedAddr.c_str());
         }
-        address = QString(integratedAddr.c_str());
+
+        SendCoinsRecipient info(address, label,
+            ui->reqAmount->value(), reqMes);
+        ReceiveRequestDialog* dialog = new ReceiveRequestDialog(this);
+        dialog->setAttribute(Qt::WA_DeleteOnClose);
+        dialog->setModel(model->getOptionsModel());
+        dialog->setInfo(info);
+        dialog->show();
+        clear();
+        model->getRecentRequestsTableModel()->addNewRequest(info);
     }
 
-    // #REMOVE QString label = ui->reqLabel->text();
-    // #REMOVE if (ui->reuseAddress->isChecked()) {
-        /* Choose existing receiving address */
-        // #REMOVE AddressBookPage dlg(AddressBookPage::ForSelection, AddressBookPage::ReceivingTab, this);
-        // #REMOVE dlg.setModel(model->getAddressTableModel());
-        // #REMOVE if (dlg.exec()) {
-        // #REMOVE     address = dlg.getReturnValue();
-        // #REMOVE     if (label.isEmpty()) /* If no label provided, use the previously used label */
-        // #REMOVE     {
-        // #REMOVE         label = model->getAddressTableModel()->labelForAddress(address);
-        // #REMOVE     }
-        // #REMOVE } else {
-        // #REMOVE     return;
-        // #REMOVE }
-    // #REMOVE } else {
-        /* Generate new receiving address */
-    // #REMOVE     address = model->getAddressTableModel()->addRow(AddressTableModel::Receive, label, "");
-    // #REMOVE }
-    SendCoinsRecipient info(address, label,
-         ui->reqAmount->value(), reqMes);
-    ReceiveRequestDialog* dialog = new ReceiveRequestDialog(this);
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
-    dialog->setModel(model->getOptionsModel());
-    dialog->setInfo(info);
-    dialog->show();
-    clear();
-
-    /* Store request for later reference */
-    model->getRecentRequestsTableModel()->addNewRequest(info);
 }
 
 void ReceiveCoinsDialog::on_recentRequestsView_doubleClicked(const QModelIndex& index)

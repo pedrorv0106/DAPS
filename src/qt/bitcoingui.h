@@ -70,6 +70,7 @@ public:
     bool enableWallet;
     bool fMultiSend = false;
 
+
 protected:
     void changeEvent(QEvent* e);
     void closeEvent(QCloseEvent* event);
@@ -86,9 +87,6 @@ private:
     QPushButton* labelEncryptionIcon;
     QPushButton* labelConnectionsIcon;
     QLabel* labelBlocksIcon;
-    QLabel* progressBarLabel;
-    QProgressBar* progressBar;
-    QProgressDialog* progressDialog;
 
     QMenuBar* appMenuBar;
     QAction* overviewAction;
@@ -106,8 +104,9 @@ private:
     QAction* multisigSignAction;
     QAction* aboutAction;
     QAction* receiveCoinsAction;
-//    QAction* privacyAction;
     QAction* optionsAction;
+    QAction* stakingAction;
+    QAction* networkAction;
     QAction* toggleHideAction;
     QAction* encryptWalletAction;
     QAction* backupWalletAction;
@@ -133,6 +132,7 @@ private:
     Notificator* notificator;
     RPCConsole* rpcConsole;
     BlockExplorer* explorerWindow;
+    bool showTooltips = false;
 
     /** Keep track of previous number of blocks, to detect progress */
     int prevBlocks;
@@ -209,6 +209,8 @@ private slots:
     void gotoReceiveCoinsPage();
     /** Switch to receive coins page */
 //    void gotoPrivacyPage();
+    //** Switch to options page */
+    void gotoOptionsPage();
     /** Switch to send coins page */
     void gotoSendCoinsPage(QString addr = "");
 
@@ -247,9 +249,6 @@ private slots:
 
     /** called by a timer to check if fRequestShutdown has been set **/
     void detectShutdown();
-
-    /** Show progress dialog e.g. for verifychain */
-    void showProgress(const QString& title, int nProgress);
 };
 
 class UnitDisplayStatusBarControl : public QLabel

@@ -109,4 +109,11 @@ public slots:
     friend class TransactionTablePriv;
 };
 
+class TxTableModel : public QAbstractTableModel
+{
+    Q_OBJECT
+
+public:
+};
+
 #endif // BITCOIN_QT_TRANSACTIONTABLEMODEL_H

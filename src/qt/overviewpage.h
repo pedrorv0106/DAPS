@@ -8,6 +8,9 @@
 #include "amount.h"
 
 #include <QWidget>
+#include <QTimer>
+#include <QElapsedTimer>
+#include <QDialog>
 
 class ClientModel;
 class TransactionFilterProxy;
@@ -24,7 +27,7 @@ class QModelIndex;
 QT_END_NAMESPACE
 
 /** Overview ("home") page widget */
-class OverviewPage : public QWidget
+class OverviewPage : public QDialog
 {
     Q_OBJECT
 
@@ -34,21 +37,32 @@ public:
 
     void setClientModel(ClientModel* clientModel);
     void setWalletModel(WalletModel* walletModel);
-    void showSyncStatus(bool fShow);
+    void showBlockSync(bool fShow);
+    void showBalanceSync(bool fShow);
+    
+
+    QTimer* animTicker;
+    QElapsedTimer* animClock;
 
 public slots:
     void setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, 
                     const CAmount& zerocoinBalance, const CAmount& unconfirmedZerocoinBalance, const CAmount& immatureZerocoinBalance,
                     const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance);
+    void onAnimTick();   
+    void updateTotalBlocksLabel();
+    int tryNetworkBlockCount();
+    void updateRecentTransactions();
 
 signals:
     void transactionClicked(const QModelIndex& index);
 
 private:
     QTimer* timer;
+    QTimer* pingNetworkInterval;
     Ui::OverviewPage* ui;
     ClientModel* clientModel;
     WalletModel* walletModel;
+    int networkBlockCount;
     CAmount currentBalance;
     CAmount currentUnconfirmedBalance;
     CAmount currentImmatureBalance;
@@ -63,6 +77,17 @@ private:
 
     TxViewDelegate* txdelegate;
     TransactionFilterProxy* filter;
+
+    QWidget* blockSyncCircle;
+    QWidget* blockAnimSyncCircle;
+    bool isSyncingBlocks=true;
+    QWidget* balanceSyncCircle;
+    QWidget* balanceAnimSyncCircle;
+    bool isSyncingBalance=true;
+
+    void initSyncCircle(float percentOfParent);
+    void moveSyncCircle(QWidget* anchor, QWidget* animated, int deltaRadius, float degreesPerSecond, float angleOffset=0);
+    QRect getCircleGeometry(QWidget* parent, float ratioToParent);
 
 private slots:
     void updateDisplayUnit();
