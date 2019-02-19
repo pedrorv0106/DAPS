@@ -26,6 +26,10 @@ static void secp256k1_num_copy(secp256k1_num_t *r, const secp256k1_num_t *a) {
     *r = *a;
 }
 
+static int secp256k1_num_is_one(const secp256k1_num_t *a) {
+    return (a->limbs == 1 && a->data[0] == 1);
+}
+
 static void secp256k1_num_get_bin(unsigned char *r, unsigned int rlen, const secp256k1_num_t *a) {
     unsigned char tmp[65];
     int len = 0;
@@ -70,6 +74,28 @@ static void secp256k1_num_sub_abs(secp256k1_num_t *r, const secp256k1_num_t *a, 
     VERIFY_CHECK(c == 0);
     r->limbs = a->limbs;
     while (r->limbs > 1 && r->data[r->limbs-1]==0) r->limbs--;
+}
+
+static int secp256k1_num_jacobi(const secp256k1_num_t *a, const secp256k1_num_t *b) {
+    int ret;
+    mpz_t ga, gb;
+    secp256k1_num_sanity(a);
+    secp256k1_num_sanity(b);
+    VERIFY_CHECK(!b->neg && (b->limbs > 0) && (b->data[0] & 1));
+
+    mpz_inits(ga, gb, NULL);
+
+    mpz_import(gb, b->limbs, -1, sizeof(mp_limb_t), 0, 0, b->data);
+    mpz_import(ga, a->limbs, -1, sizeof(mp_limb_t), 0, 0, a->data);
+    if (a->neg) {
+        mpz_neg(ga, ga);
+    }
+
+    ret = mpz_jacobi(ga, gb);
+
+    mpz_clears(ga, gb, NULL);
+
+    return ret;
 }
 
 static void secp256k1_num_mod(secp256k1_num_t *r, const secp256k1_num_t *m) {

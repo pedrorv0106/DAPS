@@ -302,6 +302,10 @@ static void secp256k1_scalar_inverse(secp256k1_scalar_t *r, const secp256k1_scal
     secp256k1_scalar_mul(r, t, &x6); /* 111111 */
 }
 
+SECP256K1_INLINE static int secp256k1_scalar_is_even(const secp256k1_scalar_t *a) {
+    return !(a->d[0] & 1);
+}
+
 static void secp256k1_scalar_inverse_var(secp256k1_scalar_t *r, const secp256k1_scalar_t *x) {
 #if defined(USE_SCALAR_INV_BUILTIN)
     secp256k1_scalar_inverse(r, x);

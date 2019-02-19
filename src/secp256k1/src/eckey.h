@@ -7,8 +7,12 @@
 #ifndef _SECP256K1_ECKEY_
 #define _SECP256K1_ECKEY_
 
+#include <stddef.h>
+
 #include "group.h"
 #include "scalar.h"
+#include "ecmult.h"
+#include "ecmult_gen.h"
 
 static int secp256k1_eckey_pubkey_parse(secp256k1_ge_t *elem, const unsigned char *pub, int size);
 static int secp256k1_eckey_pubkey_serialize(secp256k1_ge_t *elem, unsigned char *pub, int *size, int compressed);
@@ -20,5 +24,9 @@ static int secp256k1_eckey_privkey_tweak_add(secp256k1_scalar_t *key, const secp
 static int secp256k1_eckey_pubkey_tweak_add(secp256k1_ge_t *key, const secp256k1_scalar_t *tweak);
 static int secp256k1_eckey_privkey_tweak_mul(secp256k1_scalar_t *key, const secp256k1_scalar_t *tweak);
 static int secp256k1_eckey_pubkey_tweak_mul(secp256k1_ge_t *key, const secp256k1_scalar_t *tweak);
+
+static int secp256k1_eckey_pubkey_tweak_add2(const secp256k1_ecmult_context *ctx, secp256k1_ge *key, const secp256k1_scalar *tweak);
+static int secp256k1_eckey_pubkey_tweak_mul2(const secp256k1_ecmult_context *ctx, secp256k1_ge *key, const secp256k1_scalar *tweak);
+
 
 #endif

@@ -48,6 +48,9 @@ static int secp256k1_scalar_add(secp256k1_scalar_t *r, const secp256k1_scalar_t 
 /** Add a power of two to a scalar. The result is not allowed to overflow. */
 static void secp256k1_scalar_add_bit(secp256k1_scalar_t *r, unsigned int bit);
 
+/** Conditionally add a power of two to a scalar. The result is not allowed to overflow. */
+static void secp256k1_scalar_cadd_bit(secp256k1_scalar_t *r, unsigned int bit, int flag);
+
 /** Multiply two scalars (modulo the group order). */
 static void secp256k1_scalar_mul(secp256k1_scalar_t *r, const secp256k1_scalar_t *a, const secp256k1_scalar_t *b);
 
@@ -84,6 +87,9 @@ static void secp256k1_scalar_order_get_num(secp256k1_num_t *r);
 static int secp256k1_scalar_eq(const secp256k1_scalar_t *a, const secp256k1_scalar_t *b);
 
 static void secp256k1_scalar_split_128(secp256k1_scalar_t *r1, secp256k1_scalar_t *r2, const secp256k1_scalar_t *a);
+
+/** Check whether a scalar, considered as an nonnegative integer, is even. */
+static int secp256k1_scalar_is_even(const secp256k1_scalar_t *a);
 
 #ifdef USE_ENDOMORPHISM
 /** Find r1 and r2 such that r1+r2*lambda = a, and r1 and r2 are maximum 128 bits long (see secp256k1_gej_mul_lambda). */

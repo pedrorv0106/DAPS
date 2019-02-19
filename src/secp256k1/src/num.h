@@ -63,6 +63,12 @@ static int secp256k1_num_is_neg(const secp256k1_num_t *a);
 /** Change a number's sign. */
 static void secp256k1_num_negate(secp256k1_num_t *r);
 
+/** Check whether a number is one. */
+static int secp256k1_num_is_one(const secp256k1_num_t *a);
+
+/** Compute the jacobi symbol (a|b). b must be positive and odd. */
+static int secp256k1_num_jacobi(const secp256k1_num_t *a, const secp256k1_num_t *b);
+
 #endif
 
 #endif
