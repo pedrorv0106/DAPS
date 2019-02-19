@@ -208,6 +208,12 @@ public:
 
 struct CMutableTransaction;
 
+enum {
+    TX_TYPE_FULL  =  0, //used for any normal transaction
+    TX_TYPE_REVEAL_AMOUNT, //transaction with no hidden amount (used for collateral transaction)
+    TX_TYPE_NO_RING_SIGNATURE    //transaction with no ring signature (used for decollateral transaction + reward transaction
+};
+
 /** The basic transaction that is broadcasted on the network and contained in
  * blocks.  A transaction can contain multiple inputs and outputs.
  */
@@ -237,7 +243,7 @@ public:
     char hasPaymentID;
     uint64_t paymentID;
     //const unsigned int nTime;
-
+    uint32_t txType;
     std::vector<CKeyImage> keyImages; //For ring signature
 
     std::vector<unsigned char> bulletproofs;
@@ -264,6 +270,7 @@ public:
         if (hasPaymentID != 0) {
             READWRITE(paymentID);
         }
+        READWRITE(txType);
         READWRITE(bulletproofs);
         if (ser_action.ForRead())
             UpdateHash();
@@ -359,6 +366,7 @@ struct CMutableTransaction
     std::vector<unsigned char> txPub;
     char hasPaymentID;
     uint64_t paymentID;
+    uint32_t txType;
     std::vector<unsigned char> bulletproofs;
 
     CMutableTransaction();
@@ -378,6 +386,7 @@ struct CMutableTransaction
         if (hasPaymentID != 0) {
             READWRITE(paymentID);
         }
+        READWRITE(txType);
     }
 
     /** Compute the hash of this CMutableTransaction. This is computed on the

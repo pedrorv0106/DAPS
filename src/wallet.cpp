@@ -2411,6 +2411,11 @@ bool CWallet::CreateTransactionBulletProof(const CPubKey& recipientViewKey, cons
     txNew.hasPaymentID = wtxNew.hasPaymentID;
     txNew.paymentID = wtxNew.paymentID;
 
+    if (vecSend[0].second == 1000000 * COIN) {
+        wtxNew.txType = TX_TYPE_REVEAL_AMOUNT;
+        txNew.txType = TX_TYPE_REVEAL_AMOUNT;
+    }
+
     {
         LOCK2(cs_main, cs_wallet);
         {
@@ -2433,7 +2438,13 @@ bool CWallet::CreateTransactionBulletProof(const CPubKey& recipientViewKey, cons
                             return false;
                         }
                         CPubKey sharedSec;
-                        ECDHInfo::ComputeSharedSec(wtxNew.txPriv, recipientViewKey, sharedSec);
+                        if (txNew.txType == TX_TYPE_REVEAL_AMOUNT) {
+                            //In this case, use the transaction pubkey to encode the transactiona amount
+                            //so that every fullnode can verify the exact transaction amount within the transaction
+                            sharedSec.Set(txNew.txPub.begin(), txNew.txPub.end());
+                        } else {
+                            ECDHInfo::ComputeSharedSec(wtxNew.txPriv, recipientViewKey, sharedSec);
+                        }
                         EncodeTxOutAmount(txout, txout.nValue, sharedSec.begin());
                         txNew.vout.push_back(txout);
                         txNew.vout.push_back(txout);
@@ -2616,7 +2627,7 @@ bool CWallet::CreateTransactionBulletProof(const CPubKey& recipientViewKey, cons
         }
     }
 
-    //Call bullet proof here
+    construct_tx_with_tx_key(wtxNew);
     return true;
 }
 
