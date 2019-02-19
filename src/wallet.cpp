@@ -2156,13 +2156,9 @@ bool CWallet::SelectCoinsDark(CAmount nValueMin, CAmount nValueMax, std::vector<
         CAmount outValue = getCTxOutValue(*out.tx, out.tx->vout[out.i]);
         if (outValue < CENT) continue;
         //do not allow collaterals to be selected
-<<<<<<< HEAD
-        if (IsCollateralAmount(outValue)) continue;
-        if (fMasterNode && outValue == 10000 * COIN) continue; //masternode input
-=======
+
         if (IsCollateralAmount(out.tx->vout[out.i].nValue)) continue;
         if (fMasterNode && out.tx->vout[out.i].nValue == 1000000 * COIN) continue; //masternode input
->>>>>>> develop
 
         if (nValueRet + outValue <= nValueMax) {
             CTxIn vin = CTxIn(out.tx->GetHash(), out.i);
