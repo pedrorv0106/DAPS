@@ -44,8 +44,11 @@
 #endif
 
 #include <QAbstractItemView>
+#include <QAbstractButton>
 #include <QApplication>
+#include <QCalendarWidget>
 #include <QClipboard>
+#include <QComboBox>
 #include <QDateTime>
 #include <QDesktopServices>
 #include <QDesktopWidget>
@@ -53,9 +56,12 @@
 #include <QFileDialog>
 #include <QFont>
 #include <QLineEdit>
+#include <QObject>
 #include <QSettings>
+#include <QSizePolicy>
 #include <QTextDocument> // for Qt::mightBeRichText
 #include <QThread>
+#include <QTextStream>
 
 #if QT_VERSION < 0x050000
 #include <QUrl>
@@ -106,11 +112,10 @@ void setupAddressWidget(QValidatedLineEdit* widget, QWidget* parent)
 {
     parent->setFocusProxy(widget);
 
-    widget->setFont(bitcoinAddressFont());
 #if QT_VERSION >= 0x040700
     // We don't want translators to use own addresses in translations
     // and this is the only place, where this address is supplied.
-    widget->setPlaceholderText(QObject::tr("Enter a DAPScoin address (e.g. %1)").arg("D7VFR83SQbiezrW72hjcWJtcfip5krte2Z"));
+
 #endif
     //widget->setValidator(new BitcoinAddressEntryValidator(parent));
     //widget->setCheckValidator(new BitcoinAddressCheckValidator(parent));
@@ -819,45 +824,72 @@ void restoreWindowGeometry(const QString& strSetting, const QSize& defaultSize, 
     parent->move(pos);
 }
 
-// Check whether a theme is not build-in
-bool isExternal(QString theme)
-{
-    if (theme.isEmpty())
-        return false;
-
-    return (theme.operator!=("default"));
-}
-
 // Open CSS when configured
 QString loadStyleSheet()
 {
     QString styleSheet;
     QSettings settings;
-    QString cssName;
-    QString theme = settings.value("theme", "").toString();
+    QVariant theme = settings.value("theme", "");
+    QString cssName = QString(":/css/"+theme.toString());
 
-    if (isExternal(theme)) {
-        // External CSS
-        settings.setValue("fCSSexternal", true);
-        boost::filesystem::path pathAddr = GetDataDir() / "themes/";
-        cssName = pathAddr.string().c_str() + theme + "/css/theme.css";
-    } else {
         // Build-in CSS
-        settings.setValue("fCSSexternal", false);
-        if (!theme.isEmpty()) {
-            cssName = QString(":/css/") + theme;
-        } else {
-            cssName = QString(":/css/default");
-            settings.setValue("theme", "default");
-        }
-    }
+    settings.setValue("fCSSexternal", false);
 
     QFile qFile(cssName);
-    if (qFile.open(QFile::ReadOnly)) {
+    if (!qFile.exists()){
+        QTextStream qout(stdout);
+        qout << "Error: " << cssName << " not found. Please check qrc." <<endl;
+    } else if (qFile.open(QFile::ReadOnly)) {
         styleSheet = QLatin1String(qFile.readAll());
-    }
+        return styleSheet;
+    } 
+    return 0;
+}
 
-    return styleSheet;
+void refreshStyleSheet(){
+    qApp->setStyleSheet(GUIUtil::loadStyleSheet());
+    foreach (QWidget *widget, QApplication::topLevelWidgets()){
+        widget->setStyleSheet(GUIUtil::loadStyleSheet());
+        widget->update();
+    }
+}
+
+void setWindowless(QWidget* widget){
+    widget->setWindowFlags(Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint);
+    widget->setAttribute(Qt::WA_NoSystemBackground, true);
+    widget->setAttribute(Qt::WA_TranslucentBackground, true);  
+    widget->setAttribute(Qt::WA_OpaquePaintEvent, false);
+    widget->setStyleSheet(GUIUtil::loadStyleSheet());
+}
+
+void disableTooltips(QWidget* widget){
+   // ToolTipEventFilter *ToolTipEventFilter = new GUIUtil::ToolTipEventFilter();
+   // widget->installEventFilter(ToolTipEventFilter);
+}
+
+void prompt(QString message){
+    QMessageBox* errorPrompt = new QMessageBox();
+    GUIUtil::setWindowless(errorPrompt);
+    errorPrompt->setStyleSheet(GUIUtil::loadStyleSheet());
+    //errorPrompt->setStyleSheet("background: qlineargradient(x1: 0 y1: 0, x2: 1 y2: 1, stop: 0 #5e0057, stop: 1 #1f192a);");
+    errorPrompt->setText(message);
+    errorPrompt->exec();
+}
+
+void colorCalendarWidgetWeekends(QCalendarWidget* widget, QColor color)
+{
+    QTextCharFormat format = widget->weekdayTextFormat(Qt::Saturday);
+    format.setForeground(QBrush(color, Qt::SolidPattern));
+    widget->setWeekdayTextFormat(Qt::Saturday, format);
+    format = widget->weekdayTextFormat(Qt::Sunday);
+    format.setForeground(QBrush(color, Qt::SolidPattern));
+    widget->setWeekdayTextFormat(Qt::Sunday, format);
+    widget->parentWidget()->resize(300,300);
+    widget->findChild<QWidget*>("qt_calendar_navigationbar")->setMinimumHeight(65);
+    widget->findChild<QWidget*>("qt_calendar_calendarview")->setStyleSheet("padding:5px; margin:0;");
+    widget->findChild<QAbstractButton*>("qt_calendar_prevmonth")->setIcon(QIcon(":/images/leftArrow_small"));
+    widget->findChild<QAbstractButton*>("qt_calendar_nextmonth")->setIcon(QIcon(":/images/rightArrow_small"));
+    //widget->findChild<QComboBox*>("qt_calendar_monthbutton");
 }
 
 void setClipboard(const QString& str)
@@ -946,5 +978,6 @@ QString formatTimeOffset(int64_t nTimeOffset)
 {
     return QString(QObject::tr("%1 s")).arg(QString::number((int)nTimeOffset, 10));
 }
+
 
 } // namespace GUIUtil

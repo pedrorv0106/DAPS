@@ -58,6 +58,8 @@ public slots:
     void gotoMasternodePage();
     /** Switch to receive coins page */
     void gotoReceiveCoinsPage();
+    /** Switch to options page */
+    void gotoOptionsPage();
     /** Switch to privacy page */
 //    void gotoPrivacyPage();
     /** Switch to send coins page */

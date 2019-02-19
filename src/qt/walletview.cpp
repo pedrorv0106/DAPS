@@ -11,11 +11,13 @@
 #include "blockexplorer.h"
 #include "clientmodel.h"
 #include "guiutil.h"
+#include "historypage.h"
 #include "masternodeconfig.h"
 #include "multisenddialog.h"
 #include "multisigdialog.h"
 #include "optionsmodel.h"
 #include "overviewpage.h"
+#include "optionspage.h"
 #include "receivecoinsdialog.h"
 #include "sendcoinsdialog.h"
 #include "signverifymessagedialog.h"
@@ -68,17 +70,21 @@ WalletView::WalletView(QWidget* parent) : QStackedWidget(parent),
 
     hbox_buttons->addWidget(exportButton);
     vbox->addLayout(hbox_buttons);
-    transactionsPage->setLayout(vbox);
+//    transactionsPage->setLayout(vbox);
 
 //    privacyPage = new PrivacyDialog();
     receiveCoinsPage = new ReceiveCoinsDialog();
     sendCoinsPage = new SendCoinsDialog();
+    optionsPage = new OptionsPage();
+    historyPage = new HistoryPage();
 
     addWidget(overviewPage);
-    addWidget(transactionsPage);
+//    addWidget(transactionsPage);
 //    addWidget(privacyPage);
+    addWidget(historyPage);
     addWidget(receiveCoinsPage);
     addWidget(sendCoinsPage);
+    addWidget(optionsPage);
     addWidget(explorerWindow);
 
     QSettings settings;
@@ -153,6 +159,7 @@ void WalletView::setWalletModel(WalletModel* walletModel)
 //    privacyPage->setModel(walletModel);
     receiveCoinsPage->setModel(walletModel);
     sendCoinsPage->setModel(walletModel);
+    optionsPage->setModel(walletModel);
 
     if (walletModel) {
         // Receive and pass through messages from wallet model
@@ -201,7 +208,7 @@ void WalletView::gotoOverviewPage()
 
 void WalletView::gotoHistoryPage()
 {
-    setCurrentWidget(transactionsPage);
+    setCurrentWidget(historyPage);
 }
 
 
@@ -221,6 +228,11 @@ void WalletView::gotoMasternodePage()
 void WalletView::gotoReceiveCoinsPage()
 {
     setCurrentWidget(receiveCoinsPage);
+}
+
+void WalletView::gotoOptionsPage()
+{
+    setCurrentWidget(optionsPage);
 }
 
 //void WalletView::gotoPrivacyPage()
@@ -291,7 +303,7 @@ bool WalletView::handlePaymentRequest(const SendCoinsRecipient& recipient)
 
 void WalletView::showSyncStatus(bool fShow)
 {
-    overviewPage->showSyncStatus(fShow);
+    overviewPage->showBlockSync(fShow);
 //  #remove  privacyPage->showSyncStatus(fShow);
 }
 
