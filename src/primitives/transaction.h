@@ -244,6 +244,9 @@ public:
     uint64_t paymentID;
     //const unsigned int nTime;
     uint32_t txType;
+
+    std::vector<unsigned char> masternodeStealthAddress;    //masternode stealth address for receiving rewards
+
     std::vector<CKeyImage> keyImages; //For ring signature
 
     std::vector<unsigned char> bulletproofs;
@@ -271,6 +274,9 @@ public:
             READWRITE(paymentID);
         }
         READWRITE(txType);
+        if (IsMNCollateralTx()) {
+            READWRITE(masternodeStealthAddress);
+        }
         READWRITE(bulletproofs);
         if (ser_action.ForRead())
             UpdateHash();
@@ -350,6 +356,21 @@ public:
         return a.hash != b.hash;
     }
 
+    bool IsMNCollateralTx() const {
+        if (txType == TX_TYPE_REVEAL_AMOUNT) {
+            uint32_t numCollateral = 0;
+            for (int i = 0; i < vout.size(); i++) {
+                if (vout[i].nValue == 1000000 * COIN) {
+                    numCollateral++;
+                }
+            }
+            if (numCollateral == 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     std::string ToString() const;
 
     bool GetCoinAge(uint64_t& nCoinAge) const;  // ppcoin: get transaction coin age
@@ -367,6 +388,7 @@ struct CMutableTransaction
     char hasPaymentID;
     uint64_t paymentID;
     uint32_t txType;
+    std::vector<unsigned char> masternodeStealthAddress;    //masternode stealth address for receiving rewards
     std::vector<unsigned char> bulletproofs;
 
     CMutableTransaction();
@@ -387,6 +409,9 @@ struct CMutableTransaction
             READWRITE(paymentID);
         }
         READWRITE(txType);
+        if (IsMNCollateralTx()) {
+            READWRITE(masternodeStealthAddress);
+        }
     }
 
     /** Compute the hash of this CMutableTransaction. This is computed on the
@@ -404,6 +429,21 @@ struct CMutableTransaction
     friend bool operator!=(const CMutableTransaction& a, const CMutableTransaction& b)
     {
         return !(a == b);
+    }
+
+    bool IsMNCollateralTx() const {
+        if (txType == TX_TYPE_REVEAL_AMOUNT) {
+            uint32_t numCollateral = 0;
+            for (int i = 0; i < vout.size(); i++) {
+                if (vout[i].nValue == 1000000 * COIN) {
+                    numCollateral++;
+                }
+            }
+            if (numCollateral == 1) {
+                return true;
+            }
+        }
+        return false;
     }
 
 };
