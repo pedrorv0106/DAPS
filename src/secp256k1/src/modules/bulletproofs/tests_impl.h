@@ -16,6 +16,9 @@
 
 #include "include/secp256k1_bulletproofs.h"
 
+static secp256k1_context *ctx = NULL;
+
+
 void test_new_apis(uint64_t *v, size_t nbits, size_t n_commits) {
     size_t plen;
     unsigned char proof[10*1024];
