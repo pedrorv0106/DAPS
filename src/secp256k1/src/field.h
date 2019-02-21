@@ -10,7 +10,7 @@
 /** Field element module.
  *
  *  Field elements can be represented in several ways, but code accessing
- *  it (and implementations) need to take certain properties into account:
+ *  it (and implementations) need to take certain properaties into account:
  *  - Each field element can be normalized or not.
  *  - Each field element has a magnitude, which represents how far away
  *    its representation is away from normalization. Normalized elements
@@ -32,10 +32,6 @@
 #error "Please select field implementation"
 #endif
 
-#include "util.h"
-
-#define secp256k1_fe secp256k1_fe_t
-
 typedef struct {
 #ifndef USE_NUM_NONE
     secp256k1_num_t p;
@@ -54,25 +50,8 @@ static void secp256k1_fe_stop(void);
 /** Normalize a field element. */
 static void secp256k1_fe_normalize(secp256k1_fe_t *r);
 
-/** Weakly normalize a field element: reduce it magnitude to 1, but don't fully normalize. */
-static void secp256k1_fe_normalize_weak(secp256k1_fe_t *r);
-
-/** Normalize a field element, without constant-time guarantee. */
-static void secp256k1_fe_normalize_var(secp256k1_fe_t *r);
-
-/** Verify whether a field element represents zero i.e. would normalize to a zero value. The field
- *  implementation may optionally normalize the input, but this should not be relied upon. */
-static int secp256k1_fe_normalizes_to_zero(secp256k1_fe_t *r);
-
-/** Verify whether a field element represents zero i.e. would normalize to a zero value. The field
- *  implementation may optionally normalize the input, but this should not be relied upon. */
-static int secp256k1_fe_normalizes_to_zero_var(secp256k1_fe_t *r);
-
 /** Set a field element equal to a small integer. Resulting field element is normalized. */
 static void secp256k1_fe_set_int(secp256k1_fe_t *r, int a);
-
-/** Sets a field element equal to zero, initializing all fields. */
-static void secp256k1_fe_clear(secp256k1_fe_t *a);
 
 /** Verify whether a field element is zero. Requires the input to be normalized. */
 static int secp256k1_fe_is_zero(const secp256k1_fe_t *a);
@@ -80,11 +59,8 @@ static int secp256k1_fe_is_zero(const secp256k1_fe_t *a);
 /** Check the "oddness" of a field element. Requires the input to be normalized. */
 static int secp256k1_fe_is_odd(const secp256k1_fe_t *a);
 
-/** Compare two field elements. Requires magnitude-1 inputs. */
+/** Compare two field elements. Requires both inputs to be normalized */
 static int secp256k1_fe_equal(const secp256k1_fe_t *a, const secp256k1_fe_t *b);
-
-/** Same as secp256k1_fe_equal, but may be variable time. */
-static int secp256k1_fe_equal_var(const secp256k1_fe_t *a, const secp256k1_fe_t *b);
 
 /** Compare two field elements. Requires both inputs to be normalized */
 static int secp256k1_fe_cmp_var(const secp256k1_fe_t *a, const secp256k1_fe_t *b);
@@ -119,9 +95,6 @@ static void secp256k1_fe_sqr(secp256k1_fe_t *r, const secp256k1_fe_t *a);
  *  normalized). Return value indicates whether a square root was found. */
 static int secp256k1_fe_sqrt(secp256k1_fe_t *r, const secp256k1_fe_t *a);
 
-/** Checks whether a field element is a quadratic residue. */
-static int secp256k1_fe_is_quad_var(const secp256k1_fe_t *a);
-
 /** Sets a field element to be the (modular) inverse of another. Requires the input's magnitude to be
  *  at most 8. The output magnitude is 1 (but not guaranteed to be normalized). */
 static void secp256k1_fe_inv(secp256k1_fe_t *r, const secp256k1_fe_t *a);
@@ -145,14 +118,5 @@ static int secp256k1_fe_set_hex(secp256k1_fe_t *r, const char *a, int alen);
 
 /** If flag is true, set *r equal to *a; otherwise leave it. Constant-time. */
 static void secp256k1_fe_cmov(secp256k1_fe_t *r, const secp256k1_fe_t *a, int flag);
-
-/** Convert a field element to the storage type. */
-static void secp256k1_fe_to_storage(secp256k1_fe_storage *r, const secp256k1_fe *a);
-
-/** Convert a field element back from the storage type. */
-static void secp256k1_fe_from_storage(secp256k1_fe *r, const secp256k1_fe_storage *a);
-
-/** If flag is true, set *r equal to *a; otherwise leave it. Constant-time. */
-static void secp256k1_fe_storage_cmov(secp256k1_fe_storage *r, const secp256k1_fe_storage *a, int flag);
 
 #endif

@@ -12,9 +12,6 @@
 #endif
 
 #include "util.h"
-#define secp256k1_fe secp256k1_fe_t
-#define secp256k1_num secp256k1_num_t
-
 
 #if defined(USE_FIELD_GMP)
 #include "field_gmp_impl.h"
@@ -25,13 +22,6 @@
 #else
 #error "Please select field implementation"
 #endif
-
-SECP256K1_INLINE static int secp256k1_fe_equal_var(const secp256k1_fe_t *a, const secp256k1_fe_t *b) {
-    secp256k1_fe na;
-    secp256k1_fe_negate(&na, a, 1);
-    secp256k1_fe_add(&na, b);
-    return secp256k1_fe_normalizes_to_zero_var(&na);
-}
 
 static void secp256k1_fe_get_hex(char *r, int *rlen, const secp256k1_fe_t *a) {
     if (*rlen < 65) {
@@ -304,28 +294,4 @@ static void secp256k1_fe_stop(void) {
     }
 }
 
-static int secp256k1_fe_is_quad_var(const secp256k1_fe_t *a) {
-#ifndef USE_NUM_NONE
-    unsigned char b[32];
-    secp256k1_num n;
-    secp256k1_num m;
-    /* secp256k1 field prime, value p defined in "Standards for Efficient Cryptography" (SEC2) 2.7.1. */
-    static const unsigned char prime[32] = {
-            0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-            0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-            0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-            0xFF,0xFF,0xFF,0xFE,0xFF,0xFF,0xFC,0x2F
-    };
-
-    secp256k1_fe c = *a;
-    secp256k1_fe_normalize_var(&c);
-    secp256k1_fe_get_b32(b, &c);
-    secp256k1_num_set_bin(&n, b, 32);
-    secp256k1_num_set_bin(&m, prime, 32);
-    return secp256k1_num_jacobi(&n, &m) >= 0;
-#else
-    secp256k1_fe r;
-    return secp256k1_fe_sqrt(&r, a);
-#endif
-}
 #endif

@@ -74,6 +74,11 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
     if (tx.hasPaymentID) {
         entry.push_back(Pair("paymentid", tx.paymentID));
     }
+    if (tx.masternodeStealthAddress.size() > 0) {
+        entry.push_back(Pair("masternodestealth", std::string((char*)(&tx.masternodeStealthAddress[0]))));
+    }
+    entry.push_back(Pair("txType", (int64_t)tx.txType));
+
     Array vin;
     BOOST_FOREACH (const CTxIn& txin, tx.vin) {
         Object in;
@@ -100,6 +105,8 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
         Object o;
         ScriptPubKeyToJSON(txout.scriptPubKey, o, true);
         out.push_back(Pair("scriptPubKey", o));
+        out.push_back(Pair("encoded_amount", txout.maskValue.amount.GetHex()));
+        out.push_back(Pair("encoded_mask", txout.maskValue.mask.GetHex()));
         vout.push_back(out);
     }
     entry.push_back(Pair("vout", vout));
@@ -192,9 +199,9 @@ Value getrawtransaction(const Array& params, bool fHelp)
     uint256 hashBlock = 0;
     if (!GetTransaction(hash, tx, hashBlock, true))
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available about transaction");
-
+    std::cout << "read tx" << std::endl;
     string strHex = EncodeHexTx(tx);
-
+    std::cout << "encode tx" << std::endl;
     if (!fVerbose)
         return strHex;
 

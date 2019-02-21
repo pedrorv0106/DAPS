@@ -15,15 +15,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-typedef struct {
-    void (*fn)(const char *text, void* data);
-    const void* data;
-} secp256k1_callback;
-
-static SECP256K1_INLINE void secp256k1_callback_call(const secp256k1_callback * const cb, const char * const text) {
-    cb->fn(text, (void*)cb->data);
-}
-
 #ifdef DETERMINISTIC
 #define TEST_FAILURE(msg) do { \
     fprintf(stderr, "%s\n", msg); \
@@ -66,53 +57,9 @@ static SECP256K1_INLINE void secp256k1_callback_call(const secp256k1_callback * 
 /* Like DEBUG_CHECK(), but when VERIFY is defined instead of NDEBUG not defined. */
 #ifdef VERIFY
 #define VERIFY_CHECK CHECK
-#define VERIFY_SETUP(stmt) do { stmt; } while(0)
 #else
 #define VERIFY_CHECK(cond) do { (void)(cond); } while(0)
-#define VERIFY_SETUP(stmt)
 #endif
-
-static SECP256K1_INLINE void *checked_malloc(const secp256k1_callback* cb, size_t size) {
-    void *ret = malloc(size);
-    if (ret == NULL) {
-        secp256k1_callback_call(cb, "Out of memory");
-    }
-    return ret;
-}
-
-static SECP256K1_INLINE void *checked_realloc(const secp256k1_callback* cb, void *ptr, size_t size) {
-    void *ret = realloc(ptr, size);
-    if (ret == NULL) {
-        secp256k1_callback_call(cb, "Out of memory");
-    }
-    return ret;
-}
-
-/* Extract the sign of an int64, take the abs and return a uint64, constant time. */
-SECP256K1_INLINE static int secp256k1_sign_and_abs64(uint64_t *out, int64_t in) {
-    uint64_t mask0, mask1;
-    int ret;
-    ret = in < 0;
-    mask0 = ret + ~((uint64_t)0);
-    mask1 = ~mask0;
-    *out = (uint64_t)in;
-    *out = (*out & mask0) | ((~*out + 1) & mask1);
-    return ret;
-}
-
-SECP256K1_INLINE static int secp256k1_clz64_var(uint64_t x) {
-    int ret;
-    if (!x) {
-        return 64;
-    }
-# if defined(HAVE_BUILTIN_CLZLL)
-    ret = __builtin_clzll(x);
-# else
-    /*FIXME: debruijn fallback. */
-    for (ret = 0; ((x & (1ULL << 63)) == 0); x <<= 1, ret++);
-# endif
-    return ret;
-}
 
 /* Macro for restrict, when available and not in a VERIFY build. */
 #if defined(SECP256K1_BUILD) && defined(VERIFY)
@@ -131,21 +78,4 @@ SECP256K1_INLINE static int secp256k1_clz64_var(uint64_t x) {
 # endif
 #endif
 
-#if defined(_WIN32)
-# define I64FORMAT "I64d"
-# define I64uFORMAT "I64u"
-#else
-# define I64FORMAT "lld"
-# define I64uFORMAT "llu"
 #endif
-
-#if defined(HAVE___INT128)
-# if defined(__GNUC__)
-#  define SECP256K1_GNUC_EXT __extension__
-# else
-#  define SECP256K1_GNUC_EXT
-# endif
-SECP256K1_GNUC_EXT typedef unsigned __int128 uint128_t;
-#endif
-
-#endif /* SECP256K1_UTIL_H */

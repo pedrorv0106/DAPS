@@ -7,11 +7,8 @@
 #ifndef _SECP256K1_ECDSA_
 #define _SECP256K1_ECDSA_
 
-#include <stddef.h>
-
 #include "scalar.h"
 #include "group.h"
-#include "ecmult.h"
 
 static void secp256k1_ecsda_start(void);
 static void secp256k1_ecdsa_stop(void);
@@ -26,10 +23,5 @@ static int secp256k1_ecdsa_sig_verify(const secp256k1_ecdsa_sig_t *sig, const se
 static int secp256k1_ecdsa_sig_sign(secp256k1_ecdsa_sig_t *sig, const secp256k1_scalar_t *seckey, const secp256k1_scalar_t *message, const secp256k1_scalar_t *nonce, int *recid);
 static int secp256k1_ecdsa_sig_recover(const secp256k1_ecdsa_sig_t *sig, secp256k1_ge_t *pubkey, const secp256k1_scalar_t *message, int recid);
 static void secp256k1_ecdsa_sig_set_rs(secp256k1_ecdsa_sig_t *sig, const secp256k1_scalar_t *r, const secp256k1_scalar_t *s);
-
-static int secp256k1_ecdsa_sig_parse2(secp256k1_scalar *r, secp256k1_scalar *s, const unsigned char *sig, size_t size);
-static int secp256k1_ecdsa_sig_serialize2(unsigned char *sig, size_t *size, const secp256k1_scalar *r, const secp256k1_scalar *s);
-static int secp256k1_ecdsa_sig_verify2(const secp256k1_ecmult_context *ctx, const secp256k1_scalar* r, const secp256k1_scalar* s, const secp256k1_ge *pubkey, const secp256k1_scalar *message);
-static int secp256k1_ecdsa_sig_sign2(const secp256k1_ecmult_gen_context *ctx, secp256k1_scalar* r, secp256k1_scalar* s, const secp256k1_scalar *seckey, const secp256k1_scalar *message, const secp256k1_scalar *nonce, int *recid);
 
 #endif

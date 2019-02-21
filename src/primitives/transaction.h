@@ -210,8 +210,10 @@ struct CMutableTransaction;
 
 enum {
     TX_TYPE_FULL  =  0, //used for any normal transaction
-    TX_TYPE_REVEAL_AMOUNT, //transaction with no hidden amount (used for collateral transaction)
-    TX_TYPE_NO_RING_SIGNATURE    //transaction with no ring signature (used for decollateral transaction + reward transaction
+    //transaction with no hidden amount (used for collateral transaction, rewarding transaction
+    // (for masternode and staking node), and PoA mining rew)
+    TX_TYPE_REVEAL_AMOUNT,
+    TX_TYPE_REVEAL_SENDER    //transaction with no ring signature (used for decollateral transaction + reward transaction
 };
 
 /** The basic transaction that is broadcasted on the network and contained in
@@ -247,9 +249,10 @@ public:
 
     std::vector<unsigned char> masternodeStealthAddress;    //masternode stealth address for receiving rewards
 
-    std::vector<CKeyImage> keyImages; //For ring signature
-
     std::vector<unsigned char> bulletproofs;
+
+    std::vector<CKeyImage> keyImages;   //have the same number element as vin
+    std::vector<std::vector<CTxIn>> decoys;
 
     /** Construct a CTransaction that qualifies as IsNull() */
     CTransaction();
@@ -278,6 +281,9 @@ public:
             READWRITE(masternodeStealthAddress);
         }
         READWRITE(bulletproofs);
+
+        READWRITE(keyImages);
+        READWRITE(decoys);
         if (ser_action.ForRead())
             UpdateHash();
     }
@@ -391,6 +397,9 @@ struct CMutableTransaction
     std::vector<unsigned char> masternodeStealthAddress;    //masternode stealth address for receiving rewards
     std::vector<unsigned char> bulletproofs;
 
+    std::vector<CKeyImage> keyImages;   //have the same number element as vin
+    std::vector<std::vector<CTxIn>> decoys;
+
     CMutableTransaction();
     CMutableTransaction(const CTransaction& tx);
 
@@ -412,6 +421,11 @@ struct CMutableTransaction
         if (IsMNCollateralTx()) {
             READWRITE(masternodeStealthAddress);
         }
+
+        READWRITE(bulletproofs);
+
+        READWRITE(keyImages);
+        READWRITE(decoys);
     }
 
     /** Compute the hash of this CMutableTransaction. This is computed on the

@@ -821,6 +821,10 @@ private:
         const std::vector<uint8_t> &extra, 
         CTransaction& tx, 
         CKey& txPrivKey);
+    bool generateBulletProof(CTransaction& tx);
+    bool verifyBulletProof(const CTransaction& tx);
+    bool generateRingSignature(CTransaction& tx);
+    bool verifyRingSignature(const CTransaction& tx);
 };
 
 

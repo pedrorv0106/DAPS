@@ -112,24 +112,6 @@ static void secp256k1_scalar_add_bit(secp256k1_scalar_t *r, unsigned int bit) {
 #endif
 }
 
-static void secp256k1_scalar_cadd_bit(secp256k1_scalar_t *r, unsigned int bit, int flag) {
-    uint128_t t;
-    VERIFY_CHECK(bit < 256);
-    bit += ((uint32_t) flag - 1) & 0x100;  /* forcing (bit >> 6) > 3 makes this a noop */
-    t = (uint128_t)r->d[0] + (((uint64_t)((bit >> 6) == 0)) << (bit & 0x3F));
-    r->d[0] = t & 0xFFFFFFFFFFFFFFFFULL; t >>= 64;
-    t += (uint128_t)r->d[1] + (((uint64_t)((bit >> 6) == 1)) << (bit & 0x3F));
-    r->d[1] = t & 0xFFFFFFFFFFFFFFFFULL; t >>= 64;
-    t += (uint128_t)r->d[2] + (((uint64_t)((bit >> 6) == 2)) << (bit & 0x3F));
-    r->d[2] = t & 0xFFFFFFFFFFFFFFFFULL; t >>= 64;
-    t += (uint128_t)r->d[3] + (((uint64_t)((bit >> 6) == 3)) << (bit & 0x3F));
-    r->d[3] = t & 0xFFFFFFFFFFFFFFFFULL;
-#ifdef VERIFY
-    VERIFY_CHECK((t >> 64) == 0);
-    VERIFY_CHECK(secp256k1_scalar_check_overflow(r) == 0);
-#endif
-}
-
 static void secp256k1_scalar_set_b32(secp256k1_scalar_t *r, const unsigned char *b32, int *overflow) {
     r->d[0] = (uint64_t)b32[31] | (uint64_t)b32[30] << 8 | (uint64_t)b32[29] << 16 | (uint64_t)b32[28] << 24 | (uint64_t)b32[27] << 32 | (uint64_t)b32[26] << 40 | (uint64_t)b32[25] << 48 | (uint64_t)b32[24] << 56;
     r->d[1] = (uint64_t)b32[23] | (uint64_t)b32[22] << 8 | (uint64_t)b32[21] << 16 | (uint64_t)b32[20] << 24 | (uint64_t)b32[19] << 32 | (uint64_t)b32[18] << 40 | (uint64_t)b32[17] << 48 | (uint64_t)b32[16] << 56;
@@ -178,22 +160,6 @@ static int secp256k1_scalar_is_high(const secp256k1_scalar_t *a) {
     yes |= (a->d[1] > SECP256K1_N_H_1) & ~no;
     yes |= (a->d[0] > SECP256K1_N_H_0) & ~no;
     return yes;
-}
-
-static int secp256k1_scalar_cond_negate(secp256k1_scalar_t *r, int flag) {
-    /* If we are flag = 0, mask = 00...00 and this is a no-op;
-     * if we are flag = 1, mask = 11...11 and this is identical to secp256k1_scalar_negate */
-    uint64_t mask = !flag - 1;
-    uint64_t nonzero = (secp256k1_scalar_is_zero(r) != 0) - 1;
-    uint128_t t = (uint128_t)(r->d[0] ^ mask) + ((SECP256K1_N_0 + 1) & mask);
-    r->d[0] = t & nonzero; t >>= 64;
-    t += (uint128_t)(r->d[1] ^ mask) + (SECP256K1_N_1 & mask);
-    r->d[1] = t & nonzero; t >>= 64;
-    t += (uint128_t)(r->d[2] ^ mask) + (SECP256K1_N_2 & mask);
-    r->d[2] = t & nonzero; t >>= 64;
-    t += (uint128_t)(r->d[3] ^ mask) + (SECP256K1_N_3 & mask);
-    r->d[3] = t & nonzero;
-    return 2 * (mask == 0) - 1;
 }
 
 /* Inspired by the macros in OpenSSL's crypto/bn/asm/x86_64-gcc.c. */
@@ -425,18 +391,6 @@ static void secp256k1_scalar_mul(secp256k1_scalar_t *r, const secp256k1_scalar_t
     secp256k1_scalar_reduce_512(r, l);
 }
 
-static int secp256k1_scalar_shr_int(secp256k1_scalar_t *r, int n) {
-    int ret;
-    VERIFY_CHECK(n > 0);
-    VERIFY_CHECK(n < 16);
-    ret = r->d[0] & ((1 << n) - 1);
-    r->d[0] = (r->d[0] >> n) + (r->d[1] << (64 - n));
-    r->d[1] = (r->d[1] >> n) + (r->d[2] << (64 - n));
-    r->d[2] = (r->d[2] >> n) + (r->d[3] << (64 - n));
-    r->d[3] = (r->d[3] >> n);
-    return ret;
-}
-
 static void secp256k1_scalar_sqr(secp256k1_scalar_t *r, const secp256k1_scalar_t *a) {
     uint64_t l[8];
     secp256k1_scalar_sqr_512(l, a);
@@ -474,94 +428,4 @@ SECP256K1_INLINE static void secp256k1_scalar_mul_shift_var(secp256k1_scalar_t *
     }
 }
 
-#define ROTL32(x,n) ((x) << (n) | (x) >> (32-(n)))
-#define QUARTERROUND(a,b,c,d) \
-  a += b; d = ROTL32(d ^ a, 16); \
-  c += d; b = ROTL32(b ^ c, 12); \
-  a += b; d = ROTL32(d ^ a, 8); \
-  c += d; b = ROTL32(b ^ c, 7);
-
-#ifdef WORDS_BIGENDIAN
-#define LE32(p) ((((p) & 0xFF) << 24) | (((p) & 0xFF00) << 8) | (((p) & 0xFF0000) >> 8) | (((p) & 0xFF000000) >> 24))
-#define BE32(p) (p)
-#else
-#define BE32(p) ((((p) & 0xFF) << 24) | (((p) & 0xFF00) << 8) | (((p) & 0xFF0000) >> 8) | (((p) & 0xFF000000) >> 24))
-#define LE32(p) (p)
 #endif
-
-static void secp256k1_scalar_chacha20(secp256k1_scalar_t *r1, secp256k1_scalar_t *r2, const unsigned char *seed, uint64_t idx) {
-    size_t n;
-    size_t over_count = 0;
-    uint32_t seed32[8];
-    uint32_t x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15;
-    int over1, over2;
-
-    memcpy((void *) seed32, (const void *) seed, 32);
-    do {
-        x0 = 0x61707865;
-        x1 = 0x3320646e;
-        x2 = 0x79622d32;
-        x3 = 0x6b206574;
-        x4 = LE32(seed32[0]);
-        x5 = LE32(seed32[1]);
-        x6 = LE32(seed32[2]);
-        x7 = LE32(seed32[3]);
-        x8 = LE32(seed32[4]);
-        x9 = LE32(seed32[5]);
-        x10 = LE32(seed32[6]);
-        x11 = LE32(seed32[7]);
-        x12 = idx;
-        x13 = idx >> 32;
-        x14 = 0;
-        x15 = over_count;
-
-        n = 10;
-        while (n--) {
-            QUARTERROUND(x0, x4, x8,x12)
-            QUARTERROUND(x1, x5, x9,x13)
-            QUARTERROUND(x2, x6,x10,x14)
-            QUARTERROUND(x3, x7,x11,x15)
-            QUARTERROUND(x0, x5,x10,x15)
-            QUARTERROUND(x1, x6,x11,x12)
-            QUARTERROUND(x2, x7, x8,x13)
-            QUARTERROUND(x3, x4, x9,x14)
-        }
-
-        x0 += 0x61707865;
-        x1 += 0x3320646e;
-        x2 += 0x79622d32;
-        x3 += 0x6b206574;
-        x4 += LE32(seed32[0]);
-        x5 += LE32(seed32[1]);
-        x6 += LE32(seed32[2]);
-        x7 += LE32(seed32[3]);
-        x8 += LE32(seed32[4]);
-        x9 += LE32(seed32[5]);
-        x10 += LE32(seed32[6]);
-        x11 += LE32(seed32[7]);
-        x12 += idx;
-        x13 += idx >> 32;
-        x14 += 0;
-        x15 += over_count;
-
-        r1->d[3] = BE32((uint64_t) x0) << 32 | BE32(x1);
-        r1->d[2] = BE32((uint64_t) x2) << 32 | BE32(x3);
-        r1->d[1] = BE32((uint64_t) x4) << 32 | BE32(x5);
-        r1->d[0] = BE32((uint64_t) x6) << 32 | BE32(x7);
-        r2->d[3] = BE32((uint64_t) x8) << 32 | BE32(x9);
-        r2->d[2] = BE32((uint64_t) x10) << 32 | BE32(x11);
-        r2->d[1] = BE32((uint64_t) x12) << 32 | BE32(x13);
-        r2->d[0] = BE32((uint64_t) x14) << 32 | BE32(x15);
-
-        over1 = secp256k1_scalar_check_overflow(r1);
-        over2 = secp256k1_scalar_check_overflow(r2);
-        over_count++;
-   } while (over1 | over2);
-}
-
-#undef ROTL32
-#undef QUARTERROUND
-#undef BE32
-#undef LE32
-
-#endif /* SECP256K1_SCALAR_REPR_IMPL_H */

@@ -92,7 +92,7 @@ std::string CTxOut::ToString() const
 }
 
 CMutableTransaction::CMutableTransaction() : nVersion(CTransaction::CURRENT_VERSION), nLockTime(0), hasPaymentID(0), paymentID(0), txType(TX_TYPE_FULL) {}
-CMutableTransaction::CMutableTransaction(const CTransaction& tx) : nVersion(tx.nVersion), vin(tx.vin), vout(tx.vout), nLockTime(tx.nLockTime), txPub(tx.txPub), hasPaymentID(tx.hasPaymentID), paymentID(tx.paymentID), txType(tx.txType) {}
+CMutableTransaction::CMutableTransaction(const CTransaction& tx) : nVersion(tx.nVersion), vin(tx.vin), vout(tx.vout), nLockTime(tx.nLockTime), txPub(tx.txPub), hasPaymentID(tx.hasPaymentID), paymentID(tx.paymentID), txType(tx.txType), masternodeStealthAddress(tx.masternodeStealthAddress), bulletproofs(tx.bulletproofs), keyImages(tx.keyImages), decoys(tx.decoys) {}
 
 uint256 CMutableTransaction::GetHash() const
 {
@@ -121,7 +121,7 @@ void CTransaction::UpdateHash() const
 
 CTransaction::CTransaction() : hash(), nVersion(CTransaction::CURRENT_VERSION), vin(), vout(), nLockTime(0), hasPaymentID(0), paymentID(0), txType(TX_TYPE_FULL) { }
 
-CTransaction::CTransaction(const CMutableTransaction &tx) : nVersion(tx.nVersion), vin(tx.vin), vout(tx.vout), nLockTime(tx.nLockTime), txPub(tx.txPub), hasPaymentID(tx.hasPaymentID), paymentID(tx.paymentID), txType(tx.txType) {
+CTransaction::CTransaction(const CMutableTransaction &tx) : nVersion(tx.nVersion), vin(tx.vin), vout(tx.vout), nLockTime(tx.nLockTime), txPub(tx.txPub), hasPaymentID(tx.hasPaymentID), paymentID(tx.paymentID), txType(tx.txType), masternodeStealthAddress(tx.masternodeStealthAddress), bulletproofs(tx.bulletproofs), keyImages(tx.keyImages), decoys(tx.decoys) {
     UpdateHash();
 }
 
@@ -135,6 +135,9 @@ CTransaction& CTransaction::operator=(const CTransaction &tx) {
     *const_cast<char*>(&hasPaymentID) = tx.hasPaymentID;
     *const_cast<uint64_t*>(&paymentID) = tx.paymentID;
     *const_cast<uint32_t*>(&txType) = tx.txType;
+    masternodeStealthAddress = tx.masternodeStealthAddress;
+    *const_cast<std::vector<CKeyImage>*>(&keyImages) = tx.keyImages;
+    *const_cast<std::vector<std::vector<CTxIn>>*>(&decoys) = tx.decoys;
     return *this;
 }
 

@@ -188,7 +188,7 @@ public:
         return std::vector<unsigned char>(vch, vch + size());
     }
 
-    std::string GetHex()
+    std::string GetHex() const
     {
         unsigned int sz = size();
         char psz[sz * 2 + 1];
