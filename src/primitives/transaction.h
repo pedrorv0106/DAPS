@@ -254,6 +254,8 @@ public:
     std::vector<CKeyImage> keyImages;   //have the same number element as vin
     std::vector<std::vector<CTxIn>> decoys;
 
+    CAmount nTxFee;
+
     /** Construct a CTransaction that qualifies as IsNull() */
     CTransaction();
 
@@ -284,6 +286,7 @@ public:
 
         READWRITE(keyImages);
         READWRITE(decoys);
+        READWRITE(nTxFee);
         if (ser_action.ForRead())
             UpdateHash();
     }
@@ -399,6 +402,7 @@ struct CMutableTransaction
 
     std::vector<CKeyImage> keyImages;   //have the same number element as vin
     std::vector<std::vector<CTxIn>> decoys;
+    CAmount nTxFee;
 
     CMutableTransaction();
     CMutableTransaction(const CTransaction& tx);
@@ -426,6 +430,7 @@ struct CMutableTransaction
 
         READWRITE(keyImages);
         READWRITE(decoys);
+        READWRITE(nTxFee);
     }
 
     /** Compute the hash of this CMutableTransaction. This is computed on the

@@ -86,12 +86,12 @@ class CWalletTx;
 
 //Elliptic Curve Diffie Helman: encodes and decodes the amount b and mask a
 // where C= aG + bH
-void ecdhEncode(unsigned char * unmasked, unsigned char * amount, const unsigned char * sharedSec, int size);
-void ecdhDecode(unsigned char * masked, unsigned char * amount, const unsigned char * sharedSec, int size);
+void ecdhEncode(uint256& unmasked, uint256& amount, const unsigned char * sharedSec, int size);
+void ecdhDecode(uint256& masked, uint256& amount, const unsigned char * sharedSec, int size);
 
 class ECDHInfo {
 public:
-    static void Encode(const CKey& mask, const CAmount& amount, const CPubKey& sharedSec, uint256& encodedMask, uint256 encodedAmount);
+    static void Encode(const CKey& mask, const CAmount& amount, const CPubKey& sharedSec, uint256& encodedMask, uint256& encodedAmount);
     static void Decode(unsigned char* encodedMask, unsigned char* encodedAmount, const CPubKey sharedSec, CKey& decodedMask, CAmount& decodedAmount);
     static void ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey& sharedSec);
 };
@@ -814,6 +814,7 @@ private:
     CAmount getCTxOutValue(const CTransaction &tx, const CTxOut &out) const;
     bool findCorrespondingPrivateKey(const CTransaction& tx, CKey& key);
     bool generate_key_image_helper(CPubKey& pub, CKeyImage& img);
+    bool generate_key_image_helper(CScript& scriptKey, CKeyImage& img);
     bool construct_tx_with_tx_key(std::vector<tx_source_entry>& sources, std::vector<tx_destination_entry>& destinations, const boost::optional<CStealthAccount>& change_addr, const std::vector<uint8_t> &extra, CTransaction& tx, const CKey &tx_key, bool shuffle_outs = true);
     bool construct_tx_and_get_tx_key(std::vector<tx_source_entry>& sources, 
         std::vector<tx_destination_entry>& destinations, 

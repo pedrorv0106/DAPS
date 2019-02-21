@@ -55,21 +55,38 @@ bool fPayAtLeastCustomFee = true;
 #include "uint256.h"
 
 //Elliptic Curve Diffie Helman: encodes and decodes the amount b and mask a
-void ecdhEncode(unsigned char * unmasked, unsigned char * amount, const unsigned char * sharedSec, int size)
+void ecdhEncode(unsigned char * unmasked, unsigned char* amount, const unsigned char * sharedSec, int size)
 {
     uint256 sharedSec1 = Hash(sharedSec, sharedSec + size);
     uint256 sharedSec2 = Hash(sharedSec1.begin(), sharedSec1.end());
     //encode
-    sc_add(unmasked, (const unsigned char*) unmasked, (const unsigned char*)sharedSec1.begin());
-    sc_add(amount, (const unsigned char*) amount, (const unsigned char*)sharedSec2.begin());
+    //sc_add(unmasked, (const unsigned char*) unmasked, (const unsigned char*)sharedSec1.begin());
+    for (int i = 0;i < 32; i++) {
+        unmasked[i] ^= *(sharedSec1.begin() + i);
+    }
+    //sc_add(amount, (const unsigned char*) amount, (const unsigned char*)sharedSec2.begin());
+    unsigned char temp[32];
+    memcpy(temp, amount, 32);
+    for (int i = 0;i < 32; i++) {
+        amount[i] = temp[i%8]^*(sharedSec1.begin() + i);
+    }
 }
 void ecdhDecode(unsigned char * masked, unsigned char * amount, const unsigned char * sharedSec, int size)
 {
     uint256 sharedSec1 = Hash(sharedSec, sharedSec + size);
     uint256 sharedSec2 = Hash(sharedSec1.begin(), sharedSec1.end());
     //decode
-    sc_sub(masked, masked, sharedSec1.begin());
-    sc_sub(amount, amount, sharedSec2.begin());
+    //sc_sub(masked, masked, sharedSec1.begin());
+    for (int i = 0;i < 32; i++) {
+        masked[i] ^= *(sharedSec1.begin() + i);
+    }
+    //sc_sub(amount, amount, sharedSec2.begin());
+    unsigned char temp[32];
+    memcpy(temp, amount, 32);
+    memset(amount, 0, 8);
+    for (int i = 0;i < 32; i++) {
+        amount[i] = temp[i%8]^*(sharedSec1.begin() + i);
+    }
 }
 
 void ECDHInfo::ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey& sharedSec) {
@@ -80,11 +97,15 @@ void ECDHInfo::ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey
     sharedSec.Set(temp, temp + 65);
 }
 
-void ECDHInfo::Encode(const CKey& mask, const CAmount& amount, const CPubKey& sharedSec, uint256& encodedMask, uint256 encodedAmount)
+void ECDHInfo::Encode(const CKey& mask, const CAmount& amount, const CPubKey& sharedSec, uint256& encodedMask, uint256& encodedAmount)
 {
     memcpy(encodedMask.begin(), mask.begin(), 32);
     memcpy(encodedAmount.begin(), &amount, 32);
+    std::cout << "mask:" << mask.begin() << std::endl;
+    std::cout << "amount:" << amount << std::endl;
     ecdhEncode(encodedMask.begin(), encodedAmount.begin(), sharedSec.begin(), sharedSec.size());
+    std::cout << "encoded mask:" << encodedMask.GetHex() << std::endl;
+    std::cout << "encoded amount:" << encodedAmount.GetHex() << std::endl;
 }
 
 void ECDHInfo::Decode(unsigned char* encodedMask, unsigned char* encodedAmount, const CPubKey sharedSec, CKey& decodedMask, CAmount& decodedAmount)
@@ -96,6 +117,7 @@ void ECDHInfo::Decode(unsigned char* encodedMask, unsigned char* encodedAmount, 
     memcpy(tempDecoded, decodedMask.begin(), 32);
     ecdhDecode(tempDecoded, tempAmount, sharedSec.begin(), sharedSec.size());
     decodedMask.Set(tempDecoded, tempDecoded + 32, 32);
+    memcpy(&decodedAmount, tempAmount, 8);
 }
 
 
@@ -2466,7 +2488,13 @@ bool CWallet::CreateTransactionBulletProof(const CPubKey& recipientViewKey, cons
                             }
                             //Encode amount and mask using symmetric encryption with key as the diffie hellman shared key
                             CPubKey sharedSec;
-                            ECDHInfo::ComputeSharedSec(wtxNew.txPriv, recipientViewKey, sharedSec);
+                            if (txNew.txType == TX_TYPE_REVEAL_AMOUNT) {
+                                //In this case, use the transaction pubkey to encode the transactiona amount
+                                //so that every fullnode can verify the exact transaction amount within the transaction
+                                sharedSec.Set(txNew.txPub.begin(), txNew.txPub.end());
+                            } else {
+                                ECDHInfo::ComputeSharedSec(wtxNew.txPriv, recipientViewKey, sharedSec);
+                            }                            ECDHInfo::ComputeSharedSec(wtxNew.txPriv, recipientViewKey, sharedSec);
                             EncodeTxOutAmount(out, out.nValue, sharedSec.begin());
                             txNew.vout.push_back(out);
                         }
@@ -2611,13 +2639,13 @@ bool CWallet::CreateTransactionBulletProof(const CPubKey& recipientViewKey, cons
                     strFailReason = _("Transaction too large for fee policy");
                     return false;
                 }
-
-                if (nFeeRet >= nFeeNeeded) // Done, enough fee included
+                nFeeRet = nFeeNeeded;
+                //if (nFeeRet >= nFeeNeeded) // Done, enough fee included
                     break;
 
                 // Include more fee and try again.
-                nFeeRet = nFeeNeeded;
-                continue;
+                //nFeeRet = nFeeNeeded;
+                //continue;
             }
         }
     }
@@ -2669,11 +2697,14 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
     txNew.txPub = wtxNew.txPub;
     txNew.hasPaymentID = wtxNew.hasPaymentID;
     txNew.paymentID = wtxNew.paymentID;
+    wtxNew.txType = TX_TYPE_REVEAL_AMOUNT;
+    txNew.txType = TX_TYPE_REVEAL_AMOUNT;
+    txNew.nTxFee = wtxNew.nTxFee;
 
     {
         LOCK2(cs_main, cs_wallet);
         {
-            nFeeRet = 0;
+            nFeeRet = txNew.nTxFee;
             if (nFeePay > 0) nFeeRet = nFeePay;
             while (true) {
                 txNew.vin.clear();
@@ -2846,12 +2877,12 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
                     return false;
                 }
 
-                if (nFeeRet >= nFeeNeeded) // Done, enough fee included
-                    break;
+                //if (nFeeRet >= nFeeNeeded) // Done, enough fee included
+                break;
 
                 // Include more fee and try again.
-                nFeeRet = nFeeNeeded;
-                continue;
+                //nFeeRet = nFeeNeeded;
+                //continue;
             }
         }
     }
@@ -3306,6 +3337,7 @@ bool CWallet::CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey, std:
             LogPrintf("CommitTransaction() : Error: Transaction not valid\n");
             return false;
         }
+        LogPrintf("CommitTransaction() : hash: %s\n", wtxNew.GetHash().GetHex());
         wtxNew.RelayWalletTransaction(strCommand);
     }
     return true;
@@ -5709,22 +5741,21 @@ bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmou
     }
     std::set<CKeyID> keyIDs;
     GetKeys(keyIDs);
-    unsigned char sharedSec[65];
+    CPubKey sharedSec;
     BOOST_FOREACH(const CKeyID &keyID, keyIDs) {
                     CBitcoinAddress address(keyID);
                     CScript scriptPubKey = GetScriptForDestination(address.Get());
                     CKey privKey;
                     if (scriptPubKey == out.scriptPubKey && GetKey(keyID, privKey)) {
                         CPubKey txPub(&(tx.txPub[0]), &(tx.txPub[0]) + 33);
-                        memcpy(sharedSec, txPub.begin(), txPub.size());
                         CKey view;
-                        if (myViewPrivateKey(view) &&
-                            secp256k1_ec_pubkey_tweak_mul(sharedSec, txPub.size(), view.begin())
+                        if (myViewPrivateKey(view)
                         ) {
+                            ECDHInfo::ComputeSharedSec(view, txPub, sharedSec);
                             uint256 val = out.maskValue.amount;
                             uint256 mask = out.maskValue.mask;
-                            ecdhDecode(mask.begin(), val.begin(), sharedSec, 33);
-                            amount = (CAmount) val.Get64();
+                            CKey decodedMask;
+                            ECDHInfo::Decode(mask.begin(), val.begin(), sharedSec, decodedMask, amount);
                             return true;
                         }
                     }
@@ -5748,8 +5779,39 @@ bool CWallet::findCorrespondingPrivateKey(const CTransaction &tx, CKey &key) {
     return false;
 }
 
-bool CWallet::generate_key_image_helper(CPubKey& pub, CKeyImage& img) {
+bool CWallet::generate_key_image_helper(CScript& scriptPubKey, CKeyImage& img) {
+    std::set<CKeyID> keyIDs;
+    GetKeys(keyIDs);
+    CKey key;
+    unsigned char pubData[65];
+    BOOST_FOREACH(const CKeyID &keyID, keyIDs) {
+        CBitcoinAddress address(keyID);
+        CScript script = GetScriptForDestination(address.Get());
+        if (script == scriptPubKey && GetKey(keyID, key)) {
+            CPubKey pub = key.GetPubKey();
+            uint256 hash = pub.GetHash();
+            pubData[0] = *(pub.begin());
+            memcpy(pubData + 1, hash.begin(), 32);
+            CPubKey newPubKey(pubData, pubData + 33);
+            //P' = Hs(aR)G+B, a = view private, B = spend pub, R = tx public key
+            //img = key*newPubKey
+            unsigned char ki[65];
+            //copy newPubKey into ki
+            memcpy(ki, newPubKey.begin(), newPubKey.size());
+            if (!secp256k1_ec_pubkey_tweak_mul(ki, newPubKey.size(), key.begin())) {
+                return false;
+            }
+            img = CKeyImage(ki, ki + 33);
+        }
+    }
+    return true;
+}
 
+bool CWallet::generate_key_image_helper(CPubKey& pub, CKeyImage& img) {
+    CKeyID keyID = pub.GetID();
+    CBitcoinAddress address(keyID);
+    CScript script = GetScriptForDestination(address.Get());
+    return generate_key_image_helper(script, img);
 }
 
 bool CWallet::EncodeTxOutAmount(CTxOut &out, const CAmount &amount, const unsigned char *sharedSec) {
@@ -5762,7 +5824,9 @@ bool CWallet::EncodeTxOutAmount(CTxOut &out, const CAmount &amount, const unsign
     memcpy(out.maskValue.mask.begin(), mask.begin(), 32);
     uint256 tempAmount((uint64_t) amount);
     memcpy(out.maskValue.amount.begin(), tempAmount.begin(), 32);
-    ecdhEncode(out.maskValue.mask.begin(), out.maskValue.amount.begin(), sharedSec, 33);
+    CPubKey sharedPub(sharedSec, sharedSec + 33);
+    ECDHInfo::Encode(mask, amount, sharedPub, out.maskValue.mask, out.maskValue.amount);
+
     return true;
 }
 

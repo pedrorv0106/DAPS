@@ -3190,7 +3190,7 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
     unsigned int nMaxBlockSigOps = MAX_BLOCK_SIGOPS_CURRENT;
     for (unsigned int i = 0; i < block.vtx.size(); i++) {
         const CTransaction &tx = block.vtx[i];
-
+        LogPrintf("%s: tx hash %s", __func__, tx.GetHash().GetHex());
         nInputs += tx.vin.size();
         nSigOps += GetLegacySigOpCount(tx);
         if (!block.IsPoABlockByVersion() && nSigOps > nMaxBlockSigOps)
@@ -3272,7 +3272,8 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
             }
 
             if (!tx.IsCoinStake())
-                nFees += view.GetValueIn(tx) - tx.GetValueOut();
+                //nFees += view.GetValueIn(tx) - tx.GetValueOut();
+                nFees += tx.nTxFee;
             nValueIn += view.GetValueIn(tx);
 
             std::vector <CScriptCheck> vChecks;
@@ -7234,4 +7235,4 @@ public:
         mapOrphanTransactions.clear();
         mapOrphanTransactionsByPrev.clear();
     }
-} instance_of_cmaincleanup;
+}; 
