@@ -86,14 +86,29 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
         if (tx.IsCoinBase())
             in.push_back(Pair("coinbase", HexStr(txin.scriptSig.begin(), txin.scriptSig.end())));
         else {
-            in.push_back(Pair("txid", txin.prevout.hash.GetHex()));
-            in.push_back(Pair("vout", (int64_t)txin.prevout.n));
+            {
+                //decoys
+                Array decoys;
+                int total = txin.decoys.size() + 1;
+                std::vector<COutPoint> allDecoys = txin.decoys;
+                srand (time(NULL));
+                int mytxIdx = rand() % total;
+                allDecoys.insert(allDecoys.begin() + mytxIdx, txin.prevout);
+                for (int i = 0; i < allDecoys.size(); i++) {
+                    Object decoy;
+                    decoy.push_back(Pair("txid", allDecoys[i].hash.GetHex()));
+                    decoy.push_back(Pair("vout", (int64_t)allDecoys[i].n));
+                    decoys.push_back(decoy);
+                }
+                in.push_back(Pair("decoys", decoys));
+            }
             Object o;
             o.push_back(Pair("asm", txin.scriptSig.ToString()));
             o.push_back(Pair("hex", HexStr(txin.scriptSig.begin(), txin.scriptSig.end())));
             in.push_back(Pair("scriptSig", o));
         }
         in.push_back(Pair("sequence", (int64_t)txin.nSequence));
+        in.push_back(Pair("keyimage", txin.keyImage.GetHex()));
         vin.push_back(in);
     }
     entry.push_back(Pair("vin", vin));

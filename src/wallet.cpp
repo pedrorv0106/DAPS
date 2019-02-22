@@ -108,7 +108,7 @@ void ECDHInfo::Encode(const CKey& mask, const CAmount& amount, const CPubKey& sh
     std::cout << "encoded amount:" << encodedAmount.GetHex() << std::endl;
 }
 
-void ECDHInfo::Decode(unsigned char* encodedMask, unsigned char* encodedAmount, const CPubKey sharedSec, CKey& decodedMask, CAmount& decodedAmount)
+void ECDHInfo::Decode(unsigned char* encodedMask, unsigned char* encodedAmount, const CPubKey& sharedSec, CKey& decodedMask, CAmount& decodedAmount)
 {
     unsigned char tempAmount[32], tempDecoded[32];
     memcpy(tempDecoded, encodedMask, 32);
@@ -2901,9 +2901,55 @@ bool CWallet::verifyBulletProof(const CTransaction& tx)
 
 bool CWallet::generateRingSignature(CTransaction& tx)
 {
+    //Choose decoys
+    int chainHeight = chainActive.Height();
+    int ringSize = 5;
     for(int i = 0; i < tx.vin.size(); i++) {
         //generate key images and choose decoys
+        CTransaction txPrev;
+        uint256 hashBlock;
+        if (!GetTransaction(tx.vin[i].prevout.hash, txPrev, hashBlock)) {
+            return false;
+        }
+        CKeyImage ki;
+        generate_key_image_helper(txPrev.vout[tx.vin[i].prevout.n].scriptPubKey, ki);
+        tx.vin[i].keyImage = ki;
+
+        int randBlock = rand() % chainHeight;
+        bool enough = false;
+        int numDecoys = 0;
+        int numReadBlock = 0;
+        while(randBlock > 0 && numDecoys < ringSize && numReadBlock < 10) {
+            CBlockIndex* bIndex = chainActive[randBlock];
+
+            CBlock block;
+            if (!ReadBlockFromDisk(block, bIndex)) {
+                randBlock--;
+                numReadBlock++;
+                continue;
+            }
+            const std::vector<CTransaction>& vtx = block.vtx;
+            for (int j = 0; j < vtx.size(); j++) {
+                for (int k = 0; k < vtx[0].vout.size(); k++) {
+                    const CTxOut& out = vtx[0].vout[k];
+                    if (out.IsEmpty()) {
+                        continue;
+                    }
+                    COutPoint outpoint(vtx[0].GetHash(), k);
+                    tx.vin[i].decoys.push_back(outpoint);
+                    numDecoys++;
+                    if (numDecoys == ringSize) {
+                        break;
+                    }
+                }
+                if (numDecoys == ringSize) {
+                    break;
+                }
+            }
+        }
     }
+
+    return true;
 }
 
 bool CWallet::verifyRingSignature(const CTransaction& tx)
@@ -2986,8 +3032,13 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
         COutPoint prevoutStake = COutPoint(pcoin.first->GetHash(), pcoin.second);
         nTxNewTime = GetAdjustedTime();
 
+        CKey view;
+        myViewPrivateKey(view);
+        CPubKey sharedSec;
+        ECDHInfo::ComputeSharedSec(view, pcoin.first->txPub, sharedSec);
+
         //iterates each utxo inside of CheckStakeKernelHash()
-        if (CheckStakeKernelHash(nBits, block, *pcoin.first, prevoutStake, nTxNewTime, nHashDrift, false, hashProofOfStake, true)) {
+        if (CheckStakeKernelHash(nBits, block, *pcoin.first, prevoutStake, sharedSec.begin(), nTxNewTime, nHashDrift, false, hashProofOfStake, true)) {
             //Double check that this will pass time requirements
             if (nTxNewTime <= chainActive.Tip()->GetMedianTimePast()) {
                 LogPrintf("CreateCoinStake() : kernel found, but it is too far in the past \n");
@@ -3180,7 +3231,7 @@ bool CWallet::CreateCoinAudit(const CKeyStore& keystore, unsigned int nBits, int
         nTxNewTime = GetAdjustedTime();
 
         //iterates each utxo inside of CheckStakeKernelHash()
-        if (CheckStakeKernelHash(nBits, block, *pcoin.first, prevoutStake, nTxNewTime, nHashDrift, false, hashProofOfStake, true)) {
+        if (CheckStakeKernelHash(nBits, block, *pcoin.first, prevoutStake, NULL, nTxNewTime, nHashDrift, false, hashProofOfStake, true)) {
             //Double check that this will pass time requirements
             if (nTxNewTime <= chainActive.Tip()->GetMedianTimePast()) {
                 LogPrintf("CreateCoinStake() : kernel found, but it is too far in the past \n");
@@ -5831,7 +5882,7 @@ bool CWallet::EncodeTxOutAmount(CTxOut &out, const CAmount &amount, const unsign
     memcpy(out.maskValue.amount.begin(), tempAmount.begin(), 32);
     CPubKey sharedPub(sharedSec, sharedSec + 33);
     ECDHInfo::Encode(mask, amount, sharedPub, out.maskValue.mask, out.maskValue.amount);
-
+    out.maskValue.hashOfKey = Hash(sharedSec, sharedSec + 33);
     return true;
 }
 

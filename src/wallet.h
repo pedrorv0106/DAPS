@@ -83,20 +83,6 @@ class CWalletTx;
 //using namespace config;
 //using namespace cryptonote;
 
-
-//Elliptic Curve Diffie Helman: encodes and decodes the amount b and mask a
-// where C= aG + bH
-void ecdhEncode(uint256& unmasked, uint256& amount, const unsigned char * sharedSec, int size);
-void ecdhDecode(uint256& masked, uint256& amount, const unsigned char * sharedSec, int size);
-
-class ECDHInfo {
-public:
-    static void Encode(const CKey& mask, const CAmount& amount, const CPubKey& sharedSec, uint256& encodedMask, uint256& encodedAmount);
-    static void Decode(unsigned char* encodedMask, unsigned char* encodedAmount, const CPubKey sharedSec, CKey& decodedMask, CAmount& decodedAmount);
-    static void ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey& sharedSec);
-};
-
-
 /** (client) version numbers for particular wallet features */
 enum WalletFeature {
     FEATURE_BASE = 10500, // the earliest version new wallets supports (only useful for getinfo's clientversion output)

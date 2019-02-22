@@ -17,6 +17,18 @@
 
 #include <list>
 
+//Elliptic Curve Diffie Helman: encodes and decodes the amount b and mask a
+// where C= aG + bH
+void ecdhEncode(uint256& unmasked, uint256& amount, const unsigned char * sharedSec, int size);
+void ecdhDecode(uint256& masked, uint256& amount, const unsigned char * sharedSec, int size);
+
+class ECDHInfo {
+public:
+    static void ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey& sharedSec);
+    static void Encode(const CKey& mask, const CAmount& amount, const CPubKey& sharedSec, uint256& encodedMask, uint256& encodedAmount);
+    static void Decode(unsigned char* encodedMask, unsigned char* encodedAmount, const CPubKey& sharedSec, CKey& decodedMask, CAmount& decodedAmount);
+};
+
 class CTransaction;
 
 /** An outpoint - a combination of a transaction hash and an index n into its vout */
@@ -74,6 +86,13 @@ public:
     uint32_t nSequence;
     CScript prevPubKey;
 
+    //ECDH key used for encrypting/decrypting the transaction amount
+    //it is only not NULL when the prevout is used for staking to prove the transaction amount
+    //the prevout has the hash of encryptionKey to ensure that the staking node is not cheating
+    std::vector<unsigned char> encryptionKey;   //33bytes
+    CKeyImage keyImage;   //have the same number element as vin
+    std::vector<COutPoint> decoys;
+
     CTxIn()
     {
         nSequence = std::numeric_limits<unsigned int>::max();
@@ -89,6 +108,9 @@ public:
         READWRITE(prevout);
         READWRITE(scriptSig);
         READWRITE(nSequence);
+        READWRITE(encryptionKey);
+        READWRITE(keyImage);
+        READWRITE(decoys);
     }
 
     bool IsFinal() const
@@ -100,7 +122,10 @@ public:
     {
         return (a.prevout   == b.prevout &&
                 a.scriptSig == b.scriptSig &&
-                a.nSequence == b.nSequence);
+                a.nSequence == b.nSequence &&
+                a.encryptionKey == b.encryptionKey &&
+                a.keyImage == b.keyImage &&
+                a.decoys == b.decoys);
     }
 
     friend bool operator!=(const CTxIn& a, const CTxIn& b)
@@ -116,6 +141,12 @@ typedef struct MaskValue {
                         //sharedSec = txPub * viewPrivateKey of receiver = txPriv * viewPublicKey of receiver
     uint256 amount;
     uint256 mask;  //Commitment C = mask * G + amount * H, H = Hp(G), Hp = toHashPoint
+    uint256 hashOfKey; //hash of encrypting key
+    MaskValue() {
+        amount.SetNull();
+        mask.SetNull();
+        hashOfKey.SetNull();
+    }
 };
 
 /** An output of a transaction.  It contains the public key that the next input
@@ -146,6 +177,7 @@ public:
         READWRITE(scriptPubKey);
         READWRITE(maskValue.amount);
         READWRITE(maskValue.mask);
+        READWRITE(maskValue.hashOfKey);
     }
 
     void SetNull()
@@ -251,9 +283,6 @@ public:
 
     std::vector<unsigned char> bulletproofs;
 
-    std::vector<CKeyImage> keyImages;   //have the same number element as vin
-    std::vector<std::vector<CTxIn>> decoys;
-
     CAmount nTxFee;
 
     /** Construct a CTransaction that qualifies as IsNull() */
@@ -283,9 +312,6 @@ public:
             READWRITE(masternodeStealthAddress);
         }
         READWRITE(bulletproofs);
-
-        READWRITE(keyImages);
-        READWRITE(decoys);
         READWRITE(nTxFee);
         if (ser_action.ForRead())
             UpdateHash();
@@ -401,8 +427,6 @@ struct CMutableTransaction
     std::vector<unsigned char> masternodeStealthAddress;    //masternode stealth address for receiving rewards
     std::vector<unsigned char> bulletproofs;
 
-    std::vector<CKeyImage> keyImages;   //have the same number element as vin
-    std::vector<std::vector<CTxIn>> decoys;
     CAmount nTxFee;
 
     CMutableTransaction();
@@ -429,8 +453,6 @@ struct CMutableTransaction
 
         READWRITE(bulletproofs);
 
-        READWRITE(keyImages);
-        READWRITE(decoys);
         READWRITE(nTxFee);
     }
 

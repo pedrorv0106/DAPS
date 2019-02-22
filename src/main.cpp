@@ -1704,7 +1704,8 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
                                      REJECT_DUPLICATE, "bad-txns-inputs-spent");
 
             // Check key images not duplicated with what in db
-            for (const CKeyImage& keyImage: tx.keyImages) {
+            for (const CTxIn& txin: tx.vin) {
+                const CKeyImage& keyImage = txin.keyImage;
                 bool isMine;
                 if (pblocktree->ReadKeyImage(keyImage.GetHex(), isMine)) {
                     return state.Invalid(error("AcceptToMemoryPool : key image already spent"),

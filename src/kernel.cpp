@@ -290,10 +290,22 @@ bool stakeTargetHit(uint256 hashProofOfStake, int64_t nValueIn, uint256 bnTarget
 }
 
 //instead of looping outside and reinitializing variables many times, we will give a nTimeTx and also search interval so that we can do all the hashing here
-bool CheckStakeKernelHash(unsigned int nBits, const CBlock blockFrom, const CTransaction txPrev, const COutPoint prevout, unsigned int& nTimeTx, unsigned int nHashDrift, bool fCheck, uint256& hashProofOfStake, bool fPrintProofOfStake)
+bool CheckStakeKernelHash(unsigned int nBits, const CBlock blockFrom, const CTransaction txPrev, const COutPoint prevout, const unsigned char* encryptionKey, unsigned int& nTimeTx, unsigned int nHashDrift, bool fCheck, uint256& hashProofOfStake, bool fPrintProofOfStake)
 {
     //assign new variables to make it easier to read
-    int64_t nValueIn = txPrev.vout[prevout.n].nValue;
+    //check encryptionKey hash
+    uint256 hashOfKey = Hash(encryptionKey, encryptionKey + 33);
+    if (hashOfKey != txPrev.vout[prevout.n].maskValue.hashOfKey) {
+        return false;
+    }
+
+    CAmount nValueIn;// = txPrev.vout[prevout.n].nValue;
+    uint256 val = txPrev.vout[prevout.n].maskValue.amount;
+    uint256 mask = txPrev.vout[prevout.n].maskValue.mask;
+    CKey decodedMask;
+    CPubKey sharedSec;
+    sharedSec.Set(encryptionKey, encryptionKey + 33);
+    ECDHInfo::Decode(mask.begin(), val.begin(), sharedSec, decodedMask, nValueIn);
     unsigned int nTimeBlockFrom = blockFrom.GetBlockTime();
 
     if (nTimeTx < nTimeBlockFrom) // Transaction timestamp violation
@@ -400,7 +412,7 @@ bool CheckProofOfStake(const CBlock block, uint256& hashProofOfStake)
 
     unsigned int nInterval = 0;
     unsigned int nTime = block.nTime;
-    if (!CheckStakeKernelHash(block.nBits, blockprev, txPrev, txin.prevout, nTime, nInterval, true, hashProofOfStake, fDebug))
+    if (!CheckStakeKernelHash(block.nBits, blockprev, txPrev, txin.prevout, &txin.encryptionKey[0], nTime, nInterval, true, hashProofOfStake, fDebug))
         return error("CheckProofOfStake() : INFO: check kernel failed on coinstake %s, hashProof=%s \n", tx.GetHash().ToString().c_str(), hashProofOfStake.ToString().c_str()); // may occur during initial download or if behind on block chain sync
 
     return true;
