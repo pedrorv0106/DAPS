@@ -68,7 +68,7 @@ void ecdhEncode(unsigned char * unmasked, unsigned char* amount, const unsigned 
     unsigned char temp[32];
     memcpy(temp, amount, 32);
     for (int i = 0;i < 32; i++) {
-        amount[i] = temp[i%8]^*(sharedSec1.begin() + i);
+        amount[i] = temp[i%8]^*(sharedSec2.begin() + i);
     }
 }
 void ecdhDecode(unsigned char * masked, unsigned char * amount, const unsigned char * sharedSec, int size)
@@ -85,7 +85,7 @@ void ecdhDecode(unsigned char * masked, unsigned char * amount, const unsigned c
     memcpy(temp, amount, 32);
     memset(amount, 0, 8);
     for (int i = 0;i < 32; i++) {
-        amount[i] = temp[i%8]^*(sharedSec1.begin() + i);
+        amount[i] = temp[i%8]^*(sharedSec2.begin() + i);
     }
 }
 
@@ -191,7 +191,7 @@ bool CWallet::AddKeyPubKey(const CKey& secret, const CPubKey& pubkey)
 
     // check if we need to remove from watch-only
     CScript script;
-    script = GetScriptForDestination(pubkey.GetID());
+    script = GetScriptForDestination(pubkey);
     if (HaveWatchOnly(script))
         RemoveWatchOnly(script);
 
@@ -2298,7 +2298,7 @@ bool CWallet::CreateCollateralTransaction(CMutableTransaction& txCollateral, std
     CScript scriptChange;
     CPubKey vchPubKey;
     assert(reservekey.GetReservedKey(vchPubKey)); // should never fail, as we just unlocked
-    scriptChange = GetScriptForDestination(vchPubKey.GetID());
+    scriptChange = GetScriptForDestination(vchPubKey);
     reservekey.KeepKey();
 
     BOOST_FOREACH (CTxIn v, vCoinsCollateral)
@@ -2385,6 +2385,7 @@ bool CWallet::CreateTransactionBulletProof(const CPubKey &recipientViewKey, CScr
                                            AvailableCoinsType coin_type, bool useIX,
                                            CAmount nFeePay) {
     vector<pair<CScript, CAmount> > vecSend;
+    std::cout << "scriptPubKey:" << scriptPubKey.ToString() << std::endl;
     vecSend.push_back(make_pair(scriptPubKey, nValue));
     return CreateTransactionBulletProof(recipientViewKey, vecSend, wtxNew, reservekey, nFeeRet, strFailReason, coinControl, coin_type, useIX, nFeePay);
 }
@@ -2555,7 +2556,7 @@ bool CWallet::CreateTransactionBulletProof(const CPubKey& recipientViewKey, cons
                     // coin control: send change to custom address
                     //TODO: change transaction output needs to be stealth as well: add code for stealth transaction here
                     if (coinControl && !boost::get<CNoDestination>(&coinControl->destChange))
-                        scriptChange = GetScriptForDestination(coinControl->destChange);
+                        scriptChange = GetScriptForDestination(coinControl->receiver);
 
                         // no coin control: send change to newly generated address
                     else {
@@ -2572,7 +2573,7 @@ bool CWallet::CreateTransactionBulletProof(const CPubKey& recipientViewKey, cons
                         ret = reservekey.GetReservedKey(vchPubKey);
                         assert(ret); // should never fail, as we just unlocked
 
-                        scriptChange = GetScriptForDestination(vchPubKey.GetID());
+                        scriptChange = GetScriptForDestination(vchPubKey);
                     }
 
                     CTxOut newTxOut(nChange, scriptChange);
@@ -2659,6 +2660,13 @@ bool CWallet::CreateTransactionBulletProof(const CPubKey& recipientViewKey, cons
         //set transaction output amounts as 0
         for (int i = 0; i < wtxNew.vout.size(); i++) {
             wtxNew.vout[i].nValue = 0;
+        }
+    } else {
+        //reveal only tx type with 1 million daps
+        for (int i = 0; i < wtxNew.vout.size(); i++) {
+            if (wtxNew.vout[i].nValue != 1000000 * COIN) {
+                wtxNew.vout[i].nValue = 0;
+            }
         }
     }
 
@@ -2796,11 +2804,11 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
                     CScript scriptChange;
 
                     // coin control: send change to custom address
-                    if (coinControl && !boost::get<CNoDestination>(&coinControl->destChange))
-                        scriptChange = GetScriptForDestination(coinControl->destChange);
+                   // if (coinControl && !boost::get<CNoDestination>(&coinControl->destChange))
+                    //    scriptChange = GetScriptForDestination(coinControl->destChange);
 
                         // no coin control: send change to newly generated address
-                    else {
+                    //else {
                         // Note: We use a new key here to keep it from being obvious which side is the change.
                         //  The drawback is that by not reusing a previous key, the change may be lost if a
                         //  backup is restored, if the backup doesn't have the new private key for the change.
@@ -2814,8 +2822,8 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
                         ret = reservekey.GetReservedKey(vchPubKey);
                         assert(ret); // should never fail, as we just unlocked
 
-                        scriptChange = GetScriptForDestination(vchPubKey.GetID());
-                    }
+                        scriptChange = GetScriptForDestination(vchPubKey);
+                    //}
 
                     CTxOut newTxOut(nChange, scriptChange);
 
@@ -2912,8 +2920,19 @@ bool CWallet::generateRingSignature(CTransaction& tx)
             return false;
         }
         CKeyImage ki;
-        generate_key_image_helper(txPrev.vout[tx.vin[i].prevout.n].scriptPubKey, ki);
-        tx.vin[i].keyImage = ki;
+        std::cout << "Spending tx:" << txPrev.GetHash().GetHex() << std::endl;
+        std::cout << "At block:" << hashBlock.GetHex() << std::endl;
+        if (!generate_key_image_helper(txPrev.vout[tx.vin[i].prevout.n].scriptPubKey, ki)) {
+            std::cout << "Cannot generate key image" << std::endl;
+        } else {
+            std::cout << "Generated key image" << std::endl;
+            tx.vin[i].keyImage = ki;
+        }
+
+        if (getCTxOutValue(txPrev, txPrev.vout[tx.vin[i].prevout.n]) == 1000000) {
+            //no ring signature
+            continue;
+        }
 
         int randBlock = rand() % chainHeight;
         bool enough = false;
@@ -2928,14 +2947,26 @@ bool CWallet::generateRingSignature(CTransaction& tx)
                 numReadBlock++;
                 continue;
             }
+            std::cout << "block height: " << randBlock << std::endl;
             const std::vector<CTransaction>& vtx = block.vtx;
             for (int j = 0; j < vtx.size(); j++) {
-                for (int k = 0; k < vtx[0].vout.size(); k++) {
-                    const CTxOut& out = vtx[0].vout[k];
+                for (int k = 0; k < vtx[j].vout.size(); k++) {
+                    const CTxOut& out = vtx[j].vout[k];
                     if (out.IsEmpty()) {
                         continue;
                     }
-                    COutPoint outpoint(vtx[0].GetHash(), k);
+                    bool duplicated = false;
+                    COutPoint outpoint(vtx[j].GetHash(), k);
+                    for (int d = 0; d < tx.vin[i].decoys.size(); d++) {
+                        if (tx.vin[i].decoys[d] == outpoint) {
+                            duplicated = true;
+                            break;
+                        }
+                    }
+                    if (duplicated) {
+                        continue;
+                    }
+                    std::cout << "tx hash:" << outpoint.hash.GetHex() << std::endl;
                     tx.vin[i].decoys.push_back(outpoint);
                     numDecoys++;
                     if (numDecoys == ringSize) {
@@ -2946,6 +2977,8 @@ bool CWallet::generateRingSignature(CTransaction& tx)
                     break;
                 }
             }
+            randBlock--;
+            numReadBlock++;
         }
     }
 
@@ -3518,7 +3551,7 @@ string CWallet::PrepareObfuscationDenominate(int minRounds, int maxRounds)
                         CPubKey vchPubKey;
                         // use a unique change address
                         assert(reservekey.GetReservedKey(vchPubKey)); // should never fail, as we just unlocked
-                        scriptChange = GetScriptForDestination(vchPubKey.GetID());
+                        scriptChange = GetScriptForDestination(vchPubKey);
                         reservekey.KeepKey();
 
                         // add new output
@@ -4673,14 +4706,14 @@ bool CWallet::CreateZerocoinMintTransaction(const CAmount nValue, CMutableTransa
         CScript scriptChange;
 
         // if coin control: send change to custom address
-        if (coinControl && !boost::get<CNoDestination>(&coinControl->destChange))
-            scriptChange = GetScriptForDestination(coinControl->destChange);
-        else {
+        //if (coinControl && !boost::get<CNoDestination>(&coinControl->destChange))
+        //    scriptChange = GetScriptForDestination(coinControl->destChange);
+        //else {
             // Reserve a new key pair from key pool
             CPubKey vchPubKey;
             assert(reservekey->GetReservedKey(vchPubKey)); // should never fail, as we just unlocked
-            scriptChange = GetScriptForDestination(vchPubKey.GetID());
-        }
+            scriptChange = GetScriptForDestination(vchPubKey);
+        //}
 
         //add to the transaction
         CTxOut outChange(nChange, scriptChange);
@@ -4927,13 +4960,13 @@ bool CWallet::CreateZerocoinSpendTransaction(CAmount nValue, int nSecurityLevel,
                     // Reserve a new key pair from key pool
                     CPubKey vchPubKey;
                     assert(reserveKey.GetReservedKey(vchPubKey)); // should never fail
-                    scriptChange = GetScriptForDestination(vchPubKey.GetID());
+                    scriptChange = GetScriptForDestination(vchPubKey);
                 }
             } else {
                 // Reserve a new key pair from key pool
                 CPubKey vchPubKey;
                 assert(reserveKey.GetReservedKey(vchPubKey)); // should never fail
-                scriptZerocoinSpend = GetScriptForDestination(vchPubKey.GetID());
+                scriptZerocoinSpend = GetScriptForDestination(vchPubKey);
             }
 
             //add change output if we are spending too much (only applies to spending multiple at once)
@@ -5572,8 +5605,7 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
     //////////////////////////////////////////////////
 
 
-    CBitcoinAddress address(stealthDes.GetID());
-    CScript scriptPubKey = GetScriptForDestination(address.Get());
+    CScript scriptPubKey = GetScriptForDestination(stealthDes);
     // Create and send the transaction
     CReserveKey reservekey(pwalletMain);
 
@@ -5584,6 +5616,7 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
     CBitcoinAddress changeAddress(changeDes.GetID());
     CCoinControl control;
     control.destChange = changeAddress.Get();
+    control.receiver = changeDes;
     CAmount nFeeRequired;
     if (!pwalletMain->CreateTransactionBulletProof(pubViewKey, scriptPubKey, nValue, wtxNew, reservekey,
                                                    nFeeRequired, strError, &control, ALL_COINS, fUseIX, (CAmount)0)) {
@@ -5634,8 +5667,7 @@ bool CWallet::IsTransactionForMe(const CTransaction& tx) {
             secp256k1_ec_pubkey_tweak_add(expectedDestination, pubSpendKey.size(), pHS);
             CPubKey expectedDes(expectedDestination, expectedDestination + 33);
             LogPrintf("expectedDes Stealth destination:%s", expectedDes.GetHex());
-            CBitcoinAddress address(expectedDes.GetID());
-            CScript scriptPubKey = GetScriptForDestination(address.Get());
+            CScript scriptPubKey = GetScriptForDestination(expectedDes);
 
             if (scriptPubKey == out.scriptPubKey) {
                 ret = true;
@@ -5799,10 +5831,10 @@ bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmou
     GetKeys(keyIDs);
     CPubKey sharedSec;
     BOOST_FOREACH(const CKeyID &keyID, keyIDs) {
-                    CBitcoinAddress address(keyID);
-                    CScript scriptPubKey = GetScriptForDestination(address.Get());
                     CKey privKey;
-                    if (scriptPubKey == out.scriptPubKey && GetKey(keyID, privKey)) {
+                    GetKey(keyID, privKey);
+                    CScript scriptPubKey = GetScriptForDestination(privKey.GetPubKey());
+                    if (scriptPubKey == out.scriptPubKey) {
                         CPubKey txPub(&(tx.txPub[0]), &(tx.txPub[0]) + 33);
                         CKey view;
                         if (myViewPrivateKey(view)
@@ -5836,15 +5868,18 @@ bool CWallet::findCorrespondingPrivateKey(const CTransaction &tx, CKey &key) {
 }
 
 bool CWallet::generate_key_image_helper(CScript& scriptPubKey, CKeyImage& img) {
+    std::cout << "Script key:" << scriptPubKey.ToString() << std::endl;
     std::set<CKeyID> keyIDs;
     GetKeys(keyIDs);
     CKey key;
     unsigned char pubData[65];
     BOOST_FOREACH(const CKeyID &keyID, keyIDs) {
         CBitcoinAddress address(keyID);
-        CScript script = GetScriptForDestination(address.Get());
-        if (script == scriptPubKey && GetKey(keyID, key)) {
-            CPubKey pub = key.GetPubKey();
+        GetKey(keyID, key);
+        CPubKey pub = key.GetPubKey();
+        CScript script = GetScriptForDestination(pub);
+        if (script == scriptPubKey) {
+            std::cout << "found private" << std::endl;
             uint256 hash = pub.GetHash();
             pubData[0] = *(pub.begin());
             memcpy(pubData + 1, hash.begin(), 32);
@@ -5858,15 +5893,14 @@ bool CWallet::generate_key_image_helper(CScript& scriptPubKey, CKeyImage& img) {
                 return false;
             }
             img = CKeyImage(ki, ki + 33);
+            return true;
         }
     }
-    return true;
+    return false;
 }
 
 bool CWallet::generate_key_image_helper(CPubKey& pub, CKeyImage& img) {
-    CKeyID keyID = pub.GetID();
-    CBitcoinAddress address(keyID);
-    CScript script = GetScriptForDestination(address.Get());
+    CScript script = GetScriptForDestination(pub);
     return generate_key_image_helper(script, img);
 }
 

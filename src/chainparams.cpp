@@ -119,8 +119,8 @@ public:
         nMaxMoneyOut = 21000000 * COIN;
 
         /** Height or Time Based Activations **/
-        nLastPOWBlock = 500;
-        nStartPOABlock = 1000;
+        nLastPOWBlock = 1000;
+        nStartPOABlock = 1500;
         nModifierUpdateBlock = 615800;
         nPoABlockTime = 30 * 60; //a PoA block every 30 minutes
         nMinNumPoSBlocks = 59;
