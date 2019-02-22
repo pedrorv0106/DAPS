@@ -180,7 +180,6 @@ bool CBlockTreeDB::WriteTxIndex(const std::vector<std::pair<uint256, CDiskTxPos>
 {
     CLevelDBBatch batch;
     for (std::vector<std::pair<uint256, CDiskTxPos> >::const_iterator it = vect.begin(); it != vect.end(); it++) {
-        std::cout << "Writing tx hash:" << it->first.GetHex() << std::endl;
         batch.Write(make_pair('t', it->first), it->second);
     }
     return WriteBatch(batch);

@@ -18,6 +18,7 @@
 #include "script/standard.h"
 #include "uint256.h"
 #include "utilmoneystr.h"
+#include "wallet.h"
 #ifdef ENABLE_WALLET
 #include "wallet.h"
 #endif

@@ -1159,7 +1159,7 @@ void CWalletTx::GetAmounts(list<COutputEntry>& listReceived,
             address = CNoDestination();
         }
 
-        COutputEntry output = {address, txout.nValue, (int)i};
+        COutputEntry output = {address, pwallet->getCTxOutValue(*this, txout), (int)i};
 
         // If we are debited by the transaction, add the output as a "sent" entry
         if (nDebit > 0)
@@ -5738,6 +5738,11 @@ bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmou
         //Coinbase transaction output is not hidden, not need to decrypt
         amount = out.nValue;
         return true;
+    }
+    if (tx.IsMNCollateralTx()) {
+        if (out.nValue > 0) {
+            return out.nValue;
+        }
     }
     std::set<CKeyID> keyIDs;
     GetKeys(keyIDs);

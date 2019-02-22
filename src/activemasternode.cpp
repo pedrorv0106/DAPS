@@ -451,6 +451,7 @@ vector<COutput> CActiveMasternode::SelectCoinsMasternode()
 
     // Filter
     BOOST_FOREACH (const COutput& out, vCoins) {
+        bool isMNCollateral = out.tx->IsMNCollateralTx();
         if (out.tx->vout[out.i].nValue == 1000000 * COIN) { //exactly
             filteredCoins.push_back(out);
         }

@@ -804,14 +804,14 @@ public:
     bool AllMyPublicAddresses(std::vector<std::string>& addresses, std::vector<std::string>& accountNames);
     bool RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmount &amount) const;
     bool EncodeTxOutAmount(CTxOut& out, const CAmount& amount, const unsigned char * sharedSec);
+    CAmount getCOutPutValue(const COutput& output) const;
+    CAmount getCTxOutValue(const CTransaction &tx, const CTxOut &out) const;
 private:
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool mySpendPrivateKey(CKey& spend) const;
     bool myViewPrivateKey(CKey& view) const;
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
     void createMasterKey() const;
-    CAmount getCOutPutValue(const COutput& output) const;
-    CAmount getCTxOutValue(const CTransaction &tx, const CTxOut &out) const;
     bool findCorrespondingPrivateKey(const CTransaction& tx, CKey& key);
     bool generate_key_image_helper(CPubKey& pub, CKeyImage& img);
     bool generate_key_image_helper(CScript& scriptKey, CKeyImage& img);

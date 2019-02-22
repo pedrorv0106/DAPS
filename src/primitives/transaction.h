@@ -296,6 +296,7 @@ public:
     }
 
     const uint256& GetHash() const {
+        UpdateHash();
         return hash;
     }
 

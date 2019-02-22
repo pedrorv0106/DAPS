@@ -2057,8 +2057,8 @@ bool GetTransaction(const uint256 &hash, CTransaction &txOut, uint256 &hashBlock
                     return error("%s : Deserialize or I/O error - %s", __func__, e.what());
                 }
                 hashBlock = header.GetHash();
-                //if (txOut.GetHash() != hash)
-                //    return error("%s : txid mismatch, %s, %s", __func__, txOut.GetHash().GetHex(), hash.GetHex());
+                if (txOut.GetHash() != hash)
+                    return error("%s : txid mismatch, %s, %s", __func__, txOut.GetHash().GetHex(), hash.GetHex());
                 return true;
             }
 
