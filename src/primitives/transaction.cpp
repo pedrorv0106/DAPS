@@ -13,6 +13,7 @@
 #include "tinyformat.h"
 #include "utilstrencodings.h"
 #include "transaction.h"
+#include "secp256k1.h"
 
 #include <boost/foreach.hpp>
 
@@ -90,8 +91,8 @@ std::string CTxOut::ToString() const
     return strprintf("CTxOut(nValue=%d.%08d, scriptPubKey=%s)", nValue / COIN, nValue % COIN, scriptPubKey.ToString().substr(0,30));
 }
 
-CMutableTransaction::CMutableTransaction() : nVersion(CTransaction::CURRENT_VERSION), nLockTime(0), hasPaymentID(0), paymentID(0) {}
-CMutableTransaction::CMutableTransaction(const CTransaction& tx) : nVersion(tx.nVersion), vin(tx.vin), vout(tx.vout), nLockTime(tx.nLockTime), txPub(tx.txPub), hasPaymentID(tx.hasPaymentID), paymentID(tx.paymentID) {}
+CMutableTransaction::CMutableTransaction() : nVersion(CTransaction::CURRENT_VERSION), nLockTime(0), hasPaymentID(0), paymentID(0), txType(TX_TYPE_FULL), nTxFee(0) {}
+CMutableTransaction::CMutableTransaction(const CTransaction& tx) : nVersion(tx.nVersion), vin(tx.vin), vout(tx.vout), nLockTime(tx.nLockTime), txPub(tx.txPub), hasPaymentID(tx.hasPaymentID), paymentID(tx.paymentID), txType(tx.txType), masternodeStealthAddress(tx.masternodeStealthAddress), bulletproofs(tx.bulletproofs), nTxFee(tx.nTxFee) {}
 
 uint256 CMutableTransaction::GetHash() const
 {
@@ -118,9 +119,9 @@ void CTransaction::UpdateHash() const
     *const_cast<uint256*>(&hash) = SerializeHash(*this);
 }
 
-CTransaction::CTransaction() : hash(), nVersion(CTransaction::CURRENT_VERSION), vin(), vout(), nLockTime(0), hasPaymentID(0), paymentID(0) { }
+CTransaction::CTransaction() : hash(), nVersion(CTransaction::CURRENT_VERSION), vin(), vout(), nLockTime(0), hasPaymentID(0), paymentID(0), txType(TX_TYPE_FULL), nTxFee(0) { }
 
-CTransaction::CTransaction(const CMutableTransaction &tx) : nVersion(tx.nVersion), vin(tx.vin), vout(tx.vout), nLockTime(tx.nLockTime), txPub(tx.txPub), hasPaymentID(tx.hasPaymentID), paymentID(tx.paymentID) {
+CTransaction::CTransaction(const CMutableTransaction &tx) : nVersion(tx.nVersion), vin(tx.vin), vout(tx.vout), nLockTime(tx.nLockTime), txPub(tx.txPub), hasPaymentID(tx.hasPaymentID), paymentID(tx.paymentID), txType(tx.txType), masternodeStealthAddress(tx.masternodeStealthAddress), bulletproofs(tx.bulletproofs), nTxFee(tx.nTxFee) {
     UpdateHash();
 }
 
@@ -133,6 +134,11 @@ CTransaction& CTransaction::operator=(const CTransaction &tx) {
     *const_cast<std::vector<unsigned char>*>(&txPub) = tx.txPub;
     *const_cast<char*>(&hasPaymentID) = tx.hasPaymentID;
     *const_cast<uint64_t*>(&paymentID) = tx.paymentID;
+    *const_cast<uint32_t*>(&txType) = tx.txType;
+    masternodeStealthAddress = tx.masternodeStealthAddress;
+    //*const_cast<std::vector<CKeyImage>*>(&keyImages) = tx.keyImages;
+    //*const_cast<std::vector<std::vector<CTxIn>>*>(&decoys) = tx.decoys;
+    nTxFee = tx.nTxFee;
     return *this;
 }
 

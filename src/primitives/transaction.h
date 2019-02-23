@@ -11,9 +11,23 @@
 #include "script/script.h"
 #include "serialize.h"
 #include "uint256.h"
+#include "../bip38.h"
 #include <iostream>
+#include "key.h"
 
 #include <list>
+
+//Elliptic Curve Diffie Helman: encodes and decodes the amount b and mask a
+// where C= aG + bH
+void ecdhEncode(uint256& unmasked, uint256& amount, const unsigned char * sharedSec, int size);
+void ecdhDecode(uint256& masked, uint256& amount, const unsigned char * sharedSec, int size);
+
+class ECDHInfo {
+public:
+    static void ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey& sharedSec);
+    static void Encode(const CKey& mask, const CAmount& amount, const CPubKey& sharedSec, uint256& encodedMask, uint256& encodedAmount);
+    static void Decode(unsigned char* encodedMask, unsigned char* encodedAmount, const CPubKey& sharedSec, CKey& decodedMask, CAmount& decodedAmount);
+};
 
 class CTransaction;
 
@@ -72,6 +86,13 @@ public:
     uint32_t nSequence;
     CScript prevPubKey;
 
+    //ECDH key used for encrypting/decrypting the transaction amount
+    //it is only not NULL when the prevout is used for staking to prove the transaction amount
+    //the prevout has the hash of encryptionKey to ensure that the staking node is not cheating
+    std::vector<unsigned char> encryptionKey;   //33bytes
+    CKeyImage keyImage;   //have the same number element as vin
+    std::vector<COutPoint> decoys;
+
     CTxIn()
     {
         nSequence = std::numeric_limits<unsigned int>::max();
@@ -87,6 +108,9 @@ public:
         READWRITE(prevout);
         READWRITE(scriptSig);
         READWRITE(nSequence);
+        READWRITE(encryptionKey);
+        READWRITE(keyImage);
+        READWRITE(decoys);
     }
 
     bool IsFinal() const
@@ -98,7 +122,10 @@ public:
     {
         return (a.prevout   == b.prevout &&
                 a.scriptSig == b.scriptSig &&
-                a.nSequence == b.nSequence);
+                a.nSequence == b.nSequence &&
+                a.encryptionKey == b.encryptionKey &&
+                a.keyImage == b.keyImage &&
+                a.decoys == b.decoys);
     }
 
     friend bool operator!=(const CTxIn& a, const CTxIn& b)
@@ -109,15 +136,31 @@ public:
     std::string ToString() const;
 };
 
+typedef struct MaskValue {
+    CPubKey sharedSec;  //secret is computed based on the transaction pubkey, using diffie hellman
+                        //sharedSec = txPub * viewPrivateKey of receiver = txPriv * viewPublicKey of receiver
+    uint256 amount;
+    uint256 mask;  //Commitment C = mask * G + amount * H, H = Hp(G), Hp = toHashPoint
+    uint256 hashOfKey; //hash of encrypting key
+    MaskValue() {
+        amount.SetNull();
+        mask.SetNull();
+        hashOfKey.SetNull();
+    }
+};
+
 /** An output of a transaction.  It contains the public key that the next input
  * must be able to sign with to claim it.
  */
 class CTxOut
 {
 public:
-    CAmount nValue;
+    CAmount nValue; //should always be 0
     CScript scriptPubKey;
     int nRounds;
+    //ECDH encoded value for the amount: the idea is the use the shared secret and a key derivation function to
+    //encode the value and the mask so that only the sender and the receiver of the tx output can decode the encoded amount
+    MaskValue maskValue;
 
     CTxOut()
     {
@@ -132,6 +175,9 @@ public:
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         READWRITE(nValue);
         READWRITE(scriptPubKey);
+        READWRITE(maskValue.amount);
+        READWRITE(maskValue.mask);
+        READWRITE(maskValue.hashOfKey);
     }
 
     void SetNull()
@@ -194,6 +240,14 @@ public:
 
 struct CMutableTransaction;
 
+enum {
+    TX_TYPE_FULL  =  0, //used for any normal transaction
+    //transaction with no hidden amount (used for collateral transaction, rewarding transaction
+    // (for masternode and staking node), and PoA mining rew)
+    TX_TYPE_REVEAL_AMOUNT,
+    TX_TYPE_REVEAL_SENDER    //transaction with no ring signature (used for decollateral transaction + reward transaction
+};
+
 /** The basic transaction that is broadcasted on the network and contained in
  * blocks.  A transaction can contain multiple inputs and outputs.
  */
@@ -219,9 +273,17 @@ public:
 
     //For stealth transactions
     std::vector<unsigned char> txPub;
+    CKey txPriv;    //only  in-memory
     char hasPaymentID;
     uint64_t paymentID;
     //const unsigned int nTime;
+    uint32_t txType;
+
+    std::vector<unsigned char> masternodeStealthAddress;    //masternode stealth address for receiving rewards
+
+    std::vector<unsigned char> bulletproofs;
+
+    CAmount nTxFee;
 
     /** Construct a CTransaction that qualifies as IsNull() */
     CTransaction();
@@ -245,6 +307,12 @@ public:
         if (hasPaymentID != 0) {
             READWRITE(paymentID);
         }
+        READWRITE(txType);
+        if (IsMNCollateralTx()) {
+            READWRITE(masternodeStealthAddress);
+        }
+        READWRITE(bulletproofs);
+        READWRITE(nTxFee);
         if (ser_action.ForRead())
             UpdateHash();
     }
@@ -254,6 +322,7 @@ public:
     }
 
     const uint256& GetHash() const {
+        UpdateHash();
         return hash;
     }
 
@@ -323,6 +392,21 @@ public:
         return a.hash != b.hash;
     }
 
+    bool IsMNCollateralTx() const {
+        if (txType == TX_TYPE_REVEAL_AMOUNT) {
+            uint32_t numCollateral = 0;
+            for (int i = 0; i < vout.size(); i++) {
+                if (vout[i].nValue == 1000000 * COIN) {
+                    numCollateral++;
+                }
+            }
+            if (numCollateral == 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     std::string ToString() const;
 
     bool GetCoinAge(uint64_t& nCoinAge) const;  // ppcoin: get transaction coin age
@@ -339,6 +423,11 @@ struct CMutableTransaction
     std::vector<unsigned char> txPub;
     char hasPaymentID;
     uint64_t paymentID;
+    uint32_t txType;
+    std::vector<unsigned char> masternodeStealthAddress;    //masternode stealth address for receiving rewards
+    std::vector<unsigned char> bulletproofs;
+
+    CAmount nTxFee;
 
     CMutableTransaction();
     CMutableTransaction(const CTransaction& tx);
@@ -357,6 +446,14 @@ struct CMutableTransaction
         if (hasPaymentID != 0) {
             READWRITE(paymentID);
         }
+        READWRITE(txType);
+        if (IsMNCollateralTx()) {
+            READWRITE(masternodeStealthAddress);
+        }
+
+        READWRITE(bulletproofs);
+
+        READWRITE(nTxFee);
     }
 
     /** Compute the hash of this CMutableTransaction. This is computed on the
@@ -374,6 +471,21 @@ struct CMutableTransaction
     friend bool operator!=(const CMutableTransaction& a, const CMutableTransaction& b)
     {
         return !(a == b);
+    }
+
+    bool IsMNCollateralTx() const {
+        if (txType == TX_TYPE_REVEAL_AMOUNT) {
+            uint32_t numCollateral = 0;
+            for (int i = 0; i < vout.size(); i++) {
+                if (vout[i].nValue == 1000000 * COIN) {
+                    numCollateral++;
+                }
+            }
+            if (numCollateral == 1) {
+                return true;
+            }
+        }
+        return false;
     }
 
 };

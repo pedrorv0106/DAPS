@@ -42,6 +42,9 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/deque.hpp>
 #include <atomic>
+#include "crypto/crypto-ops.h"
+#include "crypto/common.h"
+
 
 
 /**
@@ -166,6 +169,105 @@ public:
     typedef std::map<std::string, std::string> StringMap;
     StringMap destdata;
 };
+
+
+typedef struct CTKey {
+    CPubKey dest;
+    uint256 mask;
+};
+
+typedef struct Keypair {
+    CKey privateKey;
+    CPubKey pubkey;
+    void generatePair() {
+        privateKey.MakeNewKey(true);
+        pubkey = privateKey.GetPubKey();
+    }
+    Keypair() {
+        generatePair();
+    }
+};
+
+/**
+ * Account information.
+ * Stored in wallet with key "acc"+string account name.
+ */
+class CAccount
+{
+public:
+    CPubKey vchPubKey;
+
+    CAccount()
+    {
+        SetNull();
+    }
+
+    void SetNull()
+    {
+        vchPubKey = CPubKey();
+    }
+
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion)
+    {
+        if (!(nType & SER_GETHASH))
+            READWRITE(nVersion);
+        READWRITE(vchPubKey);
+    }
+};
+
+class CStealthAccount
+{
+public:
+    CAccount spendAccount;
+    CAccount viewAccount;
+
+    CStealthAccount()
+    {
+        SetNull();
+    }
+
+    void SetNull()
+    {
+        spendAccount.SetNull();
+        viewAccount.SetNull();
+    }
+
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion)
+    {
+        READWRITE(spendAccount);
+        READWRITE(viewAccount);
+    }
+};
+
+//Additional structures for bulletproof tx construction
+typedef struct tx_source_entry {
+    typedef std::pair<uint64_t, CTKey> output_entry;
+
+    std::vector<output_entry> outputs;  //index + key + optional ringct commitment
+    size_t real_output;                 //index in outputs vector of real output_entry
+    CPubKey real_out_tx_key; //incoming real tx public key
+    std::vector<CPubKey> real_out_additional_tx_keys; //incoming real tx additional public keys
+    size_t real_output_in_tx_index;     //index in transaction outputs vector
+    CAmount amount;                    //money
+    uint256 mask;                      //ringct amount mask
+    //void push_output(uint64_t idx, const crypto::public_key &k, CAmount amount) { outputs.push_back(std::make_pair(idx, rct::ctkey({rct::pk2rct(k), rct::zeroCommit(amount)}))); }
+};
+typedef struct tx_destination_entry
+{
+    CAmount amount;                    //money
+    CStealthAccount addr;        //destination address
+    //bool is_subaddress;
+
+    tx_destination_entry() : amount(0) { }
+    tx_destination_entry(CAmount a, const CStealthAccount &ad) : amount(a), addr(ad) { }
+};
+
 
 /**
  * A CWallet is an extension of a keystore, which also maintains a set of transactions and balances,
@@ -484,7 +586,25 @@ public:
                            AvailableCoinsType coin_type = ALL_COINS,
                            bool useIX = false,
                            CAmount nFeePay = 0);
-    bool CreateTransaction(CScript scriptPubKey, const CAmount& nValue, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, std::string& strFailReason, const CCoinControl* coinControl = NULL, AvailableCoinsType coin_type = ALL_COINS, bool useIX = false, CAmount nFeePay = 0);
+    bool CreateTransactionBulletProof(const CPubKey& recipientViewKey, const std::vector<std::pair<CScript, CAmount> >& vecSend,
+                           CWalletTx& wtxNew,
+                           CReserveKey& reservekey,
+                           CAmount& nFeeRet,
+                           std::string& strFailReason,
+                           const CCoinControl* coinControl = NULL,
+                           AvailableCoinsType coin_type = ALL_COINS,
+                           bool useIX = false,
+                           CAmount nFeePay = 0);
+
+    bool CreateTransactionBulletProof(const CPubKey &recipientViewKey, CScript scriptPubKey, const CAmount &nValue,
+                                      CWalletTx &wtxNew, CReserveKey &reservekey, CAmount &nFeeRet,
+                                      std::string &strFailReason, const CCoinControl *coinControl = NULL,
+                                      AvailableCoinsType coin_type = ALL_COINS, bool useIX = false,
+                                      CAmount nFeePay = 0);
+
+    bool CreateTransaction(CScript scriptPubKey, const CAmount &nValue, CWalletTx &wtxNew, CReserveKey &reservekey,
+                           CAmount &nFeeRet, std::string &strFailReason, const CCoinControl *coinControl = NULL,
+                           AvailableCoinsType coin_type = ALL_COINS, bool useIX = false, CAmount nFeePay = 0);
     bool CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey, std::string strCommand = "tx");
     std::string PrepareObfuscationDenominate(int minRounds, int maxRounds);
     int GenerateObfuscationOutputs(int nTotalValue, std::vector<CTxOut>& vout);
@@ -668,12 +788,30 @@ public:
     bool GenerateIntegratedAddress(const std::string& accountName, std::string& pubAddr);
     bool GenerateIntegratedAddress(const CPubKey& pubViewKey, const CPubKey& pubSpendKey, std::string& pubAddr);
     bool AllMyPublicAddresses(std::vector<std::string>& addresses, std::vector<std::string>& accountNames);
+    bool RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmount &amount) const;
+    bool EncodeTxOutAmount(CTxOut& out, const CAmount& amount, const unsigned char * sharedSec);
+    CAmount getCOutPutValue(const COutput& output) const;
+    CAmount getCTxOutValue(const CTransaction &tx, const CTxOut &out) const;
 private:
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
-    bool mySpendPrivateKey(CKey& spend);
-    bool myViewPrivateKey(CKey& view);
+    bool mySpendPrivateKey(CKey& spend) const;
+    bool myViewPrivateKey(CKey& view) const;
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
-    void createMasterKey();
+    void createMasterKey() const;
+    bool findCorrespondingPrivateKey(const CTransaction& tx, CKey& key);
+    bool generate_key_image_helper(CPubKey& pub, CKeyImage& img);
+    bool generate_key_image_helper(CScript& scriptKey, CKeyImage& img);
+    bool construct_tx_with_tx_key(std::vector<tx_source_entry>& sources, std::vector<tx_destination_entry>& destinations, const boost::optional<CStealthAccount>& change_addr, const std::vector<uint8_t> &extra, CTransaction& tx, const CKey &tx_key, bool shuffle_outs = true);
+    bool construct_tx_and_get_tx_key(std::vector<tx_source_entry>& sources, 
+        std::vector<tx_destination_entry>& destinations, 
+        const boost::optional<CStealthAccount>& change_addr, 
+        const std::vector<uint8_t> &extra, 
+        CTransaction& tx, 
+        CKey& txPrivKey);
+    bool generateBulletProof(CTransaction& tx);
+    bool verifyBulletProof(const CTransaction& tx);
+    bool generateRingSignature(CTransaction& tx);
+    bool verifyRingSignature(const CTransaction& tx);
 };
 
 
@@ -1406,62 +1544,7 @@ public:
 };
 
 
-/**
- * Account information.
- * Stored in wallet with key "acc"+string account name.
- */
-class CAccount
-{
-public:
-    CPubKey vchPubKey;
 
-    CAccount()
-    {
-        SetNull();
-    }
-
-    void SetNull()
-    {
-        vchPubKey = CPubKey();
-    }
-
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion)
-    {
-        if (!(nType & SER_GETHASH))
-            READWRITE(nVersion);
-        READWRITE(vchPubKey);
-    }
-};
-
-class CStealthAccount
-{
-public:
-    CAccount spendAccount;
-    CAccount viewAccount;
-
-    CStealthAccount()
-    {
-        SetNull();
-    }
-
-    void SetNull()
-    {
-        spendAccount.SetNull();
-        viewAccount.SetNull();
-    }
-
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion)
-    {
-        READWRITE(spendAccount);
-        READWRITE(viewAccount);
-    }
-};
 
 
 /**
@@ -1541,5 +1624,7 @@ public:
 private:
     std::vector<char> _ssExtra;
 };
+
+
 
 #endif // BITCOIN_WALLET_H

@@ -739,7 +739,7 @@ bool IsStandardTx(const CTransaction &tx, string &reason) {
         else if ((whichType == TX_MULTISIG) && (!fIsBareMultisigStd)) {
             reason = "bare-multisig";
             return false;
-        } else if (txout.IsDust(::minRelayTxFee)) {
+        } else if (txout.nValue != 0 && txout.IsDust(::minRelayTxFee)) {
             reason = "dust";
             return false;
         }
@@ -1448,10 +1448,10 @@ bool CheckTransaction(const CTransaction &tx, bool fZerocoinActive, bool fReject
             return state.DoS(100, error("CheckTransaction() : txout.nValue too high"),
                              REJECT_INVALID, "bad-txns-vout-toolarge");
         }
-        nValueOut += txout.nValue;
-        if (!MoneyRange(nValueOut))
-            return state.DoS(100, error("CheckTransaction() : txout total out of range"),
-                             REJECT_INVALID, "bad-txns-txouttotal-toolarge");
+        //nValueOut += txout.nValue;
+        //if (!MoneyRange(nValueOut))
+        //    return state.DoS(100, error("CheckTransaction() : txout total out of range"),
+        //                     REJECT_INVALID, "bad-txns-txouttotal-toolarge");
 
         /**
     * @author Wang
@@ -1703,6 +1703,16 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
                 return state.Invalid(error("AcceptToMemoryPool : inputs already spent"),
                                      REJECT_DUPLICATE, "bad-txns-inputs-spent");
 
+            // Check key images not duplicated with what in db
+            for (const CTxIn& txin: tx.vin) {
+                const CKeyImage& keyImage = txin.keyImage;
+                bool isMine;
+                if (pblocktree->ReadKeyImage(keyImage.GetHex(), isMine)) {
+                    return state.Invalid(error("AcceptToMemoryPool : key image already spent"),
+                                         REJECT_DUPLICATE, "bad-txns-inputs-spent");
+                }
+            }
+
             // Bring the best block into scope
             view.GetBestBlock();
 
@@ -1733,7 +1743,7 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
         }
 
         CAmount nValueOut = tx.GetValueOut();
-        CAmount nFees = nValueIn - nValueOut;
+        CAmount nFees = 0;//nValueIn - nValueOut;
         double dPriority = 0;
         if (!tx.IsZerocoinSpend())
             view.GetPriority(tx, chainActive.Height());
@@ -1786,10 +1796,10 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
             }
         }
 
-        if (fRejectInsaneFee && nFees > ::minRelayTxFee.GetFee(nSize) * 10000)
-            return error("AcceptToMemoryPool: : insane fees %s, %d > %d",
-                         hash.ToString(),
-                         nFees, ::minRelayTxFee.GetFee(nSize) * 10000);
+        //if (fRejectInsaneFee && nFees > ::minRelayTxFee.GetFee(nSize) * 10000)
+        //    return error("AcceptToMemoryPool: : insane fees %s, %d > %d",
+        //                 hash.ToString(),
+        //                 nFees, ::minRelayTxFee.GetFee(nSize) * 10000);
 
         // Check against previous transactions
         // This is done last to help prevent CPU exhaustion denial-of-service attacks.
@@ -2049,7 +2059,7 @@ bool GetTransaction(const uint256 &hash, CTransaction &txOut, uint256 &hashBlock
                 }
                 hashBlock = header.GetHash();
                 if (txOut.GetHash() != hash)
-                    return error("%s : txid mismatch", __func__);
+                    return error("%s : txid mismatch, %s, %s", __func__, txOut.GetHash().GetHex(), hash.GetHex());
                 return true;
             }
 
@@ -2175,7 +2185,7 @@ int64_t GetBlockValue(int nHeight) {
     } else {
         if (Params().NetworkID() == CBaseChainParams::MAIN) {
         	if (nHeight < 100) {
-        		nSubsidy = 10000000 * COIN;
+        		nSubsidy = 11000000 * COIN;
         	} else if (nHeight < 200 && nHeight > 0)
                 nSubsidy = 250000 * COIN;
             else if(nHeight > Params().nLastPOWBlock) {
@@ -2455,8 +2465,10 @@ bool CScriptCheck::operator()() {
     const CScript &scriptSig = ptxTo->vin[nIn].scriptSig;
     if (!VerifyScript(scriptSig, scriptPubKey, nFlags, CachingTransactionSignatureChecker(ptxTo, nIn, cacheStore),
                       &error)) {
-        return ::error("CScriptCheck(): %s:%d VerifySignature failed: %s", ptxTo->GetHash().ToString(), nIn,
-                       ScriptErrorString(error));
+        if (error != SCRIPT_ERR_EVAL_FALSE) {
+            return ::error("CScriptCheck(): %s:%d VerifySignature failed: %s", ptxTo->GetHash().ToString(), nIn,
+                           ScriptErrorString(error));
+        }
     }
     return true;
 }
@@ -3179,7 +3191,7 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
     unsigned int nMaxBlockSigOps = MAX_BLOCK_SIGOPS_CURRENT;
     for (unsigned int i = 0; i < block.vtx.size(); i++) {
         const CTransaction &tx = block.vtx[i];
-
+        LogPrintf("%s: tx hash %s", __func__, tx.GetHash().GetHex());
         nInputs += tx.vin.size();
         nSigOps += GetLegacySigOpCount(tx);
         if (!block.IsPoABlockByVersion() && nSigOps > nMaxBlockSigOps)
@@ -3261,7 +3273,8 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
             }
 
             if (!tx.IsCoinStake())
-                nFees += view.GetValueIn(tx) - tx.GetValueOut();
+                //nFees += view.GetValueIn(tx) - tx.GetValueOut();
+                nFees += tx.nTxFee;
             nValueIn += view.GetValueIn(tx);
 
             std::vector <CScriptCheck> vChecks;
@@ -7223,4 +7236,4 @@ public:
         mapOrphanTransactions.clear();
         mapOrphanTransactionsByPrev.clear();
     }
-} instance_of_cmaincleanup;
+}; 
