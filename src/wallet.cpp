@@ -2652,7 +2652,9 @@ bool CWallet::CreateTransactionBulletProof(const CPubKey& recipientViewKey, cons
     }
 
     //generateBulletProof(txNew);
-    generateRingSignature(wtxNew);
+    if (!generateRingSignature(wtxNew)) {
+        return false;
+    }
 
     //check whether this is a reveal amount transaction
     //only create transaction with reveal amount if it is a masternode collateral transaction
@@ -2924,6 +2926,7 @@ bool CWallet::generateRingSignature(CTransaction& tx)
         std::cout << "At block:" << hashBlock.GetHex() << std::endl;
         if (!generate_key_image_helper(txPrev.vout[tx.vin[i].prevout.n].scriptPubKey, ki)) {
             std::cout << "Cannot generate key image" << std::endl;
+            return false;
         } else {
             std::cout << "Generated key image" << std::endl;
             tx.vin[i].keyImage = ki;
@@ -5835,6 +5838,7 @@ bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmou
                     GetKey(keyID, privKey);
                     CScript scriptPubKey = GetScriptForDestination(privKey.GetPubKey());
                     if (scriptPubKey == out.scriptPubKey) {
+                        std::cout << "Revealing tx amout" << std::endl;
                         CPubKey txPub(&(tx.txPub[0]), &(tx.txPub[0]) + 33);
                         CKey view;
                         if (myViewPrivateKey(view)
@@ -5890,6 +5894,7 @@ bool CWallet::generate_key_image_helper(CScript& scriptPubKey, CKeyImage& img) {
             //copy newPubKey into ki
             memcpy(ki, newPubKey.begin(), newPubKey.size());
             if (!secp256k1_ec_pubkey_tweak_mul(ki, newPubKey.size(), key.begin())) {
+                std::cout << "false_secp256k1" << std::endl;
                 return false;
             }
             img = CKeyImage(ki, ki + 33);
