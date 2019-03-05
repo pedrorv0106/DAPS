@@ -5861,7 +5861,7 @@ bool CWallet::IsTransactionForMe(const CTransaction& tx) {
                 CPubKey computed = privKey.GetPubKey();
                 LogPrintf("recomputed Stealth destination: %s", computed.GetHex());
                 AddKey(privKey);
-                break;
+                //break;
             }
         }
     }
