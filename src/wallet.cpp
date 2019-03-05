@@ -3136,7 +3136,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
         return false;
 
     // presstab HyperStake - Initialize as static and don't update the set on every run of CreateCoinStake() in order to lighten resource use
-    static std::set<pair<const CGenerateAddressWalletTx*, unsigned int> > setStakeCoins;
+    static std::set<pair<const CWalletTx*, unsigned int> > setStakeCoins;
     static int nLastStakeSetUpdate = 0;
     LogPrintf("%s: Checking SelectStakeCoins", __func__);
     if (GetTime() - nLastStakeSetUpdate > nStakeSetUpdateTime) {
