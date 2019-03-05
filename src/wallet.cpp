@@ -5998,7 +5998,8 @@ bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmou
     }
     if (tx.IsMNCollateralTx()) {
         if (out.nValue > 0) {
-            return out.nValue;
+            amount = out.nValue;
+            return true;
         }
     }
 
