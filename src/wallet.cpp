@@ -1930,7 +1930,7 @@ bool CWallet::MintableCoins()
     return false;
 }
 
-bool CWallet::SelectCoinsMinConf(const CAmount& nTargetValue, int nConfMine, int nConfTheirs, vector<COutput> vCoins, set<pair<const CWalletTx*, unsigned int> >& setCoinsRet, CAmount& nValueRet) const
+bool CWallet::SelectCoinsMinConf(const CAmount& nTargetValue, int nConfMine, int nConfTheirs, vector<COutput> vCoins, set<pair<const CWalletTx*, unsigned int> >& setCoinsRet, CAmount& nValueRet)
 {
     setCoinsRet.clear();
     nValueRet = 0;
@@ -1957,25 +1957,45 @@ bool CWallet::SelectCoinsMinConf(const CAmount& nTargetValue, int nConfMine, int
                 continue;
 
             const CWalletTx* pcoin = output.tx;
-
+            CAmount n = 0;
             //            if (fDebug) LogPrint("selectcoins", "value %s confirms %d\n", FormatMoney(pcoin->vout[output.i].nValue), output.nDepth);
             if (output.nDepth < (pcoin->IsFromMe(ISMINE_ALL) ? nConfMine : nConfTheirs))
                 continue;
-
-            CKey key;
-            if (findCorrespondingPrivateKey(pcoin->vout[output.i], key)) {
-                CKeyImage keyImage;
-                const CScript& s = pcoin->vout[output.i].scriptPubKey;
-                if (!generate_key_image_helper(s, keyImage)) {
+            std::string keyImageHex;
+            if (keyImageMap.count(std::pair<uint256, int>(pcoin->GetHash(), output.i)) == 1) {
+                keyImageHex = keyImageMap[std::pair<uint256, int>(pcoin->GetHash(), output.i)];
+            } else {
+                CKey key;
+                if (findCorrespondingPrivateKey(pcoin->vout[output.i], key)) {
+                    CKeyImage keyImage;
+                    const CScript &s = pcoin->vout[output.i].scriptPubKey;
+                    if (!generate_key_image_helper(s, keyImage)) {
+                        continue;
+                    }
+                    keyImageHex = keyImage.GetHex();
+                    keyImageMap[std::pair<uint256, int>(pcoin->GetHash(), output.i)] = keyImageHex;
+                } else {
                     continue;
                 }
-                bool isMine;
-                if (pblocktree->ReadKeyImage(keyImage.GetHex(), isMine)) {
+            }
+
+            auto it = std::find(pendingKeyImages.begin(), pendingKeyImages.end(), keyImageHex);
+            if (it != pendingKeyImages.end()) {
+                //key image is pending
+                continue;
+            }
+            bool isMine;
+            if (keyImagesSpends.count(keyImageHex) == 1) {
+                if (!keyImagesSpends[keyImageHex]) {
+                    n = getCTxOutValue(*pcoin, pcoin->vout[output.i]);
                 }
             }
+
+            if (n != 0 && !IsSpent(pcoin->GetHash(), output.i) || !pblocktree->ReadKeyImage(keyImageHex, isMine)) {
+                keyImagesSpends[keyImageHex] = false;
+                n = getCTxOutValue(*pcoin, pcoin->vout[output.i]);
+            }
             int i = output.i;
-            CAmount n = getCTxOutValue(*pcoin, pcoin->vout[i]);
-        
             if (tryDenom == 0 && IsDenominatedAmount(n)) continue; // we don't want denom values on first run
 
             pair<CAmount, pair<const CWalletTx*, unsigned int> > coin = make_pair(n, make_pair(pcoin, i));
@@ -2095,7 +2115,7 @@ bool CWallet::SelectCoins(const CAmount& nTargetValue, set<pair<const CWalletTx*
         }
         return (nValueRet >= nTargetValue);
     }
-
+    std::cout << "Selecting coins min" << std::endl;
     return (SelectCoinsMinConf(nTargetValue, 1, 6, vCoins, setCoinsRet, nValueRet) ||
             SelectCoinsMinConf(nTargetValue, 1, 1, vCoins, setCoinsRet, nValueRet) ||
             (bSpendZeroConfChange && SelectCoinsMinConf(nTargetValue, 0, 1, vCoins, setCoinsRet, nValueRet)));
@@ -2426,7 +2446,7 @@ bool CWallet::ConvertList(std::vector<CTxIn> vCoins, std::vector<CAmount>& vecAm
         if (mapWallet.count(i.prevout.hash)) {
             CWalletTx& wtx = mapWallet[i.prevout.hash];
             if (i.prevout.n < wtx.vout.size()) {
-                vecAmounts.push_back(wtx.vout[i.prevout.n].nValue);
+                vecAmounts.push_back(getCTxOutValue(wtx, wtx.vout[i.prevout.n]));
             }
         } else {
             LogPrintf("ConvertList -- Couldn't find transaction\n");
@@ -2597,6 +2617,7 @@ bool CWallet::CreateTransactionBulletProof(const CPubKey& recipientViewKey, cons
                 }
 
                 CAmount nChange = nValueIn - nValue - nFeeRet;
+                std::cout << "change = " << nChange << std::endl;
 
                 //over pay for denominated transactions
                 if (coin_type == ONLY_DENOMINATED) {
@@ -2605,7 +2626,7 @@ bool CWallet::CreateTransactionBulletProof(const CPubKey& recipientViewKey, cons
                     wtxNew.mapValue["DS"] = "1";
                 }
 
-                if (nChange > 0) {
+                if (nChange >= 0) {
                     // Fill a vout to ourself
                     // TODO: pass in scriptChange instead of reservekey so
                     // change transaction isn't always pay-to-dapscoin-address
@@ -2655,8 +2676,9 @@ bool CWallet::CreateTransactionBulletProof(const CPubKey& recipientViewKey, cons
                         vector<CTxOut>::iterator position = txNew.vout.begin() + GetRandInt(txNew.vout.size() + 1);
                         txNew.vout.insert(position, newTxOut);
                     }
-                } else
-                    reservekey.ReturnKey();
+                } else {
+                    return false;
+                }
 
                 // Fill vin
                 BOOST_FOREACH (const PAIRTYPE(const CWalletTx*, unsigned int) & coin, setCoins)
@@ -2994,8 +3016,6 @@ bool CWallet::generateRingSignature(CTransaction& tx)
             return false;
         }
         CKeyImage ki;
-        std::cout << "Spending tx:" << txPrev.GetHash().GetHex() << std::endl;
-        std::cout << "At block:" << hashBlock.GetHex() << std::endl;
         if (!generate_key_image_helper(txPrev.vout[tx.vin[i].prevout.n].scriptPubKey, ki)) {
             LogPrintf("Cannot generate key image");
             return false;
@@ -3003,6 +3023,8 @@ bool CWallet::generateRingSignature(CTransaction& tx)
             //std::cout << "Generated key image" << std::endl;
             tx.vin[i].keyImage = ki;
         }
+
+        pendingKeyImages.push_back(ki.GetHex());
 
         if (getCTxOutValue(txPrev, txPrev.vout[tx.vin[i].prevout.n]) == 1000000) {
             //no ring signature
