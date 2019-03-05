@@ -1581,13 +1581,11 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
     AssertLockHeld(cs_main);
     if (pfMissingInputs)
         *pfMissingInputs = false;
-    std::cout << "1" << std::endl;
     //Temporarily disable zerocoin for maintenance
     if (GetAdjustedTime() > GetSporkValue(SPORK_16_ZEROCOIN_MAINTENANCE_MODE) && tx.ContainsZerocoins())
         return state.DoS(10,
                          error("AcceptToMemoryPool : Zerocoin transactions are temporarily disabled for maintenance"),
                          REJECT_INVALID, "bad-tx");
-    std::cout << "2" << std::endl;
     if (!CheckTransaction(tx, chainActive.Height() >= Params().Zerocoin_StartHeight(), true, state))
         return state.DoS(100, error("AcceptToMemoryPool: : CheckTransaction failed"), REJECT_INVALID, "bad-tx");
 
@@ -1600,7 +1598,6 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
     if (tx.IsCoinStake())
         return state.DoS(100, error("AcceptToMemoryPool: coinstake as individual tx"),
                          REJECT_INVALID, "coinstake");
-    std::cout << "3" << std::endl;
     // Rather not work on nonstandard transactions (unless -testnet/-regtest)
     string reason;
     if (Params().RequireStandard() && !IsStandardTx(tx, reason))
@@ -1613,7 +1610,6 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
         LogPrintf("%s tx already in mempool\n", __func__);
         return false;
     }
-    std::cout << "4" << std::endl;
     // ----------- swiftTX transaction scanning -----------
 
     /*BOOST_FOREACH(
@@ -1634,12 +1630,12 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
             COutPoint outpoint = tx.vin[i].prevout;
             if (pool.mapNextTx.count(outpoint)) {
                 // Disable replacement feature for now
+                LogPrintf("%s: Error: conflict with in-mempool transaction", __func__);
                 return false;
             }
         }
     }
 
-    std::cout << "5" << std::endl;
     {
         CCoinsView dummy;
         CCoinsViewCache view(&dummy);
@@ -1677,8 +1673,10 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
             view.SetBackend(viewMemPool);
 
             // do we already have it?
-            if (view.HaveCoins(hash))
+            if (view.HaveCoins(hash)) {
+                LogPrintf("%s: Error: Hash exists in the mempool", __func__);
                 return false;
+            }
 
             // do all inputs exist?
             // Note that this does not check for the presence of actual outputs (see the next check for that),
@@ -1687,16 +1685,15 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
                 if (!view.HaveCoins(txin.prevout.hash)) {
                     if (pfMissingInputs)
                         *pfMissingInputs = true;
+                    LogPrintf("%s: Error: txhash not found %s", __func__, txin.prevout.hash.GetHex());
                     return false;
                 }
-                std::cout << "6" << std::endl;
                 //Check for invalid/fraudulent inputs
                 if (!ValidOutPoint(txin.prevout, chainActive.Height())) {
                     return state.Invalid(
                             error("%s : tried to spend invalid input %s in tx %s", __func__, txin.prevout.ToString(),
                                   tx.GetHash().GetHex()), REJECT_INVALID, "bad-txns-invalid-inputs");
                 }
-                std::cout << "7" << std::endl;
             }
 
             // are the actual inputs available?
@@ -2675,14 +2672,15 @@ bool CheckInputs(const CTransaction &tx, CValidationState &state, const CCoinsVi
             }
 
             // Check for negative or overflow input values
-            nValueIn += coins->vout[prevout.n].nValue;
+            //Dont check value range because nValue is not the right amount
+            /*nValueIn += coins->vout[prevout.n].nValue;
             if (!MoneyRange(coins->vout[prevout.n].nValue) || !MoneyRange(nValueIn))
                 return state.DoS(100, error("CheckInputs() : txin values out of range"),
-                                 REJECT_INVALID, "bad-txns-inputvalues-outofrange");
+                                 REJECT_INVALID, "bad-txns-inputvalues-outofrange");*/
         }
 
         if (!tx.IsCoinStake()) {
-            if (nValueIn < tx.GetValueOut())
+            /*if (nValueIn < tx.GetValueOut())
                 return state.DoS(100, error("CheckInputs() : %s value in (%s) < value out (%s)",
                                             tx.GetHash().ToString(), FormatMoney(nValueIn),
                                             FormatMoney(tx.GetValueOut())),
@@ -2696,7 +2694,7 @@ bool CheckInputs(const CTransaction &tx, CValidationState &state, const CCoinsVi
             nFees += nTxFee;
             if (!MoneyRange(nFees))
                 return state.DoS(100, error("CheckInputs() : nFees out of range"),
-                                 REJECT_INVALID, "bad-txns-fee-outofrange");
+                                 REJECT_INVALID, "bad-txns-fee-outofrange");*/
         }
         // The first loop above does all the inexpensive checks.
         // Only if ALL inputs pass do we perform expensive ECDSA signature checks.
@@ -3268,6 +3266,7 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
                 if (pwalletMain->GetDebit(in, ISMINE_ALL)) {
                     pwalletMain->keyImagesSpends[keyImage.GetHex()] = true;
                 }
+                pwalletMain->pendingKeyImages.remove(keyImage.GetHex());
                 if (!ValidOutPoint(in.prevout, pindex->nHeight)) {
                     return state.DoS(100, error("%s : tried to spend invalid input %s in tx %s", __func__,
                                                 in.prevout.ToString(),

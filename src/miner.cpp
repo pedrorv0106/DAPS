@@ -186,6 +186,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
     pblock->vtx.push_back(txNew);
     pblocktemplate->vTxFees.push_back(-1);   // updated at end
     pblocktemplate->vTxSigOps.push_back(-1); // updated at end
+    LogPrintf("CreateNewBlock: generated %s\n", FormatMoney(pblock->vtx[0].vout[0].nValue));
 
     // ppcoin: if coinstake available add coinstake tx
     static int64_t nLastCoinStakeSearchTime = GetAdjustedTime(); // only initialized at startup
@@ -293,7 +294,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
                     }
                     mapDependers[txin.prevout.hash].push_back(porphan);
                     porphan->setDependsOn.insert(txin.prevout.hash);
-                    nTotalIn += mempool.mapTx[txin.prevout.hash].GetTx().vout[txin.prevout.n].nValue;
+                    //nTotalIn += mempool.mapTx[txin.prevout.hash].GetTx().vout[txin.prevout.n].nValue;
                     continue;
                 }
 
@@ -307,12 +308,12 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
                 const CCoins* coins = view.AccessCoins(txin.prevout.hash);
                 assert(coins);
 
-                CAmount nValueIn = coins->vout[txin.prevout.n].nValue;
-                nTotalIn += nValueIn;
+                //CAmount nValueIn = coins->vout[txin.prevout.n].nValue;
+                //nTotalIn += nValueIn;
 
                 int nConf = nHeight - coins->nHeight;
 
-                dPriority += (double)nValueIn * nConf;
+                //dPriority += (double)nValueIn * nConf;
             }
             if (fMissingInputs) continue;
 
@@ -747,6 +748,7 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake, MineType mineType)
             continue;
 
         CBlock* pblock = &pblocktemplate->block;
+        LogPrintf("Bitcoinminer: generated %s\n", FormatMoney(pblock->vtx[0].vout[0].nValue));
         IncrementExtraNonce(pblock, pindexPrev, nExtraNonce);
 
         //Stake miner main
