@@ -938,6 +938,7 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
         //search existing Masternode list, this is where we update existing Masternodes with new dsee broadcasts
         CMasternode* pmn = this->Find(vin);
         if (pmn != NULL) {
+            std::cout << "found vin" << std::endl;
             // count == -1 when it's a new entry
             //   e.g. We don't want the entry relayed/time updated when we're syncing the list
             // mn.pubkey = pubkey, IsVinAssociatedWithPubkey is validated once below,
@@ -972,12 +973,13 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
 
             return;
         }
-
+        std::cout << "vin not found" << std::endl;
         static std::map<COutPoint, CPubKey> mapSeenDsee;
         if (mapSeenDsee.count(vin.prevout) && mapSeenDsee[vin.prevout] == pubkey) {
             LogPrint("masternode", "dsee - already seen this vin %s\n", vin.prevout.ToString());
             return;
         }
+        std::cout << "Inserting vin into mapSeenDsee" << std::endl;
         mapSeenDsee.insert(make_pair(vin.prevout, pubkey));
         // make sure the vout that was signed is related to the transaction that spawned the Masternode
         //  - this is expensive, so it's only done once per Masternode
