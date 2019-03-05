@@ -2119,7 +2119,7 @@ bool CObfuScationSigner::IsVinAssociatedWithPubkey(CTxIn& vin, CPubKey& pubkey)
         }
     }
 
-    std::cout << "IsVinAssociatedWithPubkey: not match" << << std::endl;
+    std::cout << "IsVinAssociatedWithPubkey: not match" << std::endl;
 
     return false;
 }
