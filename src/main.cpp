@@ -4339,7 +4339,7 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
     	return state.Invalid(error("CheckBlock() : Time elapsed between two PoA blocks is too short"),
     	                             REJECT_INVALID, "time-too-new");
     }
-
+    LogPrintf("%s: Check PoA block  overlap", __func__);
     //Check PoA block not auditing PoS blocks audited by its previous PoA block
     if (block.IsPoABlockByVersion() && !CheckPoABlockNotAuditingOverlap(block)) {
     	return state.Invalid(error("CheckBlock() : PoA block auditing PoS blocks previously audited by its parent"),
@@ -4349,6 +4349,7 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
     // Check the merkle root.
     if (fCheckMerkleRoot) {
         bool mutated;
+        LogPrintf("%s:Check merkle root", __func__);
         uint256 hashMerkleRoot2 = block.BuildMerkleTree(&mutated);
         if (block.hashMerkleRoot != hashMerkleRoot2)
             return state.DoS(100, error("CheckBlock() : hashMerkleRoot mismatch"),
@@ -4364,6 +4365,7 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
 
     //Proof of Audit: Check audited PoS blocks infor merkle root
     {
+	LogPrintf("%s:PoA merkle root", __func__);
     	bool fMutated;
     	if (!CheckPoAMerkleRoot(block, &fMutated)) {
     		return state.DoS(100, error("CheckBlock() : hashPoAMerkleRoot mismatch"),
@@ -4398,13 +4400,15 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
                              REJECT_INVALID, "bad-cb-multiple");
 
     if (block.IsProofOfStake()) {
+        LogPrintf("%s:Check coinstake empty", __func__);
         // Coinbase output should be empty if proof-of-stake block
         if (block.vtx[0].vout.size() != 1 || !block.vtx[0].vout[0].IsEmpty())
             return state.DoS(100, error("CheckBlock() : coinbase output not empty for proof-of-stake block"));
-
+        LogPrintf("%s:Second tx must be coinstake, numtx = %d", __func__, block.vtx.size());
         // Second transaction must be coinstake, the rest must not be
         if (block.vtx.empty() || !block.vtx[1].IsCoinStake())
             return state.DoS(100, error("CheckBlock() : second tx is not coinstake"));
+	LogPrintf("%s: check block more than one coin stake:", __func__);
         for (unsigned int i = 2; i < block.vtx.size(); i++)
             if (block.vtx[i].IsCoinStake())
                 return state.DoS(100, error("CheckBlock() : more than one coinstake"));
@@ -4465,7 +4469,7 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
     } else {
         LogPrintf("CheckBlock() : skipping transaction locking checks\n");
     }
-
+    LogPrintf("%s:Check block payee\n", __func__);
     // masternode payments / budgets
     CBlockIndex *pindexPrev = chainActive.Tip();
     int nHeight = 0;
@@ -4495,7 +4499,7 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
                 LogPrintf("CheckBlock(): Masternode payment check skipped on sync - skipping IsBlockPayeeValid()\n");
         }
     }
-
+	LogPrintf("%s: Cchecking transactions", __func__);
     // Check transactions
     bool fZerocoinActive = block.GetBlockTime() > Params().Zerocoin_StartTime();
     vector <CBigNum> vBlockSerials;
@@ -4529,15 +4533,16 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
         return state.DoS(100, error("CheckBlock() : out-of-bounds SigOpCount"),
                          REJECT_INVALID, "bad-blk-sigops", true);
 
+	LogPrintf("%s: successfully check block", __func__);
     return true;
 }
 
 bool CheckWork(const CBlock block, CBlockIndex *const pindexPrev) {
     if (pindexPrev == NULL)
         return error("%s : null pindexPrev for block %s", __func__, block.GetHash().ToString().c_str());
-
+	LogPrintf("%s: checking work", __func__);
     unsigned int nBitsRequired = GetNextWorkRequired(pindexPrev, &block);
-
+LogPrintf("%s: found nex work", __func__);
     if (block.IsProofOfWork() && (pindexPrev->nHeight + 1 <= 68589)) {
         double n1 = ConvertBitsToDouble(block.nBits);
         double n2 = ConvertBitsToDouble(nBitsRequired);
@@ -4555,7 +4560,7 @@ bool CheckWork(const CBlock block, CBlockIndex *const pindexPrev) {
     if (block.IsProofOfStake()) {
         uint256 hashProofOfStake;
         uint256 hash = block.GetHash();
-
+LogPrintf("%s: about to check proof of stake", __func__);
         if (!CheckProofOfStake(block, hashProofOfStake)) {
             LogPrintf("WARNING: ProcessBlock(): check proof-of-stake failed for block %s\n", hash.ToString().c_str());
             return false;
@@ -4729,7 +4734,7 @@ bool AcceptBlock(CBlock &block, CValidationState &state, CBlockIndex **ppindex, 
     AssertLockHeld(cs_main);
 
     CBlockIndex *&pindex = *ppindex;
-
+    LogPrintf("%s: checking previous block index", __func__);
     // Get prev block index
     CBlockIndex *pindexPrev = NULL;
     if (block.GetHash() != Params().HashGenesisBlock()) {
@@ -4755,7 +4760,7 @@ bool AcceptBlock(CBlock &block, CValidationState &state, CBlockIndex **ppindex, 
                              REJECT_INVALID, "bad-prevblk");
         }
     }
-
+    LogPrintf("%s: about to check work", __func__);
     if (block.GetHash() != Params().HashGenesisBlock() && !CheckWork(block, pindexPrev))
         return false;
 
@@ -4861,6 +4866,7 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
 
     int nMints = 0;
     int nSpends = 0;
+LogPrintf("%s: checking block zero coin", __func__);
     for (const CTransaction tx : pblock->vtx) {
         if (!pblock->IsPoABlockByVersion() && tx.ContainsZerocoins()) {
             for (const CTxIn in : tx.vin) {
@@ -4881,11 +4887,12 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
     // Duplicate stake allowed only when there is orphan child block
     if (pblock->IsProofOfStake() && setStakeSeen.count(pblock->GetProofOfStake())/* && !mapOrphanBlocksByPrev.count(hash)*/)
         return error("ProcessNewBlock() : duplicate proof-of-stake (%s, %d) for block %s", pblock->GetProofOfStake().first.ToString().c_str(), pblock->GetProofOfStake().second, pblock->GetHash().ToString().c_str());
-
+	LogPrintf("%s: check block signature", __func__);
     // NovaCoin: check proof-of-stake block signature
     if (!pblock->IsPoABlockByVersion() && !pblock->CheckBlockSignature())
         return error("ProcessNewBlock() : bad proof-of-stake block signature");
 
+LogPrintf("%s: checking previous block", __func__);
     if (pblock->GetHash() != Params().HashGenesisBlock() && pfrom != NULL) {
         //if we get this far, check if the prev block is our prev block, if not then request sync and return false
         BlockMap::iterator mi = mapBlockIndex.find(pblock->hashPrevBlock);
@@ -4894,7 +4901,7 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
             return false;
         }
     }
-
+LogPrintf("%s: successfully checking previous block", __func__);
     {
         LOCK(cs_main);   // Replaces the former TRY_LOCK loop because busy waiting wastes too much resources
 
@@ -4905,7 +4912,9 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
 
         // Store to disk
         CBlockIndex *pindex = NULL;
+LogPrintf("%s: accepting block", __func__);
         bool ret = AcceptBlock(*pblock, state, &pindex, dbp, checked);
+LogPrintf("%s: accepted block", __func__);
         if (pindex && pfrom) {
             mapBlockSource[pindex->GetBlockHash()] = pfrom->GetId();
         }
@@ -4913,7 +4922,7 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
         if (!ret)
             return error("%s : AcceptBlock FAILED", __func__);
     }
-
+    LogPrintf("%s: About to axtive best chain", __func__);
     if (!ActivateBestChain(state, pblock, checked))
         return error("%s : ActivateBestChain failed", __func__);
 
@@ -4924,7 +4933,8 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
             budget.NewBlock();
         }
     }
-
+	
+	LogPrintf("%s: checked litemode", __func__);
     if (pwalletMain) {
         // If turned on MultiSend will send a transaction (or more) on the after maturity of a stake
         if (pwalletMain->isMultiSendEnabled())
