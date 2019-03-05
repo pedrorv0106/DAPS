@@ -3240,7 +3240,9 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
                 break;
             }
             //copy encryption key so that full nodes can decode the amount in the txin
-            std::copy(sharedSec.begin(), sharedSec.end(), std::back_inserter(in.encryptionKey));
+		LogPrintf("\n%s: sharedSec: %s", __func__, sharedSec.GetHex());
+            std::copy(sharedSec.begin(), sharedSec.begin() + 33, std::back_inserter(in.encryptionKey));
+	LogPrintf("\n%s:encryptionKey size: %d", __func__, in.encryptionKey.size());
             txNew.vin.push_back(in);
 
             CAmount val = getCTxOutValue(*pcoin.first, pcoin.first->vout[pcoin.second]);
@@ -3351,6 +3353,9 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
         if (!SignSignature(*this, *pcoin, txNew, nIn++))
             return error("CreateCoinStake : failed to sign coinstake");
     }
+
+    //add generated private key to keystore
+    IsTransactionForMe(txNew);
 
     // Successfully generated coinstake
     nLastStakeSetUpdate = 0; //this will trigger stake set to repopulate next round

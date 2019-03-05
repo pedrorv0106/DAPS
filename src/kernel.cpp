@@ -294,12 +294,14 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlockHeader blockFrom, cons
 {
     //assign new variables to make it easier to read
     //check encryptionKey hash
+LogPrintf("%s: encryption key", __func__);
     uint256 hashOfKey = Hash(encryptionKey, encryptionKey + 33);
+LogPrintf("%s: computed keyhash", __func__);
     if (hashOfKey != txPrev.vout[prevout.n].maskValue.hashOfKey) {
         LogPrintf("CheckStakeKernelHash: Hash key for decoding the value is not fit");
         return false;
     }
-
+LogPrintf("%s: decoding the value", __func__);
     CAmount nValueIn;// = txPrev.vout[prevout.n].nValue;
     uint256 val = txPrev.vout[prevout.n].maskValue.amount;
     uint256 mask = txPrev.vout[prevout.n].maskValue.mask;
@@ -314,7 +316,7 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlockHeader blockFrom, cons
 
     if (nTimeBlockFrom + nStakeMinAge > nTimeTx) // Min age requirement
         return error("CheckStakeKernelHash() : min age violation - nTimeBlockFrom=%d nStakeMinAge=%d nTimeTx=%d", nTimeBlockFrom, nStakeMinAge, nTimeTx);
-
+LogPrintf("%s: grabbing difficulty", __func__);
     //grab difficulty
     uint256 bnTargetPerCoinDay;
     bnTargetPerCoinDay.SetCompact(nBits);
@@ -323,6 +325,7 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlockHeader blockFrom, cons
     uint64_t nStakeModifier = 0;
     int nStakeModifierHeight = 0;
     int64_t nStakeModifierTime = 0;
+LogPrintf("%s: get kernel staker modifier", __func__);
     if (!GetKernelStakeModifier(blockFrom.GetHash(), nStakeModifier, nStakeModifierHeight, nStakeModifierTime, fPrintProofOfStake)) {
         LogPrintf("CheckStakeKernelHash(): failed to get kernel stake modifier \n");
         return false;
@@ -334,6 +337,7 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlockHeader blockFrom, cons
 
     //if wallet is simply checking to make sure a hash is valid
     if (fCheck) {
+LogPrintf("%s: checking stakehash", __func__);
         hashProofOfStake = stakeHash(nTimeTx, ss, prevout.n, prevout.hash, nTimeBlockFrom);
         LogPrintf("CheckStakeKernelHash: checking kernal hash target");
         return stakeTargetHit(hashProofOfStake, nValueIn, bnTargetPerCoinDay);
@@ -394,9 +398,10 @@ bool CheckProofOfStake(const CBlock block, uint256& hashProofOfStake)
     // First try finding the previous transaction in database
     uint256 hashBlock;
     CTransaction txPrev;
+LogPrintf("%s: checking txin", __func__);
     if (!GetTransaction(txin.prevout.hash, txPrev, hashBlock, true))
         return error("CheckProofOfStake() : INFO: read txPrev failed");
-
+LogPrintf("%s: verify signature and script", __func__);
     //verify signature and script
     if (!VerifyScript(txin.scriptSig, txPrev.vout[txin.prevout.n].scriptPubKey, STANDARD_SCRIPT_VERIFY_FLAGS, TransactionSignatureChecker(&tx, 0)))
         return error("CheckProofOfStake() : VerifySignature failed on coinstake %s", tx.GetHash().ToString().c_str());
@@ -408,6 +413,7 @@ bool CheckProofOfStake(const CBlock block, uint256& hashProofOfStake)
     else
         return error("CheckProofOfStake() : read block failed");
 
+LogPrintf("%s: reading previous block", __func__);
     // Read block header
     CBlock blockprev;
     if (!ReadBlockFromDisk(blockprev, pindex->GetBlockPos()))
@@ -415,6 +421,7 @@ bool CheckProofOfStake(const CBlock block, uint256& hashProofOfStake)
 
     unsigned int nInterval = 0;
     unsigned int nTime = block.nTime;
+LogPrintf("%s: about to check stake kernal hash", __func__);
     if (!CheckStakeKernelHash(block.nBits, blockprev, txPrev, txin.prevout, &txin.encryptionKey[0], nTime, nInterval, true, hashProofOfStake, fDebug))
         return error("CheckProofOfStake() : INFO: check kernel failed on coinstake %s, hashProof=%s \n", tx.GetHash().ToString().c_str(), hashProofOfStake.ToString().c_str()); // may occur during initial download or if behind on block chain sync
 
