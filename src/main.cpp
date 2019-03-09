@@ -245,24 +245,79 @@ void SyncWithWallets(const CTransaction &tx, const CBlock *pblock) {
     g_signals.SyncTransaction(tx, pblock);
 }
 
+CAmount GetValueIn(CCoinsViewCache view, const CTransaction& tx)
+{
+    if (tx.IsCoinBase())
+        return 0;
+
+    //todo are there any security precautions to take here?
+    if (tx.IsZerocoinSpend())
+        return tx.GetZerocoinSpent();
+
+    CAmount nResult = 0;
+
+    if (tx.IsCoinStake()) {
+        for (unsigned int i = 0; i < tx.vin.size(); i++) {
+            CAmount nValueIn;// = txPrev.vout[prevout.n].nValue;
+            const CTxOut& out = view.GetOutputFor(tx.vin[i]);
+            if (out.nValue >0) {
+                nResult += out.nValue;
+            } else {
+                uint256 val = out.maskValue.amount;
+                uint256 mask = out.maskValue.mask;
+                CKey decodedMask;
+                CPubKey sharedSec;
+                sharedSec.Set(tx.vin[i].encryptionKey.begin(), tx.vin[i].encryptionKey.begin() + 33);
+                ECDHInfo::Decode(mask.begin(), val.begin(), sharedSec, decodedMask, nValueIn);
+                nResult += nValueIn;
+            }
+        }
+    }
+    //for (unsigned int i = 0; i < tx.vin.size(); i++)
+    //nResult += GetOutputFor(tx.vin[i]).nValue;
+
+    return nResult;
+}
+
 bool IsKeyImageSpend1(const std::string& kiHex, int nHeight) {
-    uint256 kd;
+    int kd;
     if (!pblocktree->ReadKeyImage(kiHex, kd)) {
         //not spent yet because not found in database
         return false;
     }
-    return IsKeyImageSpend2(kd, nHeight);
-}
-
-bool IsKeyImageSpend2(const uint256& kd, int nHeight) {
-    if (mapBlockIndex.count(kd) == 0) {
-        //potentially keyimage spent in a fork chain
+    if (kd == -1) {
         return false;
     }
-    CBlockIndex* pindex = mapBlockIndex[kd];
-    if (pindex->nHeight < nHeight && pindex->GetBlockHash() == chainActive[pindex->nHeight]->GetBlockHash()) {
-        LogPrintf("%s: keyimage spent in block %s, pindex->nHeight=%d, chainActive.Tip()->nHeight=%d", __func__, kd.GetHex(), pindex->nHeight, chainActive.Tip()->nHeight);
+    if (IsKeyImageSpend2(kiHex, kd, nHeight)) {
+        if (pwalletMain) {
+            if (pwalletMain->keyImagesSpends.count(kiHex) == 1) {
+                pwalletMain->keyImagesSpends[kiHex] = 1;
+            };
+        }
         return true;
+    }
+    if (pwalletMain) {
+        pwalletMain->keyImagesSpends[kiHex] = false;
+    }
+    return false;
+}
+
+bool IsKeyImageSpend2(const std::string& kiHex, int kd, int nHeight) {
+    if (kd < nHeight) {
+        CBlock block;
+        CBlockIndex* pblockindex = chainActive[kd];
+
+        if (ReadBlockFromDisk(block, pblockindex)) {
+            for (int i = 0; i < block.vtx.size(); i++) {
+                for (int j = 0; j < block.vtx[i].vin.size(); j++) {
+                    if (block.vtx[i].vin[j].keyImage.GetHex() == kiHex) {
+                        LogPrintf("%s: keyimage spent in nHeight=%d", __func__, kd);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     return false;
@@ -1743,7 +1798,7 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
             // Bring the best block into scope
             view.GetBestBlock();
 
-            nValueIn = view.GetValueIn(tx);
+            nValueIn = GetValueIn(view, tx);
 
             // we have all inputs cached now, so switch back to dummy, so we don't need to keep lock on mempool
             view.SetBackend(dummy);
@@ -1952,7 +2007,7 @@ bool AcceptableInputs(CTxMemPool &pool, CValidationState &state, const CTransact
             // Bring the best block into scope
             view.GetBestBlock();
 
-            nValueIn = view.GetValueIn(tx);
+            nValueIn = GetValueIn(view, tx);
 
             // we have all inputs cached now, so switch back to dummy, so we don't need to keep lock on mempool
             view.SetBackend(dummy);
@@ -2214,7 +2269,7 @@ int64_t GetBlockValue(int nHeight) {
     } else {
         if (Params().NetworkID() == CBaseChainParams::MAIN) {
         	if (nHeight < 100) {
-        		nSubsidy = 15000000 * COIN;
+        		nSubsidy = 14000000 * COIN;
         	} else if (nHeight < 200 && nHeight > 0)
                 nSubsidy = 250000 * COIN;
             else if(nHeight > Params().nLastPOWBlock) {
@@ -3292,7 +3347,7 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
                     return state.Invalid(error("ConnectBlock() : key image already spent"),
                                          REJECT_DUPLICATE, "bad-txns-inputs-spent");
                 }
-                uint256 kd(pindex->GetBlockHash());
+                int kd = pindex->nHeight;
                 LogPrintf("%s: writing key image %s", __func__, kh);
                 pblocktree->WriteKeyImage(keyImage.GetHex(), kd);
                 LogPrintf("%s: done writing key image %s", __func__, kh);
@@ -3324,7 +3379,7 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
             if (!tx.IsCoinStake())
                 //nFees += view.GetValueIn(tx) - tx.GetValueOut();
                 nFees += tx.nTxFee;
-            nValueIn += view.GetValueIn(tx);
+            nValueIn += GetValueIn(view, tx);
 
             std::vector <CScriptCheck> vChecks;
             //LogPrintf("%s: start checking inputs %s", __func__, tx.GetH);
@@ -3392,6 +3447,7 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
     // track money supply and mint amount info
     CAmount nMoneySupplyPrev = pindex->pprev ? pindex->pprev->nMoneySupply : 0;
     pindex->nMoneySupply = nMoneySupplyPrev + nValueOut - nValueIn;
+    LogPrintf("%s: nValueOut=%d, nValueIn=%d, nMoneySupplyPrev=%d, pindex->nMoneySupply=%d, nFees=%d", __func__, nValueOut, nValueIn, nMoneySupplyPrev, pindex->nMoneySupply, nFees);
     pindex->nMint = pindex->nMoneySupply - nMoneySupplyPrev + nFees;
 
 //    LogPrintf("XX69----------> ConnectBlock(): nValueOut: %s, nValueIn: %s, nFees: %s, nMint: %s zDapsSpent: %s\n",
