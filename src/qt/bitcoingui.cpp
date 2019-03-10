@@ -53,6 +53,7 @@
 #include <QTimer>
 #include <QToolBar>
 #include <QVBoxLayout>
+#include <QPushButton>
 
 #if QT_VERSION < 0x050000
 #include <QTextDocument>
@@ -571,6 +572,12 @@ void BitcoinGUI::createToolBars()
         dapsico->setPixmap(QIcon(":icons/bitcoin").pixmap(130, 107));
         dapsico->setObjectName("dapsico");
 
+        QPushButton* exitButton = new QPushButton;
+        exitButton->setIcon(QIcon(":icons/quit").pixmap(40,40));
+        exitButton->setStyleSheet("width: 10px; height: 10px; background:transparent;");
+        connect(exitButton, SIGNAL(clicked()), this, SLOT(exitApp()));
+
+        navLayout->addWidget(exitButton);
         navLayout->addWidget(dapsico);
         navLayout->addWidget(toolbar);
         navLayout->addWidget(bottomToolbar);
@@ -1278,6 +1285,10 @@ static bool ThreadSafeMessageBox(BitcoinGUI* gui, const std::string& message, co
     return ret;
 }
 
+void BitcoinGUI::exitApp(){
+    QApplication::quit();
+}
+
 void BitcoinGUI::subscribeToCoreSignals()
 {
     // Connect signals to client
@@ -1364,4 +1375,3 @@ void UnitDisplayStatusBarControl::onMenuSelection(QAction* action)
         optionsModel->setDisplayUnit(action->data());
     }
 }
-
