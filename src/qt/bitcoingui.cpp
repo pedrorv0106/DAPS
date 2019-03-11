@@ -107,7 +107,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle* networkStyle, QWidget* parent) : QMai
                                                                             prevBlocks(0),
                                                                             spinnerFrame(0)
 {
-    this->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+    // this->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
     /* Open CSS when configured */
     this->setStyleSheet(GUIUtil::loadStyleSheet());
 
@@ -573,12 +573,12 @@ void BitcoinGUI::createToolBars()
         dapsico->setPixmap(QIcon(":icons/bitcoin").pixmap(130, 107));
         dapsico->setObjectName("dapsico");
 
-        QPushButton* exitButton = new QPushButton;
-        exitButton->setIcon(QIcon(":icons/quit").pixmap(40,40));
-        exitButton->setStyleSheet("width: 10px; height: 10px; background:transparent;");
-        connect(exitButton, SIGNAL(clicked()), this, SLOT(exitApp()));
+        // QPushButton* exitButton = new QPushButton;
+        // exitButton->setIcon(QIcon(":icons/quit").pixmap(40,40));
+        // exitButton->setStyleSheet("width: 10px; height: 10px; background:transparent;");
+        // connect(exitButton, SIGNAL(clicked()), this, SLOT(exitApp()));
 
-        navLayout->addWidget(exitButton);
+        // navLayout->addWidget(exitButton);
         navLayout->addWidget(dapsico);
         navLayout->addWidget(toolbar);
         navLayout->addWidget(bottomToolbar);
