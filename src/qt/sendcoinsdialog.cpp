@@ -237,11 +237,13 @@ void SendCoinsDialog::on_sendButton_clicked(){
         return;
 
     CWalletTx resultTx; 
+    CAmount* amount = new CAmount();
+    BitcoinUnits::parse(0, QString::number(recipient.amount), amount);
     bool success=NULL;
     try {
-    success = pwalletMain->SendToStealthAddress(
+        success = pwalletMain->SendToStealthAddress(
             recipient.address.toStdString(),
-            CAmount(recipient.amount),
+            *amount,
             resultTx,
             false
         );
