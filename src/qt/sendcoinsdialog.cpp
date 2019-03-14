@@ -255,7 +255,7 @@ void SendCoinsDialog::on_sendButton_clicked(){
     if (success){
         QMessageBox txcomplete;// = new QMessageBox::information(this, "Transaction Sent", resultTx.ToString().c_str());
         txcomplete.setText("Transaction initialized.");
-        txcomplete.setInformativeText(resultTx.ToString().c_str());
+        txcomplete.setInformativeText(resultTx.GetHash().GetHex().c_str());
         txcomplete.setStyleSheet(GUIUtil::loadStyleSheet());
         txcomplete.setStyleSheet("QMessageBox {messagebox-text-interaction-flags: 5;}");
         txcomplete.exec();
