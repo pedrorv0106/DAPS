@@ -91,6 +91,7 @@ void OptionsPage::on_pushButtonPassword_clicked()
 
     if ( (ui->lineEditNewPass->text() == ui->lineEditNewPassRepeat->text()) && (ui->lineEditNewPass->text().length()) && (ui->lineEditNewPass->text().contains(" ")) )
     {
+        if (!matchNewPasswords()) auto errorBox = QMessageBox::warning(this, tr("Password Error"),tr("New passwords do not match."));
         if (!model->getEncryptionStatus()){
             model->setWalletEncrypted(true, newPass);
             success = true;
@@ -98,14 +99,17 @@ void OptionsPage::on_pushButtonPassword_clicked()
             if (model->changePassphrase(oldPass,newPass)) {
                 ui->lineEditOldPass->setStyleSheet(GUIUtil::loadStyleSheet());
                 success = true;
+                auto errorBox = QMessageBox::information(this, "", tr("Password changed"));
             } else {
                 ui->lineEditOldPass->setStyleSheet("border-color:red");
+                auto errorBox = QMessageBox::warning(this, tr("Password Error"),tr("Password rejected by wallet."));
             }
         }
         ui->lineEditOldPass->repaint();
     } else {
-        success = false;
+         success = false;
         validateNewPass();
+        auto errorBox = QMessageBox::warning(this, tr("Password Error"),tr("Password rejected by wallet."));
     }
 
     if (success)
