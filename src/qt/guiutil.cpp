@@ -808,6 +808,12 @@ void saveWindowGeometry(const QString& strSetting, QWidget* parent)
     settings.setValue(strSetting + "Size", parent->size());
 }
 
+void HideDisabledWidgets( QVector<QWidget*> widgets ){
+    auto hide = []( QWidget* widget) { widget->setVisible(false); };
+    for_each (widgets.begin(), widgets.end(), hide);
+}
+
+
 void restoreWindowGeometry(const QString& strSetting, const QSize& defaultSize, QWidget* parent)
 {
     QSettings settings;

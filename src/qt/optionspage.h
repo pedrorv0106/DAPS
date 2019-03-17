@@ -57,7 +57,7 @@ private:
     QSettings settings;
     QMenu* contextMenu;
     virtual void resizeEvent(QResizeEvent* event);
-    void HideDisabledWidgets(QVector<QWidget*> widgets  );
+
 private slots:
     void validateNewPass();
     void validateNewPassRepeat();

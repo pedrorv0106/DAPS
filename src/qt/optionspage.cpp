@@ -41,17 +41,11 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
 
     connect(ui->lineEditNewPass, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPass()));
     connect(ui->lineEditNewPassRepeat, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPassRepeat()));
-    connect(ui->lineEditOldPass, SIGNAL(textChanged(const QSt
-    QWidget* test [] = [ui->line, ui->labelMneumonicRecovery, ui->lavelRecoveryDescription, ui->pushButtonRecovery, ui->line2, ui->lavel]sring &)), this, SLOT(onOldPassChanged()));
-    const QVector<QWidget*> disabledWidgets = {  ui->line, ui->labelMneumonicRecovery, ui->pushButtonRecovery,  ui->labelRecoveryDescription, ui->label, ui->toggle2FA};
-    // HideDisabledWidgets(true, std::vector<QWidget*>
-    HideDisabledWidgets(disabledWidgets);
+    connect(ui->lineEditOldPass, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPassRepeat()));
     
-}
-
-void OptionsPage::HideDisabledWidgets( QVector<QWidget*> widgets ){
-    auto hide = []( QWidget* widget) { widget->setVisible(false); };
-    for_each (widgets.begin(), widgets.end(), hide);
+    const QVector<QWidget*> disabledWidgets = {  ui->line, ui->labelMneumonicRecovery, ui->pushButtonRecovery,  ui->labelRecoveryDescription, ui->label, ui->toggle2FA};
+    GUIUtil::HideDisabledWidgets(disabledWidgets);
+    
 }
 
 void OptionsPage::setModel(WalletModel* model)
