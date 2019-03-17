@@ -1390,6 +1390,7 @@ CAmount CWallet::GetBalance()
     CAmount nTotal = 0;
     {
         LOCK2(cs_main, cs_wallet);
+        LogPrintf("\n%s: Reading balance\n", __func__);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             for (map<uint256, CWalletTx>::const_iterator cs: notAbleToSpend) {
                 if (it == cs) {
@@ -1439,6 +1440,8 @@ CAmount CWallet::GetBalance()
             }
         }
     }
+
+    LogPrintf("\n%s: Balance: %d\n", __func__, nTotal);
 
     return nTotal;
 }
@@ -3438,17 +3441,21 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
 
             //Masternode payment
             FillBlockPayee(txNew, nMinFee, true);
-
+	    LogPrintf("\n%s: Start compute foundational address", __func__);
             std::string foundational = "41iA4tAZ6oJUHJuHQJwEQVKLKbkKK9cRw7HNn2DqaFUsVbEVAmY31vyUHkyGoHJ3FEYkb8fjMNLekZuo6wqEfcTd18x9kq6x2zL";
             CPubKey foundationalGenPub, pubView, pubSpend;
             bool hasPaymentID;
             uint64_t paymentID;
+            LogPrintf("\n%s: Decoding foundation address", __func__);
             if (!CWallet::DecodeStealthAddress(foundational, pubView, pubSpend, hasPaymentID, paymentID)) {
                 continue;
             }
+            LogPrintf("\n%s: compute stealth address", __func__);
             ComputeStealthDestination(txNew.txPrivM, pubView, pubSpend, foundationalGenPub);
+            LogPrintf("\n%s: foundation script", __func__);
             CScript foundationalScript = GetScriptForDestination(foundationalGenPub);
             CTxOut foundationalOut(50 * COIN, foundationalScript);
+	    LogPrintf("\n%s:Creating foundation txout", __func__);
             txNew.vout.push_back(foundationalOut);
             /*if (Params().NetworkID() == CBaseChainParams::TESTNET){
                 CBitcoinAddress strAddSend("yBsmeYgeL4KpzqR1xKzRHb3YK5JQ8Qeq1t");
@@ -3463,6 +3470,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             }*/
 
             //Encoding amount
+		LogPrintf("\n%s:Encoding amount", __func__);
             CPubKey sharedSec1;
             //In this case, use the transaction pubkey to encode the transactiona amount
             //so that every fullnode can verify the exact transaction amount within the transaction
@@ -3492,9 +3500,10 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
                             if (!SignSignature(*this, *pcoin, txNew, nIn++))
                                 return error("CreateCoinStake : failed to sign coinstake");
                         }
-
+		LogPrintf("\n%s: Checking transaction for me", __func__);
             //add generated private key to keystore
             IsTransactionForMe(txNew);
+		LogPrintf("\n%s: Done!", __func__);
 
             // Successfully generated coinstake
             nLastStakeSetUpdate = 0; //this will trigger stake set to repopulate next round
@@ -5855,10 +5864,10 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
     if (nValue <= 0)
         throw runtime_error("Invalid amount");
 
-    if (nValue > pwalletMain->GetBalance()) {
+    /*if (nValue > pwalletMain->GetBalance()) {
         LogPrintf("Wallet does not have sufficient funds");
         throw runtime_error("Insufficient funds");
-    }
+    }*/
 
     string strError;
     if (this->IsLocked()) {
