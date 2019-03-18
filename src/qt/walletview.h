@@ -53,7 +53,6 @@ public:
     */
     void setWalletModel(WalletModel* walletModel);
 
-    bool handlePaymentRequest(const SendCoinsRecipient& recipient);
 
     void showSyncStatus(bool fShow);
 
@@ -66,7 +65,6 @@ private:
     ReceiveCoinsDialog* receiveCoinsPage;
     OptionsPage* optionsPage;
     HistoryPage* historyPage;
-//  #remove  PrivacyDialog* privacyPage;
     SendCoinsDialog* sendCoinsPage;
     BlockExplorer* explorerWindow;
     MasternodeList* masternodeListPage;
