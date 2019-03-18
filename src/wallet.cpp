@@ -509,10 +509,12 @@ void CWallet::SyncMetaData(pair<TxSpends::iterator, TxSpends::iterator> range)
 bool CWallet::IsSpent(const uint256& hash, unsigned int n)
 {
     const COutPoint outpoint(hash, n);
+    std::string keyImageHex;
+
     std::string mapKey = hash.GetHex() + std::to_string(n);
-    if (keyImageMap.count(mapKey) == 1) {
+    if (keyImageMap.count(mapKey) != 0) {
         std::string ki = keyImageMap[mapKey];
-        if (keyImagesSpends.count(ki) == 1) {
+        if (keyImagesSpends.count(ki) != 0) {
             return keyImagesSpends[ki];
         }
     } else {
@@ -520,7 +522,6 @@ bool CWallet::IsSpent(const uint256& hash, unsigned int n)
         if (mapWallet.count(hash) == 1) {
             CWalletTx wtx = mapWallet[hash];
             CKey key;
-            std::string keyImageHex;
             bool found = findCorrespondingPrivateKey(wtx.vout[n], key);
             if (!found) {
                 IsTransactionForMe(wtx);
@@ -543,9 +544,21 @@ bool CWallet::IsSpent(const uint256& hash, unsigned int n)
                 keyImagesSpends[keyImageHex] = false;
                 //std::cout << "CWallet::IsSpent: key image = " << keyImageHex << std::endl;
                 return false;
+            } else {
+                keyImagesSpends[keyImageHex] = true;
             }
         }
 
+    }
+
+    pair<TxSpends::const_iterator, TxSpends::const_iterator> range;
+    range = mapTxSpends.equal_range(outpoint);
+    for (TxSpends::const_iterator it = range.first; it != range.second; ++it) {
+        const uint256& wtxid = it->second;
+        std::map<uint256, CWalletTx>::const_iterator mit = mapWallet.find(wtxid);
+        if (mit != mapWallet.end() && mit->second.GetDepthInMainChain() >= 0)
+            keyImagesSpends[keyImageHex] = true;
+            return true; // Spent
     }
 
     return false;
@@ -778,6 +791,8 @@ bool CWallet::AddToWallet(const CWalletTx& wtxIn, bool fFromLoadWallet)
             std::cout << "\n Writing key image " << in.keyImage.GetHex() << ", height = " << p->nHeight << std::endl;
             pblocktree->WriteKeyImage(in.keyImage.GetHex(), p->nHeight);
             keyImagesSpends[in.keyImage.GetHex()] = true;
+            std::string mapKey = in.prevout.hash.GetHex() + std::to_string(in.prevout.n);
+            keyImageMap[mapKey] = in.keyImage.GetHex();
         }
     }
 
