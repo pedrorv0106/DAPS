@@ -41,7 +41,7 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
 
     connect(ui->lineEditNewPass, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPass()));
     connect(ui->lineEditNewPassRepeat, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPassRepeat()));
-    connect(ui->lineEditOldPass, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPassRepeat()));
+    connect(ui->lineEditOldPass, SIGNAL(textChanged(const QString &)), this, SLOT(oldPassChanged()));
     
     const QVector<QWidget*> disabledWidgets = {  ui->line, ui->labelMneumonicRecovery, ui->pushButtonRecovery,  ui->labelRecoveryDescription, ui->label, ui->toggle2FA};
     GUIUtil::HideDisabledWidgets(disabledWidgets);
