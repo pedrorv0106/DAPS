@@ -47,7 +47,6 @@ SendCoinsEntry::SendCoinsEntry(QWidget* parent) : QStackedWidget(parent),
     ui->addressBookButton->setVisible(false);
 
     //place holder text for payAmount
-    ui->payAmount->setSuffix("DAPS");
 }
 
 SendCoinsEntry::~SendCoinsEntry()
