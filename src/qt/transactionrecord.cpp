@@ -67,6 +67,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
             sub.type = TransactionRecord::StakeMint;
             sub.address = CBitcoinAddress(address).ToString();
             sub.credit = nNet;
+            sub.debit = 0;
         }
         parts.append(sub);
     } else if (wtx.IsZerocoinSpend()) {
@@ -188,7 +189,6 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
             if (mine & ISMINE_WATCH_ONLY) involvesWatchAddress = true;
             if (fAllToMe > mine) fAllToMe = mine;
         }
-        std::cout << "nDebit = " << nDebit << ", nCredit = "  << nCredit << std::endl;
 
         if (fAllFromMeDenom && fAllToMeDenom && nFromMe * nToMe) {
             parts.append(TransactionRecord(hash, nTime, TransactionRecord::ObfuscationDenominate, "", -nDebit, nCredit));
