@@ -25,6 +25,7 @@
 #include <QTextDocument>
 #include <QTime>
 #include <QTextStream>
+#include <QProcess>
 
 
 HistoryPage::HistoryPage(QWidget* parent) : QDialog(parent),
@@ -120,12 +121,12 @@ void HistoryPage::updateTableData(CWallet* wallet)
             QString date = data;
             QTableWidgetItem* cell = new QTableWidgetItem();
             switch (col) {
-            case 0: /*date*/
-                cell->setData(0, date);
-                break;
-            default:
-                cell->setData(0, data);
-                break;
+                case 0: /*date*/
+                    cell->setData(0, date);
+                    break;
+                default:
+                    cell->setData(0, data);
+                    break;
             }
             ui->tableView->setItem(row, col, cell);
             col++;
@@ -190,5 +191,46 @@ void HistoryPage::syncTime(QDateTimeEdit* calendar, QTimeEdit* clock)
 }
 
 void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e){
-    updateTableData(pwalletMain);
+    std::cout << a.toStdString() << "," << b << "," << c << "," << d.toStdString() << "," << e.toStdString() << std::endl;
+    //updateTableData(pwalletMain);
+    //ui->tableView->setRowCount(0);
+    //auto txs = WalletUtil::getTXs(wallet);
+    //for (int row = 0; row < (short)txs.size(); row++) {
+    ui->tableView->setSortingEnabled(false);
+    int row = ui->tableView->rowCount();
+    ui->tableView->insertRow(row);
+    int col = 0;
+    QStringList splits = d.split(" ");
+    QString type = splits[0];
+    QString addr = e.trimmed().mid(1, e.trimmed().length() - 2);
+    for (QString dataName : {"date", "type", "address", "amount"}) {
+        QTableWidgetItem* cell = new QTableWidgetItem();
+        switch (col) {
+
+            case 0: /*date*/
+                cell->setData(0, a);
+                    break;
+                case 1: /*type*/
+
+                    cell->setData(0, type);
+                    break;
+                case 2: /*address*/
+                    cell->setData(0, addr);
+                    break;
+                case 3: /*amount*/
+                    cell->setData(0, BitcoinUnits::format(0, c));
+                    break;
+                /*default:
+                    cell->setData(0, data);
+                    break;*/
+            }
+            ui->tableView->setItem(row, col, cell);
+            col++;
+            ui->tableView->update();
+        }
+    //}
+    ui->tableView->setSortingEnabled(true);
+    ui->tableView->setVisible(ui->tableView->rowCount());
+    ui->tableView->update();
+    ui->tableView->viewport()->update();
 }
