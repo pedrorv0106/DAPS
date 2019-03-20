@@ -782,6 +782,7 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
         if (wallet->RevealTxOutAmount(tx,out,vamount))
             totalamount+=vamount;   //this is the total output
     }
+
     QList<TransactionRecord> decomposedTx = TransactionRecord::decomposeTransaction(wallet, tx);
     QList<QString> addressBook = getAddressBookData(wallet);
     std::map<QString, QString> txData;
@@ -806,6 +807,13 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
         case TransactionRecord::SendToAddress:
         case TransactionRecord::SendToOther:
             txData["type"] = QString("Sent");
+            totalamount = 0;
+            wallet->IsTransactionForMe(tx);
+            for (CTxOut out: tx.vout){
+                CAmount vamount;
+                if (wallet->RevealTxOutAmount(tx,out,vamount))
+                    totalamount+=vamount;   //this is the total output
+            }
             txData["amount"] = BitcoinUnits::format(0, totalIn - totalamount); //absolute value of total amount
             return txData;
             break;

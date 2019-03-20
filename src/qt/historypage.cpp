@@ -191,7 +191,6 @@ void HistoryPage::syncTime(QDateTimeEdit* calendar, QTimeEdit* clock)
 }
 
 void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e){
-    std::cout << a.toStdString() << "," << b << "," << c << "," << d.toStdString() << "," << e.toStdString() << std::endl;
     //updateTableData(pwalletMain);
     //ui->tableView->setRowCount(0);
     //auto txs = WalletUtil::getTXs(wallet);
