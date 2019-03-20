@@ -893,12 +893,6 @@ bool CWallet::AddToWallet(const CWalletTx& wtxIn, bool fFromLoadWallet)
         }
     }
 
-    IsTransactionForMe(wtxIn);
-    for(const CTxOut& out: wtxIn.vout) {
-        CAmount c;
-        RevealTxOutAmount(wtxIn, out, c);
-    }
-
     return true;
 }
 
