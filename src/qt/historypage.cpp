@@ -38,7 +38,6 @@ HistoryPage::HistoryPage(QWidget* parent) : QDialog(parent),
     connectWidgets();
     updateTableData(pwalletMain);
     updateAddressBookData(pwalletMain);
-    connect(parent, SIGNAL(incomingTransaction()), this, SLOT(txalert()));
 }
 
 
@@ -110,6 +109,7 @@ void HistoryPage::addTableData(std::map<QString, QString>)
 
 void HistoryPage::updateTableData(CWallet* wallet)
 {
+    std::cout << "updateTableData: updating" << std::endl;
     ui->tableView->setRowCount(0);
     auto txs = WalletUtil::getTXs(wallet);
     for (int row = 0; row < (short)txs.size(); row++) {
@@ -146,6 +146,7 @@ void HistoryPage::updateAddressBookData(CWallet* wallet)
 
 void HistoryPage::updateFilter()
 {
+    std::cout << "updateFilter: updating" << std::endl;
     syncTime(ui->dateTimeEditFrom, timeEditFrom);
     syncTime(ui->dateTimeEditFrom, timeEditFrom);
     auto selectedAmount = ui->lineEditAmount->text().toFloat();
@@ -188,6 +189,6 @@ void HistoryPage::syncTime(QDateTimeEdit* calendar, QTimeEdit* clock)
     calendar->setTime(clock->time());
 }
 
-void HistoryPage::txalert(){
+void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e){
     updateTableData(pwalletMain);
 }
