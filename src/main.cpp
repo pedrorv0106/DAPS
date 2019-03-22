@@ -245,24 +245,82 @@ void SyncWithWallets(const CTransaction &tx, const CBlock *pblock) {
     g_signals.SyncTransaction(tx, pblock);
 }
 
+CAmount GetValueIn(CCoinsViewCache view, const CTransaction& tx)
+{
+    if (tx.IsCoinBase())
+        return 0;
+
+    //todo are there any security precautions to take here?
+    if (tx.IsZerocoinSpend())
+        return tx.GetZerocoinSpent();
+
+    CAmount nResult = 0;
+
+    if (tx.IsCoinStake()) {
+        for (unsigned int i = 0; i < tx.vin.size(); i++) {
+            CAmount nValueIn;// = txPrev.vout[prevout.n].nValue;
+            const CTxOut& out = view.GetOutputFor(tx.vin[i]);
+            if (out.nValue >0) {
+                nResult += out.nValue;
+            } else {
+                uint256 val = out.maskValue.amount;
+                uint256 mask = out.maskValue.mask;
+                CKey decodedMask;
+                CPubKey sharedSec;
+                sharedSec.Set(tx.vin[i].encryptionKey.begin(), tx.vin[i].encryptionKey.begin() + 33);
+                ECDHInfo::Decode(mask.begin(), val.begin(), sharedSec, decodedMask, nValueIn);
+                nResult += nValueIn;
+            }
+        }
+    }
+    //for (unsigned int i = 0; i < tx.vin.size(); i++)
+    //nResult += GetOutputFor(tx.vin[i]).nValue;
+
+    return nResult;
+}
+
 bool IsKeyImageSpend1(const std::string& kiHex, int nHeight) {
-    uint256 kd;
+    int kd;
     if (!pblocktree->ReadKeyImage(kiHex, kd)) {
         //not spent yet because not found in database
         return false;
     }
-    return IsKeyImageSpend2(kd, nHeight);
-}
-
-bool IsKeyImageSpend2(const uint256& kd, int nHeight) {
-    if (mapBlockIndex.count(kd) == 0) {
-        //potentially keyimage spent in a fork chain
+    if (kd == -1) {
         return false;
     }
-    CBlockIndex* pindex = mapBlockIndex[kd];
-    if (pindex->nHeight < nHeight && pindex->GetBlockHash() == chainActive[pindex->nHeight]->GetBlockHash()) {
-        LogPrintf("%s: keyimage spent in block %s, pindex->nHeight=%d, chainActive.Tip()->nHeight=%d", __func__, kd.GetHex(), pindex->nHeight, chainActive.Tip()->nHeight);
+    if (IsKeyImageSpend2(kiHex, kd, nHeight)) {
+        if (pwalletMain) {
+            if (pwalletMain->keyImagesSpends.count(kiHex) == 1) {
+                pwalletMain->keyImagesSpends[kiHex] = 1;
+            };
+        }
         return true;
+    }
+    if (pwalletMain) {
+        pwalletMain->keyImagesSpends[kiHex] = false;
+    }
+    return false;
+}
+
+bool IsKeyImageSpend2(const std::string& kiHex, int kd, int nHeight) {
+    if (kd < nHeight) {
+        CBlock block;
+        CBlockIndex* pblockindex = chainActive[kd];
+
+        if (ReadBlockFromDisk(block, pblockindex)) {
+            for (int i = 0; i < block.vtx.size(); i++) {
+                for (int j = 0; j < block.vtx[i].vin.size(); j++) {
+                    if (block.vtx[i].vin[j].keyImage.GetHex() == kiHex) {
+                        LogPrintf("%s: keyimage spent in nHeight=%d", __func__, kd);
+if (pwalletMain) {
+                            pwalletMain->keyImagesSpends[kiHex] = true;
+                        }
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     return false;
@@ -1605,30 +1663,34 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
     if (pfMissingInputs)
         *pfMissingInputs = false;
     //Temporarily disable zerocoin for maintenance
+    LogPrintf("\n%s:Get spork\n", __func__);
     if (GetAdjustedTime() > GetSporkValue(SPORK_16_ZEROCOIN_MAINTENANCE_MODE) && tx.ContainsZerocoins())
         return state.DoS(10,
                          error("AcceptToMemoryPool : Zerocoin transactions are temporarily disabled for maintenance"),
                          REJECT_INVALID, "bad-tx");
+LogPrintf("\n%s:check transaction\n", __func__);
     if (!CheckTransaction(tx, chainActive.Height() >= Params().Zerocoin_StartHeight(), true, state))
         return state.DoS(100, error("AcceptToMemoryPool: : CheckTransaction failed"), REJECT_INVALID, "bad-tx");
-
+LogPrintf("\n%s:check coinbase\n", __func__);
     // Coinbase is only valid in a block, not as a loose transaction
     if (tx.IsCoinBase())
         return state.DoS(100, error("AcceptToMemoryPool: : coinbase as individual tx"),
                          REJECT_INVALID, "coinbase");
-
+LogPrintf("\n%s:check coinstake\n", __func__);
     //Coinstake is also only valid in a block, not as a loose transaction
     if (tx.IsCoinStake())
         return state.DoS(100, error("AcceptToMemoryPool: coinstake as individual tx"),
                          REJECT_INVALID, "coinstake");
     // Rather not work on nonstandard transactions (unless -testnet/-regtest)
     string reason;
+LogPrintf("\n%s:check standard\n", __func__);
     if (Params().RequireStandard() && !IsStandardTx(tx, reason))
         return state.DoS(0,
                          error("AcceptToMemoryPool : nonstandard transaction: %s", reason),
                          REJECT_NONSTANDARD, reason);
     // is it already in the memory pool?
     uint256 hash = tx.GetHash();
+LogPrintf("\n%s:check pool\n", __func__);
     if (pool.exists(hash)) {
         LogPrintf("%s tx already in mempool\n", __func__);
         return false;
@@ -1662,7 +1724,7 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
     {
         CCoinsView dummy;
         CCoinsViewCache view(&dummy);
-
+LogPrintf("\n%s:checkingzero coins spend\n", __func__);
         CAmount nValueIn = 0;
         if (tx.IsZerocoinSpend()) {
             nValueIn = tx.GetZerocoinSpent();
@@ -1692,9 +1754,10 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
             }
         } else {
             LOCK(pool.cs);
+LogPrintf("\n%s:setting pool\n", __func__);
             CCoinsViewMemPool viewMemPool(pcoinsTip, pool);
             view.SetBackend(viewMemPool);
-
+		LogPrintf("\n%s:check have coins\n", __func__);
             // do we already have it?
             if (view.HaveCoins(hash)) {
                 LogPrintf("%s: Error: Hash exists in the mempool", __func__);
@@ -1705,9 +1768,10 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
             // Note that this does not check for the presence of actual outputs (see the next check for that),
             // only helps filling in pfMissingInputs (to determine missing vs spent).
             for (const CTxIn txin : tx.vin) {
+LogPrintf("\n%s:check have coins input\n", __func__);
                 if (!view.HaveCoins(txin.prevout.hash)) {
                     CDiskTxPos postx;
-                    if (pblocktree->ReadTxIndex(txin.prevout.hash, postx)) {
+                    if (pblocktree && pblocktree->ReadTxIndex(txin.prevout.hash, postx)) {
                         CAutoFile file(OpenBlockFile(postx, true), SER_DISK, CLIENT_VERSION);
                         if (file.IsNull())
                             return error("%s: OpenBlockFile failed", __func__);
@@ -1718,6 +1782,7 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
                         return false;
                     }
                 }
+LogPrintf("\n%s:check valid coin\n", __func__);
                 //Check for invalid/fraudulent inputs
                 if (!ValidOutPoint(txin.prevout, chainActive.Height())) {
                     return state.Invalid(
@@ -1727,6 +1792,7 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
             }
 
             // are the actual inputs available?
+LogPrintf("\n%s:check inputs available\n", __func__);
             if (!view.HaveInputs(tx))
                 return state.Invalid(error("AcceptToMemoryPool : inputs already spent"),
                                      REJECT_DUPLICATE, "bad-txns-inputs-spent");
@@ -1743,7 +1809,7 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
             // Bring the best block into scope
             view.GetBestBlock();
 
-            nValueIn = view.GetValueIn(tx);
+            nValueIn = GetValueIn(view, tx);
 
             // we have all inputs cached now, so switch back to dummy, so we don't need to keep lock on mempool
             view.SetBackend(dummy);
@@ -1952,7 +2018,7 @@ bool AcceptableInputs(CTxMemPool &pool, CValidationState &state, const CTransact
             // Bring the best block into scope
             view.GetBestBlock();
 
-            nValueIn = view.GetValueIn(tx);
+            nValueIn = GetValueIn(view, tx);
 
             // we have all inputs cached now, so switch back to dummy, so we don't need to keep lock on mempool
             view.SetBackend(dummy);
@@ -2209,23 +2275,19 @@ double ConvertBitsToDouble(unsigned int nBits) {
 int64_t GetBlockValue(int nHeight) {
     int64_t nSubsidy = 0;
 
-    if (nHeight == 0) {
-        nSubsidy = 20000000 * COIN; //6M for the first block
-    } else {
-        if (Params().NetworkID() == CBaseChainParams::MAIN) {
-        	if (nHeight < 100) {
-        		nSubsidy = 15000000 * COIN;
-        	} else if (nHeight < 200 && nHeight > 0)
-                nSubsidy = 250000 * COIN;
-            else if(nHeight > Params().nLastPOWBlock) {
-                nSubsidy = 950 * COIN;
-            } else {
+    /*if (nHeight == 0) {
+        nSubsidy = 200000000 * COIN; //6M for the first block
+    } else {*/
+        //if (Params().NetworkID() == CBaseChainParams::MAIN) {
+        	if (nHeight <= Params().nLastPOWBlock) {
+        		nSubsidy = 200000000 * COIN;
+        	} else {
                 nSubsidy = 950 * COIN;
             }
-        } else {
-            nSubsidy = 950 * COIN;
-        }
-    }
+        //} else {
+            //nSubsidy = 950 * COIN;
+        //}
+    //}
 
     return nSubsidy;
 }
@@ -3184,13 +3246,13 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
                            (pindex->nHeight == 91880 && pindex->GetBlockHash() ==
                                                         uint256("0x00000000000743f190a18c5577a3c2d2a1f610ae9601ac046a38084ccb7cd721")));
     if (!block.IsPoABlockByVersion() && fEnforceBIP30) {
-        BOOST_FOREACH(
+        /*BOOST_FOREACH(
         const CTransaction &tx, block.vtx) {
             const CCoins *coins = view.AccessCoins(tx.GetHash());
             if (coins && !coins->IsPruned())
                 return state.DoS(100, error("ConnectBlock() : tried to overwrite transaction"),
                                  REJECT_INVALID, "bad-txns-BIP30");
-        }
+        }*/
     }
 
     // BIP16 didn't become active until Apr 1 2012
@@ -3279,9 +3341,9 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
                     return error("%s : failed to record coin serial to database");
             }
         } else if (!block.IsPoABlockByVersion() && !tx.IsCoinBase()) {
-            if (!view.HaveInputs(tx))
+            /*if (!view.HaveInputs(tx))
                 return state.DoS(100, error("ConnectBlock() : inputs missing/spent"),
-                                 REJECT_INVALID, "bad-txns-inputs-missingorspent");
+                                 REJECT_INVALID, "bad-txns-inputs-missingorspent");*/
 
             // Check that the inputs are not marked as invalid/fraudulent
             for (CTxIn in : tx.vin) {
@@ -3292,7 +3354,7 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
                     return state.Invalid(error("ConnectBlock() : key image already spent"),
                                          REJECT_DUPLICATE, "bad-txns-inputs-spent");
                 }
-                uint256 kd(pindex->GetBlockHash());
+                int kd = pindex->nHeight;
                 LogPrintf("%s: writing key image %s", __func__, kh);
                 pblocktree->WriteKeyImage(keyImage.GetHex(), kd);
                 LogPrintf("%s: done writing key image %s", __func__, kh);
@@ -3324,7 +3386,7 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
             if (!tx.IsCoinStake())
                 //nFees += view.GetValueIn(tx) - tx.GetValueOut();
                 nFees += tx.nTxFee;
-            nValueIn += view.GetValueIn(tx);
+            nValueIn += GetValueIn(view, tx);
 
             std::vector <CScriptCheck> vChecks;
             //LogPrintf("%s: start checking inputs %s", __func__, tx.GetH);
@@ -3392,6 +3454,7 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
     // track money supply and mint amount info
     CAmount nMoneySupplyPrev = pindex->pprev ? pindex->pprev->nMoneySupply : 0;
     pindex->nMoneySupply = nMoneySupplyPrev + nValueOut - nValueIn;
+    LogPrintf("%s: nValueOut=%d, nValueIn=%d, nMoneySupplyPrev=%d, pindex->nMoneySupply=%d, nFees=%d", __func__, nValueOut, nValueIn, nMoneySupplyPrev, pindex->nMoneySupply, nFees);
     pindex->nMint = pindex->nMoneySupply - nMoneySupplyPrev + nFees;
 
 //    LogPrintf("XX69----------> ConnectBlock(): nValueOut: %s, nValueIn: %s, nFees: %s, nMint: %s zDapsSpent: %s\n",
@@ -4481,6 +4544,10 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
 
         if (!CheckPoABlockNotContainingPoABlockInfo(block)) {
         	return state.DoS(100, error("CheckBlock() : A PoA block should not audit any existing PoA blocks"));
+        }
+
+        if (chainActive.Tip()->nHeight < Params().START_POA_BLOCK()) {
+            return state.DoS(100, error("CheckBlock() : PoA block should only start at block height=%d", Params().START_POA_BLOCK()));
         }
     }
 

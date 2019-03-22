@@ -299,8 +299,8 @@ void SendMoney(const CTxDestination& address, CAmount nValue, CWalletTx& wtxNew,
     if (nValue <= 0)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid amount");
 
-    if (nValue > pwalletMain->GetBalance())
-        throw JSONRPCError(RPC_WALLET_INSUFFICIENT_FUNDS, "Insufficient funds");
+    /*if (nValue > pwalletMain->GetBalance())
+        throw JSONRPCError(RPC_WALLET_INSUFFICIENT_FUNDS, "Insufficient funds");*/
 
     string strError;
     if (pwalletMain->IsLocked()) {
@@ -1619,7 +1619,8 @@ Value walletpassphrase(const Array& params, bool fHelp)
             "\nLock the wallet again (before 60 seconds)\n" + HelpExampleCli("walletlock", "") +
             "\nAs json rpc call\n" + HelpExampleRpc("walletpassphrase", "\"my pass phrase\", 60"));
 
-    if (fHelp)
+    //Cam: Disable now for beta-test
+    /*if (fHelp)
         return true;
     if (!pwalletMain->IsCrypted())
         throw JSONRPCError(RPC_WALLET_WRONG_ENC_STATE, "Error: running with an unencrypted wallet, but walletpassphrase was called.");
@@ -1652,7 +1653,8 @@ Value walletpassphrase(const Array& params, bool fHelp)
         RPCRunLater ("lockwallet", boost::bind (LockWallet, pwalletMain), nSleepTime);
     }
 
-    return Value::null;
+    return Value::null;*/
+    return "This feature is currently not available.";
 }
 
 
@@ -1668,7 +1670,8 @@ Value walletpassphrasechange(const Array& params, bool fHelp)
             "\nExamples:\n" +
             HelpExampleCli("walletpassphrasechange", "\"old one\" \"new one\"") + HelpExampleRpc("walletpassphrasechange", "\"old one\", \"new one\""));
 
-    if (fHelp)
+    //Cam: Disable now for beta-test
+    /*if (fHelp)
         return true;
     if (!pwalletMain->IsCrypted())
         throw JSONRPCError(RPC_WALLET_WRONG_ENC_STATE, "Error: running with an unencrypted wallet, but walletpassphrasechange was called.");
@@ -1691,7 +1694,8 @@ Value walletpassphrasechange(const Array& params, bool fHelp)
     if (!pwalletMain->ChangeWalletPassphrase(strOldWalletPass, strNewWalletPass))
         throw JSONRPCError(RPC_WALLET_PASSPHRASE_INCORRECT, "Error: The wallet passphrase entered was incorrect.");
 
-    return Value::null;
+    return Value::null;*/
+    return "This feature is currently not available.";
 }
 
 
@@ -1710,7 +1714,8 @@ Value walletlock(const Array& params, bool fHelp)
             "\nClear the passphrase since we are done before 2 minutes is up\n" + HelpExampleCli("walletlock", "") +
             "\nAs json rpc call\n" + HelpExampleRpc("walletlock", ""));
 
-    if (fHelp)
+    //Cam: Disable now for beta-test!
+    /*if (fHelp)
         return true;
     if (!pwalletMain->IsCrypted())
         throw JSONRPCError(RPC_WALLET_WRONG_ENC_STATE, "Error: running with an unencrypted wallet, but walletlock was called.");
@@ -1721,7 +1726,8 @@ Value walletlock(const Array& params, bool fHelp)
         nWalletUnlockTime = 0;
     }
 
-    return Value::null;
+    return Value::null;*/
+    return "This feature is currently not available.";
 }
 
 
@@ -1746,7 +1752,8 @@ Value encryptwallet(const Array& params, bool fHelp)
             "\nNow lock the wallet again by removing the passphrase\n" + HelpExampleCli("walletlock", "") +
             "\nAs a json rpc call\n" + HelpExampleRpc("encryptwallet", "\"my pass phrase\""));
 
-    if (fHelp)
+    //Cam: Disable now for beta-test!
+    /*if (fHelp)
         return true;
     if (pwalletMain->IsCrypted())
         throw JSONRPCError(RPC_WALLET_WRONG_ENC_STATE, "Error: running with an encrypted wallet, but encryptwallet was called.");
@@ -1769,7 +1776,8 @@ Value encryptwallet(const Array& params, bool fHelp)
     // slack space in .dat files; that is bad if the old data is
     // unencrypted private keys. So:
     StartShutdown();
-    return "wallet encrypted; dapscoin server stopping, restart to run with encrypted wallet. The keypool has been flushed, you need to make a new backup.";
+    return "wallet encrypted; dapscoin server stopping, restart to run with encrypted wallet. The keypool has been flushed, you need to make a new backup.";*/
+    return "This feature is currently not available.";
 }
 
 Value lockunspent(const Array& params, bool fHelp)
@@ -2918,6 +2926,11 @@ Value createprivacyaccount(const Array& params, bool fHelp)
         throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
                            "Error: There is no privacy wallet, please use createprivacywallet to create one.");
     }
+
+    if(pwalletMain->IsCrypted())
+        throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED,
+                           "Error: Please enter the wallet passphrase with walletpassphrase first.");
+
     CWalletDB walletdb(pwalletMain->strWalletFile);
     Object ret;
     int i = 0;
@@ -3079,10 +3092,74 @@ Value sendtostealthaddress(const Array& params, bool fHelp)
 
     EnsureWalletIsUnlocked();
 
-    pwalletMain->SendToStealthAddress(stealthAddr, nAmount, wtx);
+    if (!pwalletMain->SendToStealthAddress(stealthAddr, nAmount, wtx)) {
+        throw JSONRPCError(RPC_WALLET_ERROR,
+                           "Cannot create transaction.");
+    }
 
-    std::cout << "tx hex:" << EncodeHexTx(wtx) << std::endl;
+    //std::cout << "tx hex:" << EncodeHexTx(wtx) << std::endl;
 
     return wtx.GetHash().GetHex();
 }
 
+
+std::string GetHex(const unsigned char* vch, int sz) {
+    char psz[sz * 2 + 1];
+    for (unsigned int i = 0; i < sz; i++)
+        sprintf(psz + i * 2, "%02x", vch[sz - i - 1]);
+    return std::string(psz, psz + sz * 2);
+}
+
+Value revealviewprivatekey(const Array& params, bool fHelp) {
+    if (fHelp || params.size() != 0)
+        throw runtime_error(
+                "revealviewprivatekey \n"
+                "\nReveal view private key.\n"
+                "\nArguments:\n"
+                "\nResult:\n"
+                "\"Private view key\"    (string) the private view key\n"
+                "\nExamples:\n" +
+                HelpExampleCli("revealviewprivatekey", "") + HelpExampleCli("revealviewprivatekey", "\"\"") +
+                HelpExampleCli("revealviewprivatekey", "") + HelpExampleRpc("revealviewprivatekey", ""));
+
+    if (!pwalletMain) {
+        //privacy wallet is already created
+        throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
+                           "Error: There is no privacy wallet, please use createprivacywallet to create one.");
+    }
+
+    if (pwalletMain->IsCrypted())
+        throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED,
+                           "Error: Please enter the wallet passphrase with walletpassphrase first.");
+
+    CKey view;
+    pwalletMain->myViewPrivateKey(view);
+    return CBitcoinSecret(view).ToString();
+}
+
+Value revealspendprivatekey(const Array& params, bool fHelp) {
+    if (fHelp || params.size() != 0)
+        throw runtime_error(
+                "revealspendprivatekey \n"
+                "\nReveal view private key.\n"
+                "\nArguments:\n"
+                "\nResult:\n"
+                "\"Private spend key\"    (string) the private spend key\n"
+                "\nExamples:\n" +
+                HelpExampleCli("revealspendprivatekey", "") + HelpExampleCli("revealspendprivatekey", "\"\"") +
+                HelpExampleCli("revealspendprivatekey", "") + HelpExampleRpc("revealspendprivatekey", ""));
+
+    if (!pwalletMain) {
+        //privacy wallet is already created
+        throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
+                           "Error: There is no privacy wallet, please use createprivacywallet to create one.");
+    }
+
+    if (pwalletMain->IsCrypted())
+        throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED,
+                           "Error: Please enter the wallet passphrase with walletpassphrase first.");
+
+    CKey spend;
+    pwalletMain->mySpendPrivateKey(spend);
+    return CBitcoinSecret(spend).ToString();
+}

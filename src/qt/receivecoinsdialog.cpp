@@ -15,6 +15,7 @@
 #include "walletmodel.h"
 
 #include <QAction>
+#include <QClipboard>
 #include <QCursor>
 #include <QItemSelection>
 #include <QMessageBox>
@@ -51,6 +52,29 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
     connect(copyMessageAction, SIGNAL(triggered()), this, SLOT(copyMessage()));
     connect(copyAmountAction, SIGNAL(triggered()), this, SLOT(copyAmount()));
 
+    // Show privacy account address
+    ui->lineEditAddress->setStyleSheet("border:none; background: transparent; text-align:center;");
+    ui->pushButtonCP->setStyleSheet("background:transparent;");
+    ui->pushButtonCP->setIcon(QIcon(":/icons/editcopy"));
+    connect(ui->pushButtonCP, SIGNAL(clicked()), this, SLOT(copyAddress()));
+    CPubKey temp;
+    if (!pwalletMain->IsCrypted()) {
+        pwalletMain->GetKeyFromPool(temp);
+        pwalletMain->CreatePrivacyAccount();
+        std::string pubAddress;
+        pwalletMain->ComputeStealthPublicAddress("masteraccount", pubAddress);
+        ui->lineEditAddress->setText(pubAddress.c_str());
+
+        std::vector<std::string> addrList, accountList;
+        QList<QString> stringsList;
+        accountList.push_back("Master Account");
+        addrList.push_back(pubAddress);
+        for(int i = 0; i < addrList.size(); i++) {
+            stringsList.append(QString(accountList[i].c_str()) + " - " + QString(addrList[i].c_str()));
+        }
+
+        ui->reqAddress->addItems(stringsList);
+    }
     // #REMOVE connect(ui->clearButton, SIGNAL(clicked()), this, SLOT(clear()));
 }
 
@@ -269,4 +293,9 @@ void ReceiveCoinsDialog::copyMessage()
 void ReceiveCoinsDialog::copyAmount()
 {
     // #REMOVE copyColumnToClipboard(RecentRequestsTableModel::Amount);
+}
+
+void ReceiveCoinsDialog::copyAddress(){
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText(ui->lineEditAddress->text());
 }

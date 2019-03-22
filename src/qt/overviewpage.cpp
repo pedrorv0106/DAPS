@@ -132,7 +132,7 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
     pingNetworkInterval = new QTimer();
 
     initSyncCircle(.8);
-    updateRecentTransactions();
+    // updateRecentTransactions();
 }
 
 void OverviewPage::handleTransactionClicked(const QModelIndex& index)
@@ -185,9 +185,10 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     currentWatchImmatureBalance = watchImmatureBalance;
 
     // DAPS labels
-    ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance - immatureBalance, false, BitcoinUnits::separatorAlways));
+    //Cam: Remove immatureBalance from showing on qt wallet (as andrew says)
+    ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance /*- immatureBalance*/, false, BitcoinUnits::separatorAlways));
     ui->labelUnconfirmed->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, unconfirmedBalance, false, BitcoinUnits::separatorAlways));
-    ui->labelBalance_2->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance - immatureBalance, false, BitcoinUnits::separatorAlways));
+    ui->labelBalance_2->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance /*- immatureBalance*/, false, BitcoinUnits::separatorAlways));
 
   
     // zDAPS labels
@@ -303,8 +304,6 @@ void OverviewPage::showBalanceSync(bool fShow){
         ui->labelUnconfirmed->setVisible(fShow);
         ui->labelBalanceText->setVisible(fShow);
         isSyncingBalance = fShow;
-        ui->labelBlockCurrent->setAlignment(!fShow? (Qt::AlignRight | Qt::AlignVCenter) : (Qt::AlignHCenter | Qt::AlignTop));
-
 }
 
 void OverviewPage::showBlockSync(bool fShow)
@@ -316,6 +315,8 @@ void OverviewPage::showBlockSync(bool fShow)
     isSyncingBlocks = fShow;
 
     ui->labelBlockCurrent->setText(QString::number(clientModel->getNumBlocks()));
+    // if (!fShow)
+        ui->labelBlockCurrent->setAlignment(fShow? (Qt::AlignRight|Qt::AlignVCenter):(Qt::AlignHCenter|Qt::AlignTop));
 }
 
 void OverviewPage::initSyncCircle(float ratioToParent)

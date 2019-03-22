@@ -40,9 +40,13 @@ SendCoinsEntry::SendCoinsEntry(QWidget* parent) : QStackedWidget(parent),
     connect(ui->deleteButton, SIGNAL(clicked()), this, SLOT(deleteClicked()));
     connect(ui->deleteButton_is, SIGNAL(clicked()), this, SLOT(deleteClicked()));
     connect(ui->deleteButton_s, SIGNAL(clicked()), this, SLOT(deleteClicked()));
-
     // #HIDE multisend
     ui->deleteButton->setVisible(false);
+
+    //Cam: Hide address book button
+    ui->addressBookButton->setVisible(false);
+
+    //place holder text for payAmount
 }
 
 SendCoinsEntry::~SendCoinsEntry()
@@ -247,4 +251,16 @@ bool SendCoinsEntry::updateLabel(const QString& address)
     }
 
     return false;
+}
+
+void SendCoinsEntry::errorAddress(bool valid){
+    if (valid)
+        ui->payTo->setStyleSheet(GUIUtil::loadStyleSheet());
+    else ui->payTo->setStyleSheet("border-color: red;");
+}
+
+void SendCoinsEntry::errorAmount(bool valid){
+    if (valid)
+        ui->payAmount->setStyleSheet(GUIUtil::loadStyleSheet());
+    else ui->payAmount->setStyleSheet("border-color: red;");
 }
