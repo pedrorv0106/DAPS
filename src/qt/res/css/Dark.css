@@ -293,9 +293,44 @@ ToggleButton > QPushButton:enabled:checked {
   background: transparent;
 }
 
-
 QToolTip{
 max-width:0px;;
 max-height:0px;
 }
 
+QLabel#generalHeader, QLabel#clientName, QLabel#clientNameLabel, QLabel#networkHeader {
+color: black;
+}
+QLabel#clientVersion, QLabel#clientVersionLabel, QLabel#openSSLVersionLabel, QLabel#openSSLVersion {
+color: black;
+}
+QLabel#berkeleyDBVersionLabel, QLabel#berkeleyDBVersion, QLabel#buildDateLabel, QLabel#buildDate {
+color: black;
+}
+QLabel#startupTimeLabel, QLabel#startupTime, QLabel#buildDateLabel, QLabel#buildDate {
+color: black;
+}
+QLabel#networkNameLabel, QLabel#networkName, QLabel#numberOfConnectionsLabel, QLabel#numberOfConnections {
+color: black;
+}
+QLabel#masternodeCountLabel, QLabel#masternodeCount, QLabel#numberOfBlocksLabel, QLabel#numberOfBlocks {
+color: black;
+}
+QLabel#blockchainHeader, QLabel#lastBlockTimeLabel, QLabel#lastBlockTime {
+color: black;
+}
+QLabel#label_repair_header, QLabel#label_repair_helptext, QLabel#wallet_path, QLabel#wallet_path_label {
+color: black;
+}
+QLabel#label_repair_salvage_command, QLabel#label_repair_salvage, QLabel#label_repair_rescan_command, QLabel#label_repair_rescan {
+color: black;
+}
+QLabel#label_repair_zap1_command, QLabel#label_repair_zap1, QLabel#label_repair_zap2_command, QLabel#label_repair_zap2_command {
+color: black;
+}
+QLabel#label_repair_upgrade_command, QLabel#label_repair_upgrade, QLabel#label_repair_reindex_command, QLabel#label_repair_reindex {
+color: black;
+}
+QLabel#label_repair_resync_command, QLabel#label_repair_resync {
+color: black;
+}
