@@ -325,7 +325,7 @@ color: black;
 QLabel#label_repair_salvage_command, QLabel#label_repair_salvage, QLabel#label_repair_rescan_command, QLabel#label_repair_rescan {
 color: black;
 }
-QLabel#label_repair_zap1_command, QLabel#label_repair_zap1, QLabel#label_repair_zap2_command, QLabel#label_repair_zap2_command {
+QLabel#label_repair_zap1_command, QLabel#label_repair_zap1, QLabel#label_repair_zap2_command, QLabel#label_repair_zap2 {
 color: black;
 }
 QLabel#label_repair_upgrade_command, QLabel#label_repair_upgrade, QLabel#label_repair_reindex_command, QLabel#label_repair_reindex {
