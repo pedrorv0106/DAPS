@@ -457,6 +457,7 @@ public:
     std::map<std::string, bool> keyImagesSpends;
     std::map<std::string, std::string> keyImageMap;//mapping from: txhashHex-n to key image str, n = index
     std::list<std::string> pendingKeyImages;
+    mutable std::map<CScript, CAmount> amountMap;
 
     const CWalletTx* GetWalletTx(const uint256& hash) const;
 
@@ -1207,13 +1208,10 @@ public:
         uint256 hashTx = GetHash();
         for (unsigned int i = 0; i < vout.size(); i++) {
             if (!pwallet->IsSpent(hashTx, i)) {
-                std::cout << "txout has not been spent"  << std::endl;
                 const CTxOut& txout = vout[i];
                 nCredit += pwallet->GetCredit(*this, txout, ISMINE_SPENDABLE);
                 if (!MoneyRange(nCredit))
                     throw std::runtime_error("CWalletTx::GetAvailableCredit() : value out of range");
-            } else {
-                std::cout << "txout has been spent"  << std::endl;
             }
         }
 

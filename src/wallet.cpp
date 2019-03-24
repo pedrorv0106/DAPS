@@ -6255,6 +6255,11 @@ bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmou
         }
     }
 
+    if (amountMap.count(out.scriptPubKey) == 1) {
+        amount = amountMap[out.scriptPubKey];
+        return true;
+    }
+
     std::set<CKeyID> keyIDs;
     GetKeys(keyIDs);
     CPubKey sharedSec;
@@ -6273,6 +6278,7 @@ bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmou
                             uint256 mask = out.maskValue.mask;
                             CKey decodedMask;
                             ECDHInfo::Decode(mask.begin(), val.begin(), sharedSec, decodedMask, amount);
+                            amountMap[out.scriptPubKey] = amount;
                             return true;
                         }
                     }
