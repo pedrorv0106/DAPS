@@ -6093,7 +6093,7 @@ bool CWallet::IsTransactionForMe(const CTransaction& tx) {
             memcpy(expectedDestination, pubSpendKey.begin(), pubSpendKey.size());
             secp256k1_ec_pubkey_tweak_add(expectedDestination, pubSpendKey.size(), pHS);
             CPubKey expectedDes(expectedDestination, expectedDestination + 33);
-            LogPrintf("expectedDes Stealth destination:%s", expectedDes.GetHex());
+            //LogPrintf("expectedDes Stealth destination:%s", expectedDes.GetHex());
             CScript scriptPubKey = GetScriptForDestination(expectedDes);
 
             if (scriptPubKey == out.scriptPubKey) {
@@ -6111,8 +6111,10 @@ bool CWallet::IsTransactionForMe(const CTransaction& tx) {
                 CKey privKey;
                 privKey.Set(HStemp, HStemp + 32, true);
                 CPubKey computed = privKey.GetPubKey();
-                LogPrintf("recomputed Stealth destination: %s", computed.GetHex());
+                //LogPrintf("recomputed Stealth destination: %s", computed.GetHex());
                 AddKey(privKey);
+                CAmount c;
+                RevealTxOutAmount(tx, out, c);
                 //break;
             }
         }
