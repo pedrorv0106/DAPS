@@ -5948,10 +5948,10 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
     if (nValue <= 0)
         throw runtime_error("Invalid amount");
 
-    /*if (nValue > pwalletMain->GetBalance()) {
+    if (nValue > pwalletMain->GetBalance()) {
         LogPrintf("Wallet does not have sufficient funds");
         throw runtime_error("Insufficient funds");
-    }*/
+    }
 
     string strError;
     if (this->IsLocked()) {
@@ -6045,7 +6045,7 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
     if (!pwalletMain->CreateTransactionBulletProof(pubViewKey, scriptPubKey, nValue, wtxNew, reservekey,
                                                    nFeeRequired, strError, &control, ALL_COINS, fUseIX, (CAmount)0)) {
         if (nValue + nFeeRequired > pwalletMain->GetBalance())
-            strError = strprintf("Error: This transaction requires a transaction fee of at least %s because of its amount, complexity, or use of recently received funds!", FormatMoney(nFeeRequired));
+            strError = strprintf("Error: This transaction requires a transaction fee of at least %s because of its amount, complexity, or use of recently received funds!, nfee=%d, nValue=%d", FormatMoney(nFeeRequired), nFeeRequired, nValue);
         LogPrintf("SendToStealthAddress() : Not enough! %s\n", strError);
         throw runtime_error(strError);
     }
