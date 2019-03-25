@@ -28,6 +28,7 @@
 #include <QScrollBar>
 #include <QSettings>
 #include <QTextDocument>
+#include <QDebug>
 
 
 SendCoinsDialog::SendCoinsDialog(QWidget* parent) : QDialog(parent),
@@ -225,7 +226,7 @@ void SendCoinsDialog::on_sendButton_clicked(){
         return;
     SendCoinsEntry* form = qobject_cast<SendCoinsEntry*>(ui->entries->itemAt(0)->widget());
     SendCoinsRecipient recipient = form->getValue();
-
+    QMessageBox(QMessageBox::Information, tr("Information"), "This feature is currently not available:", QMessageBox::Ok).exec();
     QString address = recipient.address;
     bool isValidAddresss = (regex_match(address.toStdString(), regex("[a-zA-z0-9]+")))&&(address.length()==99||address.length()==110);
     bool isValidAmount = ((recipient.amount>0) && (recipient.amount<=model->getBalance()));
