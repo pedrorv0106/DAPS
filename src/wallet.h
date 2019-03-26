@@ -1186,6 +1186,7 @@ public:
                 return nImmatureCreditCached;
             nImmatureCreditCached = pwallet->GetCredit(*this, ISMINE_SPENDABLE);
             fImmatureCreditCached = true;
+            //std::cout << "nImmatureCreditCached = " << nImmatureCreditCached << std::endl;
             return nImmatureCreditCached;
         }
 
