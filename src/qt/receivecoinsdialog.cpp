@@ -73,7 +73,7 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
             stringsList.append(QString(accountList[i].c_str()) + " - " + QString(addrList[i].c_str()));
         }
 
-        ui->reqAddress->addItems(stringsList);
+        ui->reqAddress->addItem(QString(accountList[0].c_str()) + " - " + QString(addrList[0].c_str()));
     }
     // #REMOVE connect(ui->clearButton, SIGNAL(clicked()), this, SLOT(clear()));
 }
@@ -114,7 +114,16 @@ void ReceiveCoinsDialog::loadAccount() {
     QList<QString> stringsList;
     wl->AllMyPublicAddresses(addrList, accountList);
     for(int i = 0; i < addrList.size(); i++) {
-        stringsList.append(QString(accountList[i].c_str()) + " - " + QString(addrList[i].c_str()));
+        bool isDuplicate = false;
+        for (int i = 0; i < ui->reqAddress->count(); i++) {
+            if (ui->reqAddress->itemText(i).contains(QString(addrList[i].c_str()), Qt::CaseSensitive)) {
+                isDuplicate = true;
+                break;
+            }
+        }
+        if (!isDuplicate) {
+            stringsList.append(QString(accountList[i].c_str()) + " - " + QString(addrList[i].c_str()));
+        }
     }
 
     ui->reqAddress->addItems(stringsList);
