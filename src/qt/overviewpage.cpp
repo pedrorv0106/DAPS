@@ -132,7 +132,7 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
     pingNetworkInterval = new QTimer();
 
     initSyncCircle(.8);
-    updateRecentTransactions();
+    // updateRecentTransactions();
 }
 
 void OverviewPage::handleTransactionClicked(const QModelIndex& index)
@@ -427,12 +427,6 @@ void OverviewPage::updateRecentTransactions(){
         TxEntry* entry = new TxEntry(this);
         ui->verticalLayoutRecent->addWidget(entry);
         entry->setData(txs[i]["date"], txs[i]["address"] , txs[i]["amount"], txs[i]["ID"], txs[i]["type"]);
-    }
-
-    for (int i = 0; i< 5; i++){
-        TxEntry* entry = new TxEntry(this);
-        ui->verticalLayoutRecent->addWidget(entry);
-        entry->setData("abcdef", "xxxxxxxxxxx" , "100", "qweedccxz", "aaa");
         if (i % 2 == 0) {
             entry->setStyleSheet("#bkg_widget { background-color: rgba(255,255,255,0.1); }");
         }
