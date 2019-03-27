@@ -224,6 +224,7 @@ SendCoinsDialog::~SendCoinsDialog()
 void SendCoinsDialog::on_sendButton_clicked(){
     if (!ui->entries->count()) 
         return;
+
     SendCoinsEntry* form = qobject_cast<SendCoinsEntry*>(ui->entries->itemAt(0)->widget());
     SendCoinsRecipient recipient = form->getValue();
     QString address = recipient.address;
@@ -235,6 +236,17 @@ void SendCoinsDialog::on_sendButton_clicked(){
 
     if (!isValidAddresss||!isValidAmount)
         return;
+
+    bool nStaking = false;
+    if (mapHashedBlocks.count(chainActive.Tip()->nHeight))
+        nStaking = true;
+    else if (mapHashedBlocks.count(chainActive.Tip()->nHeight - 1) && nLastCoinStakeSearchInterval)
+        nStaking = true;
+
+    if (nStaking) {
+        QMessageBox(QMessageBox::Information, tr("Warning"), tr("Transactions cannot be created while staking, please turn staking off, by stopping your wallet, set staking=0 in your config file!"), QMessageBox::Ok).exec();
+        return;
+    }
 
     CWalletTx resultTx; 
     //CAmount* amount = new CAmount();
