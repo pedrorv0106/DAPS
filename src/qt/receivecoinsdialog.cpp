@@ -73,9 +73,28 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
             stringsList.append(QString(accountList[i].c_str()) + " - " + QString(addrList[i].c_str()));
         }
 
-        ui->reqAddress->addItems(stringsList);
+        ui->reqAddress->addItem(QString(accountList[0].c_str()) + " - " + QString(addrList[0].c_str()));
     }
+
+    QDoubleValidator *dblVal = new QDoubleValidator(0, 2100000000, 6, ui->reqAmount);
+    dblVal->setNotation(QDoubleValidator::StandardNotation);
+    dblVal->setLocale(QLocale::C);
+    ui->reqAmount->setValidator(dblVal);
+
     // #REMOVE connect(ui->clearButton, SIGNAL(clicked()), this, SLOT(clear()));
+}
+
+static inline int64_t roundint64(double d)
+{
+    return (int64_t)(d > 0 ? d + 0.5 : d - 0.5);
+}
+
+CAmount ReceiveCoinsDialog::getValidatedAmount() {
+    double dAmount = ui->reqAmount->text().toDouble();
+    if (dAmount <= 0.0 || dAmount > 2100000000.0)
+        throw runtime_error("Invalid amount, amount should be < 2.1B DAPS");
+    CAmount nAmount = roundint64(dAmount * COIN);
+    return nAmount;
 }
 
 void ReceiveCoinsDialog::setModel(WalletModel* model)
@@ -114,7 +133,16 @@ void ReceiveCoinsDialog::loadAccount() {
     QList<QString> stringsList;
     wl->AllMyPublicAddresses(addrList, accountList);
     for(int i = 0; i < addrList.size(); i++) {
-        stringsList.append(QString(accountList[i].c_str()) + " - " + QString(addrList[i].c_str()));
+        bool isDuplicate = false;
+        for (int i = 0; i < ui->reqAddress->count(); i++) {
+            if (ui->reqAddress->itemText(i).contains(QString(addrList[i].c_str()), Qt::CaseSensitive)) {
+                isDuplicate = true;
+                break;
+            }
+        }
+        if (!isDuplicate) {
+            stringsList.append(QString(accountList[i].c_str()) + " - " + QString(addrList[i].c_str()));
+        }
     }
 
     ui->reqAddress->addItems(stringsList);
@@ -127,7 +155,7 @@ ReceiveCoinsDialog::~ReceiveCoinsDialog()
 
 void ReceiveCoinsDialog::clear()
 {
-    ui->reqAmount->clear();
+    //ui->reqAmount->clear();
     // #REMOVE ui->reqLabel->setText("");
     // #REMOVE ui->reqMessage->setText("");
     // #REMOVE ui->reuseAddress->setChecked(false);
@@ -147,7 +175,7 @@ void ReceiveCoinsDialog::accept()
 void ReceiveCoinsDialog::updateDisplayUnit()
 {
     if (model && model->getOptionsModel()) {
-        ui->reqAmount->setDisplayUnit(model->getOptionsModel()->getDisplayUnit());
+        //ui->reqAmount->setDisplayUnit(model->getOptionsModel()->getDisplayUnit());
     }
 }
 
@@ -177,8 +205,7 @@ void ReceiveCoinsDialog::on_receiveButton_clicked()
             address = QString(integratedAddr.c_str());
         }
 
-        SendCoinsRecipient info(address, label,
-            ui->reqAmount->value(), reqMes);
+        SendCoinsRecipient info(address, label, getValidatedAmount(), reqMes);
         ReceiveRequestDialog* dialog = new ReceiveRequestDialog(this);
         dialog->setAttribute(Qt::WA_DeleteOnClose);
         dialog->setModel(model->getOptionsModel());

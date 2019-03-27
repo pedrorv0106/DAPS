@@ -63,6 +63,7 @@ private:
     QMenu* contextMenu;
     void copyColumnToClipboard(int column);
     virtual void resizeEvent(QResizeEvent* event);
+    CAmount getValidatedAmount();
 
 private slots:
     void on_receiveButton_clicked();
@@ -75,6 +76,7 @@ private slots:
     void copyLabel();
     void copyMessage();
     void copyAmount();
+
 };
 
 #endif // BITCOIN_QT_RECEIVECOINSDIALOG_H
