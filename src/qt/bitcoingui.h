@@ -18,6 +18,7 @@
 #include <QPoint>
 #include <QPushButton>
 #include <QSystemTrayIcon>
+#include <QProgressDialog>
 
 class ClientModel;
 class NetworkStyle;
@@ -126,6 +127,8 @@ private:
     QAction* openBlockExplorerAction;
     QAction* showHelpMessageAction;
     QAction* multiSendAction;
+
+    QProgressDialog* progressDialog = nullptr;
 
     QSystemTrayIcon* trayIcon;
     QMenu* trayIconMenu;
@@ -251,6 +254,9 @@ private slots:
 
     /** called by a timer to check if fRequestShutdown has been set **/
     void detectShutdown();
+
+    /** Show progress dialog e.g. for verifychain */
+    void showProgress(const QString &title, int nProgress);
 };
 
 class UnitDisplayStatusBarControl : public QLabel

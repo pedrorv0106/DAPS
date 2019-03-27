@@ -617,7 +617,7 @@ void BitcoinGUI::setClientModel(ClientModel* clientModel)
         connect(clientModel, SIGNAL(message(QString, QString, unsigned int)), this, SLOT(message(QString, QString, unsigned int)));
 
         // Show progress dialog
-        connect(clientModel, SIGNAL(showProgress(QString, int)), this, SLOT(showProgress(QString, int)));
+        //connect(clientModel, SIGNAL(showProgress(QString, int)), this, SLOT(showProgress(QString, int)));
 
         rpcConsole->setClientModel(clientModel);
 #ifdef ENABLE_WALLET
@@ -633,6 +633,25 @@ void BitcoinGUI::setClientModel(ClientModel* clientModel)
             // Disable context menu on tray icon
             trayIconMenu->clear();
         }
+    }
+}
+
+void BitcoinGUI::showProgress(const QString &title, int nProgress)
+{
+    if (nProgress == 0) {
+        progressDialog = new QProgressDialog(title, QString(), 0, 100);
+        //QProgressDialog::PolishProgressDialog(progressDialog);
+        progressDialog->setWindowModality(Qt::ApplicationModal);
+        progressDialog->setMinimumDuration(0);
+        progressDialog->setAutoClose(false);
+        progressDialog->setValue(0);
+    } else if (nProgress == 100) {
+        if (progressDialog) {
+            progressDialog->close();
+            progressDialog->deleteLater();
+        }
+    } else if (progressDialog) {
+        progressDialog->setValue(nProgress);
     }
 }
 
