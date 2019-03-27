@@ -15,6 +15,8 @@
 #include "transactionrecord.h"
 #include "walletmodel.h"
 
+#include <algorithm>
+
 #include <QAction>
 #include <QBrush>
 #include <QCalendarWidget>
@@ -24,9 +26,18 @@
 #include <QSortFilterProxyModel>
 #include <QTextDocument>
 #include <QTime>
+#include <QDate>
 #include <QTextStream>
 #include <QProcess>
 
+bool TxCompare (std::map<QString, QString> i, std::map<QString, QString> j) { 
+    QString str_i = i.at("date");
+    QString str_j = j.at("date");
+    QDateTime date_i = QDateTime::fromString(str_i,"MM/dd/yy hh:mm");
+    QDateTime date_j = QDateTime::fromString(str_j,"MM/dd/yy hh:mm");
+
+    return date_i > date_j;
+}
 
 HistoryPage::HistoryPage(QWidget* parent) : QDialog(parent),
                                             ui(new Ui::HistoryPage),
@@ -113,6 +124,8 @@ void HistoryPage::updateTableData(CWallet* wallet)
     std::cout << "updateTableData: updating" << std::endl;
     ui->tableView->setRowCount(0);
     auto txs = WalletUtil::getTXs(wallet);
+    std::sort (txs.begin(), txs.end(), TxCompare);
+
     for (int row = 0; row < (short)txs.size(); row++) {
         ui->tableView->insertRow(row);
         int col = 0;
