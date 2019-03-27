@@ -405,7 +405,7 @@ bool CActiveMasternode::GetVinFromOutput(COutput out, CTxIn& vin, CPubKey& pubke
     pubScript = out.tx->vout[out.i].scriptPubKey; // the inputs PubKey
 
     pwalletMain->findCorrespondingPrivateKey(out.tx->vout[out.i], secretKey);
-    /*CTxDestination address1;
+    CTxDestination address1;
     ExtractDestination(pubScript, address1);
     CBitcoinAddress address2(address1);
 
@@ -418,7 +418,7 @@ bool CActiveMasternode::GetVinFromOutput(COutput out, CTxIn& vin, CPubKey& pubke
     if (!pwalletMain->GetKey(keyID, secretKey)) {
         LogPrintf("CActiveMasternode::GetMasterNodeVin - Private key for address is not known\n");
         return false;
-    }*/
+    }
 
     pubkey = secretKey.GetPubKey();
     std::string msa;
