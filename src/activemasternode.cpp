@@ -422,7 +422,7 @@ bool CActiveMasternode::GetVinFromOutput(COutput out, CTxIn& vin, CPubKey& pubke
 
     pubkey = secretKey.GetPubKey();
     std::string msa;
-    pwalletMain->GenerateIntegratedAddress("masteraccount", msa);
+    pwalletMain->ComputeStealthPublicAddress("masteraccount", msa);
     std::copy(msa.begin(), msa.end(), std::back_inserter(vin.masternodeStealthAddress));
     std::string mnsa(vin.masternodeStealthAddress.begin(), vin.masternodeStealthAddress.end());
     LogPrintf("\nCMasternodePayments: masternodeStealthAddress: %s\n", mnsa);
