@@ -93,7 +93,7 @@ static inline int64_t roundint64(double d)
 CAmount AmountFromValue(const Value& value)
 {
     double dAmount = value.get_real();
-    if (dAmount <= 0.0 || dAmount > 21000000.0)
+    if (dAmount <= 0.0 || dAmount > 2100000000.0)
         throw JSONRPCError(RPC_TYPE_ERROR, "Invalid amount");
     CAmount nAmount = roundint64(dAmount * COIN);
     if (!MoneyRange(nAmount))
@@ -374,6 +374,8 @@ static const CRPCCommand vRPCCommands[] =
         {"wallet", "encryptwallet", &encryptwallet, true, false, true},
         {"wallet", "createprivacywallet", &createprivacywallet, true, false, true},
         {"wallet", "createprivacyaccount", &createprivacyaccount, true, false, true},
+        {"wallet", "revealviewprivatekey", &revealviewprivatekey, true, false, true},
+        {"wallet", "revealspendprivatekey", &revealspendprivatekey, true, false, true},
         {"wallet", "decodestealthaddress", &decodestealthaddress, true, false, true},
         {"wallet", "sendtostealthaddress", &sendtostealthaddress, false, false, true},
         {"wallet", "createprivacysubaddress", &createprivacysubaddress, true, false, true},

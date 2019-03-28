@@ -762,10 +762,25 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
 
     // get stx amount
     CAmount totalamount = CAmount(0);
+    CAmount totalIn = 0;
+    for (CTxIn in: tx.vin) {
+        map<uint256, CWalletTx>::const_iterator mi = wallet->mapWallet.find(in.prevout.hash);
+        if (mi != wallet->mapWallet.end()) {
+            const CWalletTx& prev = (*mi).second;
+            if (in.prevout.n < prev.vout.size()) {
+                if (pwalletMain->IsMine(prev.vout[in.prevout.n])) {
+                    CAmount decodedAmount = 0;
+                    pwalletMain->RevealTxOutAmount(prev, prev.vout[in.prevout.n], decodedAmount);
+                    totalIn += decodedAmount;
+                }
+            }
+        }
+    }
+
     for (CTxOut out: tx.vout){
         CAmount vamount;
         if (wallet->RevealTxOutAmount(tx,out,vamount))
-            totalamount+=vamount;
+            totalamount+=vamount;   //this is the total output
     }
 
     QList<TransactionRecord> decomposedTx = TransactionRecord::decomposeTransaction(wallet, tx);
@@ -788,10 +803,25 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
         // parse transaction type
         switch (TxRecord.type) {
         case 1:
+            txData["type"] = QString("Mined");
+            //totalamount = 0;
+            //wallet->IsTransactionForMe(tx);
+            txData["amount"] = BitcoinUnits::format(0, totalamount - totalIn); //absolute value of total amount
+            return txData;
+            break;
         case TransactionRecord::SendToSelf:
         case TransactionRecord::SendToAddress:
         case TransactionRecord::SendToOther:
             txData["type"] = QString("Sent");
+            //totalamount = 0;
+            //wallet->IsTransactionForMe(tx);
+            /*for (CTxOut out: tx.vout){
+                CAmount vamount;
+                if (wallet->RevealTxOutAmount(tx,out,vamount))
+                    totalamount+=vamount;   //this is the total output
+            }*/
+            txData["amount"] = BitcoinUnits::format(0, totalIn - totalamount); //absolute value of total amount
+            return txData;
             break;
         case 0:
         case TransactionRecord::RecvWithAddress:
@@ -802,6 +832,7 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
             break;
         case 2:
             txData["type"] = QString("Minted");
+            txData["amount"] = BitcoinUnits::format(0,  totalamount - totalIn); //absolute value of total amount
             break;
         default:
             txData["type"] = QString("Unknown");

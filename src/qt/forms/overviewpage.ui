@@ -153,7 +153,7 @@
               <string>The displayed information may be out of date. Your wallet automatically synchronizes with the DAPScoin network after a connection is established, but this process has not completed yet.</string>
              </property>
              <property name="text">
-              <string notr="true">(out of sync)</string>
+              <string notr="true">(syncing)</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignHCenter|Qt::AlignTop</set>
@@ -267,7 +267,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>Available Balance:</string>
+              <string>Available:</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -314,7 +314,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>Pending Balance:</string>
+              <string>Pending:</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -358,7 +358,7 @@
               <string>The displayed information may be out of date. Your wallet automatically synchronizes with the DAPScoin network after a connection is established, but this process has not completed yet.</string>
              </property>
              <property name="text">
-              <string notr="true">(out of sync)</string>
+              <string notr="true">(syncing)</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>

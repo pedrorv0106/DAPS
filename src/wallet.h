@@ -457,6 +457,7 @@ public:
     std::map<std::string, bool> keyImagesSpends;
     std::map<std::string, std::string> keyImageMap;//mapping from: txhashHex-n to key image str, n = index
     std::list<std::string> pendingKeyImages;
+    mutable std::map<CScript, CAmount> amountMap;
 
     const CWalletTx* GetWalletTx(const uint256& hash) const;
 
@@ -663,16 +664,14 @@ public:
     bool IsMyZerocoinSpend(const CBigNum& bnSerial) const;
     CAmount GetCredit(const CTransaction& tx, const CTxOut& txout, const isminefilter& filter) const
     {
-        if (!MoneyRange(getCTxOutValue(tx, txout)))
-            throw std::runtime_error("CWallet::GetCredit() : value out of range");
-        return ((IsMine(txout) & filter) ? txout.nValue : 0);
+        return ((IsMine(txout) & filter) ? getCTxOutValue(tx, txout) : 0);
     }
     bool IsChange(const CTxOut& txout) const;
-    CAmount GetChange(const CTxOut& txout) const
+    CAmount GetChange(const CTransaction& tx, const CTxOut& txout) const
     {
-        if (!MoneyRange(txout.nValue))
-            throw std::runtime_error("CWallet::GetChange() : value out of range");
-        return (IsChange(txout) ? txout.nValue : 0);
+        //if (!MoneyRange(txout.nValue))
+        //    throw std::runtime_error("CWallet::GetChange() : value out of range");
+        return (IsChange(txout) ? getCTxOutValue(tx, txout) : 0);
     }
     bool IsMine(const CTransaction& tx) const
     {
@@ -710,7 +709,7 @@ public:
     {
         CAmount nChange = 0;
         BOOST_FOREACH (const CTxOut& txout, tx.vout) {
-            nChange += GetChange(txout);
+            nChange += GetChange(tx, txout);
             if (!MoneyRange(nChange))
                 throw std::runtime_error("CWallet::GetChange() : value out of range");
         }
@@ -804,10 +803,11 @@ public:
     CAmount getCTxOutValue(const CTransaction &tx, const CTxOut &out) const;
     bool findCorrespondingPrivateKey(const CTxOut &txout, CKey &key) const;
     bool AvailableCoins(const uint256 wtxid, const CWalletTx* pcoin, vector<COutput>& vCoins, int cannotSpend, bool fOnlyConfirmed = true, const CCoinControl* coinControl = NULL, bool fIncludeZeroValue = false, AvailableCoinsType nCoinType = ALL_COINS, bool fUseIX = false);
-private:
-    bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
+    void CreatePrivacyAccount();
     bool mySpendPrivateKey(CKey& spend) const;
     bool myViewPrivateKey(CKey& view) const;
+private:
+    bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
     void createMasterKey() const;
 
@@ -1186,6 +1186,7 @@ public:
                 return nImmatureCreditCached;
             nImmatureCreditCached = pwallet->GetCredit(*this, ISMINE_SPENDABLE);
             fImmatureCreditCached = true;
+            //std::cout << "nImmatureCreditCached = " << nImmatureCreditCached << std::endl;
             return nImmatureCreditCached;
         }
 
@@ -1375,7 +1376,7 @@ public:
         for (unsigned int i = 0; i < vout.size(); i++) {
             const CTxOut& txout = vout[i];
 
-            if (pwallet->IsSpent(hashTx, i) || !pwallet->IsDenominatedAmount(vout[i].nValue)) continue;
+            if (pwallet->IsSpent(hashTx, i) || !pwallet->IsDenominatedAmount(pwallet->getCTxOutValue(*this, txout))) continue;
 
             nCredit += pwallet->GetCredit(*this, txout, ISMINE_SPENDABLE);
             if (!MoneyRange(nCredit))

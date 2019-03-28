@@ -259,15 +259,15 @@ bool IsBlockPayeeValid(const CBlock& block, int nBlockHeight)
 }
 
 
-void FillBlockPayee(CMutableTransaction& txNew, CAmount nFees, bool fProofOfStake)
+bool FillBlockPayee(CMutableTransaction& txNew, CAmount nFees, bool fProofOfStake)
 {
     CBlockIndex* pindexPrev = chainActive.Tip();
-    if (!pindexPrev) return;
+    if (!pindexPrev) return false;
 
     if (IsSporkActive(SPORK_13_ENABLE_SUPERBLOCKS) && budget.IsBudgetPaymentBlock(pindexPrev->nHeight + 1)) {
-        budget.FillBlockPayee(txNew, nFees, fProofOfStake);
+        return budget.FillBlockPayee(txNew, nFees, fProofOfStake);
     } else {
-        masternodePayments.FillBlockPayee(txNew, nFees, fProofOfStake);
+        return masternodePayments.FillBlockPayee(txNew, nFees, fProofOfStake);
     }
 }
 
@@ -280,15 +280,16 @@ std::string GetRequiredPaymentsString(int nBlockHeight)
     }
 }
 
-void CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFees, bool fProofOfStake)
+bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFees, bool fProofOfStake)
 {
     CBlockIndex* pindexPrev = chainActive.Tip();
-    if (!pindexPrev) return;
+    if (!pindexPrev) return false;
 
     bool hasPayment = true;
     CScript payee;
 
     //spork
+    LogPrintf("\n%s: Initial payee=%s\n", __func__, payee.ToString());
     if (!masternodePayments.GetBlockPayee(pindexPrev->nHeight + 1, payee)) {
         //no masternode detected
         CMasternode* winningNode = mnodeman.GetCurrentMasterNode(1);
@@ -296,7 +297,13 @@ void CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
             //generate payee based on masternodeStealthAddress
             std::vector<unsigned char> masternodeStealthAddress = winningNode->vin.masternodeStealthAddress;
             std::string mnsa(masternodeStealthAddress.begin(), masternodeStealthAddress.end());
-            LogPrint("CMasternodePayments","masternodeStealthAddress: %s", mnsa);
+            LogPrintf("\nCMasternodePayments: masternodeStealthAddress: %s\n", mnsa);
+            std::string myAddress;
+            pwalletMain->ComputeStealthPublicAddress("masteraccount", myAddress);
+            if (myAddress == mnsa) {
+                LogPrintf("\nCMasternodePayments: cannot pay staking reward and masternode reward to the same address\n");
+                return false;
+            }
 
             //Parse stealth address
             CPubKey pubViewKey, pubSpendKey, des;
@@ -305,10 +312,12 @@ void CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
             if (!CWallet::DecodeStealthAddress(mnsa, pubViewKey, pubSpendKey, hasPaymentID, paymentID)) {
                 throw runtime_error("Stealth address mal-formatted");
             }
-
+            LogPrintf("\n%s: computing stealth des for masternode\n", __func__);
             if (!CWallet::ComputeStealthDestination(txNew.txPrivM, pubViewKey, pubSpendKey, des));
             payee = GetScriptForDestination(des);
+            LogPrintf("\n%s: new payee %s\n", __func__, payee.ToString());
         } else {
+            LogPrintf("\n%s: Failed to detect block to pay\n", __func__);
             LogPrint("masternode","CreateNewBlock: Failed to detect masternode to pay\n");
             hasPayment = false;
         }
@@ -316,9 +325,10 @@ void CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
 
     CAmount blockValue = GetBlockValue(pindexPrev->nHeight);
     CAmount masternodePayment = GetMasternodePayment(pindexPrev->nHeight, blockValue);
-
+    LogPrintf("\n%s: masternodePaymen=%d\n", __func__, masternodePayment);
     if (hasPayment) {
         if (fProofOfStake) {
+            LogPrintf("\n%s: paying for masternode\n", __func__);
             /**For Proof Of Stake vout[0] must be null
              * Stake reward can be split into many different outputs, so we must
              * use vout.size() to align with several different cases.
@@ -328,13 +338,17 @@ void CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
             /**
              * Topdev update
              */
+	                LogPrintf("\n%s: increase txNew.vout\n", __func__);
             txNew.vout.resize(i + 1);
+            LogPrintf("\n%s: copying new payee\n", __func__);
             txNew.vout[i].scriptPubKey = payee;
+            LogPrintf("\n%s: setting masternode payment\n", __func__);
             txNew.vout[i].nValue = masternodePayment;
 
             //subtract mn payment from the stake reward
+            LogPrintf("\n%s: decrease staking node payment\n", __func__);
             txNew.vout[i - 1].nValue -= masternodePayment;
-
+		            LogPrintf("\n%s: done masternode payment\n", __func__);
 //            txNew.vout.resize(i + 2);
 //            txNew.vout[i].scriptPubKey = payee;
 //            txNew.vout[i].nValue = masternodePayment;
@@ -359,7 +373,7 @@ void CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
         //ExtractDestination(payee, address1);
         //CBitcoinAddress address2(address1);
 
-        LogPrint("masternode","Masternode payment of %s to %s\n", FormatMoney(masternodePayment).c_str(), payee.ToString().c_str());
+        LogPrintf("Masternode payment of %s to %s\n", FormatMoney(masternodePayment).c_str(), payee.ToString().c_str());
     }
 }
 

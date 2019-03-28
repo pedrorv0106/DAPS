@@ -28,6 +28,7 @@
 #include <QScrollBar>
 #include <QSettings>
 #include <QTextDocument>
+#include <QDebug>
 
 
 SendCoinsDialog::SendCoinsDialog(QWidget* parent) : QDialog(parent),
@@ -84,9 +85,9 @@ SendCoinsDialog::~SendCoinsDialog(){
 void SendCoinsDialog::on_sendButton_clicked(){
     if (!ui->entries->count()) 
         return;
+
     SendCoinsEntry* form = qobject_cast<SendCoinsEntry*>(ui->entries->itemAt(0)->widget());
     SendCoinsRecipient recipient = form->getValue();
-
     QString address = recipient.address;
     bool isValidAddresss = (regex_match(address.toStdString(), regex("[a-zA-z0-9]+")))&&(address.length()==99||address.length()==110);
     bool isValidAmount = ((recipient.amount>0) && (recipient.amount<=model->getBalance()));
@@ -97,19 +98,31 @@ void SendCoinsDialog::on_sendButton_clicked(){
     if (!isValidAddresss||!isValidAmount)
         return;
 
+    bool nStaking = false;
+    if (mapHashedBlocks.count(chainActive.Tip()->nHeight))
+        nStaking = true;
+    else if (mapHashedBlocks.count(chainActive.Tip()->nHeight - 1) && nLastCoinStakeSearchInterval)
+        nStaking = true;
+
+    if (nStaking) {
+        QMessageBox(QMessageBox::Information, tr("Warning"), tr("Transactions cannot be created while staking, please turn staking off, by stopping your wallet, set staking=0 in your config file!"), QMessageBox::Ok).exec();
+        return;
+    }
+
     CWalletTx resultTx; 
-    CAmount* amount = new CAmount();
-    BitcoinUnits::parse(0, QString::number(recipient.amount), amount);
+    //CAmount* amount = new CAmount();
+    //BitcoinUnits::parse(0, QString::number(recipient.amount), amount);
     bool success=NULL;
     try {
         success = pwalletMain->SendToStealthAddress(
             recipient.address.toStdString(),
-            *amount,
+            recipient.amount,
             resultTx,
             false
         );
     } catch (const std::exception& err) {
         auto errorbox = QMessageBox::warning(this, "Could not send", QString(err.what()));
+        //std::cout << "Could not send" << std::endl;
         return;
     }
 

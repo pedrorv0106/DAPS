@@ -15,6 +15,8 @@
 #include "transactionrecord.h"
 #include "walletmodel.h"
 
+#include <algorithm>
+
 #include <QAction>
 #include <QBrush>
 #include <QCalendarWidget>
@@ -24,8 +26,18 @@
 #include <QSortFilterProxyModel>
 #include <QTextDocument>
 #include <QTime>
+#include <QDate>
 #include <QTextStream>
+#include <QProcess>
 
+bool TxCompare (std::map<QString, QString> i, std::map<QString, QString> j) { 
+    QString str_i = i.at("date");
+    QString str_j = j.at("date");
+    QDateTime date_i = QDateTime::fromString(str_i,"MM/dd/yy hh:mm");
+    QDateTime date_j = QDateTime::fromString(str_j,"MM/dd/yy hh:mm");
+
+    return date_i > date_j;
+}
 
 HistoryPage::HistoryPage(QWidget* parent) : QDialog(parent),
                                             ui(new Ui::HistoryPage),
@@ -38,7 +50,6 @@ HistoryPage::HistoryPage(QWidget* parent) : QDialog(parent),
     connectWidgets();
     updateTableData(pwalletMain);
     updateAddressBookData(pwalletMain);
-    connect(parent, SIGNAL(incomingTransaction()), this, SLOT(txalert()));
 }
 
 
@@ -110,22 +121,25 @@ void HistoryPage::addTableData(std::map<QString, QString>)
 
 void HistoryPage::updateTableData(CWallet* wallet)
 {
+    std::cout << "updateTableData: updating" << std::endl;
     ui->tableView->setRowCount(0);
     auto txs = WalletUtil::getTXs(wallet);
+    std::sort (txs.begin(), txs.end(), TxCompare);
+
     for (int row = 0; row < (short)txs.size(); row++) {
         ui->tableView->insertRow(row);
         int col = 0;
         for (QString dataName : {"date", "type", "address", "amount"}) {
             QString data = txs[row].at(dataName);
-            QString date = QDateTime::fromString(data, "M/dd/yy hh:mm").addYears(100).toString("MM/dd/20yy h:m");
+            QString date = data;
             QTableWidgetItem* cell = new QTableWidgetItem();
             switch (col) {
-            case 0: /*date*/
-                cell->setData(0, date);
-                break;
-            default:
-                cell->setData(0, data);
-                break;
+                case 0: /*date*/
+                    cell->setData(0, date);
+                    break;
+                default:
+                    cell->setData(0, data);
+                    break;
             }
             ui->tableView->setItem(row, col, cell);
             col++;
@@ -146,6 +160,7 @@ void HistoryPage::updateAddressBookData(CWallet* wallet)
 
 void HistoryPage::updateFilter()
 {
+    std::cout << "updateFilter: updating" << std::endl;
     syncTime(ui->dateTimeEditFrom, timeEditFrom);
     syncTime(ui->dateTimeEditFrom, timeEditFrom);
     auto selectedAmount = ui->lineEditAmount->text().toFloat();
@@ -188,6 +203,46 @@ void HistoryPage::syncTime(QDateTimeEdit* calendar, QTimeEdit* clock)
     calendar->setTime(clock->time());
 }
 
-void HistoryPage::txalert(){
-    updateTableData(pwalletMain);
+void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e){
+    //updateTableData(pwalletMain);
+    //ui->tableView->setRowCount(0);
+    //auto txs = WalletUtil::getTXs(wallet);
+    //for (int row = 0; row < (short)txs.size(); row++) {
+    ui->tableView->setSortingEnabled(false);
+    int row = ui->tableView->rowCount();
+    ui->tableView->insertRow(row);
+    int col = 0;
+    QStringList splits = d.split(" ");
+    QString type = splits[0];
+    QString addr = e.trimmed().mid(1, e.trimmed().length() - 2);
+    for (QString dataName : {"date", "type", "address", "amount"}) {
+        QTableWidgetItem* cell = new QTableWidgetItem();
+        switch (col) {
+
+            case 0: /*date*/
+                cell->setData(0, a);
+                    break;
+                case 1: /*type*/
+
+                    cell->setData(0, type);
+                    break;
+                case 2: /*address*/
+                    cell->setData(0, addr);
+                    break;
+                case 3: /*amount*/
+                    cell->setData(0, BitcoinUnits::format(0, c));
+                    break;
+                /*default:
+                    cell->setData(0, data);
+                    break;*/
+            }
+            ui->tableView->setItem(row, col, cell);
+            col++;
+            ui->tableView->update();
+        }
+    //}
+    ui->tableView->setSortingEnabled(true);
+    ui->tableView->setVisible(ui->tableView->rowCount());
+    ui->tableView->update();
+    ui->tableView->viewport()->update();
 }

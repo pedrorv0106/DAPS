@@ -312,6 +312,9 @@ bool IsKeyImageSpend2(const std::string& kiHex, int kd, int nHeight) {
                 for (int j = 0; j < block.vtx[i].vin.size(); j++) {
                     if (block.vtx[i].vin[j].keyImage.GetHex() == kiHex) {
                         LogPrintf("%s: keyimage spent in nHeight=%d", __func__, kd);
+if (pwalletMain) {
+                            pwalletMain->keyImagesSpends[kiHex] = true;
+                        }
                         return true;
                     }
                 }
@@ -1660,30 +1663,34 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
     if (pfMissingInputs)
         *pfMissingInputs = false;
     //Temporarily disable zerocoin for maintenance
+    LogPrintf("\n%s:Get spork\n", __func__);
     if (GetAdjustedTime() > GetSporkValue(SPORK_16_ZEROCOIN_MAINTENANCE_MODE) && tx.ContainsZerocoins())
         return state.DoS(10,
                          error("AcceptToMemoryPool : Zerocoin transactions are temporarily disabled for maintenance"),
                          REJECT_INVALID, "bad-tx");
+LogPrintf("\n%s:check transaction\n", __func__);
     if (!CheckTransaction(tx, chainActive.Height() >= Params().Zerocoin_StartHeight(), true, state))
         return state.DoS(100, error("AcceptToMemoryPool: : CheckTransaction failed"), REJECT_INVALID, "bad-tx");
-
+LogPrintf("\n%s:check coinbase\n", __func__);
     // Coinbase is only valid in a block, not as a loose transaction
     if (tx.IsCoinBase())
         return state.DoS(100, error("AcceptToMemoryPool: : coinbase as individual tx"),
                          REJECT_INVALID, "coinbase");
-
+LogPrintf("\n%s:check coinstake\n", __func__);
     //Coinstake is also only valid in a block, not as a loose transaction
     if (tx.IsCoinStake())
         return state.DoS(100, error("AcceptToMemoryPool: coinstake as individual tx"),
                          REJECT_INVALID, "coinstake");
     // Rather not work on nonstandard transactions (unless -testnet/-regtest)
     string reason;
+LogPrintf("\n%s:check standard\n", __func__);
     if (Params().RequireStandard() && !IsStandardTx(tx, reason))
         return state.DoS(0,
                          error("AcceptToMemoryPool : nonstandard transaction: %s", reason),
                          REJECT_NONSTANDARD, reason);
     // is it already in the memory pool?
     uint256 hash = tx.GetHash();
+LogPrintf("\n%s:check pool\n", __func__);
     if (pool.exists(hash)) {
         LogPrintf("%s tx already in mempool\n", __func__);
         return false;
@@ -1717,7 +1724,7 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
     {
         CCoinsView dummy;
         CCoinsViewCache view(&dummy);
-
+LogPrintf("\n%s:checkingzero coins spend\n", __func__);
         CAmount nValueIn = 0;
         if (tx.IsZerocoinSpend()) {
             nValueIn = tx.GetZerocoinSpent();
@@ -1747,9 +1754,10 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
             }
         } else {
             LOCK(pool.cs);
+LogPrintf("\n%s:setting pool\n", __func__);
             CCoinsViewMemPool viewMemPool(pcoinsTip, pool);
             view.SetBackend(viewMemPool);
-
+		LogPrintf("\n%s:check have coins\n", __func__);
             // do we already have it?
             if (view.HaveCoins(hash)) {
                 LogPrintf("%s: Error: Hash exists in the mempool", __func__);
@@ -1760,9 +1768,10 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
             // Note that this does not check for the presence of actual outputs (see the next check for that),
             // only helps filling in pfMissingInputs (to determine missing vs spent).
             for (const CTxIn txin : tx.vin) {
+LogPrintf("\n%s:check have coins input\n", __func__);
                 if (!view.HaveCoins(txin.prevout.hash)) {
                     CDiskTxPos postx;
-                    if (pblocktree->ReadTxIndex(txin.prevout.hash, postx)) {
+                    if (pblocktree && pblocktree->ReadTxIndex(txin.prevout.hash, postx)) {
                         CAutoFile file(OpenBlockFile(postx, true), SER_DISK, CLIENT_VERSION);
                         if (file.IsNull())
                             return error("%s: OpenBlockFile failed", __func__);
@@ -1773,6 +1782,7 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
                         return false;
                     }
                 }
+LogPrintf("\n%s:check valid coin\n", __func__);
                 //Check for invalid/fraudulent inputs
                 if (!ValidOutPoint(txin.prevout, chainActive.Height())) {
                     return state.Invalid(
@@ -1782,6 +1792,7 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
             }
 
             // are the actual inputs available?
+LogPrintf("\n%s:check inputs available\n", __func__);
             if (!view.HaveInputs(tx))
                 return state.Invalid(error("AcceptToMemoryPool : inputs already spent"),
                                      REJECT_DUPLICATE, "bad-txns-inputs-spent");
@@ -3235,13 +3246,13 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
                            (pindex->nHeight == 91880 && pindex->GetBlockHash() ==
                                                         uint256("0x00000000000743f190a18c5577a3c2d2a1f610ae9601ac046a38084ccb7cd721")));
     if (!block.IsPoABlockByVersion() && fEnforceBIP30) {
-        BOOST_FOREACH(
+        /*BOOST_FOREACH(
         const CTransaction &tx, block.vtx) {
             const CCoins *coins = view.AccessCoins(tx.GetHash());
             if (coins && !coins->IsPruned())
                 return state.DoS(100, error("ConnectBlock() : tried to overwrite transaction"),
                                  REJECT_INVALID, "bad-txns-BIP30");
-        }
+        }*/
     }
 
     // BIP16 didn't become active until Apr 1 2012
@@ -3330,9 +3341,9 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
                     return error("%s : failed to record coin serial to database");
             }
         } else if (!block.IsPoABlockByVersion() && !tx.IsCoinBase()) {
-            if (!view.HaveInputs(tx))
+            /*if (!view.HaveInputs(tx))
                 return state.DoS(100, error("ConnectBlock() : inputs missing/spent"),
-                                 REJECT_INVALID, "bad-txns-inputs-missingorspent");
+                                 REJECT_INVALID, "bad-txns-inputs-missingorspent");*/
 
             // Check that the inputs are not marked as invalid/fraudulent
             for (CTxIn in : tx.vin) {

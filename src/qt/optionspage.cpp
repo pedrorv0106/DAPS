@@ -41,11 +41,9 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
 
     connect(ui->lineEditNewPass, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPass()));
     connect(ui->lineEditNewPassRepeat, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPassRepeat()));
-    connect(ui->lineEditOldPass, SIGNAL(textChanged(const QString &)), this, SLOT(oldPassChanged()));
-    
-    const QVector<QWidget*> disabledWidgets = {  ui->line, ui->labelMneumonicRecovery, ui->pushButtonRecovery,  ui->labelRecoveryDescription, ui->label, ui->toggle2FA};
-    GUIUtil::HideDisabledWidgets(disabledWidgets);
-    
+    connect(ui->lineEditOldPass, SIGNAL(textChanged(const QString &)), this, SLOT(onOldPassChanged()));
+
+    //connect(ui->pushButtonPassword, SIGNAL(clicked()), this, SLOT(on_pushButtonPassword_clicked()));
 }
 
 void OptionsPage::setModel(WalletModel* model)
@@ -86,7 +84,9 @@ void OptionsPage::setMapper()
 
 void OptionsPage::on_pushButtonPassword_clicked()
 {
-    SecureString oldPass = SecureString();
+    //disable password submit button
+    QMessageBox(QMessageBox::Information, tr("Information"), tr("This feature is currently not available"), QMessageBox::Ok).exec();
+    /*SecureString oldPass = SecureString();
     oldPass.reserve(MAX_PASSPHRASE_SIZE);
     oldPass.assign( ui->lineEditOldPass->text().toStdString().c_str() );
     SecureString newPass = SecureString();
@@ -121,7 +121,7 @@ void OptionsPage::on_pushButtonPassword_clicked()
     if (success)
         ui->pushButtonPassword->setStyleSheet("border: 2px solid green");
     else ui->pushButtonPassword->setStyleSheet("border: 2px solid red");
-    ui->pushButtonPassword->repaint();
+    ui->pushButtonPassword->repaint();*/
 }
 
 void OptionsPage::on_pushButtonBackup_clicked(){
