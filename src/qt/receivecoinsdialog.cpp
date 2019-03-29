@@ -83,7 +83,7 @@ static inline int64_t roundint64(double d)
 
 CAmount ReceiveCoinsDialog::getValidatedAmount() {
     double dAmount = ui->reqAmount->text().toDouble();
-    if (dAmount <= 0.0 || dAmount > 2100000000.0)
+    if (dAmount < 0.0 || dAmount > 2100000000.0)
         throw runtime_error("Invalid amount, amount should be < 2.1B DAPS");
     CAmount nAmount = roundint64(dAmount * COIN);
     return nAmount;
