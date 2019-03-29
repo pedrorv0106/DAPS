@@ -186,11 +186,16 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
 
     // DAPS labels
     //Cam: Remove immatureBalance from showing on qt wallet (as andrew says)
-    ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance + immatureBalance, false, BitcoinUnits::separatorAlways));
-    if (unconfirmedBalance >0) ui->labelUnconfirmed->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, unconfirmedBalance, false, BitcoinUnits::separatorAlways));
-    ui->labelBalance_2->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance /*- immatureBalance*/, false, BitcoinUnits::separatorAlways));
-    //ui->labelImmatureBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, immatureBalance, false, BitcoinUnits::separatorAlways));
-  
+    ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance - immatureBalance, false, BitcoinUnits::separatorAlways));
+    ui->labelUnconfirmed->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, unconfirmedBalance, false, BitcoinUnits::separatorAlways));
+    ui->labelBalance_2->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance, false, BitcoinUnits::separatorAlways));
+    ui->labelBalanceImmature->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, immatureBalance, false, BitcoinUnits::separatorAlways) + " Immature");
+
+    QFont font = ui->labelBalance_2->font();
+    font.setPointSize(15);
+    font.setBold(true);
+    ui->labelBalance_2->setFont(font);
+
     // zDAPS labels
     QString szPercentage = "";
     QString sPercentage = "";
@@ -300,9 +305,9 @@ void OverviewPage::updateAlerts(const QString& warnings)
 
 void OverviewPage::showBalanceSync(bool fShow){
         ui->labelWalletStatus->setVisible(fShow);
-        ui->labelPendingText->setVisible(fShow);
-        ui->labelUnconfirmed->setVisible(fShow);
-        ui->labelBalanceText->setVisible(fShow);
+        ui->labelPendingText->setVisible(true);
+        ui->labelUnconfirmed->setVisible(true);
+        ui->labelBalanceText->setVisible(true);
         isSyncingBalance = fShow;
 }
 

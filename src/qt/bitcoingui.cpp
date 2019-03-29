@@ -1179,16 +1179,6 @@ void BitcoinGUI::setStakingStatus()
 }
 
 #ifdef ENABLE_WALLET
-bool BitcoinGUI::handlePaymentRequest(const SendCoinsRecipient& recipient)
-{
-    // URI has to be valid
-    if (walletFrame && walletFrame->handlePaymentRequest(recipient)) {
-        showNormalIfMinimized();
-        gotoSendCoinsPage();
-        return true;
-    }
-    return false;
-}
 
 void BitcoinGUI::setEncryptionStatus(int status)
 {
