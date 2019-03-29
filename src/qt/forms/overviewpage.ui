@@ -218,16 +218,6 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_12">
-           <property name="text">
-            <string>(Staked + Immature + Spendable)</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignHCenter|Qt::AlignTop</set>
-           </property>
-          </widget>
-         </item>
-         <item>
           <widget class="QLabel" name="labelBalance_2">
            <property name="font">
             <font>
@@ -254,25 +244,9 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="labelUnspendable">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
+          <widget class="QLabel" name="labelBalanceImmature">
            <property name="text">
-            <string>0.0 Staked</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignBottom|Qt::AlignHCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_6">
-           <property name="text">
-            <string>0.0 Immature</string>
+            <string>0.0 DAPS Immature</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>

@@ -94,17 +94,19 @@ void ecdhDecode(unsigned char * masked, unsigned char * amount, const unsigned c
     }
 }
 
-void ECDHInfo::ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey& sharedSec) {
+void ECDHInfo::ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey& sharedSec, int currentHeight) {
     sharedSec.Set(pubKey.begin(), pubKey.end());
-    std::cout << "ComputeSharedSec: pubkey size = " << pubKey.size() << std::endl;
     unsigned char temp[65];
     memcpy(temp, sharedSec.begin(), sharedSec.size());
-    std::cout << "ComputeSharedSec: sharedSec size = " << sharedSec.size() << std::endl;
     if (!secp256k1_ec_pubkey_tweak_mul(temp, sharedSec.size(), priv.begin())) {
         return;
     }
-    sharedSec.Set(temp, temp + 65);
-    std::cout << "ComputeSharedSec: recheck sharedSec size = " << sharedSec.size() << std::endl;
+
+    if (currentHeight <= 32000) {
+        sharedSec.Set(temp, temp + 65);
+    } else {
+        sharedSec.Set(temp, temp + sharedSec.size());
+    }
 }
 
 void ECDHInfo::Encode(const CKey& mask, const CAmount& amount, const CPubKey& sharedSec, uint256& encodedMask, uint256& encodedAmount)
@@ -112,7 +114,6 @@ void ECDHInfo::Encode(const CKey& mask, const CAmount& amount, const CPubKey& sh
     memcpy(encodedMask.begin(), mask.begin(), 32);
     memcpy(encodedAmount.begin(), &amount, 32);
     //std::cout << "mask:" << mask.begin() << std::endl;
-    std::cout << "Encoded sharedSize.size:" << sharedSec.size() << std::endl;
     ecdhEncode(encodedMask.begin(), encodedAmount.begin(), sharedSec.begin(), sharedSec.size());
     //std::cout << "encoded mask:" << encodedMask.GetHex() << std::endl;
     //std::cout << "encoded amount:" << encodedAmount.GetHex() << std::endl;
@@ -125,7 +126,6 @@ void ECDHInfo::Decode(unsigned char* encodedMask, unsigned char* encodedAmount, 
     decodedMask.Set(tempDecoded, tempDecoded + 32, 32);
     memcpy(tempAmount, encodedAmount, 32);
     memcpy(tempDecoded, decodedMask.begin(), 32);
-    std::cout << "SharedSec.size = " << sharedSec.size() << std::endl;
     ecdhDecode(tempDecoded, tempAmount, sharedSec.begin(), sharedSec.size());
     decodedMask.Set(tempDecoded, tempDecoded + 32, 32);
     memcpy(&decodedAmount, tempAmount, 8);
@@ -2658,9 +2658,8 @@ bool CWallet::CreateTransactionBulletProof(const CPubKey& recipientViewKey, cons
                             //so that every fullnode can verify the exact transaction amount within the transaction
                             sharedSec.Set(txNew.txPub.begin(), txNew.txPub.end());
                         } else {
-                            ECDHInfo::ComputeSharedSec(wtxNew.txPrivM, recipientViewKey, sharedSec);
+                            ECDHInfo::ComputeSharedSec(wtxNew.txPrivM, recipientViewKey, sharedSec, chainActive.Tip()->nHeight);
                         }
-                        std::cout << "create transaction sharedSize = " << sharedSec.size() << std::endl;
                         EncodeTxOutAmount(txout, txout.nValue, sharedSec.begin());
                         txNew.vout.push_back(txout);
                     }
@@ -2692,7 +2691,7 @@ bool CWallet::CreateTransactionBulletProof(const CPubKey& recipientViewKey, cons
                                 //so that every fullnode can verify the exact transaction amount within the transaction
                                 sharedSec.Set(txNew.txPub.begin(), txNew.txPub.end());
                             } else {
-                                ECDHInfo::ComputeSharedSec(wtxNew.txPrivM, recipientViewKey, sharedSec);
+                                ECDHInfo::ComputeSharedSec(wtxNew.txPrivM, recipientViewKey, sharedSec, chainActive.Tip()->nHeight);
                             }
                             EncodeTxOutAmount(out, out.nValue, sharedSec.begin());
                             txNew.vout.push_back(out);
@@ -3221,7 +3220,6 @@ bool CWallet::computeSharedSec(const CTransaction& tx, CPubKey& sharedSec) const
         CKey view;
         myViewPrivateKey(view);
         ECDHInfo::ComputeSharedSec(view, tx.txPub, sharedSec);
-        std::cout << "CWallet::computeSharedSec size = " << sharedSec.size() << std::endl;
     }
     return true;
 }
