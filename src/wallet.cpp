@@ -103,7 +103,7 @@ void ECDHInfo::ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey
     if (!secp256k1_ec_pubkey_tweak_mul(temp, sharedSec.size(), priv.begin())) {
         return;
     }
-    sharedSec.Set(temp, temp + 65);
+    sharedSec.Set(temp, temp + sharedSec.size());
     std::cout << "ComputeSharedSec: recheck sharedSec size = " << sharedSec.size() << std::endl;
 }
 
