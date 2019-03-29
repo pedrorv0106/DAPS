@@ -375,6 +375,7 @@ bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
 
         LogPrintf("Masternode payment of %s to %s\n", FormatMoney(masternodePayment).c_str(), payee.ToString().c_str());
     }
+    return true;
 }
 
 int CMasternodePayments::GetMinMasternodePaymentsProto()

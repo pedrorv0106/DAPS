@@ -96,10 +96,15 @@ void ecdhDecode(unsigned char * masked, unsigned char * amount, const unsigned c
 
 void ECDHInfo::ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey& sharedSec) {
     sharedSec.Set(pubKey.begin(), pubKey.end());
+    std::cout << "ComputeSharedSec: pubkey size = " << pubKey.size() << std::endl;
     unsigned char temp[65];
     memcpy(temp, sharedSec.begin(), sharedSec.size());
-    secp256k1_ec_pubkey_tweak_mul(temp, sharedSec.size(), priv.begin());
+    std::cout << "ComputeSharedSec: sharedSec size = " << sharedSec.size() << std::endl;
+    if (!secp256k1_ec_pubkey_tweak_mul(temp, sharedSec.size(), priv.begin())) {
+        return;
+    }
     sharedSec.Set(temp, temp + 65);
+    std::cout << "ComputeSharedSec: recheck sharedSec size = " << sharedSec.size() << std::endl;
 }
 
 void ECDHInfo::Encode(const CKey& mask, const CAmount& amount, const CPubKey& sharedSec, uint256& encodedMask, uint256& encodedAmount)
@@ -107,7 +112,7 @@ void ECDHInfo::Encode(const CKey& mask, const CAmount& amount, const CPubKey& sh
     memcpy(encodedMask.begin(), mask.begin(), 32);
     memcpy(encodedAmount.begin(), &amount, 32);
     //std::cout << "mask:" << mask.begin() << std::endl;
-    //std::cout << "amount:" << amount << std::endl;
+    std::cout << "Encoded sharedSize.size:" << sharedSec.size() << std::endl;
     ecdhEncode(encodedMask.begin(), encodedAmount.begin(), sharedSec.begin(), sharedSec.size());
     //std::cout << "encoded mask:" << encodedMask.GetHex() << std::endl;
     //std::cout << "encoded amount:" << encodedAmount.GetHex() << std::endl;
@@ -120,6 +125,7 @@ void ECDHInfo::Decode(unsigned char* encodedMask, unsigned char* encodedAmount, 
     decodedMask.Set(tempDecoded, tempDecoded + 32, 32);
     memcpy(tempAmount, encodedAmount, 32);
     memcpy(tempDecoded, decodedMask.begin(), 32);
+    std::cout << "SharedSec.size = " << sharedSec.size() << std::endl;
     ecdhDecode(tempDecoded, tempAmount, sharedSec.begin(), sharedSec.size());
     decodedMask.Set(tempDecoded, tempDecoded + 32, 32);
     memcpy(&decodedAmount, tempAmount, 8);
@@ -1471,7 +1477,7 @@ CAmount CWallet::GetBalance()
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
             if (pcoin->IsTrusted()) {
-                nTotal += pcoin->GetAvailableCredit();
+                nTotal += pcoin->GetAvailableCredit(false);
             }
         }
     }
@@ -1724,7 +1730,7 @@ CAmount CWallet::GetUnconfirmedBalance() const
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
             if (!IsFinalTx(*pcoin) || (!pcoin->IsTrusted() && pcoin->GetDepthInMainChain() == 0))
-                nTotal += pcoin->GetAvailableCredit();
+                nTotal += pcoin->GetAvailableCredit(false);
         }
     }
     return nTotal;
@@ -1737,7 +1743,7 @@ CAmount CWallet::GetImmatureBalance() const
         LOCK2(cs_main, cs_wallet);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
-            nTotal += pcoin->GetImmatureCredit();
+            nTotal += pcoin->GetImmatureCredit(false);
         }
     }
     return nTotal;
@@ -2654,6 +2660,7 @@ bool CWallet::CreateTransactionBulletProof(const CPubKey& recipientViewKey, cons
                         } else {
                             ECDHInfo::ComputeSharedSec(wtxNew.txPrivM, recipientViewKey, sharedSec);
                         }
+                        std::cout << "create transaction sharedSize = " << sharedSec.size() << std::endl;
                         EncodeTxOutAmount(txout, txout.nValue, sharedSec.begin());
                         txNew.vout.push_back(txout);
                     }
@@ -3214,6 +3221,7 @@ bool CWallet::computeSharedSec(const CTransaction& tx, CPubKey& sharedSec) const
         CKey view;
         myViewPrivateKey(view);
         ECDHInfo::ComputeSharedSec(view, tx.txPub, sharedSec);
+        std::cout << "CWallet::computeSharedSec size = " << sharedSec.size() << std::endl;
     }
     return true;
 }
@@ -3462,6 +3470,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
 
             //Masternode payment
             if (!FillBlockPayee(txNew, nMinFee, true)) {
+                LogPrintf("\n%s: Cannot fill block payee", __func__);
                 return false;
             }
             std::string foundational = "41iA4tAZ6oJUHJuHQJwEQVKLKbkKK9cRw7HNn2DqaFUsVbEVAmY31vyUHkyGoHJ3FEYkb8fjMNLekZuo6wqEfcTd18x9kq6x2zL";
@@ -3469,6 +3478,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             bool hasPaymentID;
             uint64_t paymentID;
             if (!CWallet::DecodeStealthAddress(foundational, pubView, pubSpend, hasPaymentID, paymentID)) {
+                LogPrintf("\n%s: Cannot decode foundational address", __func__);
                 continue;
             }
             ComputeStealthDestination(txNew.txPrivM, pubView, pubSpend, foundationalGenPub);
@@ -3489,6 +3499,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
 
             //Encoding amount
             CPubKey sharedSec1;
+            LogPrintf("\n%s: Encoding amount", __func__);
             //In this case, use the transaction pubkey to encode the transactiona amount
             //so that every fullnode can verify the exact transaction amount within the transaction
             sharedSec1.Set(txNew.txPub.begin(), txNew.txPub.end());
