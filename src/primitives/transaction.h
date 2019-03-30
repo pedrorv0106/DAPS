@@ -164,6 +164,7 @@ public:
     //encode the value and the mask so that only the sender and the receiver of the tx output can decode the encoded amount
     MaskValue maskValue;
     std::vector<unsigned char> masternodeStealthAddress;  //will be clone from the tx having 1000000 daps output
+    std::vector<unsigned char> commitment;
 
     CTxOut()
     {
@@ -182,6 +183,7 @@ public:
         READWRITE(maskValue.mask);
         READWRITE(maskValue.hashOfKey);
         READWRITE(masternodeStealthAddress);
+        READWRITE(commitment);
     }
 
     void SetNull()
