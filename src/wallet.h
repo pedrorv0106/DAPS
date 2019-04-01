@@ -458,6 +458,7 @@ public:
     std::map<std::string, std::string> keyImageMap;//mapping from: txhashHex-n to key image str, n = index
     std::list<std::string> pendingKeyImages;
     mutable std::map<CScript, CAmount> amountMap;
+    mutable std::map<CScript, CKey> blindMap;
 
     const CWalletTx* GetWalletTx(const uint256& hash) const;
 
@@ -595,7 +596,9 @@ public:
                            AvailableCoinsType coin_type = ALL_COINS,
                            bool useIX = false,
                            CAmount nFeePay = 0);
-    bool CreateTransactionBulletProof(const CPubKey& recipientViewKey, const std::vector<std::pair<CScript, CAmount> >& vecSend,
+    bool CreateTransactionBulletProof(const CKey& txPrivDes,
+                           const CPubKey& recipientViewKey,
+                           const std::vector<std::pair<CScript, CAmount> >& vecSend,
                            CWalletTx& wtxNew,
                            CReserveKey& reservekey,
                            CAmount& nFeeRet,
@@ -605,7 +608,7 @@ public:
                            bool useIX = false,
                            CAmount nFeePay = 0);
 
-    bool CreateTransactionBulletProof(const CPubKey &recipientViewKey, CScript scriptPubKey, const CAmount &nValue,
+    bool CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey &recipientViewKey, CScript scriptPubKey, const CAmount &nValue,
                                       CWalletTx &wtxNew, CReserveKey &reservekey, CAmount &nFeeRet,
                                       std::string &strFailReason, const CCoinControl *coinControl = NULL,
                                       AvailableCoinsType coin_type = ALL_COINS, bool useIX = false,
@@ -797,7 +800,7 @@ public:
     bool GenerateIntegratedAddress(const std::string& accountName, std::string& pubAddr);
     bool GenerateIntegratedAddress(const CPubKey& pubViewKey, const CPubKey& pubSpendKey, std::string& pubAddr);
     bool AllMyPublicAddresses(std::vector<std::string>& addresses, std::vector<std::string>& accountNames);
-    bool RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmount &amount) const;
+    bool RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmount &amount, CKey&) const;
     bool EncodeTxOutAmount(CTxOut& out, const CAmount& amount, const unsigned char * sharedSec);
     CAmount getCOutPutValue(const COutput& output) const;
     CAmount getCTxOutValue(const CTransaction &tx, const CTxOut &out) const;
@@ -806,6 +809,8 @@ public:
     void CreatePrivacyAccount();
     bool mySpendPrivateKey(CKey& spend) const;
     bool myViewPrivateKey(CKey& view) const;
+    bool CreateCommitment(const CAmount val, CKey& blind, std::vector<unsigned char>& commitment);
+    bool CreateCommitment(const unsigned char* blind, CAmount val, std::vector<unsigned char>& commitment);
 private:
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
@@ -820,9 +825,9 @@ private:
         CKey& txPrivKey);
     bool generateBulletProof(CTransaction& tx);
     bool verifyBulletProof(const CTransaction& tx);
-    bool generateRingSignature(CTransaction& tx);
+    bool generateRingSignature(CTransaction& tx, int& myIndex);
     bool verifyRingSignature(const CTransaction& tx);
-    bool computeSharedSec(const CTransaction& tx, CPubKey& sharedSec) const;
+    bool computeSharedSec(const CTransaction& tx, const CTxOut& out, CPubKey& sharedSec) const;
     int walletIdxCache = 0;
 };
 

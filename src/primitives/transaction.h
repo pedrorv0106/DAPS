@@ -142,7 +142,8 @@ typedef struct MaskValue {
     CPubKey sharedSec;  //secret is computed based on the transaction pubkey, using diffie hellman
                         //sharedSec = txPub * viewPrivateKey of receiver = txPriv * viewPublicKey of receiver
     uint256 amount;
-    uint256 mask;  //Commitment C = mask * G + amount * H, H = Hp(G), Hp = toHashPoint
+    uint256 mask;   //blinding factor, this is encoded throug ECDH before sending to the receiver
+    CKey inMemoryRawBind;
     uint256 hashOfKey; //hash of encrypting key
     MaskValue() {
         amount.SetNull();
@@ -160,11 +161,15 @@ public:
     CAmount nValue; //should always be 0
     CScript scriptPubKey;
     int nRounds;
+    //txPriv is optional and will be used for PoS blocks to incentivize masternodes
+    //and fullnodes will use it to verify whether the reward is really sent to the registered address of masternodes
+    std::vector<unsigned char> txPriv;
+    std::vector<unsigned char> txPub;
     //ECDH encoded value for the amount: the idea is the use the shared secret and a key derivation function to
     //encode the value and the mask so that only the sender and the receiver of the tx output can decode the encoded amount
     MaskValue maskValue;
     std::vector<unsigned char> masternodeStealthAddress;  //will be clone from the tx having 1000000 daps output
-    std::vector<unsigned char> commitment;
+    std::vector<unsigned char> commitment;  //Commitment C = mask * G + amount * H, H = Hp(G), Hp = toHashPoint
 
     CTxOut()
     {
@@ -179,6 +184,8 @@ public:
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         READWRITE(nValue);
         READWRITE(scriptPubKey);
+        READWRITE(txPriv);
+        READWRITE(txPub);
         READWRITE(maskValue.amount);
         READWRITE(maskValue.mask);
         READWRITE(maskValue.hashOfKey);
@@ -279,10 +286,6 @@ public:
     const uint32_t nLockTime;
 
     //For stealth transactions
-    //txPriv is optional and will be used for PoS blocks to incentivize masternodes
-    //and fullnodes will use it to verify whether the reward is really sent to the registered address of masternodes
-    std::vector<unsigned char> txPriv;
-    std::vector<unsigned char> txPub;
     CKey txPrivM;    //only  in-memory
     char hasPaymentID;
     uint64_t paymentID;
@@ -312,8 +315,6 @@ public:
         READWRITE(*const_cast<std::vector<CTxIn>*>(&vin));
         READWRITE(*const_cast<std::vector<CTxOut>*>(&vout));
         READWRITE(*const_cast<uint32_t*>(&nLockTime));
-        READWRITE(txPriv);
-        READWRITE(txPub);
         READWRITE(hasPaymentID);
         if (hasPaymentID != 0) {
             READWRITE(paymentID);
@@ -431,8 +432,6 @@ struct CMutableTransaction
     std::vector<CTxOut> vout;
     uint32_t nLockTime;
     //For stealth transactions
-    std::vector<unsigned char> txPriv;
-    std::vector<unsigned char> txPub;
     CKey txPrivM;
     char hasPaymentID;
     uint64_t paymentID;
@@ -454,8 +453,6 @@ struct CMutableTransaction
         READWRITE(vin);
         READWRITE(vout);
         READWRITE(nLockTime);
-        READWRITE(txPriv);
-        READWRITE(txPub);
         READWRITE(hasPaymentID);
         if (hasPaymentID != 0) {
             READWRITE(paymentID);

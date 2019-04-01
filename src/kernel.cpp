@@ -320,7 +320,6 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlockHeader blockFrom, cons
 
     if (nTimeBlockFrom + nStakeMinAge > nTimeTx) // Min age requirement
         return error("CheckStakeKernelHash() : min age violation - nTimeBlockFrom=%d nStakeMinAge=%d nTimeTx=%d", nTimeBlockFrom, nStakeMinAge, nTimeTx);
-LogPrintf("%s: grabbing difficulty", __func__);
     //grab difficulty
     uint256 bnTargetPerCoinDay;
     bnTargetPerCoinDay.SetCompact(nBits);
@@ -329,7 +328,6 @@ LogPrintf("%s: grabbing difficulty", __func__);
     uint64_t nStakeModifier = 0;
     int nStakeModifierHeight = 0;
     int64_t nStakeModifierTime = 0;
-LogPrintf("%s: get kernel staker modifier", __func__);
     if (!GetKernelStakeModifier(blockFrom.GetHash(), nStakeModifier, nStakeModifierHeight, nStakeModifierTime, fPrintProofOfStake)) {
         LogPrintf("CheckStakeKernelHash(): failed to get kernel stake modifier \n");
         return false;
@@ -341,10 +339,7 @@ LogPrintf("%s: get kernel staker modifier", __func__);
 
     //if wallet is simply checking to make sure a hash is valid
     if (fCheck) {
-        LogPrintf("%s: checking stakehash", __func__);
         hashProofOfStake = stakeHash(nTimeTx, ss, prevout.n, prevout.hash, nTimeBlockFrom);
-        LogPrintf("%s: blockchecked hashProofOfStake=%s, nTimeTx=%d, blockfrom=%s, nStakeModifier=%d, prevout.n=%d, prevout.hash=%s, nTimeBlockFrom=%d", __func__, hashProofOfStake.GetHex(), nTimeTx, blockFrom.GetHash().GetHex(), nStakeModifier, prevout.n, prevout.hash.GetHex(), nTimeBlockFrom);
-        LogPrintf("CheckStakeKernelHash: checking kernal hash target");
         return stakeTargetHit(hashProofOfStake, nValueIn, bnTargetPerCoinDay);
     }
 
@@ -371,14 +366,13 @@ LogPrintf("%s: get kernel staker modifier", __func__);
         nTimeTx = nTryTime;
 
         if (fDebug || fPrintProofOfStake) {
-            LogPrintf("CheckStakeKernelHash() : using modifier %s at height=%d timestamp=%s for block from height=%d timestamp=%s\n",
+                LogPrintf("CheckStakeKernelHash() : using modifier %s at height=%d timestamp=%s for block from height=%d timestamp=%s\n",
                 boost::lexical_cast<std::string>(nStakeModifier).c_str(), nStakeModifierHeight,
                 DateTimeStrFormat("%Y-%m-%d %H:%M:%S", nStakeModifierTime).c_str(),
                 mapBlockIndex[blockFrom.GetHash()]->nHeight,
                 DateTimeStrFormat("%Y-%m-%d %H:%M:%S", blockFrom.GetBlockTime()).c_str());
-            LogPrintf("CheckStakeKernelHash() : pass protocol=%s modifier=%s nTimeBlockFrom=%u prevoutHash=%s nTimeTxPrev=%u nPrevout=%u nTimeTx=%u hashProof=%s\n",
-                "0.3",
-                boost::lexical_cast<std::string>(nStakeModifier).c_str(),
+                LogPrintf("CheckStakeKernelHash() : pass protocol=%s modifier=%s nTimeBlockFrom=%u prevoutHash=%s nTimeTxPrev=%u nPrevout=%u nTimeTx=%u hashProof=%s\n",
+                "0.3", boost::lexical_cast<std::string>(nStakeModifier).c_str(),
                 nTimeBlockFrom, prevout.hash.ToString().c_str(), nTimeBlockFrom, prevout.n, nTryTime,
                 hashProofOfStake.ToString().c_str());
         }

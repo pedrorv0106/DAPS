@@ -78,6 +78,7 @@ secp256k1_context2* secp256k1_context_create2(unsigned int flags) {
     ret->error_callback = default_error_callback;
 
     if (EXPECT((flags & SECP256K1_FLAGS_TYPE_MASK) != SECP256K1_FLAGS_TYPE_CONTEXT, 0)) {
+            printf("\n illegal_callback flasg\n");
             secp256k1_callback_call(&ret->illegal_callback,
                                     "Invalid flags");
             free(ret);

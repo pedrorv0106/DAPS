@@ -70,8 +70,6 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
     entry.push_back(Pair("txid", tx.GetHash().GetHex()));
     entry.push_back(Pair("version", tx.nVersion));
     entry.push_back(Pair("locktime", (int64_t)tx.nLockTime));
-    CPubKey txPubKey(tx.txPub);
-    entry.push_back(Pair("txpubkey", txPubKey.GetHex()));
     if (tx.hasPaymentID) {
         entry.push_back(Pair("paymentid", tx.paymentID));
     }
@@ -106,7 +104,8 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
                         if (allDecoys[i].n < prev.vout.size()) {
                             if (pwalletMain->IsMine(prev.vout[allDecoys[i].n])) {
                                 CAmount decodedAmount;
-                                pwalletMain->RevealTxOutAmount(prev, prev.vout[allDecoys[i].n], decodedAmount);
+                                CKey blind;
+                                pwalletMain->RevealTxOutAmount(prev, prev.vout[allDecoys[i].n], decodedAmount, blind);
                                 decoy.push_back(Pair("decoded_amount", ValueFromAmount(decodedAmount)));
                             }
                         }
@@ -138,11 +137,15 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
         out.push_back(Pair("scriptPubKey", o));
         out.push_back(Pair("encoded_amount", txout.maskValue.amount.GetHex()));
         out.push_back(Pair("encoded_mask", txout.maskValue.mask.GetHex()));
+        CPubKey txPubKey(txout.txPub);
+        out.push_back(Pair("txpubkey", txPubKey.GetHex()));
+        out.push_back(Pair("commitment", HexStr(txout.commitment.begin(), txout.commitment.end())));
 
 #ifdef ENABLE_WALLET
         if (pwalletMain->IsMine(txout)) {
             CAmount decodedAmount;
-            pwalletMain->RevealTxOutAmount(tx, txout, decodedAmount);
+            CKey blind;
+            pwalletMain->RevealTxOutAmount(tx, txout, decodedAmount, blind);
             out.push_back(Pair("decoded_amount", ValueFromAmount(decodedAmount)));
         }
 #endif

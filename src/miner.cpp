@@ -177,11 +177,12 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
     txNew.vin[0].prevout.SetNull();
     txNew.vout.resize(1);
     txNew.vout[0].scriptPubKey = scriptPubKeyIn;
-    std::copy(txPub.begin(), txPub.end(), std::back_inserter(txNew.txPub));
-    std::copy(txPriv.begin(), txPriv.end(), std::back_inserter(txNew.txPriv));
+    std::copy(txPub.begin(), txPub.end(), std::back_inserter(txNew.vout[0].txPub));
+    std::copy(txPriv.begin(), txPriv.end(), std::back_inserter(txNew.vout[0].txPriv));
 
     CBlockIndex* prev = chainActive.Tip();
-    txNew.vout[0].nValue = GetBlockValue(prev->nHeight);
+    CAmount nValue = GetBlockValue(prev->nHeight);
+    txNew.vout[0].nValue = nValue;
 
     pblock->vtx.push_back(txNew);
     pblocktemplate->vTxFees.push_back(-1);   // updated at end
@@ -482,7 +483,24 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
         
         CPubKey sharedSec;
         sharedSec.Set(txPub.begin(), txPub.end());
-        pwallet->EncodeTxOutAmount(pblock->vtx[0].vout[0], pblock->vtx[0].vout[0].nValue, sharedSec.begin());
+        //compute commitment
+        unsigned char zeroBlind[32];
+        memset(zeroBlind, 0, 32);
+        if (pblock->vtx[0].IsCoinBase()) {
+            pwallet->EncodeTxOutAmount(pblock->vtx[0].vout[0], pblock->vtx[0].vout[0].nValue, sharedSec.begin());
+            nValue = pblock->vtx[0].vout[0].nValue;
+            if (!pwallet->CreateCommitment(zeroBlind, nValue, pblock->vtx[0].vout[0].commitment)) {
+                LogPrintf("\n%s: unable to create commitment to 0\n", __func__);
+                return NULL;
+            }
+        } else {
+            pwallet->EncodeTxOutAmount(pblock->vtx[0].vout[1], pblock->vtx[0].vout[1].nValue, sharedSec.begin());
+            nValue = pblock->vtx[0].vout[1].nValue;
+            if (!pwallet->CreateCommitment(zeroBlind, nValue, pblock->vtx[0].vout[1].commitment)) {
+                LogPrintf("\n%s: unable to create commitment to 0\n", __func__);
+                return NULL;
+            }
+        }
 
         // Fill in header
         pblock->hashPrevBlock = pindexPrev->GetBlockHash();
@@ -530,8 +548,8 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, const CPubKey& 
 	//Value of this vout coinbase will be computed based on the number of audited PoS blocks
 	//This will be computed later
 	txNew.vout[0].scriptPubKey = scriptPubKeyIn;
-    std::copy(txPub.begin(), txPub.end(), std::back_inserter(txNew.txPub));
-    std::copy(txPriv.begin(), txPriv.end(), std::back_inserter(txNew.txPriv));
+    std::copy(txPub.begin(), txPub.end(), std::back_inserter(txNew.vout[0].txPub));
+    std::copy(txPriv.begin(), txPriv.end(), std::back_inserter(txNew.vout[0].txPriv));
 
 	CBlockIndex* prev = chainActive.Tip();
 
@@ -564,9 +582,16 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, const CPubKey& 
 
     CPubKey sharedSec;
     sharedSec.Set(txPub.begin(), txPub.end());
+    unsigned char zeroBlind[32];
+    memset(zeroBlind, 0, 32);
+    pwallet->EncodeTxOutAmount(pblock->vtx[0].vout[0], pblock->vtx[0].vout[0].nValue, sharedSec.begin());
+    if (!pwallet->CreateCommitment(zeroBlind, pblock->vtx[0].vout[0].nValue, pblock->vtx[0].vout[0].commitment)) {
+        LogPrintf("\n%s: unable to create commitment to 0\n", __func__);
+        return NULL;
+    }
     pwallet->EncodeTxOutAmount(pblock->vtx[0].vout[0], pblock->vtx[0].vout[0].nValue, sharedSec.begin());
 
-	//Comment out all previous code, because a PoA block does not verify any transaction, except reward transactions to miners
+    //Comment out all previous code, because a PoA block does not verify any transaction, except reward transactions to miners
 	// No need to collect memory pool transactions into the block
 	const int nHeight = pindexPrev->nHeight + 1;
 
@@ -657,7 +682,7 @@ CBlockTemplate* CreateNewPoABlockWithKey(CReserveKey& reservekey, CWallet* pwall
 bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
 {
     LogPrintf("%s\n", pblock->ToString());
-    LogPrintf("generated %s\n", FormatMoney(pblock->vtx[0].vout[0].nValue));
+    //LogPrintf("generated %s\n", FormatMoney(pblock->vtx[0].vout[0].nValue));
 
     // Found a solution
     {
@@ -770,7 +795,7 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake, MineType mineType)
 
             continue;
         }
-
+        GetSerializeSize(*pblock, SER_NETWORK, PROTOCOL_VERSION);
         LogPrintf("Running DAPScoinMiner with %u transactions in block (%u bytes)\n", pblock->vtx.size(),
             ::GetSerializeSize(*pblock, SER_NETWORK, PROTOCOL_VERSION));
 
@@ -788,15 +813,16 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake, MineType mineType)
                 if (hash <= hashTarget) {
                     // Found a solution
                     SetThreadPriority(THREAD_PRIORITY_NORMAL);
-                    LogPrintf("BitcoinMiner:\n");
-                    LogPrintf("proof-of-work found  \n  hash: %s  \ntarget: %s\n", hash.GetHex(), hashTarget.GetHex());
+                    //LogPrintf("BitcoinMiner:\n");
+                    //LogPrintf("proof-of-work found  \n  hash: %s  \ntarget: %s\n", hash.GetHex(), hashTarget.GetHex());
                     ProcessBlockFound(pblock, *pwallet, reservekey);
                     SetThreadPriority(THREAD_PRIORITY_LOWEST);
 
                     // In regression test mode, stop mining after a block is found. This
                     // allows developers to controllably generate a block on demand.
-                    if (Params().MineBlocksOnDemand())
+                    if (Params().MineBlocksOnDemand()) {
                         throw boost::thread_interrupted();
+                    }
 
                     break;
                 }
@@ -850,6 +876,7 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake, MineType mineType)
             }
         }
     }
+    std::cout << "Finish creating block" << std::endl;
 }
 
 void static ThreadBitcoinMiner(void* parg)

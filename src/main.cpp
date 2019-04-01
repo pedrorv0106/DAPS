@@ -302,6 +302,12 @@ bool IsKeyImageSpend1(const std::string& kiHex, int nHeight) {
     return false;
 }
 
+secp256k1_context2* GetContext() {
+    static secp256k1_context2 *both;
+    if (!both) both = secp256k1_context_create2(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
+    return both;
+}
+
 bool IsKeyImageSpend2(const std::string& kiHex, int kd, int nHeight) {
     if (kd < nHeight) {
         CBlock block;
@@ -312,7 +318,7 @@ bool IsKeyImageSpend2(const std::string& kiHex, int kd, int nHeight) {
                 for (int j = 0; j < block.vtx[i].vin.size(); j++) {
                     if (block.vtx[i].vin[j].keyImage.GetHex() == kiHex) {
                         LogPrintf("%s: keyimage spent in nHeight=%d", __func__, kd);
-if (pwalletMain) {
+                        if (pwalletMain) {
                             pwalletMain->keyImagesSpends[kiHex] = true;
                         }
                         return true;
