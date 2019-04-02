@@ -712,8 +712,8 @@ QStringList WalletModel::getStakingStatusError()
 {
     QStringList errors;
     int timeRemaining = (1471482000 - chainActive.Tip()->nTime) / (60 * 60); //time remaining in hrs
-    if (timeRemaining > 0)
-        errors.push_back(QString(tr("Chain has not matured. Hours remaining: ")) + QString(timeRemaining));
+    if (1471482000 > chainActive.Tip()->nTime)
+        errors.push_back(QString(tr("Chain has not matured. Hours remaining: ")) + QString((1471482000 - chainActive.Tip()->nTime) / (60 * 60)));
     if (vNodes.empty())
         errors.push_back(QString(tr("No peer connections. Please check network.")));
     if (!pwalletMain->MintableCoins() || nReserveBalance > pwalletMain->GetBalance())

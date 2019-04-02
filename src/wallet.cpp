@@ -1487,6 +1487,23 @@ CAmount CWallet::GetBalance()
     return nTotal;
 }
 
+CAmount CWallet::GetSpendableBalance() {
+    CAmount nTotal = 0;
+    {
+        LOCK2(cs_main, cs_wallet);
+        for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
+            const CWalletTx* pcoin = &(*it).second;
+            if (pcoin->IsTrusted()) {
+                if (!((pcoin->IsCoinBase() || pcoin->IsCoinStake()) && pcoin->GetBlocksToMaturity() > 0 && pcoin->IsInMainChain())) {
+                    nTotal += pcoin->GetAvailableCredit(false);
+                }
+            }
+        }
+    }
+
+    return nTotal;
+}
+
 CAmount CWallet::GetZerocoinBalance(bool fMatureOnly) const
 {
     CAmount nTotal = 0;
@@ -3250,9 +3267,15 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
 
     //if (mapArgs.count("-reservebalance") && !ParseMoney(mapArgs["-reservebalance"], nReserveBalance))
     //    return error("CreateCoinStake : invalid reserve balance amount");
-
-    //if (nBalance > 0 && nBalance <= nReserveBalance)
-    //    return false;
+    CAmount nSpendableBalance = 0;
+    CAmount nTargetAmount = 9223372036854775807;
+    if (nReserveBalance > 0) {
+        nSpendableBalance = GetSpendableBalance();
+        if (nSpendableBalance <= nReserveBalance) {
+            return false;
+        }
+        nTargetAmount = nSpendableBalance - nReserveBalance;
+    }
 
     // presstab HyperStake - Initialize as static and don't update the set on every run of CreateCoinStake() in order to lighten resource use
     static std::set<pair<const CWalletTx*, unsigned int> > setStakeCoins;
@@ -3262,7 +3285,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
         setStakeCoins.clear();
         //if (!SelectStakeCoins(setStakeCoins, nBalance - nReserveBalance))
         //    return false;
-        LogPrintf("CreateCoinStake: Select %d coins", setStakeCoins.size());
+        //LogPrintf("CreateCoinStake: Select %d coins", setStakeCoins.size());
         nLastStakeSetUpdate = GetTime();
     }
 
@@ -3276,7 +3299,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
 
     //prevent staking a time that won't be accepted
     if (GetAdjustedTime() <= chainActive.Tip()->nTime) {
-        LogPrintf("Waiting for staking");
+        //LogPrintf("Waiting for staking");
         MilliSleep(10000);
     }
 
@@ -3304,8 +3327,8 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             for (const COutput& out : vCoins) {
                 //make sure not to outrun target amount
                 CAmount value = getCOutPutValue(out);
-                //if (nAmountSelected + value > nTargetAmount)
-                //    continue;
+                if (nAmountSelected + value >= nTargetAmount)
+                    continue;
 
                 //if zerocoinspend, then use the block time
                 int64_t nTxTime = out.tx->GetTxTime();

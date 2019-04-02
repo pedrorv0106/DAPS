@@ -23,6 +23,7 @@
 #include <QScrollBar>
 #include <QTextDocument>
 #include <QDataWidgetMapper>
+#include <QDoubleValidator>
 
 using namespace std;
 
@@ -42,6 +43,13 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
     connect(ui->lineEditNewPass, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPass()));
     connect(ui->lineEditNewPassRepeat, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPassRepeat()));
     connect(ui->lineEditOldPass, SIGNAL(textChanged(const QString &)), this, SLOT(onOldPassChanged()));
+    //connect(ui->pushButtonSave, SIGNAL(clicked()), this, SLOT(on_pushButtonSave_clicked()));
+
+    QDoubleValidator *dblVal = new QDoubleValidator(0, 2100000000, 6, ui->lineEditWithhold);
+    dblVal->setNotation(QDoubleValidator::StandardNotation);
+    dblVal->setLocale(QLocale::C);
+    ui->lineEditWithhold->setValidator(dblVal);
+    ui->lineEditWithhold->setPlaceholderText("DAPS Amount");
 
     //connect(ui->pushButtonPassword, SIGNAL(clicked()), this, SLOT(on_pushButtonPassword_clicked()));
 }
@@ -60,6 +68,19 @@ void OptionsPage::setModel(WalletModel* model)
     mapper->toFirst();
 }
 
+static inline int64_t roundint64(double d)
+{
+    return (int64_t)(d > 0 ? d + 0.5 : d - 0.5);
+}
+
+CAmount OptionsPage::getValidatedAmount() {
+    double dAmount = ui->lineEditWithhold->text().toDouble();
+    if (dAmount < 0.0 || dAmount > 2100000000.0)
+        throw runtime_error("Invalid amount, amount should be < 2.1B DAPS");
+    CAmount nAmount = roundint64(dAmount * COIN);
+    return nAmount;
+}
+
 OptionsPage::~OptionsPage()
 {
     delete ui;
@@ -68,6 +89,11 @@ OptionsPage::~OptionsPage()
 void OptionsPage::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
+}
+
+void OptionsPage::on_pushButtonSave_clicked() {
+    nReserveBalance = getValidatedAmount();
+    QMessageBox(QMessageBox::Information, tr("Information"), tr("Reserve balance is successfully set!"), QMessageBox::Ok).exec();
 }
 
 

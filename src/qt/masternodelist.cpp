@@ -325,7 +325,7 @@ void MasternodeList::on_EnableStaking(ToggleButton* widget)
     if (widget->getState()){
         QStringList errors = walletModel->getStakingStatusError();
         if (!errors.length())
-            walletModel->generateCoins(true, 1000);
+            walletModel->generateCoins(true, 1);
         else {
             GUIUtil::prompt(QString("<br><br>")+errors.join(QString("<br><br>"))+QString("<br><br>"));
             widget->setState(false);

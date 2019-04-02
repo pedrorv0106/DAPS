@@ -569,6 +569,7 @@ public:
     void ReacceptWalletTransactions();
     void ResendWalletTransactions();
     CAmount GetBalance();
+    CAmount GetSpendableBalance();
     CAmount GetZerocoinBalance(bool fMatureOnly) const;
     CAmount GetUnconfirmedZerocoinBalance() const;
     CAmount GetImmatureZerocoinBalance() const;
@@ -1186,7 +1187,6 @@ public:
                 return nImmatureCreditCached;
             nImmatureCreditCached = pwallet->GetCredit(*this, ISMINE_SPENDABLE);
             fImmatureCreditCached = true;
-            std::cout << "nImmatureCreditCached = " << nImmatureCreditCached << std::endl;
             return nImmatureCreditCached;
         }
         return 0;

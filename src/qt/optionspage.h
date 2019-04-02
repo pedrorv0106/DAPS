@@ -57,6 +57,7 @@ private:
     QSettings settings;
     QMenu* contextMenu;
     virtual void resizeEvent(QResizeEvent* event);
+    CAmount getValidatedAmount();
 
 private slots:
     void validateNewPass();
@@ -67,6 +68,7 @@ private slots:
     void on_pushButtonPassword_clicked();
     void on_pushButtonBackup_clicked();
     void changeTheme(ToggleButton* widget);
+    void on_pushButtonSave_clicked();
 };
 
 #endif // BITCOIN_QT_OPTIONSPAGE_H
