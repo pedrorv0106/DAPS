@@ -2,9 +2,6 @@
 <ui version="4.0">
  <class>OptionsPage</class>
  <widget class="QDialog" name="OptionsPage">
-      <property name="styleSheet">
-       <string notr="true">QDialog{border-image: url(':/images/background') 0 0 0 0 stretch stretch;}</string>
-      </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -19,7 +16,10 @@
     <verstretch>1</verstretch>
    </sizepolicy>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,1,1,1,0,0,0,0,0,0,0,0,0,0">
+  <property name="styleSheet">
+   <string notr="true">QDialog{border-image: url(':/images/background') 0 0 0 0 stretch stretch;}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0">
    <item>
     <widget class="ToggleButton" name="toggleTheme" native="true">
      <property name="sizePolicy">
@@ -31,13 +31,13 @@
      <property name="layoutDirection">
       <enum>Qt::RightToLeft</enum>
      </property>
-     <property name="OptionA">
+     <property name="OptionA" stdset="0">
       <string>Dark Mode</string>
      </property>
-     <property name="OptionB">
+     <property name="OptionB" stdset="0">
       <string>Light Mode</string>
      </property>
-     <property name="fixedSize">
+     <property name="fixedSize" stdset="0">
       <size>
        <width>150</width>
        <height>55</height>
@@ -98,6 +98,38 @@
      </property>
      <property name="text">
       <string>Submit</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Quantity of DAPS to withhold from auto-staking</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="lineEditWithhold"/>
+   </item>
+   <item>
+    <widget class="QPushButton" name="pushButtonSave">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>917</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>Save</string>
      </property>
     </widget>
    </item>
@@ -193,10 +225,10 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="OptionA">
+     <property name="OptionA" stdset="0">
       <string>On</string>
      </property>
-     <property name="OptionB">
+     <property name="OptionB" stdset="0">
       <string>Off</string>
      </property>
      <property name="fixedSize" stdset="0">
