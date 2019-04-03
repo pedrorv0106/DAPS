@@ -257,6 +257,17 @@ void OverviewPage::setClientModel(ClientModel* model)
     }
 }
 
+void OverviewPage::setSpendableBalance(bool isStaking) {
+    //std::cout << "changing status:" << isStaking << std::endl;
+    CAmount nSpendableDisplayed = this->walletModel->getSpendableBalance();
+    if (isStaking) {
+        //if staking enabled
+        nSpendableDisplayed = nSpendableDisplayed > nReserveBalance ? nReserveBalance:nSpendableDisplayed;
+    }
+    //std::cout << "nSpendableDisplayed:" << nSpendableDisplayed << std::endl;
+    ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, nSpendableDisplayed, false, BitcoinUnits::separatorAlways));
+}
+
 void OverviewPage::setWalletModel(WalletModel* model)
 {
     this->walletModel = model;
@@ -276,7 +287,9 @@ void OverviewPage::setWalletModel(WalletModel* model)
                    model->getWatchBalance(), model->getWatchUnconfirmedBalance(), model->getWatchImmatureBalance());
         connect(model, SIGNAL(balanceChanged(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)), this, 
                          SLOT(setBalance(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)));
-
+        connect(model, SIGNAL(stakingStatusChanged(bool)), this, 
+                         SLOT(setSpendableBalance(bool)));
+        
         connect(model->getOptionsModel(), SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit()));
 
         updateWatchOnlyLabels(model->haveWatchOnly());

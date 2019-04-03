@@ -75,8 +75,7 @@ CAmount WalletModel::getBalance(const CCoinControl* coinControl) const
         wallet->AvailableCoins(vCoins, true, coinControl);
         BOOST_FOREACH (const COutput& out, vCoins)
             if (out.fSpendable)
-                nBalance += out.tx->vout[out.i].nValue;
-
+                nBalance += wallet->getCTxOutValue(*out.tx, out.tx->vout[out.i]);
         return nBalance;
     }
 
@@ -86,6 +85,11 @@ CAmount WalletModel::getBalance(const CCoinControl* coinControl) const
 CAmount WalletModel::getUnconfirmedBalance() const
 {
     return wallet->GetUnconfirmedBalance();
+}
+
+CAmount WalletModel::getSpendableBalance() const 
+{
+    return wallet->GetSpendableBalance();
 }
 
 CAmount WalletModel::getImmatureBalance() const
@@ -717,7 +721,7 @@ QStringList WalletModel::getStakingStatusError()
     if (vNodes.empty())
         errors.push_back(QString(tr("No peer connections. Please check network.")));
     if (!pwalletMain->MintableCoins() || nReserveBalance > pwalletMain->GetBalance())
-        errors.push_back(QString(tr("Not enough mintable coins. Send coins to this wallet.")));
+        errors.push_back(QString(tr("Not enough mintable coins. Send coins to this wallet or if you have coins already, wait a maximum of 1h to be able to stake.")));
     return errors;
 }
 

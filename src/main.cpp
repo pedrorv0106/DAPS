@@ -4972,7 +4972,6 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
 
     int nMints = 0;
     int nSpends = 0;
-LogPrintf("%s: checking block zero coin", __func__);
     for (const CTransaction tx : pblock->vtx) {
         if (!pblock->IsPoABlockByVersion() && tx.ContainsZerocoins()) {
             for (const CTxIn in : tx.vin) {
@@ -4993,7 +4992,6 @@ LogPrintf("%s: checking block zero coin", __func__);
     // Duplicate stake allowed only when there is orphan child block
     if (pblock->IsProofOfStake() && setStakeSeen.count(pblock->GetProofOfStake())/* && !mapOrphanBlocksByPrev.count(hash)*/)
         return error("ProcessNewBlock() : duplicate proof-of-stake (%s, %d) for block %s", pblock->GetProofOfStake().first.ToString().c_str(), pblock->GetProofOfStake().second, pblock->GetHash().ToString().c_str());
-	LogPrintf("%s: check block signature", __func__);
     // NovaCoin: check proof-of-stake block signature
     if (!pblock->IsPoABlockByVersion() && !pblock->CheckBlockSignature())
         return error("ProcessNewBlock() : bad proof-of-stake block signature");
@@ -5007,7 +5005,6 @@ LogPrintf("%s: checking previous block", __func__);
             return false;
         }
     }
-LogPrintf("%s: successfully checking previous block", __func__);
     {
         LOCK(cs_main);   // Replaces the former TRY_LOCK loop because busy waiting wastes too much resources
 
@@ -5018,9 +5015,7 @@ LogPrintf("%s: successfully checking previous block", __func__);
 
         // Store to disk
         CBlockIndex *pindex = NULL;
-LogPrintf("%s: accepting block", __func__);
         bool ret = AcceptBlock(*pblock, state, &pindex, dbp, checked);
-LogPrintf("%s: accepted block", __func__);
         if (pindex && pfrom) {
             mapBlockSource[pindex->GetBlockHash()] = pfrom->GetId();
         }
@@ -5028,7 +5023,6 @@ LogPrintf("%s: accepted block", __func__);
         if (!ret)
             return error("%s : AcceptBlock FAILED", __func__);
     }
-    LogPrintf("%s: About to axtive best chain", __func__);
     if (!ActivateBestChain(state, pblock, checked))
         return error("%s : ActivateBestChain failed", __func__);
 
@@ -5040,7 +5034,6 @@ LogPrintf("%s: accepted block", __func__);
         }
     }
 	
-	LogPrintf("%s: checked litemode", __func__);
     if (pwalletMain) {
         // If turned on MultiSend will send a transaction (or more) on the after maturity of a stake
         if (pwalletMain->isMultiSendEnabled())

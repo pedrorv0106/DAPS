@@ -160,7 +160,6 @@ void HistoryPage::updateAddressBookData(CWallet* wallet)
 
 void HistoryPage::updateFilter()
 {
-    std::cout << "updateFilter: updating" << std::endl;
     syncTime(ui->dateTimeEditFrom, timeEditFrom);
     syncTime(ui->dateTimeEditFrom, timeEditFrom);
     auto selectedAmount = ui->lineEditAmount->text().toFloat();
