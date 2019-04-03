@@ -731,6 +731,7 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake, MineType mineType)
 
             if (!fGenerateBitcoins) {
                 LogPrintf("\nStopping staking or mining\n");
+                nLastCoinStakeSearchInterval = 0;
                 break;
             }
 

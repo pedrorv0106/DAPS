@@ -92,8 +92,13 @@ void OptionsPage::resizeEvent(QResizeEvent* event)
 }
 
 void OptionsPage::on_pushButtonSave_clicked() {
+    if (ui->lineEditWithhold->text().trimmed().isEmpty()) {
+        QMessageBox(QMessageBox::Information, tr("Information"), tr("DAPS reserve amount should be filled"), QMessageBox::Ok).exec();
+        return;
+    }
     nReserveBalance = getValidatedAmount();
-    QMessageBox(QMessageBox::Information, tr("Information"), tr("Reserve balance is successfully set!"), QMessageBox::Ok).exec();
+    emit model->stakingStatusChanged(nLastCoinStakeSearchInterval);
+    QMessageBox(QMessageBox::Information, tr("Information"), tr("Reserve balance " + BitcoinUnits::format(0, nReserveBalance).toUtf8() + " is successfully set!"), QMessageBox::Ok).exec();
 }
 
 
