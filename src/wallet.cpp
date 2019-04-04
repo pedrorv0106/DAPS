@@ -2898,7 +2898,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     const unsigned char *bptr[wtxNew.vin.size() + totalCommits + 1];
     //all in pubkeys + an additional public generated from commitments
     unsigned char allInPubKeys[wtxNew.vin.size() + 1][wtxNew.vin[0].decoys.size() + 1][33];
-    unsigned char allKeyImages[wtxNew.vin.size() + 1][wtxNew.vin[0].decoys.size() + 1][33];
+    unsigned char allKeyImages[wtxNew.vin.size() + 1][33];
 
     int myBlindsIdx = 0;
 
@@ -2970,7 +2970,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
         CTransaction& inTx = mapWallet[myOutpoint.hash];
         CKey tempPk;
         findCorrespondingPrivateKey(inTx.vout[myOutpoint.n], tempPk);
-        memcpy(allKeyImages[j][PI], wtxNew.vin[j].keyImage.begin(), 33);
+        memcpy(allKeyImages[j], wtxNew.vin[j].keyImage.begin(), 33);
         CPubKey tempPubKey = tempPk.GetPubKey();
         memcpy(allInPubKeys[j][PI], tempPubKey.begin(), 33);
 
@@ -3007,7 +3007,18 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
         }
     }
 
-    
+    //extract all public keys
+    for (int i = 0; i < wtxNew.vin.size(); i++) {
+        for (int j = 0; j < PI; j++) {
+
+        }
+    }
+
+    for (int i = 0; i < wtxNew.vin.size(); i++) {
+        for (int j = PI + 1; j < wtxNew.vin[0].decoys.size() + 1; j++) {
+
+        }
+    }
 
     //check whether this is a reveal amount transaction
     //only create transaction with reveal amount if it is a masternode collateral transaction
