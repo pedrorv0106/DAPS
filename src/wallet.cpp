@@ -2955,7 +2955,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     }
 
     int PI = myRealIndex;
-    unsigned char SIJ[wtxNew.vin.size() + 1][wtxNew.vin[0].decoys.size() + 1][33];
+    unsigned char SIJ[wtxNew.vin.size() + 1][wtxNew.vin[0].decoys.size() + 1][32];
     unsigned char LIJ[wtxNew.vin.size() + 1][wtxNew.vin[0].decoys.size() + 1][33];
     unsigned char RIJ[wtxNew.vin.size() + 1][wtxNew.vin[0].decoys.size() + 1][33];
 
@@ -2972,7 +2972,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
         findCorrespondingPrivateKey(inTx.vout[myOutpoint.n], tempPk);
         memcpy(allKeyImages[j][PI], wtxNew.vin[j].keyImage.begin(), 33);
         CPubKey tempPubKey = tempPk.GetPubKey();
-        mempcy(allInPubKeys[j][PI], tempPubKey.begin(), 33);
+        memcpy(allInPubKeys[j][PI], tempPubKey.begin(), 33);
 
         CKey alpha;
         alpha.MakeNewKey(true);
@@ -2983,7 +2983,31 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
 
     //computing additional input pubkey and key images
     //additional private key = sum of all existing private keys + sum of all blinds in - sum of all blind outs
-    secp256k1_pedersen_blind_sum(both, bptr[myBlindsIdx], (const unsigned char * const *)bptr, npositive + totalCommits, 2 * npositive);
+    unsigned char outSum[32];
+    secp256k1_pedersen_blind_sum(both, outSum, (const unsigned char * const *)bptr, npositive + totalCommits, 2 * npositive);
+    myBlinds[myBlindsIdx].Set(outSum, outSum + 32, true);
+    CPubKey additionalPubKey = myBlinds[myBlindsIdx].GetPubKey();
+    memcpy(allInPubKeys[wtxNew.vin.size()][PI], tempPubKey.begin(), 33);
+    PointHashingSuccessively(additionalPubKey, myBlinds[myBlindsIdx].begin(), allKeyImages[wtxNew.vin.size()][PI]);
+
+    CKey alpha_additional;
+    alpha_additional.MakeNewKey(true);
+    CPubKey LIJ_PI_additional = alpha_additional.GetPubKey();
+    memcpy(LIJ[wtxNew.vin.size()][PI], LIJ_PI_additional.begin(), 33);
+    PointHashingSuccessively(additionalPubKey, alpha_additional.begin(), RIJ[wtxNew.vin.size()][PI]);
+
+    //Initialize SIJ except S[..][PI]
+    for (int i = 0; i < wtxNew.vin.size() + 1; i++) {
+        for (int j = 0; j < wtxNew.vin[0].decoys.size() + 1; j++) {
+            if (j != PI) {
+                CKey randGen;
+                randGen.MakeNewKey(true);
+                memcpy(S[i][j], randGen.begin(), 32);
+            }
+        }
+    }
+
+    
 
     //check whether this is a reveal amount transaction
     //only create transaction with reveal amount if it is a masternode collateral transaction
