@@ -102,7 +102,7 @@ void ECDHInfo::ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey
         return;
     }
 
-    if (currentHeight != -1 && currentHeight <= 43000) {
+    if (currentHeight != -1 && currentHeight <= 43100) {
         sharedSec.Set(temp, temp + 65);
     } else {
         sharedSec.Set(temp, temp + sharedSec.size());
