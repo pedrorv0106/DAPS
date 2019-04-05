@@ -6308,7 +6308,7 @@ bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmou
             CPubKey txPub(&(tx.txPub[0]), &(tx.txPub[0]) + 33);
             CKey view;
             if (myViewPrivateKey(view)) {
-                int h = mapWallet.count(tx.GetHash()) == 1 ? mapWallet[tx.GetHash()].GetBlockHeight() : chainActive.Tip()->nHeight;
+                int h = (mapWallet.count(tx.GetHash()) == 1) ? mapWallet[tx.GetHash()].GetBlockHeight() : chainActive.Tip()->nHeight;
                 computeSharedSec(tx, sharedSec, h);
                 uint256 val = out.maskValue.amount;
                 uint256 mask = out.maskValue.mask;

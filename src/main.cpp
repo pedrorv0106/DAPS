@@ -652,14 +652,18 @@ CBlockIndex *FindForkInGlobalIndex(const CChain &chain, const CBlockLocator &loc
     // Find the first block the caller has in the main chain
     BOOST_FOREACH(
     const uint256 &hash, locator.vHave) {
+        std::cout << "inside FindForkInGlobalIndex" << std::endl;
         BlockMap::iterator mi = mapBlockIndex.find(hash);
+        std::cout << "inside FindForkInGlobalIndex1" << std::endl;
         if (mi != mapBlockIndex.end()) {
+            std::cout << "inside FindForkInGlobalIndex2" << std::endl;
             CBlockIndex *pindex = (*mi).second;
-            if (chain.Contains(pindex))
+            if (pindex && chain.Contains(pindex)) {
+                std::cout << "inside FindForkInGlobalIndex3" << std::endl;
                 return pindex;
+            }
         }
     }
-    std::cout << "inside FindForkInGlobalIndex" << std::endl;
     return chain.Genesis();
 }
 
