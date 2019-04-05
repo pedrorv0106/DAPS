@@ -102,7 +102,9 @@ void ECDHInfo::ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey
         return;
     }
 
-    if (currentHeight != -1 && currentHeight <= 43100) {
+    if (currentHeight != -1 && currentHeight <= 32000) {
+        sharedSec.Set(temp, temp + 65);
+    } if (currentHeight == -1 && chainActive.Tip()->nHeight <= 32000) {
         sharedSec.Set(temp, temp + 65);
     } else {
         sharedSec.Set(temp, temp + sharedSec.size());
@@ -6306,7 +6308,8 @@ bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmou
             CPubKey txPub(&(tx.txPub[0]), &(tx.txPub[0]) + 33);
             CKey view;
             if (myViewPrivateKey(view)) {
-                computeSharedSec(tx, sharedSec, mapWallet.count(tx.GetHash()) == 1 ? mapWallet[tx.GetHash()].GetBlockHeight() : chainActive.Tip()->nHeight);
+                int h = mapWallet.count(tx.GetHash()) == 1 ? mapWallet[tx.GetHash()].GetBlockHeight() : chainActive.Tip()->nHeight;
+                computeSharedSec(tx, sharedSec, h);
                 uint256 val = out.maskValue.amount;
                 uint256 mask = out.maskValue.mask;
                 CKey decodedMask;
