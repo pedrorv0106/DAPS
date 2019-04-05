@@ -78,6 +78,13 @@ void SendCoinsDialog::setModel(WalletModel* model)
     }
 }
 
+void SendCoinsDialog::setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, 
+                              const CAmount& zerocoinBalance, const CAmount& unconfirmedZerocoinBalance, const CAmount& immatureZerocoinBalance,
+                              const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance)
+{
+    ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(0, balance, false, BitcoinUnits::separatorAlways));
+}
+
 SendCoinsDialog::~SendCoinsDialog(){
     delete ui;
 }
@@ -98,14 +105,17 @@ void SendCoinsDialog::on_sendButton_clicked(){
     if (!isValidAddresss||!isValidAmount)
         return;
 
-    bool nStaking = false;
-    if (mapHashedBlocks.count(chainActive.Tip()->nHeight))
-        nStaking = true;
-    else if (mapHashedBlocks.count(chainActive.Tip()->nHeight - 1) && nLastCoinStakeSearchInterval)
-        nStaking = true;
+    bool nStaking = (nLastCoinStakeSearchInterval > 0);
 
     if (nStaking) {
-        QMessageBox(QMessageBox::Information, tr("Warning"), tr("Transactions cannot be created while staking, please turn staking off, by stopping your wallet, set staking=0 in your config file!"), QMessageBox::Ok).exec();
+        CAmount spendable = pwalletMain->GetSpendableBalance();
+        if (!(recipient.amount <= nReserveBalance && recipient.amount <= spendable)) {
+            if (recipient.amount > spendable) {
+                QMessageBox(QMessageBox::Information, tr("Warning"), tr("Insufficient Spendable funds! Send with smaller amount or wait for your coins become mature"), QMessageBox::Ok).exec();
+            } else if (recipient.amount > nReserveBalance) {
+                QMessageBox(QMessageBox::Information, tr("Warning"), tr("Insufficient Reserve Funds! Send with smaller amount or turn off staking mode"), QMessageBox::Ok).exec();
+            }
+        }
         return;
     }
 

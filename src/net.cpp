@@ -1501,7 +1501,8 @@ void ThreadMessageHandler() {
         bool fSleep = true;
 
         BOOST_FOREACH(CNode * pnode, vNodesCopy)
-        {
+        {   
+            if (!pnode) continue;
             if (pnode->fDisconnect)
                 continue;
 

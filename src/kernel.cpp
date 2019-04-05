@@ -320,7 +320,7 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlockHeader blockFrom, cons
 
     if (nTimeBlockFrom + nStakeMinAge > nTimeTx) // Min age requirement
         return error("CheckStakeKernelHash() : min age violation - nTimeBlockFrom=%d nStakeMinAge=%d nTimeTx=%d", nTimeBlockFrom, nStakeMinAge, nTimeTx);
-LogPrintf("%s: grabbing difficulty", __func__);
+    LogPrintf("%s: grabbing difficulty", __func__);
     //grab difficulty
     uint256 bnTargetPerCoinDay;
     bnTargetPerCoinDay.SetCompact(nBits);
@@ -329,7 +329,7 @@ LogPrintf("%s: grabbing difficulty", __func__);
     uint64_t nStakeModifier = 0;
     int nStakeModifierHeight = 0;
     int64_t nStakeModifierTime = 0;
-LogPrintf("%s: get kernel staker modifier", __func__);
+    LogPrintf("%s: get kernel staker modifier", __func__);
     if (!GetKernelStakeModifier(blockFrom.GetHash(), nStakeModifier, nStakeModifierHeight, nStakeModifierTime, fPrintProofOfStake)) {
         LogPrintf("CheckStakeKernelHash(): failed to get kernel stake modifier \n");
         return false;

@@ -207,23 +207,13 @@
             </font>
            </property>
            <property name="text">
-            <string>DAPS Owned</string>
+            <string>Balance</string>
            </property>
            <property name="textFormat">
             <enum>Qt::RichText</enum>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_12">
-           <property name="text">
-            <string>(Staked + Immature + Spendable)</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignHCenter|Qt::AlignTop</set>
            </property>
           </widget>
          </item>
@@ -250,32 +240,6 @@
            </property>
            <property name="textInteractionFlags">
             <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="labelUnspendable">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>0.0 Staked</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignBottom|Qt::AlignHCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_6">
-           <property name="text">
-            <string>0.0 Immature</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
            </property>
           </widget>
          </item>

@@ -75,8 +75,7 @@ CAmount WalletModel::getBalance(const CCoinControl* coinControl) const
         wallet->AvailableCoins(vCoins, true, coinControl);
         BOOST_FOREACH (const COutput& out, vCoins)
             if (out.fSpendable)
-                nBalance += out.tx->vout[out.i].nValue;
-
+                nBalance += wallet->getCTxOutValue(*out.tx, out.tx->vout[out.i]);
         return nBalance;
     }
 
@@ -86,6 +85,11 @@ CAmount WalletModel::getBalance(const CCoinControl* coinControl) const
 CAmount WalletModel::getUnconfirmedBalance() const
 {
     return wallet->GetUnconfirmedBalance();
+}
+
+CAmount WalletModel::getSpendableBalance() const 
+{
+    return wallet->GetSpendableBalance();
 }
 
 CAmount WalletModel::getImmatureBalance() const
@@ -712,12 +716,12 @@ QStringList WalletModel::getStakingStatusError()
 {
     QStringList errors;
     int timeRemaining = (1471482000 - chainActive.Tip()->nTime) / (60 * 60); //time remaining in hrs
-    if (timeRemaining > 0)
-        errors.push_back(QString(tr("Chain has not matured. Hours remaining: ")) + QString(timeRemaining));
+    if (1471482000 > chainActive.Tip()->nTime)
+        errors.push_back(QString(tr("Chain has not matured. Hours remaining: ")) + QString((1471482000 - chainActive.Tip()->nTime) / (60 * 60)));
     if (vNodes.empty())
         errors.push_back(QString(tr("No peer connections. Please check network.")));
     if (!pwalletMain->MintableCoins() || nReserveBalance > pwalletMain->GetBalance())
-        errors.push_back(QString(tr("Not enough mintable coins. Send coins to this wallet.")));
+        errors.push_back(QString(tr("Not enough mintable coins. Send coins to this wallet or if you have coins already, wait a maximum of 1h to be able to stake.")));
     return errors;
 }
 
@@ -834,6 +838,9 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
             txData["type"] = QString("Minted");
             txData["amount"] = BitcoinUnits::format(0,  totalamount - totalIn); //absolute value of total amount
             break;
+        case TransactionRecord::MNReward:
+            txData["type"] = QString("Masternode");
+            break;     
         default:
             txData["type"] = QString("Unknown");
         }

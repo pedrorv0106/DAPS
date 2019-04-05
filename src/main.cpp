@@ -213,7 +213,7 @@ namespace {
 
 void RegisterValidationInterface(CValidationInterface *pwalletIn) {
     g_signals.SyncTransaction.connect(boost::bind(&CValidationInterface::SyncTransaction, pwalletIn, _1, _2));
-// XX42 g_signals.EraseTransaction.connect(boost::bind(&CValidationInterface::EraseFromWallet, pwalletIn, _1));
+    // XX42 g_signals.EraseTransaction.connect(boost::bind(&CValidationInterface::EraseFromWallet, pwalletIn, _1));
     g_signals.UpdatedTransaction.connect(boost::bind(&CValidationInterface::UpdatedTransaction, pwalletIn, _1));
     g_signals.SetBestChain.connect(boost::bind(&CValidationInterface::SetBestChain, pwalletIn, _1));
     g_signals.Inventory.connect(boost::bind(&CValidationInterface::Inventory, pwalletIn, _1));
@@ -659,6 +659,7 @@ CBlockIndex *FindForkInGlobalIndex(const CChain &chain, const CBlockLocator &loc
                 return pindex;
         }
     }
+    std::cout << "inside FindForkInGlobalIndex" << std::endl;
     return chain.Genesis();
 }
 
@@ -4972,7 +4973,6 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
 
     int nMints = 0;
     int nSpends = 0;
-LogPrintf("%s: checking block zero coin", __func__);
     for (const CTransaction tx : pblock->vtx) {
         if (!pblock->IsPoABlockByVersion() && tx.ContainsZerocoins()) {
             for (const CTxIn in : tx.vin) {
@@ -4993,7 +4993,6 @@ LogPrintf("%s: checking block zero coin", __func__);
     // Duplicate stake allowed only when there is orphan child block
     if (pblock->IsProofOfStake() && setStakeSeen.count(pblock->GetProofOfStake())/* && !mapOrphanBlocksByPrev.count(hash)*/)
         return error("ProcessNewBlock() : duplicate proof-of-stake (%s, %d) for block %s", pblock->GetProofOfStake().first.ToString().c_str(), pblock->GetProofOfStake().second, pblock->GetHash().ToString().c_str());
-	LogPrintf("%s: check block signature", __func__);
     // NovaCoin: check proof-of-stake block signature
     if (!pblock->IsPoABlockByVersion() && !pblock->CheckBlockSignature())
         return error("ProcessNewBlock() : bad proof-of-stake block signature");
@@ -5007,7 +5006,6 @@ LogPrintf("%s: checking previous block", __func__);
             return false;
         }
     }
-LogPrintf("%s: successfully checking previous block", __func__);
     {
         LOCK(cs_main);   // Replaces the former TRY_LOCK loop because busy waiting wastes too much resources
 
@@ -5018,9 +5016,7 @@ LogPrintf("%s: successfully checking previous block", __func__);
 
         // Store to disk
         CBlockIndex *pindex = NULL;
-LogPrintf("%s: accepting block", __func__);
         bool ret = AcceptBlock(*pblock, state, &pindex, dbp, checked);
-LogPrintf("%s: accepted block", __func__);
         if (pindex && pfrom) {
             mapBlockSource[pindex->GetBlockHash()] = pfrom->GetId();
         }
@@ -5028,7 +5024,6 @@ LogPrintf("%s: accepted block", __func__);
         if (!ret)
             return error("%s : AcceptBlock FAILED", __func__);
     }
-    LogPrintf("%s: About to axtive best chain", __func__);
     if (!ActivateBestChain(state, pblock, checked))
         return error("%s : ActivateBestChain failed", __func__);
 
@@ -5040,7 +5035,6 @@ LogPrintf("%s: accepted block", __func__);
         }
     }
 	
-	LogPrintf("%s: checked litemode", __func__);
     if (pwalletMain) {
         // If turned on MultiSend will send a transaction (or more) on the after maturity of a stake
         if (pwalletMain->isMultiSendEnabled())
@@ -6694,7 +6688,8 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
             if (!mapBlockIndex.count(block.GetHash())) {
                 ProcessNewBlock(state, pfrom, &block);
                 int nDoS;
-                if (state.IsInvalid(nDoS)) {
+                if (state.IsInvalid(nDoS)) {                
+                    LogPrintf("\n%s: IsInvalid", __func__);
                     pfrom->PushMessage("reject", strCommand, state.GetRejectCode(),
                                        state.GetRejectReason().substr(0, MAX_REJECT_MESSAGE_LENGTH), inv.hash);
                     if (nDoS > 0) {
@@ -6703,7 +6698,9 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
                     }
                 }
                 //disconnect this node if its old protocol version
+                LogPrintf("\n%s: start DisconnectOldProtocol", __func__);
                 pfrom->DisconnectOldProtocol(ActiveProtocol(), strCommand);
+                LogPrintf("\n%s: end DisconnectOldProtocol", __func__);
             } else {
                 LogPrint("net", "%s : Already processed block %s, skipping ProcessNewBlock()\n", __func__,
                          block.GetHash().GetHex());
@@ -6953,6 +6950,8 @@ bool ProcessMessages(CNode *pfrom) {
     //
     bool fOk = true;
 
+    if (!pfrom) return false;
+
     if (!pfrom->vRecvGetData.empty())
         ProcessGetData(pfrom);
 
@@ -6964,7 +6963,6 @@ bool ProcessMessages(CNode *pfrom) {
         // Don't bother if send buffer is too full to respond anyway
         if (pfrom->nSendSize >= SendBufferSize())
             break;
-
         // get next message
         CNetMessage &msg = *it;
 
@@ -7047,7 +7045,6 @@ bool ProcessMessages(CNode *pfrom) {
     // In case the connection got shut down, its receive buffer was wiped
     if (!pfrom->fDisconnect)
         pfrom->vRecvMsg.erase(pfrom->vRecvMsg.begin(), it);
-
     return fOk;
 }
 

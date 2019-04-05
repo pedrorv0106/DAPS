@@ -441,7 +441,7 @@ public:
         fMultiSendStake = false;
     }
 
-    std::map<uint256, CWalletTx> mapWallet;
+    mutable std::map<uint256, CWalletTx> mapWallet;
 
     int64_t nOrderPosNext;
     std::map<uint256, int> mapRequestCount;
@@ -569,6 +569,7 @@ public:
     void ReacceptWalletTransactions();
     void ResendWalletTransactions();
     CAmount GetBalance();
+    CAmount GetSpendableBalance();
     CAmount GetZerocoinBalance(bool fMatureOnly) const;
     CAmount GetUnconfirmedZerocoinBalance() const;
     CAmount GetImmatureZerocoinBalance() const;
@@ -822,7 +823,7 @@ private:
     bool verifyBulletProof(const CTransaction& tx);
     bool generateRingSignature(CTransaction& tx);
     bool verifyRingSignature(const CTransaction& tx);
-    bool computeSharedSec(const CTransaction& tx, CPubKey& sharedSec) const;
+    bool computeSharedSec(const CTransaction& tx, CPubKey& sharedSec, int currentHeight) const;
     int walletIdxCache = 0;
 };
 
@@ -1186,7 +1187,6 @@ public:
                 return nImmatureCreditCached;
             nImmatureCreditCached = pwallet->GetCredit(*this, ISMINE_SPENDABLE);
             fImmatureCreditCached = true;
-            std::cout << "nImmatureCreditCached = " << nImmatureCreditCached << std::endl;
             return nImmatureCreditCached;
         }
         return 0;
@@ -1480,6 +1480,14 @@ public:
                 return false;
         }
         return true;
+    }
+
+    int GetBlockHeight() const {
+        if (hashBlock.IsNull()) {
+            return -1; //not in the chain
+        } else {
+            return mapBlockIndex[hashBlock]->nHeight;
+        }
     }
 
     bool WriteToDisk();
