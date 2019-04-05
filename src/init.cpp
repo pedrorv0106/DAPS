@@ -1526,19 +1526,14 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
         RegisterValidationInterface(pwalletMain);
 
         CBlockIndex* pindexRescan = chainActive.Tip();
-        std::cout << "Chain active" << std::endl;
         if (GetBoolArg("-rescan", false)) {
-            std::cout << "rescan" << std::endl;
             pindexRescan = chainActive.Genesis();
         } else {
-            std::cout << "ReadBestBlock" << std::endl;
             CWalletDB walletdb(strWalletFile);
             CBlockLocator locator;
             if (walletdb.ReadBestBlock(locator)) {
-                std::cout << "FindForkInGlobalIndex" << std::endl;
                 pindexRescan = FindForkInGlobalIndex(chainActive, locator);
             } else {
-                std::cout << "Genesis" << std::endl;
                 pindexRescan = chainActive.Genesis();
             }
         }
