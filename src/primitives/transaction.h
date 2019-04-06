@@ -24,7 +24,7 @@ void ecdhDecode(uint256& masked, uint256& amount, const unsigned char * sharedSe
 
 class ECDHInfo {
 public:
-    static void ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey& sharedSec, int currentHeight = -1);
+    static void ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey& sharedSec, int currentHeight);
     static void Encode(const CKey& mask, const CAmount& amount, const CPubKey& sharedSec, uint256& encodedMask, uint256& encodedAmount);
     static void Decode(unsigned char* encodedMask, unsigned char* encodedAmount, const CPubKey& sharedSec, CKey& decodedMask, CAmount& decodedAmount);
 };

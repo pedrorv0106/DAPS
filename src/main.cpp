@@ -213,7 +213,7 @@ namespace {
 
 void RegisterValidationInterface(CValidationInterface *pwalletIn) {
     g_signals.SyncTransaction.connect(boost::bind(&CValidationInterface::SyncTransaction, pwalletIn, _1, _2));
-// XX42 g_signals.EraseTransaction.connect(boost::bind(&CValidationInterface::EraseFromWallet, pwalletIn, _1));
+    // XX42 g_signals.EraseTransaction.connect(boost::bind(&CValidationInterface::EraseFromWallet, pwalletIn, _1));
     g_signals.UpdatedTransaction.connect(boost::bind(&CValidationInterface::UpdatedTransaction, pwalletIn, _1));
     g_signals.SetBestChain.connect(boost::bind(&CValidationInterface::SetBestChain, pwalletIn, _1));
     g_signals.Inventory.connect(boost::bind(&CValidationInterface::Inventory, pwalletIn, _1));
@@ -655,8 +655,9 @@ CBlockIndex *FindForkInGlobalIndex(const CChain &chain, const CBlockLocator &loc
         BlockMap::iterator mi = mapBlockIndex.find(hash);
         if (mi != mapBlockIndex.end()) {
             CBlockIndex *pindex = (*mi).second;
-            if (chain.Contains(pindex))
+            if (pindex && chain.Contains(pindex)) {
                 return pindex;
+            }
         }
     }
     return chain.Genesis();
@@ -6687,7 +6688,8 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
             if (!mapBlockIndex.count(block.GetHash())) {
                 ProcessNewBlock(state, pfrom, &block);
                 int nDoS;
-                if (state.IsInvalid(nDoS)) {
+                if (state.IsInvalid(nDoS)) {                
+                    LogPrintf("\n%s: IsInvalid", __func__);
                     pfrom->PushMessage("reject", strCommand, state.GetRejectCode(),
                                        state.GetRejectReason().substr(0, MAX_REJECT_MESSAGE_LENGTH), inv.hash);
                     if (nDoS > 0) {
@@ -6696,7 +6698,9 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
                     }
                 }
                 //disconnect this node if its old protocol version
+                LogPrintf("\n%s: start DisconnectOldProtocol", __func__);
                 pfrom->DisconnectOldProtocol(ActiveProtocol(), strCommand);
+                LogPrintf("\n%s: end DisconnectOldProtocol", __func__);
             } else {
                 LogPrint("net", "%s : Already processed block %s, skipping ProcessNewBlock()\n", __func__,
                          block.GetHash().GetHex());
@@ -6946,6 +6950,8 @@ bool ProcessMessages(CNode *pfrom) {
     //
     bool fOk = true;
 
+    if (!pfrom) return false;
+
     if (!pfrom->vRecvGetData.empty())
         ProcessGetData(pfrom);
 
@@ -6957,7 +6963,6 @@ bool ProcessMessages(CNode *pfrom) {
         // Don't bother if send buffer is too full to respond anyway
         if (pfrom->nSendSize >= SendBufferSize())
             break;
-
         // get next message
         CNetMessage &msg = *it;
 
@@ -7040,7 +7045,6 @@ bool ProcessMessages(CNode *pfrom) {
     // In case the connection got shut down, its receive buffer was wiped
     if (!pfrom->fDisconnect)
         pfrom->vRecvMsg.erase(pfrom->vRecvMsg.begin(), it);
-
     return fOk;
 }
 

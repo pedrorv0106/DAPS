@@ -838,6 +838,9 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
             txData["type"] = QString("Minted");
             txData["amount"] = BitcoinUnits::format(0,  totalamount - totalIn); //absolute value of total amount
             break;
+        case TransactionRecord::MNReward:
+            txData["type"] = QString("Masternode");
+            break;     
         default:
             txData["type"] = QString("Unknown");
         }

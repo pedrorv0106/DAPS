@@ -102,7 +102,9 @@ void ECDHInfo::ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey
         return;
     }
 
-    if (currentHeight <= 32000) {
+    if (currentHeight != -1 && currentHeight <= 32000) {
+        sharedSec.Set(temp, temp + 65);
+    } if (currentHeight == -1 && chainActive.Tip()->nHeight <= 32000) {
         sharedSec.Set(temp, temp + 65);
     } else {
         sharedSec.Set(temp, temp + sharedSec.size());
@@ -2797,7 +2799,7 @@ bool CWallet::CreateTransactionBulletProof(const CPubKey& recipientViewKey, cons
                     CPubKey shared;
                     //CKey view;
                     //myViewPrivateKey(view);
-                    computeSharedSec(txNew, shared);
+                    computeSharedSec(txNew, shared, chainActive.Tip()->nHeight);
                     EncodeTxOutAmount(newTxOut, nChange, shared.begin());
                     // Never create dust outputs; if we would, just
                     // add the dust to the fee.
@@ -3230,13 +3232,13 @@ bool CWallet::CreateTransaction(CScript scriptPubKey, const CAmount& nValue, CWa
     return CreateTransaction(vecSend, wtxNew, reservekey, nFeeRet, strFailReason, coinControl, coin_type, useIX, nFeePay);
 }
 
-bool CWallet::computeSharedSec(const CTransaction& tx, CPubKey& sharedSec) const {
+bool CWallet::computeSharedSec(const CTransaction& tx, CPubKey& sharedSec, int currentHeight) const {
     if (tx.txType == TX_TYPE_REVEAL_AMOUNT || tx.txType == TX_TYPE_REVEAL_BOTH) {
         sharedSec.Set(tx.txPub.begin(), tx.txPub.end());
     } else {
         CKey view;
         myViewPrivateKey(view);
-        ECDHInfo::ComputeSharedSec(view, tx.txPub, sharedSec);
+        ECDHInfo::ComputeSharedSec(view, tx.txPub, sharedSec, currentHeight);
     }
     return true;
 }
@@ -3378,7 +3380,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
                             myViewPrivateKey(view);
                             mySpendPrivateKey(spend);
                             CPubKey sharedSec;
-                            computeSharedSec(*pcoin.first, sharedSec);
+                            computeSharedSec(*pcoin.first, sharedSec, pcoin.first->GetBlockHeight());
                             //iterates each utxo inside of CheckStakeKernelHash()
                             if (CheckStakeKernelHash(nBits, block, *pcoin.first, prevoutStake, sharedSec.begin(), nTxNewTime, nHashDrift, false, hashProofOfStake, true)) {
                                 LogPrintf("%s: Checking kernel success", __func__);
@@ -6298,25 +6300,30 @@ bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmou
     GetKeys(keyIDs);
     CPubKey sharedSec;
     BOOST_FOREACH(const CKeyID &keyID, keyIDs) {
-                    CKey privKey;
-                    GetKey(keyID, privKey);
-                    CScript scriptPubKey = GetScriptForDestination(privKey.GetPubKey());
-                    if (scriptPubKey == out.scriptPubKey) {
-                        //std::cout << "Revealing tx amout" << std::endl;
-                        CPubKey txPub(&(tx.txPub[0]), &(tx.txPub[0]) + 33);
-                        CKey view;
-                        if (myViewPrivateKey(view)
-                        ) {
-                            computeSharedSec(tx, sharedSec);
-                            uint256 val = out.maskValue.amount;
-                            uint256 mask = out.maskValue.mask;
-                            CKey decodedMask;
-                            ECDHInfo::Decode(mask.begin(), val.begin(), sharedSec, decodedMask, amount);
-                            amountMap[out.scriptPubKey] = amount;
-                            return true;
-                        }
-                    }
+        CKey privKey;
+        GetKey(keyID, privKey);
+        CScript scriptPubKey = GetScriptForDestination(privKey.GetPubKey());
+        if (scriptPubKey == out.scriptPubKey) {
+            //std::cout << "Revealing tx amout" << std::endl;
+            CPubKey txPub(&(tx.txPub[0]), &(tx.txPub[0]) + 33);
+            CKey view;
+            if (myViewPrivateKey(view)) {
+                CTransaction temp;
+                uint256 hashBlock;
+                int h = chainActive.Tip()->nHeight;
+                if (GetTransaction(tx.GetHash(), temp, hashBlock, true)) {
+                    h = mapBlockIndex[hashBlock]->nHeight;
                 }
+                computeSharedSec(tx, sharedSec, h);
+                uint256 val = out.maskValue.amount;
+                uint256 mask = out.maskValue.mask;
+                CKey decodedMask;
+                ECDHInfo::Decode(mask.begin(), val.begin(), sharedSec, decodedMask, amount);
+                amountMap[out.scriptPubKey] = amount;
+                return true;
+            }
+        }
+    }
 
     //Do we need to reconstruct the private to spend the tx out put?
     amount = 0;
