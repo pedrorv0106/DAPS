@@ -129,6 +129,13 @@ void ECDHInfo::Decode(unsigned char* encodedMask, unsigned char* encodedAmount, 
     memcpy(tempAmount, encodedAmount, 32);
     memcpy(tempDecoded, decodedMask.begin(), 32);
     ecdhDecode(tempDecoded, tempAmount, sharedSec.begin(), sharedSec.size());
+    memcpy(&decodedAmount, tempAmount, 8);
+    
+    if (!MoneyRange(decodedAmount)) {
+        LogPrintf("\nMoney not in range, caused by the wrong decoding key\n");
+        ecdhDecode(tempDecoded, tempAmount, sharedSec.begin(), 0);
+    }
+
     decodedMask.Set(tempDecoded, tempDecoded + 32, 32);
     memcpy(&decodedAmount, tempAmount, 8);
 }
@@ -6331,7 +6338,7 @@ bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmou
                 uint256 hashBlock;
                 int h = chainActive.Tip()->nHeight;
                 if (GetTransaction(tx.GetHash(), temp, hashBlock, true)) {
-                    if (hashBlockmapBlockIndex.count(hashBlock) == 1) {
+                    if (mapBlockIndex.count(hashBlock) == 1) {
                         if (mapBlockIndex[hashBlock] != NULL) {
                             h = mapBlockIndex[hashBlock]->nHeight;
                         }
