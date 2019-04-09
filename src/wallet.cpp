@@ -134,6 +134,7 @@ void ECDHInfo::Decode(unsigned char* encodedMask, unsigned char* encodedAmount, 
     if (!MoneyRange(decodedAmount)) {
         LogPrintf("\nMoney not in range, caused by the wrong decoding key\n");
         ecdhDecode(tempDecoded, tempAmount, sharedSec.begin(), 0);
+        LogPrintf("\nTransaction amount decoded = %d\n", tempAmount);
     }
 
     decodedMask.Set(tempDecoded, tempDecoded + 32, 32);
