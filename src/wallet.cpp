@@ -133,7 +133,8 @@ void ECDHInfo::Decode(unsigned char* encodedMask, unsigned char* encodedAmount, 
     
     if (!MoneyRange(decodedAmount)) {
         LogPrintf("\nMoney not in range, caused by the wrong decoding key\n");
-        ecdhDecode(tempDecoded, tempAmount, sharedSec.begin(), 0);
+        CPubKey fake;
+        ecdhDecode(tempDecoded, tempAmount, fake.begin(), fake.size());
         LogPrintf("\nTransaction amount decoded = %d\n", tempAmount);
     }
 
