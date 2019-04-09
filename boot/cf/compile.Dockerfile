@@ -21,9 +21,6 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         cd depends && \
         make HOST=x86_64-w64-mingw32 && \
         cd .. && \
-        mkdir -p depends/x86_64-w64-mingw32/include/chilkat-9.5.0 && \
-        cp depends/chilkat/include/* depends/x86_64-w64-mingw32/include/chilkat-9.5.0 && \
-        cp depends/chilkat/lib/* depends/x86_64-w64-mingw32/lib && \
         ./autogen.sh && \
         CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure --prefix=/ && \
         make -j2 && \
@@ -34,9 +31,6 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         cd depends && \
         make HOST=i686-w64-mingw32 && \
         cd .. && \
-        mkdir -p depends/i686-w64-mingw32/include/chilkat-9.5.0 && \
-        cp depends/chilkat/x86/include/* depends/i686-w64-mingw32/include/chilkat-9.5.0 && \
-        cp depends/chilkat/x86/lib/* depends/i686-w64-mingw32/lib && \
         ./autogen.sh && \
         CONFIG_SITE=$PWD/depends/i686-w64-mingw32/share/config.site ./configure --prefix=/ && \
         make -j2 && \
