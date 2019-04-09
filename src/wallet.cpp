@@ -2781,7 +2781,6 @@ bool CWallet::CreateTransactionBulletProof(const CPubKey& recipientViewKey, cons
                 }
 
                 CAmount nChange = nValueIn - nValue - nFeeRet;
-                std::cout << "change = " << nChange << std::endl;
 
                 //over pay for denominated transactions
                 if (coin_type == ONLY_DENOMINATED) {
@@ -2825,11 +2824,8 @@ bool CWallet::CreateTransactionBulletProof(const CPubKey& recipientViewKey, cons
                     CPubKey shared;
                     //CKey view;
                     //myViewPrivateKey(view);
-                    std::cout << "computing shared sec" << std::endl;
                     computeSharedSec(txNew, shared, chainActive.Tip()->nHeight);
-                                        std::cout << "encoding with shared sec" << std::endl;
                     EncodeTxOutAmount(newTxOut, nChange, shared.begin());
-                    std::cout << "encoded with shared sec" << std::endl;
                     // Never create dust outputs; if we would, just
                     // add the dust to the fee.
                     if (newTxOut.IsDust(::minRelayTxFee)) {
