@@ -2234,8 +2234,13 @@ bool CWallet::SelectCoins(const CAmount& nTargetValue, set<pair<const CWalletTx*
             //int cannotSpend = 0;
             //AvailableCoins(wtxid, pcoin, vCoins, cannotSpend, fOnlyConfirmed, coinControl, fIncludeZeroValue, nCoinType, fUseIX);
             for(int i = 0; i < pcoin->vout.size(); i++) {
-                if (!pcoin->vout[i].IsEmpty())
-                    vCoins.push_back(COutput(pcoin, i, nDepth, true));
+                if (pcoin->vout[i].IsEmpty()) continue;
+                isminetype mine = IsMine(pcoin->vout[i]);
+                if (mine == ISMINE_NO)
+                    continue;
+                if (mine == ISMINE_WATCH_ONLY)
+                    continue;
+                vCoins.push_back(COutput(pcoin, i, nDepth, true));
             }
         }
     }
