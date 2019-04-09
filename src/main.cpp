@@ -480,7 +480,7 @@ namespace {
 
         if (state->hashLastUnknownBlock != 0) {
             BlockMap::iterator itOld = mapBlockIndex.find(state->hashLastUnknownBlock);
-            if (itOld != mapBlockIndex.end() && itOld->second->nChainWork > 0) {
+            if (itOld != mapBlockIndex.end() && itOld->second != NULL && itOld->second->nChainWork > 0) {
                 if (state->pindexBestKnownBlock == NULL ||
                     itOld->second->nChainWork >= state->pindexBestKnownBlock->nChainWork)
                     state->pindexBestKnownBlock = itOld->second;
@@ -493,11 +493,10 @@ namespace {
     void UpdateBlockAvailability(NodeId nodeid, const uint256 &hash) {
         CNodeState *state = State(nodeid);
         assert(state != NULL);
-
         ProcessBlockAvailability(nodeid);
 
         BlockMap::iterator it = mapBlockIndex.find(hash);
-        if (it != mapBlockIndex.end() && it->second->nChainWork > 0) {
+        if (it != mapBlockIndex.end() && it->second != NULL && it->second->nChainWork > 0) {
             // An actually better block was announced.
             if (state->pindexBestKnownBlock == NULL ||
                 it->second->nChainWork >= state->pindexBestKnownBlock->nChainWork)
@@ -4851,7 +4850,7 @@ bool AcceptBlock(CBlock &block, CValidationState &state, CBlockIndex **ppindex, 
     CBlockIndex *pindexPrev = NULL;
     if (block.GetHash() != Params().HashGenesisBlock()) {
         BlockMap::iterator mi = mapBlockIndex.find(block.hashPrevBlock);
-        if (mi == mapBlockIndex.end())
+        if (mi == mapBlockIndex.end() || mi->second == NULL)
             return state.DoS(0, error("%s : prev block %s not found", __func__, block.hashPrevBlock.ToString().c_str()),
                              0, "bad-prevblk");
         pindexPrev = (*mi).second;
@@ -6126,7 +6125,6 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
         LogPrintf("dropmessagestest DROPPING RECV MESSAGE\n");
         return true;
     }
-
     if (strCommand == "version") {
         // Each connection can only send one version message
         if (pfrom->nVersion != 0) {
@@ -6354,7 +6352,6 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
 
             // Track requests for our stuff
             g_signals.Inventory(inv.hash);
-
             if (pfrom->nSendSize > (SendBufferSize() * 2)) {
                 Misbehaving(pfrom->GetId(), 50);
                 return error("send buffer size() = %u", pfrom->nSendSize);
@@ -6957,8 +6954,9 @@ bool ProcessMessages(CNode *pfrom) {
 
     if (!pfrom) return false;
 
-    if (!pfrom->vRecvGetData.empty())
+    if (!pfrom->vRecvGetData.empty()) {
         ProcessGetData(pfrom);
+    }
 
     // this maintains the order of responses
     if (!pfrom->vRecvGetData.empty()) return fOk;
@@ -7012,7 +7010,6 @@ bool ProcessMessages(CNode *pfrom) {
                       SanitizeString(strCommand), nMessageSize, nChecksum, hdr.nChecksum);
             continue;
         }
-
         // Process message
         bool fRet = false;
         try {
