@@ -792,6 +792,7 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
     }
 
     QList<TransactionRecord> decomposedTx = TransactionRecord::decomposeTransaction(wallet, tx);
+    std::string txHash = tx.GetHash().GetHex();
     QList<QString> addressBook = getAddressBookData(wallet);
     std::map<QString, QString> txData;
     for (TransactionRecord TxRecord : decomposedTx) {
@@ -799,10 +800,14 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
         // if address is in book, use data from book, else use data from transaction
         txData["address"]=""; 
         for (QString addressBookEntry : addressBook)
-            if (addressBookEntry.contains(TxRecord.address.c_str()))
+            if (addressBookEntry.contains(TxRecord.address.c_str())) {
                 txData["address"] = addressBookEntry;
-        if (!txData["address"].length())
+                wallet->addrToTxHashMap[addressBookEntry.toStdString()] = txHash;
+            }
+        if (!txData["address"].length()) {
             txData["address"] = QString(TxRecord.address.c_str());
+            wallet->addrToTxHashMap[TxRecord.address] = txHash;
+        }
         //
         // CAmount amount = TxRecord.credit + TxRecord.debit;
         txData["amount"] = BitcoinUnits::format(0, totalamount); //absolute value of total amount

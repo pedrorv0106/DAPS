@@ -598,7 +598,7 @@ void CWallet::AddToSpends(const uint256& wtxid)
         return;
 
     BOOST_FOREACH (const CTxIn& txin, thisTx.vin)
-    AddToSpends(txin.prevout, wtxid);
+        AddToSpends(txin.prevout, wtxid);
 }
 
 bool CWallet::GetMasternodeVinAndKeys(CTxIn& txinRet, CPubKey& pubKeyRet, CKey& keyRet, std::string strTxHash, std::string strOutputIndex)

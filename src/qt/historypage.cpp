@@ -64,7 +64,7 @@ void HistoryPage::initWidgets()
     //adjust qt paint flags
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableView->setAttribute(Qt::WA_TranslucentBackground, true);
-    connect(ui->tableView, SIGNAL(cellClicked(int, int)), this, SLOT(on_cellClicked(int, int)));
+    connect(ui->tableView, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(on_cellClicked(int, int)));
 
     //set date formats and init date from current timestamp
     ui->dateTimeEditTo->setDisplayFormat("M/d/yy");
@@ -108,10 +108,14 @@ void HistoryPage::on_cellClicked(int row, int column)
     //2 is column index for address
     QTableWidgetItem* cell = ui->tableView->item(row, 2);
     QString address = cell->data(0).toString();
-    std::string stdAddress = address.toStdString();
-    LogPrintf("\nSelected address %s\n", stdAddress);
+    std::string stdAddress = address.trimmed().toStdString();
     if (pwalletMain->addrToTxHashMap.count(stdAddress) == 1) {
-        QMessageBox(QMessageBox::Information, tr("Transaction Hash"), tr(pwalletMain->addrToTxHashMap[stdAddress].c_str()), QMessageBox::Ok).exec();
+        QMessageBox txHashShow;
+        txHashShow.setText("Transaction Hash.");
+        txHashShow.setInformativeText(pwalletMain->addrToTxHashMap[stdAddress].c_str());
+        txHashShow.setStyleSheet(GUIUtil::loadStyleSheet());
+        txHashShow.setStyleSheet("QMessageBox {messagebox-text-interaction-flags: 5;}");
+        txHashShow.exec();
     }
 }
 
