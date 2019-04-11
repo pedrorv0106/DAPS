@@ -6,7 +6,7 @@ ENV SRC_IMG=${SRC_PATH}:${OS_VERSION}
 
 #INSTALL COMMON ESSENTIAL
 RUN apt-get update && \
-    apt-get install autotools-dev build-essential autoconf make automake openssl wget -y --fix-missing && \
+    apt-get install autotools-dev build-essential autoconf make automake openssl wget nsis -y --fix-missing && \
     apt-get install gnupg software-properties-common debconf dialog apt-utils gcc-5 bsdmainutils curl git -y --fix-missing
 
 #INSTALL BC

@@ -19,7 +19,7 @@ RUN su && cd /DAPS/depends &&  \
 #    
     if [ "$BUILD_TARGET" = "windowsx64" ]; \
       then echo "Building dependencies for Windows 64-bit cross-compile (x86_64-w64-mingw32)..." && \
-        DEBIAN_FRONTEND=noninteractive apt-get install g++-mingw-w64-x86-64 -y --fix-missing && \
+        DEBIAN_FRONTEND=noninteractive apt-get install g++-mingw-w64-x86-64 nsis -y --fix-missing && \
         #use posix G++ compiler
         echo "1\n" | update-alternatives --config x86_64-w64-mingw32-g++; \
         #strip PATH
@@ -30,7 +30,7 @@ RUN su && cd /DAPS/depends &&  \
 #
     elif [ "$BUILD_TARGET" = "windowsx86" ]; \
       then echo "Building dependencies for Windows 32-bit cross-compile (i686-w64-mingw32)..." && \
-        DEBIAN_FRONTEND=noninteractive apt-get install g++-mingw-w64-i686 mingw-w64-i686-dev -y --fix-missing && \
+        DEBIAN_FRONTEND=noninteractive apt-get install g++-mingw-w64-i686 mingw-w64-i686-dev nsis -y --fix-missing && \
         #use posix G++ compiler
         echo "1\n" | update-alternatives --config i686-w64-mingw32-g++; \
         #strip PATH
