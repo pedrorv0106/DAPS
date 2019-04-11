@@ -44,6 +44,13 @@ RUN su && cd /DAPS/depends &&  \
         make HOST=x86_64-pc-linux-gnu -j2 && \
         echo -e "Linux (x86_64-pc-linux-gnu) Dependencies Build complete."; \
 #
+	elif [ "$BUILD_TARGET" = "linux64" ]; \
+      then echo "Building dependencies for Linux ARM 64-bit (aarch64-linux-gnu)..." && \
+        DEBIAN_FRONTEND=noninteractive apt-get install g++-aarch64-linux-gnu binutils-aarch64-linux-gnu -y --fix-missing && \
+        #make dependencies
+        make HOST=aarch64-linux-gnu -j2 && \
+        echo -e "Linux ARM 64-bit (aarch64-linux-gnu) Dependencies Build complete."; \		
+#
     elif [ "$BUILD_TARGET" = "mac" ]; \
       then echo "Building dependencies for mac cross-compile..." && \
         DEBIAN_FRONTEND=noninteractive apt-get install python-setuptools dpkg-dev libdvdnav-dev libcap-dev cmake libleveldb-dev clang clang++-3.8 libfuse-dev libbz2-dev librsvg2-bin libtiff-tools imagemagick expect libssl1.0-dev -y --fix-missing && \
