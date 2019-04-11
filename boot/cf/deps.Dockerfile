@@ -64,7 +64,7 @@ RUN su && cd /DAPS/depends &&  \
         #GET MacOS SDK
         mkdir -p SDKs && \
         curl -LO "https://github.com/phracker/MacOSX-SDKs/releases/download/MacOSX10.11.sdk/MacOSX10.11.sdk.tar.xz" && \
-        tar xvf MacOSX10.11.sdk.tar.xz -C ./SDKs/ && \
+        tar xf MacOSX10.11.sdk.tar.xz -C ./SDKs/ && \
         make HOST="x86_64-apple-darwin11" DARWIN_SDK_PATH=$PWD/SDKs/MacOSX10.11.sdk/ -j2 || true && \
         echo "MacOS (x86_64-apple-darwin11) Dependencies Build complete."; \
 #
