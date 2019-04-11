@@ -44,12 +44,19 @@ RUN su && cd /DAPS/depends &&  \
         make HOST=x86_64-pc-linux-gnu -j2 && \
         echo -e "Linux (x86_64-pc-linux-gnu) Dependencies Build complete."; \
 #
-	elif [ "$BUILD_TARGET" = "linux64" ]; \
+	elif [ "$BUILD_TARGET" = "linuxarm64" ]; \
       then echo "Building dependencies for Linux ARM 64-bit (aarch64-linux-gnu)..." && \
         DEBIAN_FRONTEND=noninteractive apt-get install g++-aarch64-linux-gnu binutils-aarch64-linux-gnu -y --fix-missing && \
         #make dependencies
         make HOST=aarch64-linux-gnu -j2 && \
-        echo -e "Linux ARM 64-bit (aarch64-linux-gnu) Dependencies Build complete."; \		
+        echo -e "Linux ARM 64-bit (aarch64-linux-gnu) Dependencies Build complete."; \
+#
+    elif [ "$BUILD_TARGET" = "linuxarm32" ]; \
+      then echo "Building dependencies for Linux ARM 32-bit (arm-linux-gnueabihf)..." && \
+        DEBIAN_FRONTEND=noninteractive apt-get install g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf -y --fix-missing && \
+        #make dependencies
+        make HOST=arm-linux-gnueabihf -j2 && \
+        echo -e "Linux (arm-linux-gnueabihf) Dependencies Build complete."; \
 #
     elif [ "$BUILD_TARGET" = "mac" ]; \
       then echo "Building dependencies for mac cross-compile..." && \
