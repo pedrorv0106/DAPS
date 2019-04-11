@@ -1505,14 +1505,13 @@ void ThreadMessageHandler() {
             if (!pnode) continue;
             if (pnode->fDisconnect)
                 continue;
-
             // Receive messages
             {
                 TRY_LOCK(pnode->cs_vRecvMsg, lockRecv);
                 if (lockRecv) {
-                    if (!g_signals.ProcessMessages(pnode))
+                    if (!g_signals.ProcessMessages(pnode)) {
                         pnode->CloseSocketDisconnect();
-
+                    }
                     if (pnode->nSendSize < SendBufferSize()) {
                         if (!pnode->vRecvGetData.empty() ||
                             (!pnode->vRecvMsg.empty() && pnode->vRecvMsg[0].complete())) {
@@ -1522,7 +1521,6 @@ void ThreadMessageHandler() {
                 }
             }
             boost::this_thread::interruption_point();
-
             // Send messages
             {
                 TRY_LOCK(pnode->cs_vSend, lockSend);
@@ -1531,7 +1529,6 @@ void ThreadMessageHandler() {
             }
             boost::this_thread::interruption_point();
         }
-
 
         {
             LOCK(cs_vNodes);

@@ -41,9 +41,9 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
     contextMenu->addAction(copyAmountAction);
 
     // context menu signals
-    connect(copyLabelAction, SIGNAL(triggered()), this, SLOT(copyLabel()));
-    connect(copyMessageAction, SIGNAL(triggered()), this, SLOT(copyMessage()));
-    connect(copyAmountAction, SIGNAL(triggered()), this, SLOT(copyAmount()));
+    //connect(copyLabelAction, SIGNAL(triggered()), this, SLOT(copyLabel()));
+    //connect(copyMessageAction, SIGNAL(triggered()), this, SLOT(copyMessage()));
+    //connect(copyAmountAction, SIGNAL(triggered()), this, SLOT(copyAmount()));
 
     // Show privacy account address
     ui->lineEditAddress->setStyleSheet("border:none; background: transparent; text-align:center;");
