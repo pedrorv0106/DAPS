@@ -776,9 +776,9 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
         if (mi != wallet->mapWallet.end()) {
             const CWalletTx& prev = (*mi).second;
             if (in.prevout.n < prev.vout.size()) {
-                if (pwalletMain->IsMine(prev.vout[in.prevout.n])) {
+                if (wallet->IsMine(prev.vout[in.prevout.n])) {
                     CAmount decodedAmount = 0;
-                    pwalletMain->RevealTxOutAmount(prev, prev.vout[in.prevout.n], decodedAmount);
+                    wallet->RevealTxOutAmount(prev, prev.vout[in.prevout.n], decodedAmount);
                     totalIn += decodedAmount;
                 }
             }
