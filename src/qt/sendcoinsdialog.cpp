@@ -115,8 +115,8 @@ void SendCoinsDialog::on_sendButton_clicked(){
             } else if (recipient.amount > nReserveBalance) {
                 QMessageBox(QMessageBox::Information, tr("Warning"), tr("Insufficient Reserve Funds! Send with smaller amount or turn off staking mode"), QMessageBox::Ok).exec();
             }
+            return;
         }
-        return;
     }
 
     CWalletTx resultTx; 
