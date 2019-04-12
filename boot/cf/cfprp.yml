@@ -6,7 +6,7 @@ stages:
   - MacOS
 steps:
   BuildingOSLibs:
-    title: Building OS and Libs- Ubuntu 16.04
+    title: Building OS and Libs for Ubuntu 16.04
     type: build
     image_name: build_os_libs
     working_directory: ./
@@ -17,7 +17,7 @@ steps:
       - OS_VERSION=16.04
     stage: OS
   BuildingOSLibs18:
-    title: Building OS and Libs- Ubuntu 18.04
+    title: Building OS and Libs for Ubuntu 18.04
     type: build
     image_name: build_os_libs_18
     working_directory: ./
@@ -28,7 +28,7 @@ steps:
       - OS_VERSION=18.04
     stage: OS
   BuildingDepenencies:
-    title: Building Dependencies
+    title: Building Dependencies for Linux
     type: build
     image_name: build_deps
     working_directory: ./
@@ -39,7 +39,7 @@ steps:
       - SRC_TAG=${{CF_BRANCH_TAG_NORMALIZED}}
     stage: Linux
   BuildingDepenenciesWinx86:
-    title: Building Dependencies for WindowsX86
+    title: Building Dependencies for Windows 32-bit
     type: build
     image_name: build_deps_winx86
     working_directory: ./
@@ -52,7 +52,7 @@ steps:
       - SRC_NAME=build_os_libs_18
     stage: Windows
   BuildingDepenenciesWinx64:
-    title: Building Dependencies for WindowsX64
+    title: Building Dependencies for Windows 64-bit
     type: build
     image_name: build_deps_winx64
     working_directory: ./

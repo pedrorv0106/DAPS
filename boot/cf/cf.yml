@@ -8,7 +8,7 @@ stages:
   - Deploy
 steps:
   BuildingDAPSWinx64:
-    title: Building DAPS for Windows x64
+    title: Building DAPS for Windows 64-bit
     type: build
     image_name: build_src_winx64
     working_directory: ./
@@ -22,7 +22,7 @@ steps:
       - BUILD_TARGET=windowsx64
       - SRC_NAME=build_deps_winx64
   SaveBinWinx64:
-    title: Saving Executables for Windows x64
+    title: Saving Executables for Windows 64-bit
     image: r.cfcr.io/hysmagus/build_src_winx64:${{CF_BRANCH_TAG_NORMALIZED}}
     working_directory: ./
     commands: 
@@ -46,7 +46,7 @@ steps:
       - gsutil cp -r /codefresh/volume/out/bin/* gs://daps-builds/${{CF_BRANCH_TAG_NORMALIZED}}/
       - rm -rf /codefresh/volume/out/*
   BuildingDAPSWinx86:
-    title: Building DAPS for Windows x86
+    title: Building DAPS for Windows 32-bit
     type: build
     image_name: build_src_winx86
     working_directory: ./
@@ -60,7 +60,7 @@ steps:
       - BUILD_TARGET=windowsx86
       - SRC_NAME=build_deps_winx86
   SaveBinWinx86:
-    title: Saving Executables for Windows x86
+    title: Saving Executables for Windows 32-bit
     image: r.cfcr.io/hysmagus/build_src_winx86:${{CF_BRANCH_TAG_NORMALIZED}}
     working_directory: ./
     commands: 
@@ -120,7 +120,7 @@ steps:
       - gsutil cp -r /codefresh/volume/out/bin/* gs://daps-builds/${{CF_BRANCH_TAG_NORMALIZED}}/
       - rm -rf /codefresh/volume/out/*
   BuildingDAPS:
-    title: Building DAPS
+    title: Building DAPS for Linux
     type: build
     image_name: build_src
     working_directory: ./
