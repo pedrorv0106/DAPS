@@ -102,13 +102,13 @@ void ECDHInfo::ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey
         return;
     }
 
-    if (currentHeight != -1 && currentHeight <= 32000) {
+    /*if (currentHeight != -1 && currentHeight <= 32000) {
         sharedSec.Set(temp, temp + 65);
     } if (currentHeight == -1 && chainActive.Tip()->nHeight <= 32000) {
         sharedSec.Set(temp, temp + 65);
-    } else {
-        sharedSec.Set(temp, temp + sharedSec.size());
-    }
+    } else {*/
+    sharedSec.Set(temp, temp + 33);
+    //}
 }
 
 void ECDHInfo::Encode(const CKey& mask, const CAmount& amount, const CPubKey& sharedSec, uint256& encodedMask, uint256& encodedAmount)
@@ -132,10 +132,10 @@ void ECDHInfo::Decode(unsigned char* encodedMask, unsigned char* encodedAmount, 
     memcpy(&decodedAmount, tempAmount, 8);
     
     if (!MoneyRange(decodedAmount)) {
-        CPubKey fake;
+        CPubKey constantKey;
         memcpy(tempAmount, encodedAmount, 32);
         memcpy(tempDecoded, decodedMask.begin(), 32);
-        ecdhDecode(tempDecoded, tempAmount, fake.begin(), fake.size());
+        ecdhDecode(tempDecoded, tempAmount, constantKey.begin(), constantKey.size());
     }
 
     decodedMask.Set(tempDecoded, tempDecoded + 32, 32);
@@ -6349,13 +6349,13 @@ bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmou
                 CTransaction temp;
                 uint256 hashBlock;
                 int h = chainActive.Tip()->nHeight;
-                if (GetTransaction(tx.GetHash(), temp, hashBlock, true)) {
+                /*if (GetTransaction(tx.GetHash(), temp, hashBlock, true)) {
                     if (mapBlockIndex.count(hashBlock) == 1) {
                         if (mapBlockIndex[hashBlock] != NULL) {
                             h = mapBlockIndex[hashBlock]->nHeight;
                         }
                     }
-                }
+                }*/
                 computeSharedSec(tx, sharedSec, h);
                 uint256 val = out.maskValue.amount;
                 uint256 mask = out.maskValue.mask;
