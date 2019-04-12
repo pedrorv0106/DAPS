@@ -64,7 +64,7 @@ RUN cd /BUILD/ && \
     #files only
     find ./ -type f | \
     #flatten
-    tar cvf - --transform 's/.*\///g' --files-from=/dev/stdin | \
+    tar pcvf - --transform 's/.*\///g' --files-from=/dev/stdin | \
     #compress
     xz -9 - > $DESTDIR$BUILD_TARGET.tar.xz
 
