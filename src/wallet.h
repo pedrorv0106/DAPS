@@ -447,6 +447,7 @@ public:
     std::map<uint256, int> mapRequestCount;
 
     std::map<CTxDestination, CAddressBookData> mapAddressBook;
+    std::map<std::string, std::string> addrToTxHashMap;
 
     CPubKey vchDefaultKey;
 
