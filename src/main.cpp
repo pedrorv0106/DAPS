@@ -312,7 +312,7 @@ bool IsKeyImageSpend2(const std::string& kiHex, int kd, int nHeight) {
                 for (int j = 0; j < block.vtx[i].vin.size(); j++) {
                     if (block.vtx[i].vin[j].keyImage.GetHex() == kiHex) {
                         LogPrintf("%s: keyimage spent in nHeight=%d", __func__, kd);
-if (pwalletMain) {
+                        if (pwalletMain) {
                             pwalletMain->keyImagesSpends[kiHex] = true;
                         }
                         return true;
@@ -480,6 +480,10 @@ namespace {
 
         if (state->hashLastUnknownBlock != 0) {
             BlockMap::iterator itOld = mapBlockIndex.find(state->hashLastUnknownBlock);
+            if (itOld != mapBlockIndex.end() && itOld->second == NULL) {
+                mapBlockIndex.erase(itOld);
+            }
+            itOld = mapBlockIndex.find(state->hashLastUnknownBlock);
             if (itOld != mapBlockIndex.end() && itOld->second->nChainWork > 0) {
                 if (state->pindexBestKnownBlock == NULL ||
                     itOld->second->nChainWork >= state->pindexBestKnownBlock->nChainWork)
@@ -493,10 +497,12 @@ namespace {
     void UpdateBlockAvailability(NodeId nodeid, const uint256 &hash) {
         CNodeState *state = State(nodeid);
         assert(state != NULL);
-
         ProcessBlockAvailability(nodeid);
-
         BlockMap::iterator it = mapBlockIndex.find(hash);
+        if (it != mapBlockIndex.end() && it->second == NULL) {
+            mapBlockIndex.erase(it);
+        }
+        it = mapBlockIndex.find(hash);
         if (it != mapBlockIndex.end() && it->second->nChainWork > 0) {
             // An actually better block was announced.
             if (state->pindexBestKnownBlock == NULL ||
@@ -3289,7 +3295,6 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
     unsigned int nMaxBlockSigOps = MAX_BLOCK_SIGOPS_CURRENT;
     for (unsigned int i = 0; i < block.vtx.size(); i++) {
         const CTransaction &tx = block.vtx[i];
-        LogPrintf("%s: tx hash %s", __func__, tx.GetHash().GetHex());
         nInputs += tx.vin.size();
         nSigOps += GetLegacySigOpCount(tx);
         if (!block.IsPoABlockByVersion() && nSigOps > nMaxBlockSigOps)
@@ -3355,28 +3360,23 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
             for (CTxIn in : tx.vin) {
                 const CKeyImage& keyImage = in.keyImage;
                 std::string kh = keyImage.GetHex();
-                LogPrintf("%s: checking key image %s", __func__, kh);
                 if (IsKeyImageSpend1(kh, pindex->nHeight)) {
                     return state.Invalid(error("ConnectBlock() : key image already spent"),
                                          REJECT_DUPLICATE, "bad-txns-inputs-spent");
                 }
                 int kd = pindex->nHeight;
-                LogPrintf("%s: writing key image %s", __func__, kh);
                 pblocktree->WriteKeyImage(keyImage.GetHex(), kd);
-                LogPrintf("%s: done writing key image %s", __func__, kh);
                 if (pwalletMain != NULL) {
                     if (pwalletMain->GetDebit(in, ISMINE_ALL)) {
                         pwalletMain->keyImagesSpends[keyImage.GetHex()] = true;
                     }
                     pwalletMain->pendingKeyImages.remove(keyImage.GetHex());
                 }
-                LogPrintf("%s: checking valid point %s", __func__, kh);
                 if (!ValidOutPoint(in.prevout, pindex->nHeight)) {
                     return state.DoS(100, error("%s : tried to spend invalid input %s in tx %s", __func__,
                                                 in.prevout.ToString(),
                                                 tx.GetHash().GetHex()), REJECT_INVALID, "bad-txns-invalid-inputs");
                 }
-                LogPrintf("%s: done checking valid point %s", __func__, kh);
             }
 
             if (fStrictPayToScriptHash) {
@@ -3664,7 +3664,7 @@ void static UpdateTip(CBlockIndex *pindexNew) {
     chainActive.SetTip(pindexNew);
 
     // If turned on AutoZeromint will automatically convert DAPS to zDAPS
-    if (pwalletMain->isZeromintEnabled())
+    if (pwalletMain && pwalletMain->isZeromintEnabled())
         pwalletMain->AutoZeromint();
 
     // New best block
@@ -4209,6 +4209,7 @@ CBlockIndex *AddToBlockIndex(const CBlock &block) {
     // to avoid miners withholding blocks but broadcasting headers, to get a
     // competitive advantage.
     pindexNew->nSequenceId = 0;
+    LogPrintf("\n%s: hash=%s\n", __func__, block.GetHash().GetHex());
     BlockMap::iterator mi = mapBlockIndex.insert(make_pair(hash, pindexNew)).first;
 
     //mark as PoS seen
@@ -4584,6 +4585,7 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
     LogPrintf("%s:Check block payee\n", __func__);
     // masternode payments / budgets
     CBlockIndex *pindexPrev = chainActive.Tip();
+    LogPrintf("%s: chain height = %d, new hash=%s\n", __func__, chainActive.Height(), block.GetHash().GetHex());
     int nHeight = 0;
     if (pindexPrev != NULL) {
         if (pindexPrev->GetBlockHash() == block.hashPrevBlock) {
@@ -4610,8 +4612,10 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
             if (fDebug)
                 LogPrintf("CheckBlock(): Masternode payment check skipped on sync - skipping IsBlockPayeeValid()\n");
         }
+    } else {
+        LogPrintf("\n%s: chain active is NULL\n", __func__);
     }
-	LogPrintf("%s: Cchecking transactions, height=%d", __func__, nHeight);
+	LogPrintf("%s: Checking transactions, height=%d", __func__, nHeight);
     // Check transactions
     bool fZerocoinActive = block.GetBlockTime() > Params().Zerocoin_StartTime();
     vector <CBigNum> vBlockSerials;
@@ -4846,12 +4850,12 @@ bool AcceptBlock(CBlock &block, CValidationState &state, CBlockIndex **ppindex, 
     AssertLockHeld(cs_main);
 
     CBlockIndex *&pindex = *ppindex;
-    LogPrintf("%s: checking previous block index", __func__);
+    LogPrintf("%s: checking previous block index, chain height = %d", __func__, chainActive.Height());
     // Get prev block index
     CBlockIndex *pindexPrev = NULL;
     if (block.GetHash() != Params().HashGenesisBlock()) {
         BlockMap::iterator mi = mapBlockIndex.find(block.hashPrevBlock);
-        if (mi == mapBlockIndex.end())
+        if (mi == mapBlockIndex.end() || mi->second == NULL)
             return state.DoS(0, error("%s : prev block %s not found", __func__, block.hashPrevBlock.ToString().c_str()),
                              0, "bad-prevblk");
         pindexPrev = (*mi).second;
@@ -5002,7 +5006,7 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
     if (!pblock->IsPoABlockByVersion() && !pblock->CheckBlockSignature())
         return error("ProcessNewBlock() : bad proof-of-stake block signature");
 
-LogPrintf("%s: checking previous block", __func__);
+    LogPrintf("%s: checking previous block, hash = %s", __func__, pblock->GetHash().GetHex());
     if (pblock->GetHash() != Params().HashGenesisBlock() && pfrom != NULL) {
         //if we get this far, check if the prev block is our prev block, if not then request sync and return false
         BlockMap::iterator mi = mapBlockIndex.find(pblock->hashPrevBlock);
@@ -6126,7 +6130,6 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
         LogPrintf("dropmessagestest DROPPING RECV MESSAGE\n");
         return true;
     }
-
     if (strCommand == "version") {
         // Each connection can only send one version message
         if (pfrom->nVersion != 0) {
@@ -6142,7 +6145,6 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
                               !pSporkDB->SporkExists(SPORK_16_ZEROCOIN_MAINTENANCE_MODE);
 
         if (fMissingSporks || !fRequestedSporksIDB) {
-            LogPrintf("asking peer for sporks\n");
             pfrom->PushMessage("getsporks");
             fRequestedSporksIDB = true;
         }
@@ -6200,11 +6202,9 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
             if (fListen && !IsInitialBlockDownload()) {
                 CAddress addr = GetLocalAddress(&pfrom->addr);
                 if (addr.IsRoutable()) {
-                    LogPrintf("ProcessMessages: advertizing address %s\n", addr.ToString());
                     pfrom->PushAddress(addr);
                 } else if (IsPeerAddrLocalGood(pfrom)) {
                     addr.SetIP(pfrom->addrLocal);
-                    LogPrintf("ProcessMessages: advertizing address %s\n", addr.ToString());
                     pfrom->PushAddress(addr);
                 }
             }
@@ -6328,7 +6328,6 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
         LOCK(cs_main);
 
         std::vector <CInv> vToFetch;
-
         for (unsigned int nInv = 0; nInv < vInv.size(); nInv++) {
             const CInv &inv = vInv[nInv];
 
@@ -6337,10 +6336,9 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
 
             bool fAlreadyHave = AlreadyHave(inv);
             LogPrint("net", "got inv: %s  %s peer=%d\n", inv.ToString(), fAlreadyHave ? "have" : "new", pfrom->id);
-
+            
             if (!fAlreadyHave && !fImporting && !fReindex && inv.type != MSG_BLOCK)
                 pfrom->AskFor(inv);
-
 
             if (inv.type == MSG_BLOCK) {
                 UpdateBlockAvailability(pfrom->GetId(), inv.hash);
@@ -6354,7 +6352,6 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
 
             // Track requests for our stuff
             g_signals.Inventory(inv.hash);
-
             if (pfrom->nSendSize > (SendBufferSize() * 2)) {
                 Misbehaving(pfrom->GetId(), 50);
                 return error("send buffer size() = %u", pfrom->nSendSize);
@@ -6672,6 +6669,11 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
         vRecv >> block;
         uint256 hashBlock = block.GetHash();
         CInv inv(MSG_BLOCK, hashBlock);
+        static int showed = 0;
+        //if (chainActive.Height() <= 900 && showed <= 1000) {
+            //showed++;
+            //LogPrintf("\n%s: block=%s, height = %d\n", __func__, block.GetHash().GetHex(), chainActive.Height());
+        //}        
         LogPrint("net", "received block %s peer=%d\n", inv.hash.ToString(), pfrom->id);
 
         //sometimes we will be sent their most recent block and its not the one we want, in that case tell where we are
@@ -6688,13 +6690,11 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
             }
         } else {
             pfrom->AddInventoryKnown(inv);
-
             CValidationState state;
             if (!mapBlockIndex.count(block.GetHash())) {
                 ProcessNewBlock(state, pfrom, &block);
                 int nDoS;
                 if (state.IsInvalid(nDoS)) {                
-                    LogPrintf("\n%s: IsInvalid", __func__);
                     pfrom->PushMessage("reject", strCommand, state.GetRejectCode(),
                                        state.GetRejectReason().substr(0, MAX_REJECT_MESSAGE_LENGTH), inv.hash);
                     if (nDoS > 0) {
@@ -6703,9 +6703,7 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
                     }
                 }
                 //disconnect this node if its old protocol version
-                LogPrintf("\n%s: start DisconnectOldProtocol", __func__);
                 pfrom->DisconnectOldProtocol(ActiveProtocol(), strCommand);
-                LogPrintf("\n%s: end DisconnectOldProtocol", __func__);
             } else {
                 LogPrint("net", "%s : Already processed block %s, skipping ProcessNewBlock()\n", __func__,
                          block.GetHash().GetHex());
@@ -6957,8 +6955,9 @@ bool ProcessMessages(CNode *pfrom) {
 
     if (!pfrom) return false;
 
-    if (!pfrom->vRecvGetData.empty())
+    if (!pfrom->vRecvGetData.empty()) {
         ProcessGetData(pfrom);
+    }
 
     // this maintains the order of responses
     if (!pfrom->vRecvGetData.empty()) return fOk;
@@ -7012,7 +7011,6 @@ bool ProcessMessages(CNode *pfrom) {
                       SanitizeString(strCommand), nMessageSize, nChecksum, hdr.nChecksum);
             continue;
         }
-
         // Process message
         bool fRet = false;
         try {

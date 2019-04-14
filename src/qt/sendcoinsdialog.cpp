@@ -115,8 +115,8 @@ void SendCoinsDialog::on_sendButton_clicked(){
             } else if (recipient.amount > nReserveBalance) {
                 QMessageBox(QMessageBox::Information, tr("Warning"), tr("Insufficient Reserve Funds! Send with smaller amount or turn off staking mode"), QMessageBox::Ok).exec();
             }
+            return;
         }
-        return;
     }
 
     CWalletTx resultTx; 
@@ -151,8 +151,8 @@ SendCoinsEntry* SendCoinsDialog::addEntry()
     SendCoinsEntry* entry = new SendCoinsEntry(this);
     entry->setModel(model);
     ui->entries->addWidget(entry);
-    connect(entry, SIGNAL(removeEntry(SendCoinsEntry*)), this, SLOT(removeEntry(SendCoinsEntry*)));
-    connect(entry, SIGNAL(payAmountChanged()), this, SLOT(coinControlUpdateLabels()));
+    //connect(entry, SIGNAL(removeEntry(SendCoinsEntry*)), this, SLOT(removeEntry(SendCoinsEntry*)));
+    //connect(entry, SIGNAL(payAmountChanged()), this, SLOT(coinControlUpdateLabels()));
 
     ui->scrollAreaWidgetContents->resize(ui->scrollAreaWidgetContents->sizeHint());
     qApp->processEvents();
