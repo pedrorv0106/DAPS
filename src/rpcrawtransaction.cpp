@@ -241,9 +241,9 @@ Value getrawtransaction(const Array& params, bool fHelp)
     uint256 hashBlock = 0;
     if (!GetTransaction(hash, tx, hashBlock, true))
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available about transaction");
-    std::cout << "read tx" << std::endl;
+    //std::cout << "read tx" << std::endl;
     string strHex = EncodeHexTx(tx);
-    std::cout << "encode tx" << std::endl;
+    //std::cout << "encode tx" << std::endl;
     if (!fVerbose)
         return strHex;
 
@@ -329,7 +329,7 @@ Value listunspent(const Array& params, bool fHelp)
                 continue;
         }
 
-        CAmount nValue = out.tx->vout[out.i].nValue;
+        CAmount nValue = pwalletMain->getCTxOutValue(*out.tx, out.tx->vout[out.i]);
         const CScript& pk = out.tx->vout[out.i].scriptPubKey;
         Object entry;
         entry.push_back(Pair("txid", out.tx->GetHash().GetHex()));

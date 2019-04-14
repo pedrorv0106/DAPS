@@ -70,7 +70,7 @@
            <string>An optional amount to request. Leave this empty or zero to not request a specific amount.</string>
           </property>
           <property name="text">
-           <string>&amp;Amount:</string>
+           <string>Amount:</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

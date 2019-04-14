@@ -298,6 +298,9 @@ public:
 
     CAmount nTxFee;
 
+    uint256 c;
+    std::vector<std::vector<uint256>> S;
+
     /** Construct a CTransaction that qualifies as IsNull() */
     CTransaction();
 
@@ -325,6 +328,9 @@ public:
         }
         READWRITE(bulletproofs);
         READWRITE(nTxFee);
+        
+        READWRITE(c);
+        READWRITE(S);
         if (ser_action.ForRead())
             UpdateHash();
     }
@@ -440,6 +446,8 @@ struct CMutableTransaction
     std::vector<unsigned char> bulletproofs;
 
     CAmount nTxFee;
+    uint256 c;
+    std::vector<std::vector<uint256>> S;
 
     CMutableTransaction();
     CMutableTransaction(const CTransaction& tx);
@@ -465,6 +473,8 @@ struct CMutableTransaction
         READWRITE(bulletproofs);
 
         READWRITE(nTxFee);
+        READWRITE(c);
+        READWRITE(S);
     }
 
     /** Compute the hash of this CMutableTransaction. This is computed on the

@@ -28,12 +28,6 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
 {
     ui->setupUi(this);
 
-#ifdef Q_OS_MAC // Icons on push buttons are very uncommon on Mac
-    // #REMOVE ui->clearButton->setIcon(QIcon());
-    ui->receiveButton->setIcon(QIcon());
-    // #REMOVE ui->showRequestButton->setIcon(QIcon());
-    // #REMOVE ui->removeRequestButton->setIcon(QIcon());
-#endif
 
     // context menu actions
     QAction* copyLabelAction = new QAction(tr("Copy label"), this);
@@ -47,10 +41,9 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
     contextMenu->addAction(copyAmountAction);
 
     // context menu signals
-    // #REMOVE connect(ui->recentRequestsView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showMenu(QPoint)));
-    connect(copyLabelAction, SIGNAL(triggered()), this, SLOT(copyLabel()));
-    connect(copyMessageAction, SIGNAL(triggered()), this, SLOT(copyMessage()));
-    connect(copyAmountAction, SIGNAL(triggered()), this, SLOT(copyAmount()));
+    //connect(copyLabelAction, SIGNAL(triggered()), this, SLOT(copyLabel()));
+    //connect(copyMessageAction, SIGNAL(triggered()), this, SLOT(copyMessage()));
+    //connect(copyAmountAction, SIGNAL(triggered()), this, SLOT(copyAmount()));
 
     // Show privacy account address
     ui->lineEditAddress->setStyleSheet("border:none; background: transparent; text-align:center;");
@@ -58,7 +51,7 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
     ui->pushButtonCP->setIcon(QIcon(":/icons/editcopy"));
     connect(ui->pushButtonCP, SIGNAL(clicked()), this, SLOT(copyAddress()));
     CPubKey temp;
-    if (!pwalletMain->IsCrypted()) {
+    if (pwalletMain && !pwalletMain->IsCrypted()) {
         pwalletMain->GetKeyFromPool(temp);
         pwalletMain->CreatePrivacyAccount();
         std::string pubAddress;
@@ -81,7 +74,6 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
     dblVal->setLocale(QLocale::C);
     ui->reqAmount->setValidator(dblVal);
 
-    // #REMOVE connect(ui->clearButton, SIGNAL(clicked()), this, SLOT(clear()));
 }
 
 static inline int64_t roundint64(double d)
@@ -91,7 +83,7 @@ static inline int64_t roundint64(double d)
 
 CAmount ReceiveCoinsDialog::getValidatedAmount() {
     double dAmount = ui->reqAmount->text().toDouble();
-    if (dAmount <= 0.0 || dAmount > 2100000000.0)
+    if (dAmount < 0.0 || dAmount > 2100000000.0)
         throw runtime_error("Invalid amount, amount should be < 2.1B DAPS");
     CAmount nAmount = roundint64(dAmount * COIN);
     return nAmount;
@@ -107,22 +99,6 @@ void ReceiveCoinsDialog::setModel(WalletModel* model)
         updateDisplayUnit();
 
         loadAccount();
-        // #REMOVE QTableView* tableView = ui->recentRequestsView;
-
-        // #REMOVE tableView->verticalHeader()->hide();
-        // #REMOVE tableView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        // #REMOVE tableView->setModel(model->getRecentRequestsTableModel());
-        // #REMOVE tableView->setAlternatingRowColors(true);
-        // #REMOVE tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-        // #REMOVE tableView->setSelectionMode(QAbstractItemView::ContiguousSelection);
-        // #REMOVE tableView->setColumnWidth(RecentRequestsTableModel::Date, DATE_COLUMN_WIDTH);
-        // #REMOVE tableView->setColumnWidth(RecentRequestsTableModel::Label, LABEL_COLUMN_WIDTH);
-
-        // #REMOVE connect(tableView->selectionModel(),
-        // #REMOVE     SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this,
-        // #REMOVE     SLOT(recentRequestsView_selectionChanged(QItemSelection, QItemSelection)));
-        // Last 2 columns are set by the columnResizingFixer, when the table geometry is ready.
-        // #REMOVE columnResizingFixer = new GUIUtil::TableViewLastColumnResizingFixer(tableView, AMOUNT_MINIMUM_COLUMN_WIDTH, DATE_COLUMN_WIDTH);
     }
 }
 
@@ -217,53 +193,11 @@ void ReceiveCoinsDialog::on_receiveButton_clicked()
 
 }
 
-void ReceiveCoinsDialog::on_recentRequestsView_doubleClicked(const QModelIndex& index)
-{
-    // #REMOVE const RecentRequestsTableModel* submodel = model->getRecentRequestsTableModel();
-    // #REMOVE ReceiveRequestDialog* dialog = new ReceiveRequestDialog(this);
-    // #REMOVE dialog->setModel(model->getOptionsModel());
-    // #REMOVE dialog->setInfo(submodel->entry(index.row()).recipient);
-    // #REMOVE dialog->setAttribute(Qt::WA_DeleteOnClose);
-    // #REMOVE dialog->show();
-}
-
-void ReceiveCoinsDialog::recentRequestsView_selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
-{
-    // Enable Show/Remove buttons only if anything is selected.
-    // #REMOVE bool enable = !ui->recentRequestsView->selectionModel()->selectedRows().isEmpty();
-    // #REMOVE ui->showRequestButton->setEnabled(enable);
-    // #REMOVE ui->removeRequestButton->setEnabled(enable);
-}
-
-void ReceiveCoinsDialog::on_showRequestButton_clicked()
-{
-    // #REMOVE if (!model || !model->getRecentRequestsTableModel() || !ui->recentRequestsView->selectionModel())
-    // #REMOVE     return;
-    // #REMOVE QModelIndexList selection = ui->recentRequestsView->selectionModel()->selectedRows();
-
-    // #REMOVE foreach (QModelIndex index, selection) {
-    // #REMOVE     on_recentRequestsView_doubleClicked(index);
-    // #REMOVE }
-}
-
-void ReceiveCoinsDialog::on_removeRequestButton_clicked()
-{
-    // #REMOVE if (!model || !model->getRecentRequestsTableModel() || !ui->recentRequestsView->selectionModel())
-    // #REMOVE     return;
-    // #REMOVE QModelIndexList selection = ui->recentRequestsView->selectionModel()->selectedRows();
-    // #REMOVE if (selection.empty())
-    // #REMOVE     return;
-    // correct for selection mode ContiguousSelection
-    // #REMOVE QModelIndex firstIndex = selection.at(0);
-    // #REMOVE model->getRecentRequestsTableModel()->removeRows(firstIndex.row(), selection.length(), firstIndex.parent());
-}
-
 // We override the virtual resizeEvent of the QWidget to adjust tables column
 // sizes as the tables width is proportional to the dialogs width.
 void ReceiveCoinsDialog::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
-    // #REMOVE columnResizingFixer->stretchColumnWidth(RecentRequestsTableModel::Message);
 }
 
 void ReceiveCoinsDialog::keyPressEvent(QKeyEvent* event)
@@ -278,48 +212,6 @@ void ReceiveCoinsDialog::keyPressEvent(QKeyEvent* event)
     }
 
     this->QDialog::keyPressEvent(event);
-}
-
-// copy column of selected row to clipboard
-void ReceiveCoinsDialog::copyColumnToClipboard(int column)
-{
-    // #REMOVE if (!model || !model->getRecentRequestsTableModel() || !ui->recentRequestsView->selectionModel())
-    // #REMOVE     return;
-    // #REMOVE QModelIndexList selection = ui->recentRequestsView->selectionModel()->selectedRows();
-    // #REMOVE if (selection.empty())
-    // #REMOVE     return;
-    // correct for selection mode ContiguousSelection
-    // #REMOVE QModelIndex firstIndex = selection.at(0);
-    // #REMOVE GUIUtil::setClipboard(model->getRecentRequestsTableModel()->data(firstIndex.child(firstIndex.row(), column), Qt::EditRole).toString());
-}
-
-// context menu
-void ReceiveCoinsDialog::showMenu(const QPoint& point)
-{
-    // #REMOVE if (!model || !model->getRecentRequestsTableModel() || !ui->recentRequestsView->selectionModel())
-    // #REMOVE     return;
-    // #REMOVE QModelIndexList selection = ui->recentRequestsView->selectionModel()->selectedRows();
-    // #REMOVE if (selection.empty())
-    // #REMOVE     return;
-    // #REMOVE contextMenu->exec(QCursor::pos());
-}
-
-// context menu action: copy label
-void ReceiveCoinsDialog::copyLabel()
-{
-    // #REMOVE copyColumnToClipboard(RecentRequestsTableModel::Label);
-}
-
-// context menu action: copy message
-void ReceiveCoinsDialog::copyMessage()
-{
-    // #REMOVE copyColumnToClipboard(RecentRequestsTableModel::Message);
-}
-
-// context menu action: copy amount
-void ReceiveCoinsDialog::copyAmount()
-{
-    // #REMOVE copyColumnToClipboard(RecentRequestsTableModel::Amount);
 }
 
 void ReceiveCoinsDialog::copyAddress(){

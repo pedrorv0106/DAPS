@@ -207,7 +207,7 @@ bool IsStandard(const CScript &scriptPubKey, txnouttype &whichType) {
     return whichType != TX_NONSTANDARD;
 }
 
-bool ExtractPubKey(const CSript &scriptPubKey, CPubKey& out) {
+bool ExtractPubKey(const CScript &scriptPubKey, CPubKey& out) {
     vector <valtype> vSolutions;
     txnouttype whichType;
     if (!Solver(scriptPubKey, whichType, vSolutions))
