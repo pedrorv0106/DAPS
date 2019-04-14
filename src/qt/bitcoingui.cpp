@@ -617,6 +617,7 @@ void BitcoinGUI::setClientModel(ClientModel* clientModel)
         connect(clientModel, SIGNAL(message(QString, QString, unsigned int)), this, SLOT(message(QString, QString, unsigned int)));
 
         // Show progress dialog
+        //Cam: comment out because showProgress slot is not found
         //connect(clientModel, SIGNAL(showProgress(QString, int)), this, SLOT(showProgress(QString, int)));
 
         rpcConsole->setClientModel(clientModel);
@@ -1185,10 +1186,13 @@ void BitcoinGUI::dropEvent(QDropEvent* event)
 
 void BitcoinGUI::setStakingStatus()
 {
-    if (pwalletMain)
+    bool stkStatus = false;
+    if (pwalletMain) {
         fMultiSend = pwalletMain->isMultiSendEnabled();
+        stkStatus = pwalletMain->ReadStakingStatus();
+    }
 
-    if (nLastCoinStakeSearchInterval) {
+    if (nLastCoinStakeSearchInterval || stkStatus) {
         stakingAction->setText(tr("Staking"));
         stakingAction->setIcon(QIcon(":/icons/staking_active"));
     } else {
@@ -1198,16 +1202,6 @@ void BitcoinGUI::setStakingStatus()
 }
 
 #ifdef ENABLE_WALLET
-bool BitcoinGUI::handlePaymentRequest(const SendCoinsRecipient& recipient)
-{
-    // URI has to be valid
-    if (walletFrame && walletFrame->handlePaymentRequest(recipient)) {
-        showNormalIfMinimized();
-        gotoSendCoinsPage();
-        return true;
-    }
-    return false;
-}
 
 void BitcoinGUI::setEncryptionStatus(int status)
 {

@@ -51,9 +51,6 @@ WalletView::WalletView(QWidget* parent) : QStackedWidget(parent),
     vbox->addWidget(transactionView);
     QPushButton* exportButton = new QPushButton(tr("&Export"), this);
     exportButton->setToolTip(tr("Export the data in the current tab to a file"));
-#ifndef Q_OS_MAC // Icons on push buttons are very uncommon on Mac
-    exportButton->setIcon(QIcon(":/icons/export"));
-#endif
     hbox_buttons->addStretch();
 
     // Sum of selected transactions
@@ -70,17 +67,13 @@ WalletView::WalletView(QWidget* parent) : QStackedWidget(parent),
 
     hbox_buttons->addWidget(exportButton);
     vbox->addLayout(hbox_buttons);
-//    transactionsPage->setLayout(vbox);
 
-//    privacyPage = new PrivacyDialog();
     receiveCoinsPage = new ReceiveCoinsDialog();
     sendCoinsPage = new SendCoinsDialog();
     optionsPage = new OptionsPage();
     historyPage = new HistoryPage();
 
     addWidget(overviewPage);
-//    addWidget(transactionsPage);
-//    addWidget(privacyPage);
     addWidget(historyPage);
     addWidget(receiveCoinsPage);
     addWidget(sendCoinsPage);
@@ -106,7 +99,7 @@ WalletView::WalletView(QWidget* parent) : QStackedWidget(parent),
     connect(exportButton, SIGNAL(clicked()), transactionView, SLOT(exportClicked()));
 
     // Pass through messages from sendCoinsPage
-    connect(sendCoinsPage, SIGNAL(message(QString, QString, unsigned int)), this, SIGNAL(message(QString, QString, unsigned int)));
+    //connect(sendCoinsPage, SIGNAL(message(QString, QString, unsigned int)), this, SIGNAL(message(QString, QString, unsigned int)));
 
     // Pass through messages from transactionView
     connect(transactionView, SIGNAL(message(QString, QString, unsigned int)), this, SIGNAL(message(QString, QString, unsigned int)));
@@ -158,7 +151,7 @@ void WalletView::setWalletModel(WalletModel* walletModel)
     if (settings.value("fShowMasternodesTab").toBool()) {
         masternodeListPage->setWalletModel(walletModel);
     }
-//    privacyPage->setModel(walletModel);
+
     receiveCoinsPage->setModel(walletModel);
     sendCoinsPage->setModel(walletModel);
     optionsPage->setModel(walletModel);
@@ -237,19 +230,9 @@ void WalletView::gotoOptionsPage()
     setCurrentWidget(optionsPage);
 }
 
-//void WalletView::gotoPrivacyPage()
-//{
-//    setCurrentWidget(privacyPage);
-//    // Refresh UI-elements in case coins were locked/unlocked in CoinControl
-//    walletModel->emitBalanceChanged();
-//}
-
 void WalletView::gotoSendCoinsPage(QString addr)
 {
     setCurrentWidget(sendCoinsPage);
-
-    if (!addr.isEmpty())
-        sendCoinsPage->setAddress(addr);
 }
 
 void WalletView::gotoSignMessageTab(QString addr)
@@ -298,15 +281,9 @@ void WalletView::gotoMultisigDialog(int index)
     multisig->showTab(index);
 }
 
-bool WalletView::handlePaymentRequest(const SendCoinsRecipient& recipient)
-{
-    return sendCoinsPage->handlePaymentRequest(recipient);
-}
-
 void WalletView::showSyncStatus(bool fShow)
 {
     overviewPage->showBlockSync(fShow);
-//  #remove  privacyPage->showSyncStatus(fShow);
 }
 
 void WalletView::updateEncryptionStatus()

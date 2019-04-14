@@ -1526,15 +1526,16 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
         RegisterValidationInterface(pwalletMain);
 
         CBlockIndex* pindexRescan = chainActive.Tip();
-        if (GetBoolArg("-rescan", false))
+        if (GetBoolArg("-rescan", false)) {
             pindexRescan = chainActive.Genesis();
-        else {
+        } else {
             CWalletDB walletdb(strWalletFile);
             CBlockLocator locator;
-            if (walletdb.ReadBestBlock(locator))
+            if (walletdb.ReadBestBlock(locator)) {
                 pindexRescan = FindForkInGlobalIndex(chainActive, locator);
-            else
+            } else {
                 pindexRescan = chainActive.Genesis();
+            }
         }
         if (chainActive.Tip() && chainActive.Tip() != pindexRescan) {
             uiInterface.InitMessage(_("Rescanning..."));

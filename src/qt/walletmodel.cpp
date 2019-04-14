@@ -70,14 +70,17 @@ WalletModel::~WalletModel()
 CAmount WalletModel::getBalance(const CCoinControl* coinControl) const
 {
     if (coinControl) {
-        CAmount nBalance = 0;
-        std::vector<COutput> vCoins;
-        wallet->AvailableCoins(vCoins, true, coinControl);
-        BOOST_FOREACH (const COutput& out, vCoins)
-            if (out.fSpendable)
-                nBalance += out.tx->vout[out.i].nValue;
 
-        return nBalance;
+        {   
+            LOCK(wallet->cs_wallet);
+            CAmount nBalance = 0;
+            std::vector<COutput> vCoins;
+            wallet->AvailableCoins(vCoins, true, coinControl);
+            BOOST_FOREACH (const COutput& out, vCoins)
+                if (out.fSpendable)
+                    nBalance += wallet->getCTxOutValue(*out.tx, out.tx->vout[out.i]);
+            return nBalance;
+        }
     }
 
     return wallet->GetBalance();
@@ -86,6 +89,11 @@ CAmount WalletModel::getBalance(const CCoinControl* coinControl) const
 CAmount WalletModel::getUnconfirmedBalance() const
 {
     return wallet->GetUnconfirmedBalance();
+}
+
+CAmount WalletModel::getSpendableBalance() const 
+{
+    return wallet->GetSpendableBalance();
 }
 
 CAmount WalletModel::getImmatureBalance() const
@@ -712,12 +720,12 @@ QStringList WalletModel::getStakingStatusError()
 {
     QStringList errors;
     int timeRemaining = (1471482000 - chainActive.Tip()->nTime) / (60 * 60); //time remaining in hrs
-    if (timeRemaining > 0)
-        errors.push_back(QString(tr("Chain has not matured. Hours remaining: ")) + QString(timeRemaining));
+    if (1471482000 > chainActive.Tip()->nTime)
+        errors.push_back(QString(tr("Chain has not matured. Hours remaining: ")) + QString((1471482000 - chainActive.Tip()->nTime) / (60 * 60)));
     if (vNodes.empty())
         errors.push_back(QString(tr("No peer connections. Please check network.")));
     if (!pwalletMain->MintableCoins() || nReserveBalance > pwalletMain->GetBalance())
-        errors.push_back(QString(tr("Not enough mintable coins. Send coins to this wallet.")));
+        errors.push_back(QString(tr("Not enough mintable coins. Send coins to this wallet or if you have coins already, wait a maximum of 1h to be able to stake.")));
     return errors;
 }
 
@@ -768,9 +776,9 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
         if (mi != wallet->mapWallet.end()) {
             const CWalletTx& prev = (*mi).second;
             if (in.prevout.n < prev.vout.size()) {
-                if (pwalletMain->IsMine(prev.vout[in.prevout.n])) {
+                if (wallet->IsMine(prev.vout[in.prevout.n])) {
                     CAmount decodedAmount = 0;
-                    pwalletMain->RevealTxOutAmount(prev, prev.vout[in.prevout.n], decodedAmount);
+                    wallet->RevealTxOutAmount(prev, prev.vout[in.prevout.n], decodedAmount);
                     totalIn += decodedAmount;
                 }
             }
@@ -784,6 +792,7 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
     }
 
     QList<TransactionRecord> decomposedTx = TransactionRecord::decomposeTransaction(wallet, tx);
+    std::string txHash = tx.GetHash().GetHex();
     QList<QString> addressBook = getAddressBookData(wallet);
     std::map<QString, QString> txData;
     for (TransactionRecord TxRecord : decomposedTx) {
@@ -791,10 +800,14 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
         // if address is in book, use data from book, else use data from transaction
         txData["address"]=""; 
         for (QString addressBookEntry : addressBook)
-            if (addressBookEntry.contains(TxRecord.address.c_str()))
+            if (addressBookEntry.contains(TxRecord.address.c_str())) {
                 txData["address"] = addressBookEntry;
-        if (!txData["address"].length())
+                wallet->addrToTxHashMap[addressBookEntry.toStdString()] = txHash;
+            }
+        if (!txData["address"].length()) {
             txData["address"] = QString(TxRecord.address.c_str());
+            wallet->addrToTxHashMap[TxRecord.address] = txHash;
+        }
         //
         // CAmount amount = TxRecord.credit + TxRecord.debit;
         txData["amount"] = BitcoinUnits::format(0, totalamount); //absolute value of total amount
@@ -834,6 +847,9 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
             txData["type"] = QString("Minted");
             txData["amount"] = BitcoinUnits::format(0,  totalamount - totalIn); //absolute value of total amount
             break;
+        case TransactionRecord::MNReward:
+            txData["type"] = QString("Masternode");
+            break;     
         default:
             txData["type"] = QString("Unknown");
         }

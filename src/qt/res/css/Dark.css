@@ -35,6 +35,23 @@ QDialog {
   );
 }
 
+QDialog .QTabWidget QTabBar::tab {
+  background-color:#FFFFFF;
+  color:#000000;
+  padding-left:10px;
+  padding-right:10px;
+  padding-top:5px;
+  padding-bottom:5px;
+  border-top: 1px solid #d7d7d7;
+}
+
+QDialog .QTabWidget QTabBar::tab:selected, QDialog .QTabWidget QTabBar::tab:hover {
+  background-color:#31398c;
+  color:#FFFFFF;
+  }
+
+  
+
 /*************************************************/
 /* Nav Bar CSS */
 #navLayout {
