@@ -143,6 +143,7 @@ void SendCoinsDialog::on_sendButton_clicked(){
         txcomplete.setStyleSheet(GUIUtil::loadStyleSheet());
         txcomplete.setStyleSheet("QMessageBox {messagebox-text-interaction-flags: 5;}");
         txcomplete.exec();
+        WalletUtil::getTx(pwalletMain, resultTx.GetHash());
     }
 }
 
