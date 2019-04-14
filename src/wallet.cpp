@@ -225,6 +225,15 @@ bool CWallet::AddKeyPubKey(const CKey& secret, const CPubKey& pubkey)
     return true;
 }
 
+bool CWallet::WriteStakingStatus(bool status)
+{
+    return CWalletDB(strWalletFile).WriteStakingStatus(status);
+}
+bool CWallet::ReadStakingStatus()
+{
+    return CWalletDB(strWalletFile).ReadStakingStatus();
+}
+
 bool CWallet::AddCryptedKey(const CPubKey& vchPubKey,
                             const vector<unsigned char>& vchCryptedSecret)
 {
@@ -573,9 +582,10 @@ bool CWallet::IsSpent(const uint256& hash, unsigned int n)
     for (TxSpends::const_iterator it = range.first; it != range.second; ++it) {
         const uint256& wtxid = it->second;
         std::map<uint256, CWalletTx>::const_iterator mit = mapWallet.find(wtxid);
-        if (mit != mapWallet.end() && mit->second.GetDepthInMainChain() >= 0)
+        if (mit != mapWallet.end() && int(mit->second.GetDepthInMainChain()) > int(0)) {
             keyImagesSpends[keyImageHex] = true;
             return true; // Spent
+        }
     }
 
     return false;
@@ -1488,7 +1498,8 @@ CAmount CWallet::GetBalance()
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
             if (pcoin->IsTrusted()) {
-                nTotal += pcoin->GetAvailableCredit(false);
+                CAmount ac = pcoin->GetAvailableCredit();
+                nTotal += ac;
             }
         }
     }
@@ -1506,7 +1517,7 @@ CAmount CWallet::GetSpendableBalance() {
             const CWalletTx* pcoin = &(*it).second;
             if (pcoin->IsTrusted()) {
                 if (!((pcoin->IsCoinBase() || pcoin->IsCoinStake()) && pcoin->GetBlocksToMaturity() > 0 && pcoin->IsInMainChain())) {
-                    nTotal += pcoin->GetAvailableCredit(false);
+                    nTotal += pcoin->GetAvailableCredit();
                 }
             }
         }
@@ -6012,7 +6023,7 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
     if (nValue <= 0)
         throw runtime_error("Invalid amount");
 
-    /*if (nValue > pwalletMain->GetBalance()) {
+    /*if (nValue > pwalletMain->spendableBalance()) {
         LogPrintf("Wallet does not have sufficient funds");
         throw runtime_error("Insufficient funds");
     }*/

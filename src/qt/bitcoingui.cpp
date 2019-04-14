@@ -1167,10 +1167,13 @@ void BitcoinGUI::dropEvent(QDropEvent* event)
 
 void BitcoinGUI::setStakingStatus()
 {
-    if (pwalletMain)
+    bool stkStatus = false;
+    if (pwalletMain) {
         fMultiSend = pwalletMain->isMultiSendEnabled();
+        stkStatus = pwalletMain->ReadStakingStatus();
+    }
 
-    if (nLastCoinStakeSearchInterval) {
+    if (nLastCoinStakeSearchInterval || stkStatus) {
         stakingAction->setText(tr("Staking"));
         stakingAction->setIcon(QIcon(":/icons/staking_active"));
     } else {
