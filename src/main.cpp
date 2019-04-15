@@ -4662,9 +4662,7 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
 bool CheckWork(const CBlock block, CBlockIndex *const pindexPrev) {
     if (pindexPrev == NULL)
         return error("%s : null pindexPrev for block %s", __func__, block.GetHash().ToString().c_str());
-	LogPrintf("%s: checking work", __func__);
     unsigned int nBitsRequired = GetNextWorkRequired(pindexPrev, &block);
-LogPrintf("%s: found nex work", __func__);
     if (block.IsProofOfWork() && (pindexPrev->nHeight + 1 <= 68589)) {
         double n1 = ConvertBitsToDouble(block.nBits);
         double n2 = ConvertBitsToDouble(nBitsRequired);
@@ -4682,7 +4680,6 @@ LogPrintf("%s: found nex work", __func__);
     if (block.IsProofOfStake()) {
         uint256 hashProofOfStake;
         uint256 hash = block.GetHash();
-LogPrintf("%s: about to check proof of stake", __func__);
         if (!CheckProofOfStake(block, hashProofOfStake)) {
             LogPrintf("WARNING: ProcessBlock(): check proof-of-stake failed for block %s\n", hash.ToString().c_str());
             return false;
