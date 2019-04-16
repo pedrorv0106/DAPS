@@ -2941,11 +2941,17 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     CKey tempk;
     tempk.MakeNewKey(true);
     secp256k1_pedersen_commitment commitmentC;
-    secp256k1_pedersen_commit(both, &commitmentC, tempk.begin(), 0, &secp256k1_generator_const_h, &secp256k1_generator_const_g);
+    secp256k1_pedersen_commit(both, &commitmentC, tempk.begin(), 100, &secp256k1_generator_const_h, &secp256k1_generator_const_g);
     std::cout << "Raw commitment to zero:" << HexStr(commitmentC.data, commitmentC.data + 64) << std::endl;
     unsigned char serializedCommitmentC[33];
     secp256k1_pedersen_commitment_serialize(both, serializedCommitmentC, &commitmentC);
     std::cout << "Serialized commitment to zero:" << HexStr(serializedCommitmentC, serializedCommitmentC + 33) << std::endl;
+    unsigned char pubkeyRaw[33];
+    size_t length;
+    secp256k1_pedersen_commitment_to_serialized_pubkey(&commitmentC, pubkeyRaw, &length);
+    CPubKey pkRaw;
+    pkRaw.Set(pubkeyRaw, pubkeyRaw + 33);
+    std::cout << "Serialized commitment parsed to public key:" << pkRaw.GetHex() << std::endl;
 
     for(CTxOut& out: wtxNew.vout) {
         if (!out.IsEmpty()) {

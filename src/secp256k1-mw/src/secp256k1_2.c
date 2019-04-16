@@ -481,6 +481,18 @@ int secp256k1_ec_pubkey_negate2(const secp256k1_context2* ctx, secp256k1_pubkey2
     return ret;
 }
 
+int secp256k1_ec_pubkey_raw_negate2(unsigned char *pub, size_t size) {
+    int ret = 0;
+    secp256k1_ge p;
+    if (!secp256k1_eckey_pubkey_parse(&p, pub, size)) {
+    	return 0;
+    }
+    memset(pub, 0, size);
+    secp256k1_ge_neg(&p, &p);
+    size_t ss = 0;
+    return secp256k1_eckey_pubkey_serialize(&p, pub, &ss, 1);
+}
+
 int secp256k1_ec_privkey_tweak_add2(const secp256k1_context2* ctx, unsigned char *seckey, const unsigned char *tweak) {
     secp256k1_scalar term;
     secp256k1_scalar sec;
