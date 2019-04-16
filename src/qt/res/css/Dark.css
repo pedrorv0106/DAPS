@@ -35,6 +35,23 @@ QDialog {
   );
 }
 
+QDialog .QTabWidget QTabBar::tab {
+  background-color:#FFFFFF;
+  color:#000000;
+  padding-left:10px;
+  padding-right:10px;
+  padding-top:5px;
+  padding-bottom:5px;
+  border-top: 1px solid #d7d7d7;
+}
+
+QDialog .QTabWidget QTabBar::tab:selected, QDialog .QTabWidget QTabBar::tab:hover {
+  background-color:#31398c;
+  color:#FFFFFF;
+  }
+
+  
+
 /*************************************************/
 /* Nav Bar CSS */
 #navLayout {
@@ -158,11 +175,6 @@ QToolTip {
   background: #31398c;
 }
 
-QMenu::item {
-  margin: 0;
-  padding: 8px;
-  border-radius: 0;
-}
 QComboBox:checked {
   color: #83faff;
 }
@@ -265,6 +277,11 @@ QWidget::handle:horizontal {
   margin: -13px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
   border-radius: 15px;
   background-color: #83faff;
+}
+
+QMenu::item {
+    padding: 2px 25px 2px 20px;
+    border: 1px solid transparent; /* reserve space for selection border */
 }
 
 /*** Toggle Buttons ***/

@@ -186,7 +186,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
     pblock->vtx.push_back(txNew);
     pblocktemplate->vTxFees.push_back(-1);   // updated at end
     pblocktemplate->vTxSigOps.push_back(-1); // updated at end
-    LogPrintf("CreateNewBlock: generated %s\n", FormatMoney(pblock->vtx[0].vout[0].nValue));
+    //LogPrintf("CreateNewBlock: generated %s\n", FormatMoney(pblock->vtx[0].vout[0].nValue));
 
     // ppcoin: if coinstake available add coinstake tx
     static int64_t nLastCoinStakeSearchTime = GetAdjustedTime(); // only initialized at startup
@@ -722,8 +722,17 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake, MineType mineType)
                 nLastCoinStakeSearchInterval = 0;
                 MilliSleep(5000);
                 fMintableCoins = pwallet->MintableCoins();
+                if (!fGenerateBitcoins) {
+                    break;
+                }
                 if (!fGenerateBitcoins && !fProofOfStake)
                     continue;
+            }
+
+            if (!fGenerateBitcoins) {
+                LogPrintf("\nStopping staking or mining\n");
+                nLastCoinStakeSearchInterval = 0;
+                break;
             }
 
             /*if (mapHashedBlocks.count(chainActive.Tip()->nHeight)) //search our map of hashed blocks, see if bestblock has been hashed yet
@@ -765,7 +774,9 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake, MineType mineType)
 
             LogPrintf("CPUMiner : proof-of-stake block was signed %s \n", pblock->GetHash().ToString().c_str());
             SetThreadPriority(THREAD_PRIORITY_NORMAL);
-            ProcessBlockFound(pblock, *pwallet, reservekey);
+            if (!ProcessBlockFound(pblock, *pwallet, reservekey)) {
+                continue;
+            }
             SetThreadPriority(THREAD_PRIORITY_LOWEST);
 
             continue;

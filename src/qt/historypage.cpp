@@ -15,6 +15,8 @@
 #include "transactionrecord.h"
 #include "walletmodel.h"
 
+#include <algorithm>
+
 #include <QAction>
 #include <QBrush>
 #include <QCalendarWidget>
@@ -24,9 +26,18 @@
 #include <QSortFilterProxyModel>
 #include <QTextDocument>
 #include <QTime>
+#include <QDate>
 #include <QTextStream>
 #include <QProcess>
 
+bool TxCompare (std::map<QString, QString> i, std::map<QString, QString> j) { 
+    QString str_i = i.at("date");
+    QString str_j = j.at("date");
+    QDateTime date_i = QDateTime::fromString(str_i,"MM/dd/yy hh:mm");
+    QDateTime date_j = QDateTime::fromString(str_j,"MM/dd/yy hh:mm");
+
+    return date_i > date_j;
+}
 
 HistoryPage::HistoryPage(QWidget* parent) : QDialog(parent),
                                             ui(new Ui::HistoryPage),
@@ -53,6 +64,8 @@ void HistoryPage::initWidgets()
     //adjust qt paint flags
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableView->setAttribute(Qt::WA_TranslucentBackground, true);
+    connect(ui->tableView, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(on_cellClicked(int, int)));
+
     //set date formats and init date from current timestamp
     ui->dateTimeEditTo->setDisplayFormat("M/d/yy");
     ui->dateTimeEditFrom->setDisplayFormat("M/d/yy");
@@ -90,6 +103,22 @@ void HistoryPage::connectWidgets() //add functions to widget signals
     connect(timeEditTo, SIGNAL(timeChanged(const QTime&)), this, SLOT(updateFilter()));
 }
 
+void HistoryPage::on_cellClicked(int row, int column) 
+{
+    //2 is column index for address
+    QTableWidgetItem* cell = ui->tableView->item(row, 2);
+    QString address = cell->data(0).toString();
+    std::string stdAddress = address.trimmed().toStdString();
+    if (pwalletMain->addrToTxHashMap.count(stdAddress) == 1) {
+        QMessageBox txHashShow;
+        txHashShow.setText("Transaction Hash.");
+        txHashShow.setInformativeText(pwalletMain->addrToTxHashMap[stdAddress].c_str());
+        txHashShow.setStyleSheet(GUIUtil::loadStyleSheet());
+        txHashShow.setStyleSheet("QMessageBox {messagebox-text-interaction-flags: 5;}");
+        txHashShow.exec();
+    }
+}
+
 void HistoryPage::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
@@ -110,9 +139,10 @@ void HistoryPage::addTableData(std::map<QString, QString>)
 
 void HistoryPage::updateTableData(CWallet* wallet)
 {
-    std::cout << "updateTableData: updating" << std::endl;
     ui->tableView->setRowCount(0);
     auto txs = WalletUtil::getTXs(wallet);
+    std::sort (txs.begin(), txs.end(), TxCompare);
+
     for (int row = 0; row < (short)txs.size(); row++) {
         ui->tableView->insertRow(row);
         int col = 0;
@@ -147,7 +177,6 @@ void HistoryPage::updateAddressBookData(CWallet* wallet)
 
 void HistoryPage::updateFilter()
 {
-    std::cout << "updateFilter: updating" << std::endl;
     syncTime(ui->dateTimeEditFrom, timeEditFrom);
     syncTime(ui->dateTimeEditFrom, timeEditFrom);
     auto selectedAmount = ui->lineEditAmount->text().toFloat();
@@ -208,21 +237,20 @@ void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e){
 
             case 0: /*date*/
                 cell->setData(0, a);
-                    break;
-                case 1: /*type*/
-
-                    cell->setData(0, type);
-                    break;
-                case 2: /*address*/
-                    cell->setData(0, addr);
-                    break;
-                case 3: /*amount*/
-                    cell->setData(0, BitcoinUnits::format(0, c));
-                    break;
+                break;
+            case 1: /*type*/
+                cell->setData(0, type);
+                break;
+            case 2: /*address*/
+                cell->setData(0, addr);
+                break;
+            case 3: /*amount*/
+                cell->setData(0, BitcoinUnits::format(0, c));
+                break;
                 /*default:
                     cell->setData(0, data);
                     break;*/
-            }
+        }
             ui->tableView->setItem(row, col, cell);
             col++;
             ui->tableView->update();

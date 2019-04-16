@@ -441,12 +441,13 @@ public:
         fMultiSendStake = false;
     }
 
-    std::map<uint256, CWalletTx> mapWallet;
+    mutable std::map<uint256, CWalletTx> mapWallet;
 
     int64_t nOrderPosNext;
     std::map<uint256, int> mapRequestCount;
 
     std::map<CTxDestination, CAddressBookData> mapAddressBook;
+    std::map<std::string, std::string> addrToTxHashMap;
 
     CPubKey vchDefaultKey;
 
@@ -457,6 +458,7 @@ public:
     std::map<std::string, bool> keyImagesSpends;
     std::map<std::string, std::string> keyImageMap;//mapping from: txhashHex-n to key image str, n = index
     std::list<std::string> pendingKeyImages;
+    mutable std::map<CScript, CAmount> amountMap;
 
     const CWalletTx* GetWalletTx(const uint256& hash) const;
 
@@ -568,6 +570,7 @@ public:
     void ReacceptWalletTransactions();
     void ResendWalletTransactions();
     CAmount GetBalance();
+    CAmount GetSpendableBalance();
     CAmount GetZerocoinBalance(bool fMatureOnly) const;
     CAmount GetUnconfirmedZerocoinBalance() const;
     CAmount GetImmatureZerocoinBalance() const;
@@ -805,6 +808,8 @@ public:
     void CreatePrivacyAccount();
     bool mySpendPrivateKey(CKey& spend) const;
     bool myViewPrivateKey(CKey& view) const;
+    bool WriteStakingStatus(bool status);
+    bool ReadStakingStatus();
 private:
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
@@ -821,7 +826,7 @@ private:
     bool verifyBulletProof(const CTransaction& tx);
     bool generateRingSignature(CTransaction& tx);
     bool verifyRingSignature(const CTransaction& tx);
-    bool computeSharedSec(const CTransaction& tx, CPubKey& sharedSec) const;
+    bool computeSharedSec(const CTransaction& tx, CPubKey& sharedSec, int currentHeight) const;
     int walletIdxCache = 0;
 };
 
@@ -1187,7 +1192,6 @@ public:
             fImmatureCreditCached = true;
             return nImmatureCreditCached;
         }
-
         return 0;
     }
 
@@ -1200,20 +1204,25 @@ public:
         if (IsCoinBase() && GetBlocksToMaturity() > 0)
             return 0;
 
-        if (fUseCache && fAvailableCreditCached)
-            return nAvailableCreditCached;
+        if (fUseCache && fAvailableCreditCached) {
+            if (nAvailableCreditCached) {
+                return nAvailableCreditCached;
+            }
+        }
 
         CAmount nCredit = 0;
         uint256 hashTx = GetHash();
         for (unsigned int i = 0; i < vout.size(); i++) {
             if (!pwallet->IsSpent(hashTx, i)) {
-                std::cout << "txout has not been spent"  << std::endl;
                 const CTxOut& txout = vout[i];
-                nCredit += pwallet->GetCredit(*this, txout, ISMINE_SPENDABLE);
+                CAmount cre = pwallet->GetCredit(*this, txout, ISMINE_SPENDABLE);
+                if (cre == 0 && fCreditCached) {
+                    fCreditCached = false;
+                    cre = pwallet->GetCredit(*this, txout, ISMINE_SPENDABLE);
+                }
+                nCredit += cre;
                 if (!MoneyRange(nCredit))
                     throw std::runtime_error("CWalletTx::GetAvailableCredit() : value out of range");
-            } else {
-                std::cout << "txout has been spent"  << std::endl;
             }
         }
 
@@ -1482,6 +1491,14 @@ public:
                 return false;
         }
         return true;
+    }
+
+    int GetBlockHeight() const {
+        if (hashBlock.IsNull()) {
+            return -1; //not in the chain
+        } else {
+            return mapBlockIndex[hashBlock]->nHeight;
+        }
     }
 
     bool WriteToDisk();
