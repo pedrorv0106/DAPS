@@ -175,11 +175,6 @@ QToolTip {
   background: #31398c;
 }
 
-QMenu::item {
-  margin: 0;
-  padding: 8px;
-  border-radius: 0;
-}
 QComboBox:checked {
   color: #83faff;
 }
@@ -282,6 +277,11 @@ QWidget::handle:horizontal {
   margin: -13px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
   border-radius: 15px;
   background-color: #83faff;
+}
+
+QMenu::item {
+    padding: 2px 25px 2px 20px;
+    border: 1px solid transparent; /* reserve space for selection border */
 }
 
 /*** Toggle Buttons ***/
