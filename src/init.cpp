@@ -1816,5 +1816,15 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     }
 #endif
 
+    boost::filesystem::path reserveFilePath = GetDataDir() / "reserve.dat";
+    ifstream reserveFile;
+    std::string reserveBalance;
+    reserveFile.open(reserveFilePath.c_str());
+    if (reserveFile.good()) {
+        reserveFile >> reserveBalance;
+        nReserveBalance = ::atof(reserveBalance.c_str()) * COIN;
+    }
+    reserveFile.close();
+
     return !fRequestShutdown;
 }

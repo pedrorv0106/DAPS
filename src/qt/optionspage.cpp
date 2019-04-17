@@ -24,6 +24,8 @@
 #include <QTextDocument>
 #include <QDataWidgetMapper>
 #include <QDoubleValidator>
+#include <QFile>
+#include <QTextStream>
 
 using namespace std;
 
@@ -50,6 +52,8 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
     dblVal->setLocale(QLocale::C);
     ui->lineEditWithhold->setValidator(dblVal);
     ui->lineEditWithhold->setPlaceholderText("DAPS Amount");
+    if (nReserveBalance > 0)
+        ui->lineEditWithhold->setText(BitcoinUnits::format(0, nReserveBalance).toUtf8());
 
     //connect(ui->pushButtonPassword, SIGNAL(clicked()), this, SLOT(on_pushButtonPassword_clicked()));
 }
@@ -97,6 +101,17 @@ void OptionsPage::on_pushButtonSave_clicked() {
         return;
     }
     nReserveBalance = getValidatedAmount();
+
+    boost::filesystem::path reserveFilePath = GetDataDir() / "reserve.dat";
+    QString filename= reserveFilePath.c_str();
+    QFile file( filename );
+    if ( file.open(QIODevice::ReadWrite) )
+    {
+        QTextStream stream( &file );
+        stream << nReserveBalance / COIN << endl;
+    }
+    file.close();
+
     emit model->stakingStatusChanged(nLastCoinStakeSearchInterval);
     QMessageBox(QMessageBox::Information, tr("Information"), tr("Reserve balance " + BitcoinUnits::format(0, nReserveBalance).toUtf8() + " is successfully set!"), QMessageBox::Ok).exec();
 }
