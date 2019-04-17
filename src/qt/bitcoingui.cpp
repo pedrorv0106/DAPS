@@ -47,10 +47,13 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QMouseEvent>
+#include <QCursor>
 #include <QSettings>
 #include <QStackedWidget>
 #include <QStyle>
 #include <QTimer>
+#include <QTextEdit>
 #include <QToolBar>
 #include <QVBoxLayout>
 #include <QPushButton>
@@ -105,13 +108,15 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle* networkStyle, QWidget* parent) : QMai
                                                                             rpcConsole(0),
                                                                             explorerWindow(0),
                                                                             prevBlocks(0),
-                                                                            spinnerFrame(0)
+                                                                            spinnerFrame(0),
+                                                                            m_previousPos(0,0),
+                                                                            m_fMousePress(0)
 {
-    // this->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+    this->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
     /* Open CSS when configured */
     this->setStyleSheet(GUIUtil::loadStyleSheet());
 
-    GUIUtil::restoreWindowGeometry("nWindow", QSize(850, 550), this);
+    // GUIUtil::restoreWindowGeometry("nWindow", QSize(850, 550), this);
 
     QString windowTitle = tr("DAPScoin") + " - ";
 #ifdef ENABLE_WALLET
@@ -1154,6 +1159,35 @@ void BitcoinGUI::dragEnterEvent(QDragEnterEvent* event)
         event->acceptProposedAction();
 }
 
+bool BitcoinGUI::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::MouseButtonPress)
+    {
+        if (strncmp(obj->metaObject()->className(), "QSizeGrip", 9) == 0)
+            return false;
+
+        m_fMousePress = true;
+        m_previousPos = QCursor::pos();
+    }
+    else if ((event->type() == QEvent::MouseMove) && m_fMousePress)
+    {
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+
+        if(mouseEvent->buttons() == Qt::LeftButton)
+        {
+            QPoint offset = m_previousPos - QCursor::pos();
+            m_previousPos = QCursor::pos();
+            move(pos() - offset);
+        }
+    }
+    else if (event->type() == QEvent::MouseButtonRelease)
+    {
+        m_fMousePress = false;
+    }
+
+    return false;
+}
+
 void BitcoinGUI::dropEvent(QDropEvent* event)
 {
     if (event->mimeData()->hasUrls()) {
@@ -1297,10 +1331,6 @@ void BitcoinGUI::handleRestart(QStringList args)
 {
     if (!ShutdownRequested())
         emit requestedRestart(args);
-}
-
-bool BitcoinGUI::eventFilter(QObject *obj, QEvent *event)
-{
 }
 
 UnitDisplayStatusBarControl::UnitDisplayStatusBarControl() : optionsModel(0),

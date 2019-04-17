@@ -137,6 +137,8 @@ private:
     /** Keep track of previous number of blocks, to detect progress */
     int prevBlocks;
     int spinnerFrame;
+    QPoint m_previousPos;
+    bool m_fMousePress;
 
     /** Create the main UI actions. */
     void createActions(const NetworkStyle* networkStyle);

@@ -24,6 +24,7 @@
 
 ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
                                                           ui(new Ui::ReceiveCoinsDialog),
+                                                          m_SizeGrip(this),
                                                           model(0)
 {
     ui->setupUi(this);
@@ -198,6 +199,12 @@ void ReceiveCoinsDialog::on_receiveButton_clicked()
 void ReceiveCoinsDialog::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
+    m_SizeGrip.move  (width() - 17, height() - 17);
+    m_SizeGrip.resize(          17,            17);
+}
+
+void ReceiveCoinsDialog::bitcoinGUIInstallEvent(BitcoinGUI *gui) {
+    m_SizeGrip.installEventFilter((QObject*)gui);
 }
 
 void ReceiveCoinsDialog::keyPressEvent(QKeyEvent* event)
