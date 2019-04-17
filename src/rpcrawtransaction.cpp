@@ -70,6 +70,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
     entry.push_back(Pair("txid", tx.GetHash().GetHex()));
     entry.push_back(Pair("version", tx.nVersion));
     entry.push_back(Pair("locktime", (int64_t)tx.nLockTime));
+    entry.push_back(Pair("txfee", ValueFromAmount(tx.nTxFee)));
     if (tx.hasPaymentID) {
         entry.push_back(Pair("paymentid", tx.paymentID));
     }

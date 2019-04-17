@@ -184,6 +184,9 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     currentWatchUnconfBalance = watchUnconfBalance;
     currentWatchImmatureBalance = watchImmatureBalance;
     CAmount nSpendableBalance = balance - immatureBalance;
+    if (nSpendableBalance < 0) {
+    	nSpendableBalance = pwalletMain->GetSpendableBalance();
+    }
     CAmount nSpendableDisplayed = nSpendableBalance; //if it is not staking
     if (nLastCoinStakeSearchInterval) {
         //if staking enabled

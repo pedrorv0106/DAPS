@@ -47,6 +47,12 @@ int secp256k1_pedersen_commitment_to_serialized_pubkey(secp256k1_pedersen_commit
     return  secp256k1_eckey_pubkey_serialize(&ge, pubkey, length, 1);
 }
 
+void secp256k1_pedersen_serialized_pubkey_to_commitment(const unsigned char* pubkey, size_t length, secp256k1_pedersen_commitment* commit) {
+    secp256k1_ge ge;
+    secp256k1_eckey_pubkey_parse(&ge, pubkey, length);
+    secp256k1_pedersen_commitment_save(commit, &ge);
+}
+
 int secp256k1_pedersen_commitment_parse(const secp256k1_context2* ctx, secp256k1_pedersen_commitment* commit, const unsigned char *input) {
     secp256k1_fe x;
     secp256k1_ge ge;
@@ -187,6 +193,28 @@ int secp256k1_pedersen_commitment_sum(
 		secp256k1_gej_add_ge_var(&accj, &accj, &add, NULL);
 	}
 	secp256k1_gej_neg(&accj, &accj);
+	for (i = 0; i < n_pos; i++) {
+		secp256k1_pedersen_commitment_load(&add, pos[i]);
+		secp256k1_gej_add_ge_var(&accj, &accj, &add, NULL);
+	}
+	secp256k1_ge_set_gej(&outGe, &accj);
+	secp256k1_pedersen_commitment_save(out, &outGe);
+	return 1;
+}
+
+int secp256k1_pedersen_commitment_sum_pos(
+		const secp256k1_context2* ctx,
+		const secp256k1_pedersen_commitment * const* pos,
+		size_t n_pos,
+		secp256k1_pedersen_commitment* out) {
+	secp256k1_gej accj;
+	secp256k1_ge add;
+	secp256k1_ge outGe;
+	size_t i;
+	VERIFY_CHECK(ctx != NULL);
+	ARG_CHECK(!n_pos || (pos != NULL));
+	(void) ctx;
+	secp256k1_gej_set_infinity(&accj);
 	for (i = 0; i < n_pos; i++) {
 		secp256k1_pedersen_commitment_load(&add, pos[i]);
 		secp256k1_gej_add_ge_var(&accj, &accj, &add, NULL);
