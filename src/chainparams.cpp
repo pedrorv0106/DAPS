@@ -160,10 +160,10 @@ public:
         genesis.nVersion = 1;
         genesis.nTime = 1536807892;
         genesis.nBits = 0x1e0ffff0;
-        genesis.nNonce = 13011156;
+        genesis.nNonce = 13012976;
 
         //change blockhash from 0x00000e9468bba3df97334bfb5015543488a0fb38193c82b101472937590e3037 because of transaction structure change
-        if(genesis.GetHash()!=uint256("0000000c94c8fa402cc91418ffc2fc43075cc11c48b8c1c8ca93af521c8b787d"))
+        if(genesis.GetHash()!=uint256("00000f47a2a92fb30d9c64800512caeea26ec3b298229bff98951ab1da316022"))
         {
             printf("Searchingforgenesisblock...\n");
             uint256 hashTarget=uint256().SetCompact(genesis.nBits);
@@ -195,9 +195,9 @@ public:
 
 
         hashGenesisBlock = genesis.GetHash();
-        assert(hashGenesisBlock == uint256("0000000c94c8fa402cc91418ffc2fc43075cc11c48b8c1c8ca93af521c8b787d"));
+        assert(hashGenesisBlock == uint256("00000f47a2a92fb30d9c64800512caeea26ec3b298229bff98951ab1da316022"));
         printf("genesis.hashMerkleRoot: %s\n", genesis.hashMerkleRoot.GetHex().c_str());
-        assert(genesis.hashMerkleRoot == uint256("4d6290ec48ac5c6e677b3eec9e311f3baf17aaf247c4075b8dcfa2bcf1462f20"));
+        assert(genesis.hashMerkleRoot == uint256("f92eada28ae269846c637b98489127d00a3ce25c69c931cebd35f88a7a440cd3"));
 
         vSeeds.push_back(CDNSSeedData("daps-stg-explorer.arcadiaapi.com", "daps-stg-explorer.arcadiaapi.com")); //35.231.98.100        // Single node address
         vSeeds.push_back(CDNSSeedData("daps-stg-seed1.arcadiaapi.com", "daps-stg-seed1.arcadiaapi.com"));  //104.196.7.250   // Primary DNS Seeder from arcadiaapi
@@ -294,9 +294,9 @@ public:
 
         //! Modify the testnet genesis block so the timestamp is valid for a later start.
         genesis.nTime = 1536808115;
-        genesis.nNonce = 10098901;
+        genesis.nNonce = 11066838;
 
-        if(genesis.GetHash()!=uint256("000000287d3a0a61e1e0ccadf78660189e8dc2b7cacd663903845bcc25809825"))
+        if(genesis.GetHash()!=uint256("00000f0365adac375b09942b404dd270ee7723eb2a2756fbb42651463cda2919"))
         {
             printf("Searchingforgenesisblock...\n");
             uint256 hashTarget=uint256().SetCompact(genesis.nBits);
@@ -326,7 +326,7 @@ public:
         }
 
         hashGenesisBlock = genesis.GetHash();
-        assert(hashGenesisBlock == uint256("000000287d3a0a61e1e0ccadf78660189e8dc2b7cacd663903845bcc25809825"));
+        assert(hashGenesisBlock == uint256("00000f0365adac375b09942b404dd270ee7723eb2a2756fbb42651463cda2919"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
@@ -396,7 +396,7 @@ public:
         genesis.nBits = 0x207fffff;
         genesis.nNonce = 12355;
 
-        if(genesis.GetHash()!=uint256("760531503320e8fa7603c38a4786d574b89e2ff8af76c64491f2c9bdb064950f"))
+        if(genesis.GetHash()!=uint256("68c17897c2447048f5bf31fe119c7187799c0afbe445736f3586db548fc79911"))
         {
             printf("Searchingforgenesisblock...\n");
             uint256 hashTarget=uint256().SetCompact(genesis.nBits);
@@ -428,7 +428,7 @@ public:
         hashGenesisBlock = genesis.GetHash();
         nDefaultPort = 51476;
 
-        assert(hashGenesisBlock == uint256("760531503320e8fa7603c38a4786d574b89e2ff8af76c64491f2c9bdb064950f"));
+        assert(hashGenesisBlock == uint256("68c17897c2447048f5bf31fe119c7187799c0afbe445736f3586db548fc79911"));
 
         vFixedSeeds.clear(); //! Testnet mode doesn't have any fixed seeds.
         vSeeds.clear();      //! Testnet mode doesn't have any DNS seeds.
