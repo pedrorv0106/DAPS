@@ -102,7 +102,6 @@ void ECDHInfo::ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey
     memcpy(temp, sharedSec.begin(), sharedSec.size());
     secp256k1_ec_pubkey_tweak_mul(temp, sharedSec.size(), priv.begin());
     sharedSec.Set(temp, temp + 33);
-    std::cout << "Shared sec size = " << sharedSec.size() << std::endl;
 }
 
 void ECDHInfo::Encode(const CKey& mask, const CAmount& amount, const CPubKey& sharedSec, uint256& encodedMask, uint256& encodedAmount)
@@ -117,7 +116,7 @@ void ECDHInfo::Encode(const CKey& mask, const CAmount& amount, const CPubKey& sh
 
 void ECDHInfo::Decode(unsigned char* encodedMask, unsigned char* encodedAmount, const CPubKey& sharedSec, CKey& decodedMask, CAmount& decodedAmount)
 {
-    unsigned char tempAmount[32], tempDecoded[32];
+	unsigned char tempAmount[32], tempDecoded[32];
     memcpy(tempDecoded, encodedMask, 32);
     decodedMask.Set(tempDecoded, tempDecoded + 32, 32);
     memcpy(tempAmount, encodedAmount, 32);
@@ -125,14 +124,15 @@ void ECDHInfo::Decode(unsigned char* encodedMask, unsigned char* encodedAmount, 
     ecdhDecode(tempDecoded, tempAmount, sharedSec.begin(), sharedSec.size());
     memcpy(&decodedAmount, tempAmount, 8);
     
-    if (!MoneyRange(decodedAmount)) {
+    /*if (!MoneyRange(decodedAmount)) {
         CPubKey constantKey;
         memcpy(tempAmount, encodedAmount, 32);
         memcpy(tempDecoded, decodedMask.begin(), 32);
         ecdhDecode(tempDecoded, tempAmount, constantKey.begin(), constantKey.size());
-    }
+    }*/
     decodedMask.Set(tempDecoded, tempDecoded + 32, 32);
     memcpy(&decodedAmount, tempAmount, 8);
+
 }
 
 
@@ -2652,11 +2652,11 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey 
                                            CWalletTx &wtxNew, CReserveKey &reservekey, CAmount &nFeeRet,
                                            std::string &strFailReason, const CCoinControl *coinControl,
                                            AvailableCoinsType coin_type, bool useIX,
-                                           CAmount nFeePay) {
+                                           CAmount nFeePay, int ringSize) {
     vector<pair<CScript, CAmount> > vecSend;
     //std::cout << "scriptPubKey:" << scriptPubKey.ToString() << std::endl;
     vecSend.push_back(make_pair(scriptPubKey, nValue));
-    return CreateTransactionBulletProof(txPrivDes, recipientViewKey, vecSend, wtxNew, reservekey, nFeeRet, strFailReason, coinControl, coin_type, useIX, nFeePay);
+    return CreateTransactionBulletProof(txPrivDes, recipientViewKey, vecSend, wtxNew, reservekey, nFeeRet, strFailReason, coinControl, coin_type, useIX, nFeePay, ringSize);
 }
 
 bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey& recipientViewKey, const std::vector<std::pair<CScript, CAmount> >& vecSend,
@@ -2667,7 +2667,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                                   const CCoinControl* coinControl,
                                   AvailableCoinsType coin_type,
                                   bool useIX,
-                                  CAmount nFeePay)
+                                  CAmount nFeePay, int ringSize)
 {
     if (useIX && nFeePay < CENT) nFeePay = CENT;
 
@@ -2860,6 +2860,9 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                     CPubKey txPubChange = coinControl->txPriv.GetPubKey();
                     std::copy(txPubChange.begin(), txPubChange.end(), std::back_inserter(newTxOut.txPub));
                     nBytes += ::GetSerializeSize(*(CTxOut*)&newTxOut, SER_NETWORK, PROTOCOL_VERSION);
+                    //formulae for ring signature size
+                    int rsSize = (txNew.vout.size() + 2) * (ringSize + 1) * 32 /*SIJ*/ + 32 /*C*/ + (txNew.vout.size() + 2) * 33 /*key images*/;
+                    nBytes += rsSize;
                     CAmount nFeeNeeded = max(nFeePay, GetMinimumFee(nBytes, nTxConfirmTarget, mempool));
                     newTxOut.nValue -= nFeeNeeded;
                     txNew.nTxFee = nFeeNeeded;
@@ -2944,7 +2947,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
 
     //generateBulletProof(txNew);
     int myIndex;
-    if (!generateRingSignature(wtxNew, myIndex)) {
+    if (!generateRingSignature(wtxNew, myIndex, ringSize)) {
         return false;
     }
     secp256k1_context2 *both = GetContext();
@@ -2969,7 +2972,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
         if (!out.IsEmpty()) {
             secp256k1_pedersen_commitment commitment;
             CKey blind;
-            blind.MakeNewKey(true);
+            blind.Set(out.maskValue.inMemoryRawBind.begin(), out.maskValue.inMemoryRawBind.end(), true);
             secp256k1_pedersen_commit(both, &commitment, blind.begin(), out.nValue, &secp256k1_generator_const_h, &secp256k1_generator_const_g);
             unsigned char output[33];
             secp256k1_pedersen_commitment_serialize(both, output, &commitment);
@@ -3279,26 +3282,13 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     	}
     	wtxNew.S.push_back(S_column);
     }
+    wtxNew.ntxFeeKeyImage.Set(allKeyImages[wtxNew.vin.size()], allKeyImages[wtxNew.vin.size()] + 33);
 
     size_t sizeTx = ::GetSerializeSize(*(CTransaction*)&wtxNew, SER_NETWORK, PROTOCOL_VERSION);
     std::cout << "Txsize = " << sizeTx << std::endl;
 
     //verifying tx commitment
-    IsTransactionForMe(wtxNew);
-    for (CTxOut& out: wtxNew.vout) {
-    	if (IsMine(out)) {
-    		CAmount amount;
-    		CKey blind;
-    		RevealTxOutAmount(wtxNew, out, amount, blind);
-    		std::cout << "Revealed amount = " << amount << std::endl;
-    		std::cout << "Out commitment = " << HexStr(&(out.commitment[0]), &(out.commitment[0]) + 33) << std::endl;
-    		secp256k1_pedersen_commitment commit;
-    		secp256k1_pedersen_commit(both, &commit, blind.begin(), amount, &secp256k1_generator_const_h, &secp256k1_generator_const_g);
-    		unsigned char serialized[33];
-    		secp256k1_pedersen_commitment_serialize(both, serialized, &commit);
-    		std::cout << "computed commitment = " << HexStr(serialized, serialized + 33) << std::endl;
-    	}
-    }
+
 
     //check whether this is a reveal amount transaction
     //only create transaction with reveal amount if it is a masternode collateral transaction
@@ -3562,11 +3552,10 @@ bool CWallet::verifyBulletProof(const CTransaction& tx)
 
 }
 
-bool CWallet::generateRingSignature(CTransaction& tx, int& myIndex)
+bool CWallet::generateRingSignature(CTransaction& tx, int& myIndex, int ringSize)
 {
     //Choose decoys
     int chainHeight = chainActive.Height();
-    int ringSize = 5;
     myIndex = -1;
     for(int i = 0; i < tx.vin.size(); i++) {
         //generate key images and choose decoys
@@ -3642,9 +3631,54 @@ bool CWallet::generateRingSignature(CTransaction& tx, int& myIndex)
     return true;
 }
 
-bool CWallet::verifyRingSignature(const CTransaction& tx)
+bool CWallet::verifyRingSignatureWithTxFee(const CTransaction& tx)
 {
+	unsigned char allInPubKeys[tx.vin.size() + 1][tx.vin[0].decoys.size() + 1][33];
+	unsigned char allKeyImages[tx.vin.size() + 1][33];
+	unsigned char allInCommitments[tx.vin.size()][tx.vin[0].decoys.size() + 1][33];
+	unsigned char allOutCommitments[tx.vout.size()][33];
 
+	unsigned char SIJ[tx.vin.size() + 1][tx.vin[0].decoys.size() + 1][32];
+	unsigned char LIJ[tx.vin.size() + 1][tx.vin[0].decoys.size() + 1][33];
+	unsigned char RIJ[tx.vin.size() + 1][tx.vin[0].decoys.size() + 1][33];
+	unsigned char ALPHA[tx.vin.size() + 1][32];
+	unsigned char AllPrivKeys[tx.vin.size() + 1][32];
+
+	//generating LIJ and RIJ at PI
+	for (int j = 0; j < tx.vin.size(); j++) {
+		memcpy(allKeyImages[j], tx.vin[j].keyImage.begin(), 33);
+	}
+
+	//extract all public keys
+	for (int i = 0; i < tx.vin.size(); i++) {
+		std::vector<COutPoint> decoysForIn;
+		decoysForIn.push_back(tx.vin[i].prevout);
+		for(int j = 0; j < tx.vin[i].decoys.size(); j++) {
+			decoysForIn.push_back(tx.vin[i].decoys[j]);
+		}
+		for (int j = 0; j < tx.vin[0].decoys.size() + 1; j++) {
+			CTransaction txPrev;
+			uint256 hashBlock;
+			if (!GetTransaction(decoysForIn[j].hash, txPrev, hashBlock)) {
+				return false;
+			}
+			CPubKey extractedPub;
+			if (!ExtractPubKey(txPrev.vout[decoysForIn[j].n].scriptPubKey, extractedPub)) {
+				return false;
+			}
+			memcpy(allInPubKeys[i][j], extractedPub.begin(), 33);
+			memcpy(allInCommitments[i][j], &(txPrev.vout[decoysForIn[j].n].commitment[0]), 33);
+			std::cout << "In commitment:" << HexStr(&(txPrev.vout[decoysForIn[j].n].commitment[0]), &(txPrev.vout[decoysForIn[j].n].commitment[0]) + 33) << std::endl;
+		}
+	}
+	memcpy(allKeyImages[tx.vin.size()], tx.ntxFeeKeyImage.begin(), 33);
+
+	for (int i = 0; i < tx.vin[0].decoys.size() + 1; i++) {
+		std::vector<uint256> S_column = tx.S[i];
+		for (int j = 0; j < tx.vin.size() + 1; j++) {
+			memcpy(SIJ[j][i], S_column[j].begin(), 32);
+		}
+	}
 }
 
 bool CWallet::CreateTransaction(CScript scriptPubKey, const CAmount& nValue, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, std::string& strFailReason, const CCoinControl* coinControl, AvailableCoinsType coin_type, bool useIX, CAmount nFeePay)
@@ -6407,7 +6441,7 @@ bool CWallet::GenerateAddress(CPubKey& pub, CPubKey& txPub, CKey& txPriv) const 
     return computeStealthDestination(txPriv, view.GetPubKey(), spend.GetPubKey(), pub);
 }
 
-bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount nValue, CWalletTx& wtxNew, bool fUseIX) {
+bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount nValue, CWalletTx& wtxNew, bool fUseIX, int ringSize) {
     // Check amount
     if (nValue <= 0)
         throw runtime_error("Invalid amount");

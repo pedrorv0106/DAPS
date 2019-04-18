@@ -301,6 +301,9 @@ public:
     uint256 c;
     std::vector<std::vector<uint256>> S;
 
+    //additional key image for transaction fee
+    CKeyImage ntxFeeKeyImage;
+
     /** Construct a CTransaction that qualifies as IsNull() */
     CTransaction();
 
@@ -331,6 +334,7 @@ public:
         
         READWRITE(c);
         READWRITE(S);
+        READWRITE(ntxFeeKeyImage);
         if (ser_action.ForRead())
             UpdateHash();
     }
@@ -448,6 +452,7 @@ struct CMutableTransaction
     CAmount nTxFee;
     uint256 c;
     std::vector<std::vector<uint256>> S;
+    CKeyImage ntxFeeKeyImage;
 
     CMutableTransaction();
     CMutableTransaction(const CTransaction& tx);
@@ -475,6 +480,7 @@ struct CMutableTransaction
         READWRITE(nTxFee);
         READWRITE(c);
         READWRITE(S);
+        READWRITE(ntxFeeKeyImage);
     }
 
     /** Compute the hash of this CMutableTransaction. This is computed on the

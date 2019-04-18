@@ -148,6 +148,15 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
             CKey blind;
             pwalletMain->RevealTxOutAmount(tx, txout, decodedAmount, blind);
             out.push_back(Pair("decoded_amount", ValueFromAmount(decodedAmount)));
+            std::cout << "Revealed amount = " << decodedAmount << std::endl;
+            std::cout << "Revealed mask = " << HexStr(blind.begin(), blind.end()) << std::endl;
+            std::cout << "Out commitment = " << HexStr(&(txout.commitment[0]), &(txout.commitment[0]) + 33) << std::endl;
+            secp256k1_pedersen_commitment commit;
+            secp256k1_context2 *both = GetContext();
+            secp256k1_pedersen_commit(both, &commit, blind.begin(), decodedAmount, &secp256k1_generator_const_h, &secp256k1_generator_const_g);
+            unsigned char serialized[33];
+            secp256k1_pedersen_commitment_serialize(both, serialized, &commit);
+            std::cout << "computed commitment = " << HexStr(serialized, serialized + 33) << std::endl;
         }
 #endif
         vout.push_back(out);
