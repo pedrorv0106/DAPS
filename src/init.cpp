@@ -1816,5 +1816,10 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     }
 #endif
 
+    CWalletDB walletdb(strWalletFile);
+    double reserveBalance;
+    if (walletdb.ReadReserveAmount(reserveBalance))
+        nReserveBalance = reserveBalance * COIN;
+
     return !fRequestShutdown;
 }
