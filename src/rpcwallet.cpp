@@ -1974,12 +1974,9 @@ Value reservebalance(const Array& params, bool fHelp)
             if (nAmount < 0)
                 throw runtime_error("amount cannot be negative.\n");
             nReserveBalance = nAmount;
-            
-            boost::filesystem::path reserveFilePath = GetDataDir() / "reserve.dat";
-            ofstream reserveFile;
-            reserveFile.open(reserveFilePath.c_str());
-            reserveFile << nReserveBalance / COIN;
-            reserveFile.close();
+
+            CWalletDB walletdb(pwalletMain->strWalletFile);
+            walletdb.WriteReserveAmount(nReserveBalance / COIN);
 
         } else {
             if (params.size() > 1)

@@ -102,15 +102,8 @@ void OptionsPage::on_pushButtonSave_clicked() {
     }
     nReserveBalance = getValidatedAmount();
 
-    boost::filesystem::path reserveFilePath = GetDataDir() / "reserve.dat";
-    QString filename= reserveFilePath.c_str();
-    QFile file( filename );
-    if ( file.open(QIODevice::ReadWrite) )
-    {
-        QTextStream stream( &file );
-        stream << nReserveBalance / COIN << endl;
-    }
-    file.close();
+    CWalletDB walletdb(pwalletMain->strWalletFile);
+    walletdb.WriteReserveAmount(nReserveBalance / COIN);
 
     emit model->stakingStatusChanged(nLastCoinStakeSearchInterval);
     QMessageBox(QMessageBox::Information, tr("Information"), tr("Reserve balance " + BitcoinUnits::format(0, nReserveBalance).toUtf8() + " is successfully set!"), QMessageBox::Ok).exec();
