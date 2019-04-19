@@ -1,6 +1,6 @@
 ARG SRC_PATH=r.cfcr.io/hysmagus
 ARG SRC_NAME=build_deps
-ARG SRC_TAG=develop
+ARG SRC_TAG=refactor-tx
 
 FROM ${SRC_PATH}/${SRC_NAME}:${SRC_TAG}
 ENV SRC_IMG=${SRC_PATH}/${SRC_NAME}:${SRC_TAG}
@@ -40,6 +40,11 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
        then echo "Compiling for linux" && \
         su && \
         apt-get remove libzmq3-dev -y && \
+        cd src/secp256k1-mw && \
+        ./autogen.sh &&\
+        ./configure  --enable-module-bulletproof --enable-experimental --enable-module-generator --enable-module-commitment && \
+        make install && \
+        cd .. && cd .. && \
         ./autogen.sh && \
         ./configure && \
         make -j2 && \
