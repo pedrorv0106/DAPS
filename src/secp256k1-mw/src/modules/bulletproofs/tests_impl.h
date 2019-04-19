@@ -1081,7 +1081,7 @@ void run_bulletproofs_tests(void) {
     test_bulletproof_rangeproof_aggregate(64, 1, 675, gens);
     test_bulletproof_rangeproof_aggregate(8, 2, 546, gens);
     test_bulletproof_rangeproof_aggregate(8, 4, 610, gens);
-    //test_bulletproof_rangeproof_aggregate(8, 16, 610, gens);
+    /*test_bulletproof_rangeproof_aggregate(8, 16, 610, gens);*/
 
     test_bulletproof_circuit(gens);
 
