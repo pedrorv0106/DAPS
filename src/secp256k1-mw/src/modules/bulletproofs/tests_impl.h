@@ -71,7 +71,6 @@ static void test1() {
     ecount = 0;
 
     CHECK(secp256k1_bulletproof_rangeproof_prove(both, scratch, gens, proof, &plen, value, min_value, blind_ptr, 1, &value_gen, 64, blind, blind, 32) == 1);
-    //CHECK(ecount == 16);
 
     /* rangeproof_verify */
     /*ecount = 0;
