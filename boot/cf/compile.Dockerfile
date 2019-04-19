@@ -16,7 +16,21 @@ COPY . /DAPS/
 
 RUN cd /DAPS/ && mkdir -p /BUILD/ && \
 #
-    if [ "$BUILD_TARGET" = "windowsx64" ]; \
+    if [ "$BUILD_TARGET" = "linux" ]; \
+       then echo "Compiling for linux" && \
+        su && \
+        apt-get remove libzmq3-dev -y && \
+        cd src/secp256k1-mw && \
+        ./autogen.sh &&\
+        ./configure  --enable-module-bulletproof --enable-experimental --enable-module-generator --enable-module-commitment && \
+        make install && \
+        cd .. && cd .. && \
+        ./autogen.sh && \
+        ./configure && \
+        make -j2 && \
+        make install DESTDIR=/BUILD/; \
+#
+    elif [ "$BUILD_TARGET" = "windowsx64" ]; \
       then echo "Compiling for win64" && \
         cd depends && \
         make HOST=x86_64-w64-mingw32 && \
@@ -33,20 +47,6 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         cd .. && \
         ./autogen.sh && \
         CONFIG_SITE=$PWD/depends/i686-w64-mingw32/share/config.site ./configure --prefix=/ && \
-        make -j2 && \
-        make install DESTDIR=/BUILD/; \
-#
-    elif [ "$BUILD_TARGET" = "linux" ]; \
-       then echo "Compiling for linux" && \
-        su && \
-        apt-get remove libzmq3-dev -y && \
-        cd src/secp256k1-mw && \
-        ./autogen.sh &&\
-        ./configure  --enable-module-bulletproof --enable-experimental --enable-module-generator --enable-module-commitment && \
-        make install && \
-        cd .. && cd .. && \
-        ./autogen.sh && \
-        ./configure && \
         make -j2 && \
         make install DESTDIR=/BUILD/; \
 #
