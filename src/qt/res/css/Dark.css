@@ -298,39 +298,29 @@ max-width:0px;;
 max-height:0px;
 }
 
-QLabel#generalHeader, QLabel#clientName, QLabel#clientNameLabel, QLabel#networkHeader {
-color: black;
+QTabWidget::pane { /* The tab widget frame */
+border-top: 2px solid #5E1C5A;
 }
-QLabel#clientVersion, QLabel#clientVersionLabel, QLabel#openSSLVersionLabel, QLabel#openSSLVersion {
-color: black;
+QTabWidget::tab-bar {
+left: 5px; /* move to the right by 5px */
 }
-QLabel#berkeleyDBVersionLabel, QLabel#berkeleyDBVersion, QLabel#buildDateLabel, QLabel#buildDate {
-color: black;
+/* Style the tab using the tab sub-control. Note that it reads QTabBar _not_ QTabWidget */
+QTabBar::tab {
+background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #E1E1E1, stop: 0.4 #DDDDDD, stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3);
+border: 2px solid #C4C4C3;
+border-bottom-color: #5E1C5A; /* same as the pane color */
+border-top-left-radius: 4px;
+border-top-right-radius: 4px;
+min-width: 8ex;
+padding: 2px;
 }
-QLabel#startupTimeLabel, QLabel#startupTime, QLabel#buildDateLabel, QLabel#buildDate {
-color: black;
+QTabBar::tab:selected, QTabBar::tab:hover {
+background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #fafafa, stop: 0.4 #f4f4f4, stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);
 }
-QLabel#networkNameLabel, QLabel#networkName, QLabel#numberOfConnectionsLabel, QLabel#numberOfConnections {
-color: black;
+QTabBar::tab:selected {
+border-color: #9B9B9B;
+border-bottom-color: #5E1C5A; /* same as pane color */
 }
-QLabel#masternodeCountLabel, QLabel#masternodeCount, QLabel#numberOfBlocksLabel, QLabel#numberOfBlocks {
-color: black;
-}
-QLabel#blockchainHeader, QLabel#lastBlockTimeLabel, QLabel#lastBlockTime {
-color: black;
-}
-QLabel#label_repair_header, QLabel#label_repair_helptext, QLabel#wallet_path, QLabel#wallet_path_label {
-color: black;
-}
-QLabel#label_repair_salvage_command, QLabel#label_repair_salvage, QLabel#label_repair_rescan_command, QLabel#label_repair_rescan {
-color: black;
-}
-QLabel#label_repair_zap1_command, QLabel#label_repair_zap1, QLabel#label_repair_zap2_command, QLabel#label_repair_zap2 {
-color: black;
-}
-QLabel#label_repair_upgrade_command, QLabel#label_repair_upgrade, QLabel#label_repair_reindex_command, QLabel#label_repair_reindex {
-color: black;
-}
-QLabel#label_repair_resync_command, QLabel#label_repair_resync {
-color: black;
+QTabBar::tab:!selected {
+margin-top: 2px; /* make non-selected tabs look smaller */
 }
