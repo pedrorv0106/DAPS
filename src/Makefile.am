@@ -32,11 +32,13 @@ LIBBITCOIN_UNIVALUE=univalue/libbitcoin_univalue.a
 LIBBITCOIN_ZEROCOIN=libzerocoin/libbitcoin_zerocoin.a
 LIBBITCOINQT=qt/libbitcoinqt.a
 LIBSECP256K1=secp256k1/libsecp256k1.la
+LIBSECP256K1+=secp256k1-mw/libsecp256k1_2.la
 LIBSECP256K1_2=secp256k1-mw/libsecp256k1_2.la
 
 $(LIBSECP256K1): $(wildcard secp256k1/src/*) $(wildcard secp256k1/include/*)
 	$(AM_V_at)$(MAKE) $(AM_MAKEFLAGS) -C $(@D) $(@F)
 $(LIBSECP256K1_2): $(wildcard secp256k1-mw/src/*) $(wildcard secp256k1-mw/include/*)
+	$(AM_V_at)$(MAKE) $(AM_MAKEFLAGS) -C $(@D) $(@F)
 
 # Make is not made aware of per-object dependencies to avoid limiting building parallelization
 # But to build the less dependent modules first, we manually select their order here:
@@ -57,6 +59,8 @@ endif
 if ENABLE_ZMQ
 EXTRA_LIBRARIES += libbitcoin_zmq.a
 endif
+
+EXTRA_LIBRARIES += /usr/local/lib/libsecp256k1_2.a
 
 if BUILD_BITCOIN_LIBS
 lib_LTLIBRARIES = libbitcoinconsensus.la
@@ -422,7 +426,8 @@ dapscoind_LDADD = \
   $(LIBBITCOIN_CRYPTO) \
   $(LIBLEVELDB) \
   $(LIBMEMENV) \
-  $(LIBSECP256K1)
+  $(LIBSECP256K1) \
+  $(LIBSECP256K1_2) 
 
 if ENABLE_ZMQ
 dapscoind_LDADD += $(LIBBITCOIN_ZMQ) $(ZMQ_LIBS)
@@ -510,6 +515,7 @@ libbitcoinconsensus_la_LIBADD = $(CRYPTO_LIBS) $(BOOST_LIBS)
 libbitcoinconsensus_la_CPPFLAGS = $(CRYPTO_CFLAGS) -I$(builddir)/obj -DBUILD_BITCOIN_INTERNAL
 if USE_LIBSECP256K1
 libbitcoinconsensus_la_LIBADD += secp256k1/libsecp256k1.la
+libbitcoinconsensus_la_LIBADD += secp256k1-mw/libsecp256k1_2.la
 endif
 endif
 
