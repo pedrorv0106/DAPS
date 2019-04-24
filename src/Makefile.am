@@ -450,10 +450,13 @@ dapscoind_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 dapscoin_cli_LDADD = \
   $(LIBBITCOIN_CLI) \
   $(LIBBITCOIN_UTIL) \
+  $(LIBBITCOIN_CRYPTO) \
   $(BOOST_LIBS) \
   $(SSL_LIBS) \
   $(CRYPTO_LIBS) \
-  $(EVENT_LIBS)
+  $(EVENT_LIBS) \
+  $(LIBSECP256K1) \
+  $(LIBSECP256K1_2) 
 
 dapscoin_cli_SOURCES = \
   dapscoin-cli.cpp
