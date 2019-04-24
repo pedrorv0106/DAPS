@@ -398,7 +398,7 @@ endif
 if TARGET_WINDOWS
   qt_dapscoin_qt_SOURCES += $(BITCOIN_RC)
 endif
-qt_dapscoin_qt_LDADD = qt/libbitcoinqt.a $(LIBBITCOIN_SERVER)
+qt_dapscoin_qt_LDADD = qt/libbitcoinqt.a $(LIBBITCOIN_SERVER) $(LIBSECP256K1) $(LIBSECP256K1_2)
 if ENABLE_WALLET
 qt_dapscoin_qt_LDADD += $(LIBBITCOIN_WALLET)
 endif
