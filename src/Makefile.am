@@ -32,7 +32,6 @@ LIBBITCOIN_UNIVALUE=univalue/libbitcoin_univalue.a
 LIBBITCOIN_ZEROCOIN=libzerocoin/libbitcoin_zerocoin.a
 LIBBITCOINQT=qt/libbitcoinqt.a
 LIBSECP256K1=secp256k1/libsecp256k1.la
-LIBSECP256K1+=secp256k1-mw/libsecp256k1_2.la
 LIBSECP256K1_2=secp256k1-mw/libsecp256k1_2.la
 
 $(LIBSECP256K1): $(wildcard secp256k1/src/*) $(wildcard secp256k1/include/*)
@@ -60,7 +59,7 @@ if ENABLE_ZMQ
 EXTRA_LIBRARIES += libbitcoin_zmq.a
 endif
 
-EXTRA_LIBRARIES += /usr/local/lib/libsecp256k1_2.a
+EXTRA_LIBRARIES += secp256k1-mw/.libs/libsecp256k1_2.a
 
 if BUILD_BITCOIN_LIBS
 lib_LTLIBRARIES = libbitcoinconsensus.la
@@ -471,6 +470,7 @@ dapscoin_tx_LDADD = \
   $(LIBBITCOIN_UTIL) \
   $(LIBBITCOIN_CRYPTO) \
   $(LIBSECP256K1) \
+  $(LIBSECP256K1_2) \
   $(BOOST_LIBS) \
   $(CRYPTO_LIBS)
 
