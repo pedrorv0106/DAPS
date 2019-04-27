@@ -2967,7 +2967,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     CPubKey pkRaw;
     pkRaw.Set(pubkeyRaw, pubkeyRaw + 33);
     std::cout << "Serialized commitment parsed to public key:" << pkRaw.GetHex() << std::endl;*/
-
+    LogPrintf("\n%s: Create commitment\n", __func__);
     for(CTxOut& out: wtxNew.vout) {
         if (!out.IsEmpty()) {
             secp256k1_pedersen_commitment commitment;
@@ -2976,6 +2976,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
             secp256k1_pedersen_commit(both, &commitment, blind.begin(), out.nValue, &secp256k1_generator_const_h, &secp256k1_generator_const_g);
             unsigned char output[33];
             secp256k1_pedersen_commitment_serialize(both, output, &commitment);
+            out.commitment.clear();
             std::copy(output, output + 33, std::back_inserter(out.commitment));
         }
     }
@@ -2992,7 +2993,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     unsigned char allOutCommitments[wtxNew.vout.size()][33];
 
     int myBlindsIdx = 0;
-
+    LogPrintf("\n%s: Generating LIJ and RIJ at PI\n", __func__);
     //generating LIJ and RIJ at PI
     for (int j = 0; j < wtxNew.vin.size(); j++) {
         COutPoint myOutpoint;
@@ -3007,6 +3008,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
         myBlindsIdx++;
     }
 
+    LogPrintf("\n%s: Generating LIJ and RIJ at PI 2\n", __func__);
     for(CTxIn& in: wtxNew.vin) {
         COutPoint myOutpoint;
         if (myIndex == -1) {
@@ -3027,7 +3029,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
         bptr[myBlindsIdx] = myBlinds[myBlindsIdx].begin();
         myBlindsIdx++;
     }
-
+    LogPrintf("\n%s: Generating LIJ and RIJ at PI 3\n", __func__);
     for(CTxOut& out: wtxNew.vout) {
         if (!out.IsEmpty()) {
             myBlinds[myBlindsIdx] = out.maskValue.inMemoryRawBind;
@@ -3051,7 +3053,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     unsigned char RIJ[wtxNew.vin.size() + 1][wtxNew.vin[0].decoys.size() + 1][33];
     unsigned char ALPHA[wtxNew.vin.size() + 1][32];
     unsigned char AllPrivKeys[wtxNew.vin.size() + 1][32];
-
+    LogPrintf("\n%s: Generating LIJ and RIJ at PI 2\n", __func__);
     //generating LIJ and RIJ at PI
     for (int j = 0; j < wtxNew.vin.size(); j++) {
         COutPoint myOutpoint;
@@ -6869,6 +6871,13 @@ bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmou
             amount = out.nValue;
             return true;
         }
+    }
+
+    if (tx.IsCoinStake()) {
+    	if (out.nValue > 0) {
+    		amount = out.nValue;
+    		return true;
+    	}
     }
 
     if (amountMap.count(out.scriptPubKey) == 1) {

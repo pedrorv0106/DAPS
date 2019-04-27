@@ -1226,6 +1226,7 @@ public:
                     cre = pwallet->GetCredit(*this, txout, ISMINE_SPENDABLE);
                 }
                 nCredit += cre;
+                LogPrintf("\n%s: tx hash = %s\n", __func__, GetHash().GetHex());
                 if (!MoneyRange(nCredit))
                     throw std::runtime_error("CWalletTx::GetAvailableCredit() : value out of range");
             }
