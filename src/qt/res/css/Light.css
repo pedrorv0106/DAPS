@@ -159,10 +159,10 @@ QToolTip {
 }
 
 QMenu::item {
-  margin: 0;
-  padding: 8px;
-  border-radius: 0;
+    padding: 2px 25px 2px 20px;
+    border: 1px solid transparent; /* reserve space for selection border */
 }
+
 QComboBox:checked {
   color: #83faff;
 }

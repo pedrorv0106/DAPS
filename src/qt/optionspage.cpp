@@ -24,12 +24,15 @@
 #include <QTextDocument>
 #include <QDataWidgetMapper>
 #include <QDoubleValidator>
+#include <QFile>
+#include <QTextStream>
 
 using namespace std;
 
 OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
                                                           ui(new Ui::OptionsPage),
                                                           model(0),
+                                                          m_SizeGrip(this),
                                                           mapper(0)
 {
     ui->setupUi(this);
@@ -50,6 +53,8 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
     dblVal->setLocale(QLocale::C);
     ui->lineEditWithhold->setValidator(dblVal);
     ui->lineEditWithhold->setPlaceholderText("DAPS Amount");
+    if (nReserveBalance > 0)
+        ui->lineEditWithhold->setText(BitcoinUnits::format(0, nReserveBalance).toUtf8());
 
     //connect(ui->pushButtonPassword, SIGNAL(clicked()), this, SLOT(on_pushButtonPassword_clicked()));
 }
@@ -89,6 +94,13 @@ OptionsPage::~OptionsPage()
 void OptionsPage::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
+
+    m_SizeGrip.move  (width() - 17, height() - 17);
+    m_SizeGrip.resize(          17,            17);
+}
+
+void OptionsPage::bitcoinGUIInstallEvent(BitcoinGUI *gui) {
+    m_SizeGrip.installEventFilter((QObject*)gui);
 }
 
 void OptionsPage::on_pushButtonSave_clicked() {
@@ -97,6 +109,10 @@ void OptionsPage::on_pushButtonSave_clicked() {
         return;
     }
     nReserveBalance = getValidatedAmount();
+
+    CWalletDB walletdb(pwalletMain->strWalletFile);
+    walletdb.WriteReserveAmount(nReserveBalance / COIN);
+
     emit model->stakingStatusChanged(nLastCoinStakeSearchInterval);
     QMessageBox(QMessageBox::Information, tr("Information"), tr("Reserve balance " + BitcoinUnits::format(0, nReserveBalance).toUtf8() + " is successfully set!"), QMessageBox::Ok).exec();
 }
