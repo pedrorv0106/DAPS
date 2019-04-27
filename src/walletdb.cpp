@@ -158,6 +158,17 @@ bool CWalletDB::EraseMultiSig(const CScript& dest)
     return Erase(std::make_pair(std::string("multisig"), dest));
 }
 
+bool CWalletDB::WriteReserveAmount(const double& amount)
+{
+    nWalletDBUpdated++;
+    return Write(std::string("reservebalance"), amount);
+}
+
+bool CWalletDB::ReadReserveAmount(double& amount)
+{
+    return Read(std::string("reservebalance"), amount);
+}
+
 bool CWalletDB::WriteBestBlock(const CBlockLocator& locator)
 {
     nWalletDBUpdated++;

@@ -16,9 +16,11 @@
 #include <QPoint>
 #include <QVariant>
 #include <QSettings>
+#include <QSizeGrip>
 
 class OptionsModel;
 class WalletModel;
+class BitcoinGUI;
 
 namespace Ui
 {
@@ -42,6 +44,7 @@ public:
     void setModel(WalletModel* model);
     void setMapper();
     bool matchNewPasswords();
+    void bitcoinGUIInstallEvent(BitcoinGUI *gui);
 
 public slots:
 
@@ -55,6 +58,7 @@ private:
     OptionsModel* options;
     QDataWidgetMapper* mapper;
     QSettings settings;
+    QSizeGrip m_SizeGrip;
     QMenu* contextMenu;
     virtual void resizeEvent(QResizeEvent* event);
     CAmount getValidatedAmount();
