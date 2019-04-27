@@ -922,7 +922,7 @@ void test_bulletproof_rangeproof_aggregate(size_t nbits, size_t n_commits, size_
         if (v[i] >> nbits > 0) {
             v[i] = 0;
         }
-        printf("v[i] = %d", vi);
+        printf("v[i] = %d", v[i]);
         secp256k1_scalar_set_u64(&vs, v[i]);
         random_scalar_order(&blind[i]);
         secp256k1_pedersen_ecmult(&commitj, &blind[i], v[i], &value_gen, &gens->blinding_gen[0]);
