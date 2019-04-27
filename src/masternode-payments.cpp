@@ -338,7 +338,7 @@ bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
             /**
              * Topdev update
              */
-	                LogPrintf("\n%s: increase txNew.vout\n", __func__);
+	        LogPrintf("\n%s: increase txNew.vout\n", __func__);
             txNew.vout.resize(i + 1);
             LogPrintf("\n%s: copying new payee\n", __func__);
             txNew.vout[i].scriptPubKey = payee;
@@ -348,7 +348,7 @@ bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
             //subtract mn payment from the stake reward
             LogPrintf("\n%s: decrease staking node payment\n", __func__);
             txNew.vout[i - 1].nValue -= masternodePayment;
-		            LogPrintf("\n%s: done masternode payment\n", __func__);
+		    LogPrintf("\n%s: done masternode payment\n", __func__);
 //            txNew.vout.resize(i + 2);
 //            txNew.vout[i].scriptPubKey = payee;
 //            txNew.vout[i].nValue = masternodePayment;

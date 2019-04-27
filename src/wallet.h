@@ -811,8 +811,8 @@ public:
     void CreatePrivacyAccount();
     bool mySpendPrivateKey(CKey& spend) const;
     bool myViewPrivateKey(CKey& view) const;
-    bool CreateCommitment(const CAmount val, CKey& blind, std::vector<unsigned char>& commitment);
-    bool CreateCommitment(const unsigned char* blind, CAmount val, std::vector<unsigned char>& commitment);
+    static bool CreateCommitment(const CAmount val, CKey& blind, std::vector<unsigned char>& commitment);
+    static bool CreateCommitment(const unsigned char* blind, CAmount val, std::vector<unsigned char>& commitment);
     bool WriteStakingStatus(bool status);
     bool ReadStakingStatus();
 private:

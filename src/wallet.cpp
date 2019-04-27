@@ -3917,125 +3917,125 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             }
 
             BOOST_FOREACH (PAIRTYPE(const CWalletTx*, unsigned int) pcoin, setStakeCoins) {
-                            LogPrintf("%s: Checking mapBlockIndex", __func__);
-                            //make sure that enough time has elapsed between
-                            CBlockIndex* pindex = NULL;
-                            BlockMap::iterator it = mapBlockIndex.find(pcoin.first->hashBlock);
-                            if (it != mapBlockIndex.end()) {
-                                LogPrintf("CreateCoinStake: find block index");
-                                pindex = it->second;
-                            } else {
-                                if (fDebug) {
-                                    LogPrintf("CreateCoinStake() failed to find block index \n");
-                                }
-                                continue;
-                            }
+            	LogPrintf("%s: Checking mapBlockIndex", __func__);
+            	//make sure that enough time has elapsed between
+            	CBlockIndex* pindex = NULL;
+            	BlockMap::iterator it = mapBlockIndex.find(pcoin.first->hashBlock);
+            	if (it != mapBlockIndex.end()) {
+            		LogPrintf("CreateCoinStake: find block index");
+            		pindex = it->second;
+            	} else {
+            		if (fDebug) {
+            			LogPrintf("CreateCoinStake() failed to find block index \n");
+            		}
+            		continue;
+            	}
 
-                            // Read block header
-                            CBlockHeader block = pindex->GetBlockHeader();
+            	// Read block header
+            	CBlockHeader block = pindex->GetBlockHeader();
 
-                            bool fKernelFound = false;
-                            uint256 hashProofOfStake = 0;
-                            COutPoint prevoutStake = COutPoint(pcoin.first->GetHash(), pcoin.second);
-                            nTxNewTime = GetAdjustedTime();
+            	bool fKernelFound = false;
+            	uint256 hashProofOfStake = 0;
+            	COutPoint prevoutStake = COutPoint(pcoin.first->GetHash(), pcoin.second);
+            	nTxNewTime = GetAdjustedTime();
 
-                            CKey view, spend;
-                            myViewPrivateKey(view);
-                            mySpendPrivateKey(spend);
-                            CPubKey sharedSec;
-                            computeSharedSec(*pcoin.first, pcoin.first->vout[pcoin.second], sharedSec);
-                            //iterates each utxo inside of CheckStakeKernelHash()
-                            if (CheckStakeKernelHash(nBits, block, *pcoin.first, prevoutStake, sharedSec.begin(), nTxNewTime, nHashDrift, false, hashProofOfStake, true)) {
-                                LogPrintf("%s: Checking kernel success", __func__);
-                                //Double check that this will pass time requirements
-                                if (nTxNewTime <= chainActive.Tip()->GetMedianTimePast()) {
-                                    LogPrintf("CreateCoinStake() : kernel found, but it is too far in the past \n");
-                                    continue;
-                                }
+            	CKey view, spend;
+            	myViewPrivateKey(view);
+            	mySpendPrivateKey(spend);
+            	CPubKey sharedSec;
+            	computeSharedSec(*pcoin.first, pcoin.first->vout[pcoin.second], sharedSec);
+            	//iterates each utxo inside of CheckStakeKernelHash()
+            	if (CheckStakeKernelHash(nBits, block, *pcoin.first, prevoutStake, sharedSec.begin(), nTxNewTime, nHashDrift, false, hashProofOfStake, true)) {
+            		LogPrintf("%s: Checking kernel success", __func__);
+            		//Double check that this will pass time requirements
+            		if (nTxNewTime <= chainActive.Tip()->GetMedianTimePast()) {
+            			LogPrintf("CreateCoinStake() : kernel found, but it is too far in the past \n");
+            			continue;
+            		}
 
-                                // Found a kernel
-                                if (fDebug && GetBoolArg("-printcoinstake", false))
-                                    LogPrintf("CreateCoinStake : kernel found\n");
+            		// Found a kernel
+            		if (fDebug && GetBoolArg("-printcoinstake", false))
+            			LogPrintf("CreateCoinStake : kernel found\n");
 
-                                vector<valtype> vSolutions;
-                                txnouttype whichType;
-                                CScript scriptPubKeyOut;
-                                scriptPubKeyKernel = pcoin.first->vout[pcoin.second].scriptPubKey;
-                                if (!Solver(scriptPubKeyKernel, whichType, vSolutions)) {
-                                    LogPrintf("CreateCoinStake : failed to parse kernel\n");
-                                    break;
-                                }
+            		vector<valtype> vSolutions;
+            		txnouttype whichType;
+            		CScript scriptPubKeyOut;
+            		scriptPubKeyKernel = pcoin.first->vout[pcoin.second].scriptPubKey;
+            		if (!Solver(scriptPubKeyKernel, whichType, vSolutions)) {
+            			LogPrintf("CreateCoinStake : failed to parse kernel\n");
+            			break;
+            		}
 
-                                if (fDebug && GetBoolArg("-printcoinstake", false))
-                                    LogPrintf("CreateCoinStake : parsed kernel type=%d\n", whichType);
-                                if (whichType != TX_PUBKEY && whichType != TX_PUBKEYHASH) {
-                                    if (fDebug && GetBoolArg("-printcoinstake", false))
-                                        LogPrintf("CreateCoinStake : no support for kernel type=%d\n", whichType);
-                                    break; // only support pay to public key and pay to address
-                                }
-                                if (whichType == TX_PUBKEYHASH) // pay to address type
-                                {
-                                    //convert to pay to public key type
-                                    CKey key;
-                                    if (!keystore.GetKey(uint160(vSolutions[0]), key)) {
-                                        if (fDebug && GetBoolArg("-printcoinstake", false))
-                                            LogPrintf("CreateCoinStake : failed to get key for kernel type=%d\n", whichType);
-                                        break; // unable to find corresponding public key
-                                    }
+            		if (fDebug && GetBoolArg("-printcoinstake", false))
+            			LogPrintf("CreateCoinStake : parsed kernel type=%d\n", whichType);
+            		if (whichType != TX_PUBKEY && whichType != TX_PUBKEYHASH) {
+            			if (fDebug && GetBoolArg("-printcoinstake", false))
+            				LogPrintf("CreateCoinStake : no support for kernel type=%d\n", whichType);
+            			break; // only support pay to public key and pay to address
+            		}
+            		if (whichType == TX_PUBKEYHASH) // pay to address type
+            		{
+            			//convert to pay to public key type
+            			CKey key;
+            			if (!keystore.GetKey(uint160(vSolutions[0]), key)) {
+            				if (fDebug && GetBoolArg("-printcoinstake", false))
+            					LogPrintf("CreateCoinStake : failed to get key for kernel type=%d\n", whichType);
+            				break; // unable to find corresponding public key
+            			}
 
-                                    scriptPubKeyOut << key.GetPubKey() << OP_CHECKSIG;
-                                } else
-                                    scriptPubKeyOut = scriptPubKeyKernel;
+            			scriptPubKeyOut << key.GetPubKey() << OP_CHECKSIG;
+            		} else
+            			scriptPubKeyOut = scriptPubKeyKernel;
 
-                                CTxIn in(pcoin.first->GetHash(), pcoin.second);
-                                if (!generate_key_image_helper(scriptPubKeyKernel, in.keyImage)) {
-                                    LogPrintf("CreateCoinStake : cannot generate key image");
-                                    break;
-                                }
-                                //copy encryption key so that full nodes can decode the amount in the txin
-                                std::copy(sharedSec.begin(), sharedSec.begin() + 33, std::back_inserter(in.encryptionKey));
-                                txNew.vin.push_back(in);
+            		CTxIn in(pcoin.first->GetHash(), pcoin.second);
+            		if (!generate_key_image_helper(scriptPubKeyKernel, in.keyImage)) {
+            			LogPrintf("CreateCoinStake : cannot generate key image");
+            			break;
+            		}
+            		//copy encryption key so that full nodes can decode the amount in the txin
+            		std::copy(sharedSec.begin(), sharedSec.begin() + 33, std::back_inserter(in.encryptionKey));
+            		txNew.vin.push_back(in);
 
-                                CAmount val = getCTxOutValue(*pcoin.first, pcoin.first->vout[pcoin.second]);
-                                nCredit += val;
-                                vwtxPrev.push_back(pcoin.first);
-                                //create a new pubkey
-                                CKey myTxPriv;
-                                myTxPriv.MakeNewKey(true);
-                                CPubKey txPub = myTxPriv.GetPubKey();
-                                CPubKey newPub;
-                                ComputeStealthDestination(myTxPriv, view.GetPubKey(), spend.GetPubKey(), newPub);
-                                scriptPubKeyOut = GetScriptForDestination(newPub);
-                                CTxOut out(0, scriptPubKeyOut);
-                                std::copy(txPub.begin(), txPub.end(), std::back_inserter(out.txPub));
-                                txNew.vout.push_back(out);
+            		CAmount val = getCTxOutValue(*pcoin.first, pcoin.first->vout[pcoin.second]);
+            		nCredit += val;
+            		vwtxPrev.push_back(pcoin.first);
+            		//create a new pubkey
+					CKey myTxPriv;
+					myTxPriv.MakeNewKey(true);
+					CPubKey txPub = myTxPriv.GetPubKey();
+					CPubKey newPub;
+					ComputeStealthDestination(myTxPriv, view.GetPubKey(), spend.GetPubKey(), newPub);
+					scriptPubKeyOut = GetScriptForDestination(newPub);
+					CTxOut out(0, scriptPubKeyOut);
+					std::copy(txPub.begin(), txPub.end(), std::back_inserter(out.txPub));
+					txNew.vout.push_back(out);
 
-                                //create second UTXO
-                                /*CPubKey newPub2;
+					//create second UTXO
+					/*CPubKey newPub2;
                                 ComputeStealthDestination(txNew.txPrivM, view.GetPubKey(), spend.GetPubKey(), newPub);
                                 scriptPubKeyOut = GetScriptForDestination(newPub);
                                 CTxOut out(0, scriptPubKeyOut);
                                 txNew.vout.push_back(out);*/
 
-                                //presstab HyperStake - calculate the total size of our new output including the stake reward so that we can use it to decide whether to split the stake outputs
-                                const CBlockIndex* pIndex0 = chainActive.Tip();
-                                uint64_t nTotalSize = val + GetBlockValue(pIndex0->nHeight);
+					//presstab HyperStake - calculate the total size of our new output including the stake reward so that we can use it to decide whether to split the stake outputs
+					const CBlockIndex* pIndex0 = chainActive.Tip();
+					uint64_t nTotalSize = val + GetBlockValue(pIndex0->nHeight);
 
-                                //presstab HyperStake - if MultiSend is set to send in coinstake we will add our outputs here (values asigned further down)
-                                //Campv: dont split the amount
-                                //if (nTotalSize / 2 > nStakeSplitThreshold * COIN)
-                                //    txNew.vout.push_back(CTxOut(0, scriptPubKeyOut)); //split stake
+					//presstab HyperStake - if MultiSend is set to send in coinstake we will add our outputs here (values asigned further down)
+					//Campv: dont split the amount
+					//if (nTotalSize / 2 > nStakeSplitThreshold * COIN)
+					//    txNew.vout.push_back(CTxOut(0, scriptPubKeyOut)); //split stake
 
-                                if (fDebug && GetBoolArg("-printcoinstake", false))
-                                    LogPrintf("CreateCoinStake : added kernel type=%d\n", whichType);
-                                fKernelFound = true;
-                                break;
-                            }
-                            if (fKernelFound) {
-                                LogPrintf("CreateCoinStake: Kernel is found");
-                                break; // if kernel is found stop searching
-                            }
-                        }
+					if (fDebug && GetBoolArg("-printcoinstake", false))
+						LogPrintf("CreateCoinStake : added kernel type=%d\n", whichType);
+					fKernelFound = true;
+					break;
+            	}
+            	if (fKernelFound) {
+            		LogPrintf("CreateCoinStake: Kernel is found");
+            		break; // if kernel is found stop searching
+            	}
+            }
             if (nCredit == 0)
                 continue;
 
@@ -4117,14 +4117,16 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             //    txNew.vout[i+1].nValue = 50 * COIN;
 
             // Sign
+            LogPrintf("\n%s:Transction hash: txNew = %s, vwtxPrev.size=%\n", __func__, txNew.GetHash().GetHex(), vwtxPrev.size());
             int nIn = 0;
             BOOST_FOREACH (const CWalletTx* pcoin, vwtxPrev) {
-                            if (!SignSignature(*this, *pcoin, txNew, nIn++))
-                                return error("CreateCoinStake : failed to sign coinstake");
-                        }
+            	if (!SignSignature(*this, *pcoin, txNew, nIn++))
+            		return error("CreateCoinStake : failed to sign coinstake");
+            }
+            LogPrintf("\n%s:Transction hash after: txNew = %s\n", __func__, txNew.GetHash().GetHex());
             //add generated private key to keystore
             IsTransactionForMe(txNew);
-
+            LogPrintf("\n%s:Transction hash after 2: txNew = %s\n", __func__, txNew.GetHash().GetHex());
             // Successfully generated coinstake
             nLastStakeSetUpdate = 0; //this will trigger stake set to repopulate next round
             return true;

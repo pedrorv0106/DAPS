@@ -259,7 +259,10 @@ CAmount GetValueIn(CCoinsViewCache view, const CTransaction& tx)
     if (tx.IsCoinStake()) {
         for (unsigned int i = 0; i < tx.vin.size(); i++) {
             CAmount nValueIn;// = txPrev.vout[prevout.n].nValue;
-            const CTxOut& out = view.GetOutputFor(tx.vin[i]);
+            uint256 hashBlock;
+            CTransaction txPrev;
+            GetTransaction(tx.vin[i].prevout.hash, txPrev, hashBlock, true);
+            const CTxOut& out = txPrev.vout[tx.vin[i].prevout.n];
             if (out.nValue >0) {
                 nResult += out.nValue;
             } else {
@@ -268,7 +271,15 @@ CAmount GetValueIn(CCoinsViewCache view, const CTransaction& tx)
                 CKey decodedMask;
                 CPubKey sharedSec;
                 sharedSec.Set(tx.vin[i].encryptionKey.begin(), tx.vin[i].encryptionKey.begin() + 33);
+                LogPrintf("\n%s: sharedSec = %s\n", __func__, sharedSec.GetHex());
+                LogPrintf("\n%s: sharedSec = %s\n", __func__, val.GetHex());
                 ECDHInfo::Decode(mask.begin(), val.begin(), sharedSec, decodedMask, nValueIn);
+                //Verify commitment
+                std::vector<unsigned char> commitment;
+                CWallet::CreateCommitment(decodedMask.begin(), nValueIn, commitment);
+                if (commitment != out.commitment) {
+                	throw runtime_error("Commitment for coinstake not correct");
+                }
                 nResult += nValueIn;
             }
         }
@@ -1537,8 +1548,6 @@ bool CheckTransaction(const CTransaction &tx, bool fZerocoinActive, bool fReject
             return state.DoS(100, error("CheckTransaction() : txout.nValue negative"),
                              REJECT_INVALID, "bad-txns-vout-negative");
         if (txout.nValue > Params().MaxMoneyOut())   {
-            LogPrintf("nvalue %d", txout.nValue);
-            LogPrintf("nvalue %d", Params().MaxMoneyOut());
             return state.DoS(100, error("CheckTransaction() : txout.nValue too high"),
                              REJECT_INVALID, "bad-txns-vout-toolarge");
         }
@@ -1676,36 +1685,29 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
     if (pfMissingInputs)
         *pfMissingInputs = false;
     //Temporarily disable zerocoin for maintenance
-    LogPrintf("\n%s:Get spork\n", __func__);
     if (GetAdjustedTime() > GetSporkValue(SPORK_16_ZEROCOIN_MAINTENANCE_MODE) && tx.ContainsZerocoins())
         return state.DoS(10,
                          error("AcceptToMemoryPool : Zerocoin transactions are temporarily disabled for maintenance"),
                          REJECT_INVALID, "bad-tx");
-LogPrintf("\n%s:check transaction\n", __func__);
     if (!CheckTransaction(tx, chainActive.Height() >= Params().Zerocoin_StartHeight(), true, state))
         return state.DoS(100, error("AcceptToMemoryPool: : CheckTransaction failed"), REJECT_INVALID, "bad-tx");
-LogPrintf("\n%s:check coinbase\n", __func__);
     // Coinbase is only valid in a block, not as a loose transaction
     if (tx.IsCoinBase())
         return state.DoS(100, error("AcceptToMemoryPool: : coinbase as individual tx"),
                          REJECT_INVALID, "coinbase");
-LogPrintf("\n%s:check coinstake\n", __func__);
     //Coinstake is also only valid in a block, not as a loose transaction
     if (tx.IsCoinStake())
         return state.DoS(100, error("AcceptToMemoryPool: coinstake as individual tx"),
                          REJECT_INVALID, "coinstake");
     // Rather not work on nonstandard transactions (unless -testnet/-regtest)
     string reason;
-LogPrintf("\n%s:check standard\n", __func__);
     if (Params().RequireStandard() && !IsStandardTx(tx, reason))
         return state.DoS(0,
                          error("AcceptToMemoryPool : nonstandard transaction: %s", reason),
                          REJECT_NONSTANDARD, reason);
     // is it already in the memory pool?
     uint256 hash = tx.GetHash();
-LogPrintf("\n%s:check pool\n", __func__);
     if (pool.exists(hash)) {
-        LogPrintf("%s tx already in mempool\n", __func__);
         return false;
     }
     // ----------- swiftTX transaction scanning -----------
@@ -1737,7 +1739,6 @@ LogPrintf("\n%s:check pool\n", __func__);
     {
         CCoinsView dummy;
         CCoinsViewCache view(&dummy);
-LogPrintf("\n%s:checkingzero coins spend\n", __func__);
         CAmount nValueIn = 0;
         if (tx.IsZerocoinSpend()) {
             nValueIn = tx.GetZerocoinSpent();
@@ -2297,7 +2298,7 @@ int64_t GetBlockValue(int nHeight) {
         nSubsidy = 200000000 * COIN; //6M for the first block
     } else {*/
         //if (Params().NetworkID() == CBaseChainParams::MAIN) {
-        	if (nHeight <= Params().nLastPOWBlock) {
+        	if (nHeight < Params().nLastPOWBlock) {
         		nSubsidy = 200000000 * COIN;
         	} else {
                 nSubsidy = 950 * COIN;
@@ -3099,22 +3100,37 @@ bool RecalculateDAPSSupply(int nHeightStart) {
 
         CAmount nValueIn = 0;
         CAmount nValueOut = 0;
+        CAmount nFees = 0;
         for (const CTransaction tx : block.vtx) {
-            for (unsigned int i = 0; i < tx.vin.size(); i++) {
-                if (tx.IsCoinBase() || tx.IsCoinAudit())
-                    break;
-
-                if (tx.vin[i].scriptSig.IsZerocoinSpend()) {
-                    nValueIn += tx.vin[i].nSequence * COIN;
-                    continue;
-                }
-
-                COutPoint prevout = tx.vin[i].prevout;
-                CTransaction txPrev;
-                uint256 hashBlock;
-                assert(GetTransaction(prevout.hash, txPrev, hashBlock, true));
-                nValueIn += txPrev.vout[prevout.n].nValue;
-            }
+        	nFees += tx.nTxFee;
+        	if (tx.IsCoinStake()) {
+        		for (unsigned int i = 0; i < tx.vin.size(); i++) {
+        			CAmount nTemp;// = txPrev.vout[prevout.n].nValue;
+        			uint256 hashBlock;
+        			CTransaction txPrev;
+        			GetTransaction(tx.vin[i].prevout.hash, txPrev, hashBlock, true);
+        			const CTxOut& out = txPrev.vout[tx.vin[i].prevout.n];
+        			if (out.nValue >0) {
+        				nValueIn += out.nValue;
+        			} else {
+        				uint256 val = out.maskValue.amount;
+        				uint256 mask = out.maskValue.mask;
+        				CKey decodedMask;
+        				CPubKey sharedSec;
+        				sharedSec.Set(tx.vin[i].encryptionKey.begin(), tx.vin[i].encryptionKey.begin() + 33);
+        				LogPrintf("\n%s: sharedSec = %s\n", __func__, sharedSec.GetHex());
+        				LogPrintf("\n%s: sharedSec = %s\n", __func__, val.GetHex());
+        				ECDHInfo::Decode(mask.begin(), val.begin(), sharedSec, decodedMask, nTemp);
+        				//Verify commitment
+        				std::vector<unsigned char> commitment;
+        				CWallet::CreateCommitment(decodedMask.begin(), nTemp, commitment);
+        				if (commitment != out.commitment) {
+        					throw runtime_error("Commitment for coinstake not correct");
+        				}
+        				nValueIn += nTemp;
+        			}
+        		}
+        	}
 
             for (unsigned int i = 0; i < tx.vout.size(); i++) {
                 if (i == 0 && tx.IsCoinStake())
@@ -3125,7 +3141,7 @@ bool RecalculateDAPSSupply(int nHeightStart) {
         }
 
         // Rewrite money supply
-        pindex->nMoneySupply = nSupplyPrev + nValueOut - nValueIn;
+        pindex->nMoneySupply = nSupplyPrev + nValueOut - nValueIn - nFees;
         nSupplyPrev = pindex->nMoneySupply;
 
         // Add fraudulent funds to the supply and remove any recovered funds.
@@ -3398,7 +3414,8 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
             if (!tx.IsCoinStake())
                 //nFees += view.GetValueIn(tx) - tx.GetValueOut();
                 nFees += tx.nTxFee;
-            nValueIn += GetValueIn(view, tx);
+            CAmount valTemp = GetValueIn(view, tx);
+            nValueIn += valTemp;
 
             std::vector <CScriptCheck> vChecks;
             //LogPrintf("%s: start checking inputs %s", __func__, tx.GetH);
@@ -3465,7 +3482,7 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
 
     // track money supply and mint amount info
     CAmount nMoneySupplyPrev = pindex->pprev ? pindex->pprev->nMoneySupply : 0;
-    pindex->nMoneySupply = nMoneySupplyPrev + nValueOut - nValueIn;
+    pindex->nMoneySupply = nMoneySupplyPrev + nValueOut - nValueIn -nFees;
     LogPrintf("%s: nValueOut=%d, nValueIn=%d, nMoneySupplyPrev=%d, pindex->nMoneySupply=%d, nFees=%d", __func__, nValueOut, nValueIn, nMoneySupplyPrev, pindex->nMoneySupply, nFees);
     pindex->nMint = pindex->nMoneySupply - nMoneySupplyPrev + nFees;
 
@@ -3485,8 +3502,7 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
 
     //PoW phase redistributed fees to miner. PoS stage destroys fees.
     CAmount nExpectedMint = GetBlockValue(pindex->pprev->nHeight);
-    if (block.IsProofOfWork())
-        nExpectedMint += nFees;
+    nExpectedMint += nFees;
 
     if (!block.IsPoABlockByVersion() && !IsBlockValueValid(block, nExpectedMint, pindex->nMint)) {
         return state.DoS(100,

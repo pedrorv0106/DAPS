@@ -206,7 +206,8 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
             if (pwallet->CreateCoinStake(*pwallet, pblock->nBits, nSearchTime - nLastCoinStakeSearchTime, txCoinStake, nTxNewTime)) {
                 pblock->nTime = nTxNewTime;
                 pblock->vtx[0].vout[0].SetEmpty();
-                pblock->vtx.push_back(CTransaction(txCoinStake));
+                CTransaction copied(txCoinStake);
+                pblock->vtx.push_back(copied);
                 fStakeFound = true;
             }
 
@@ -411,7 +412,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
                     continue;
             }
 
-            CAmount nTxFees = GetValueIn(view, tx) - tx.GetValueOut();
+            CAmount nTxFees = tx.nTxFee;
 
             nTxSigOps += GetP2SHSigOpCount(tx, view);
             if (nBlockSigOps + nTxSigOps >= nMaxBlockSigOps)
@@ -479,6 +480,9 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
         if (!fProofOfStake) {
             pblock->vtx[0].vout[0].nValue += nFees;
             pblocktemplate->vTxFees[0] = nFees;
+        } else {
+        	pblock->vtx[1].vout[1].nValue += nFees;
+        	pblocktemplate->vTxFees[0] = nFees;
         }
         
         CPubKey sharedSec;
@@ -486,18 +490,19 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
         //compute commitment
         unsigned char zeroBlind[32];
         memset(zeroBlind, 0, 32);
-        if (pblock->vtx[0].IsCoinBase()) {
+        if (pblock->IsProofOfWork()) {
             pwallet->EncodeTxOutAmount(pblock->vtx[0].vout[0], pblock->vtx[0].vout[0].nValue, sharedSec.begin());
             nValue = pblock->vtx[0].vout[0].nValue;
             if (!pwallet->CreateCommitment(zeroBlind, nValue, pblock->vtx[0].vout[0].commitment)) {
-                LogPrintf("\n%s: unable to create commitment to 0\n", __func__);
+                LogPrintf("\n%s: coinbase unable to create commitment to 0\n", __func__);
                 return NULL;
             }
         } else {
-            pwallet->EncodeTxOutAmount(pblock->vtx[0].vout[1], pblock->vtx[0].vout[1].nValue, sharedSec.begin());
-            nValue = pblock->vtx[0].vout[1].nValue;
-            if (!pwallet->CreateCommitment(zeroBlind, nValue, pblock->vtx[0].vout[1].commitment)) {
-                LogPrintf("\n%s: unable to create commitment to 0\n", __func__);
+            pwallet->EncodeTxOutAmount(pblock->vtx[1].vout[1], pblock->vtx[1].vout[1].nValue, sharedSec.begin());
+            nValue = pblock->vtx[1].vout[1].nValue;
+            LogPrintf("\n%s:Commitment value = %d\n", __func__, nValue);
+            if (!pwallet->CreateCommitment(zeroBlind, nValue, pblock->vtx[1].vout[1].commitment)) {
+                LogPrintf("\n%s: pos unable to create commitment to 0\n", __func__);
                 return NULL;
             }
         }
