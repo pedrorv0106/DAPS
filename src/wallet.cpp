@@ -4101,6 +4101,10 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             for(int i = 1; i < txNew.vout.size(); i++) {
                 sharedSec1.Set(txNew.vout[i].txPub.begin(), txNew.vout[i].txPub.end());
                 EncodeTxOutAmount(txNew.vout[i], txNew.vout[i].nValue, sharedSec1.begin());
+                //create commitment
+                unsigned char zeroBlind[32];
+                memset(zeroBlind, 0, 32);
+                CreateCommitment(zeroBlind, txNew.vout[i].nValue, txNew.vout[i].commitment);
             }
 
             //subtract mn payment from the stake reward
@@ -6972,18 +6976,28 @@ bool CWallet::generate_key_image_helper(const CPubKey& pub, CKeyImage& img) cons
     return generate_key_image_helper(script, img);
 }
 
-bool CWallet::EncodeTxOutAmount(CTxOut &out, const CAmount &amount, const unsigned char *sharedSec) {
+bool CWallet::EncodeTxOutAmount(CTxOut &out, const CAmount &amount, const unsigned char *sharedSec, bool isCoinstake) {
     if (amount < 0) {
         return false;
     }
     //generate random mask
-    out.maskValue.inMemoryRawBind.MakeNewKey(true);
-    memcpy(out.maskValue.mask.begin(), out.maskValue.inMemoryRawBind.begin(), 32);
-    uint256 tempAmount((uint64_t) amount);
-    memcpy(out.maskValue.amount.begin(), tempAmount.begin(), 32);
-    CPubKey sharedPub(sharedSec, sharedSec + 33);
-    ECDHInfo::Encode(out.maskValue.inMemoryRawBind, amount, sharedPub, out.maskValue.mask, out.maskValue.amount);
-    out.maskValue.hashOfKey = Hash(sharedSec, sharedSec + 33);
+    if (!isCoinstake) {
+		out.maskValue.inMemoryRawBind.MakeNewKey(true);
+		memcpy(out.maskValue.mask.begin(), out.maskValue.inMemoryRawBind.begin(), 32);
+		uint256 tempAmount((uint64_t) amount);
+		memcpy(out.maskValue.amount.begin(), tempAmount.begin(), 32);
+		CPubKey sharedPub(sharedSec, sharedSec + 33);
+		ECDHInfo::Encode(out.maskValue.inMemoryRawBind, amount, sharedPub, out.maskValue.mask, out.maskValue.amount);
+		out.maskValue.hashOfKey = Hash(sharedSec, sharedSec + 33);
+    } else {
+    	uint256 tempAmount((uint64_t) amount);
+    	out.maskValue.amount.SetNull();
+    	memcpy(out.maskValue.amount.begin(), tempAmount.begin(), 32);
+    	CPubKey sharedPub(sharedSec, sharedSec + 33);
+    	    //std::cout << "mask:" << mask.begin() << std::endl;
+    	ecdhEncode(out.maskValue.mask.begin(), out.maskValue.amount.begin(), sharedPub.begin(), sharedPub.size());
+    	out.maskValue.hashOfKey = Hash(sharedSec, sharedSec + 33);
+    }
     return true;
 }
 

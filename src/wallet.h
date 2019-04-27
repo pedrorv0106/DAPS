@@ -803,7 +803,7 @@ public:
     bool GenerateIntegratedAddress(const CPubKey& pubViewKey, const CPubKey& pubSpendKey, std::string& pubAddr);
     bool AllMyPublicAddresses(std::vector<std::string>& addresses, std::vector<std::string>& accountNames);
     bool RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmount &amount, CKey&) const;
-    bool EncodeTxOutAmount(CTxOut& out, const CAmount& amount, const unsigned char * sharedSec);
+    bool EncodeTxOutAmount(CTxOut& out, const CAmount& amount, const unsigned char * sharedSec, bool isCoinstake = false);
     CAmount getCOutPutValue(const COutput& output) const;
     CAmount getCTxOutValue(const CTransaction &tx, const CTxOut &out) const;
     bool findCorrespondingPrivateKey(const CTxOut &txout, CKey &key) const;
