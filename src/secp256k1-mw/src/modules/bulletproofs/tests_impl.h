@@ -141,9 +141,9 @@ void build_proof(const uint64_t* value, int size, unsigned char* proof, size_t* 
 	CHECK(secp256k1_pedersen_commit(both, &pcommit[2], blind, value[2], &secp256k1_generator_const_g, &secp256k1_generator_const_h) != 0);
 	CHECK(secp256k1_pedersen_commit(both, &pcommit[3], blind, value[3], &secp256k1_generator_const_g, &secp256k1_generator_const_h) != 0);
 
-	/* generators */
+	/* generators
 	//	gens = secp256k1_bulletproof_generators_create(none, NULL, 256);
-	//	CHECK(gens == NULL && ecount == 1);
+	//	CHECK(gens == NULL && ecount == 1);*/
 	gens = secp256k1_bulletproof_generators_create(both, &secp256k1_generator_const_h, 256);
 	CHECK(gens != NULL);
 
