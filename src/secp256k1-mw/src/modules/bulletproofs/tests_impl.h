@@ -190,15 +190,15 @@ static void test_build_verify() {
 	blind_ptr[3] = blind;
 	pcommit_arr[0] = pcommit;
 
-	//CHECK(secp256k1_generator_generate(both, &value_gen, blind) != 0);
+	/*CHECK(secp256k1_generator_generate(both, &value_gen, blind) != 0);*/
 	CHECK(secp256k1_pedersen_commit(both, &pcommit[0], blind, value[0], &secp256k1_generator_const_g, &secp256k1_generator_const_h) != 0);
 	CHECK(secp256k1_pedersen_commit(both, &pcommit[1], blind, value[1], &secp256k1_generator_const_g, &secp256k1_generator_const_h) != 0);
 	CHECK(secp256k1_pedersen_commit(both, &pcommit[2], blind, value[2], &secp256k1_generator_const_g, &secp256k1_generator_const_h) != 0);
 	CHECK(secp256k1_pedersen_commit(both, &pcommit[3], blind, value[3], &secp256k1_generator_const_g, &secp256k1_generator_const_h) != 0);
 
-	/* generators */
+	/* generators
 //	gens = secp256k1_bulletproof_generators_create(none, NULL, 256);
-//	CHECK(gens == NULL && ecount == 1);
+//	CHECK(gens == NULL && ecount == 1);*/
 	gens = secp256k1_bulletproof_generators_create(both, &secp256k1_generator_const_h, 256);
 	CHECK(gens != NULL);
 
@@ -1159,9 +1159,9 @@ void run_bulletproofs_tests(void) {
     }
     test_bulletproof_inner_product(1024, gens);
     printf("Testing bulletproof range proof\n");
-    //test1();
+    /*test1();*/
     printf("testing verify");
-    //test_build_verify();
+    /*test_build_verify();*/
 
     test_bulletproof_rangeproof(1, 289, gens);
     test_bulletproof_rangeproof(2, 353, gens);
