@@ -2246,6 +2246,9 @@ bool CWallet::SelectCoins(const CAmount& nTargetValue, set<pair<const CWalletTx*
                     continue;
                 if (mine == ISMINE_WATCH_ONLY)
                     continue;
+                if (getCTxOutValue(*pcoin, pcoin->vout[i]) == 1000000 && coin_type != ONLY_1000000) {
+                	continue;
+                }
                 vCoins.push_back(COutput(pcoin, i, nDepth, true));
             }
         }
@@ -2783,7 +2786,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                 // Choose coins to use
                 set<pair<const CWalletTx*, unsigned int> > setCoins;
                 CAmount nValueIn = 0;
-
+                nTotalValue += 1 * COIN; //reserver 1 DAPS for transaction fee
                 if (!SelectCoins(nTotalValue, setCoins, nValueIn, coinControl, coin_type, useIX)) {
                     if (coin_type == ALL_COINS) {
                         strFailReason = _("Insufficient funds.");
