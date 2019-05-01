@@ -56,6 +56,10 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
     if (nReserveBalance > 0)
         ui->lineEditWithhold->setText(BitcoinUnits::format(0, nReserveBalance).toUtf8());
 
+    bool stkStatus = pwalletMain->ReadStakingStatus();
+    ui->toggleStaking->setState(nLastCoinStakeSearchInterval | stkStatus);
+    connect(ui->toggleStaking, SIGNAL(stateChanged(ToggleButton*)), this, SLOT(on_EnableStaking(ToggleButton*)));
+
     //connect(ui->pushButtonPassword, SIGNAL(clicked()), this, SLOT(on_pushButtonPassword_clicked()));
 }
 
@@ -216,6 +220,40 @@ bool OptionsPage::matchNewPasswords()
         ui->lineEditNewPassRepeat->setStyleSheet("border-color: red");
         ui->lineEditNewPassRepeat->repaint();
         return false;
+    }
+}
+
+void OptionsPage::on_EnableStaking(ToggleButton* widget)
+{
+    if (chainActive.Height() < Params().LAST_POW_BLOCK()) {
+    	if (widget->getState()) {
+			QString msg("PoW blocks are still being mined!");
+			QStringList l;
+			l.push_back(msg);
+			GUIUtil::prompt(QString("<br><br>")+l.join(QString("<br><br>"))+QString("<br><br>"));
+    	}
+    	widget->setState(false);
+    	pwalletMain->WriteStakingStatus(false);
+        return;
+    }
+	if (widget->getState()){
+        QStringList errors = model->getStakingStatusError();
+        if (!errors.length()) {
+            emit model->stakingStatusChanged(true);
+            pwalletMain->WriteStakingStatus(true);
+            model->generateCoins(true, 1);
+        } else {
+            GUIUtil::prompt(QString("<br><br>")+errors.join(QString("<br><br>"))+QString("<br><br>"));
+            widget->setState(false);
+            nLastCoinStakeSearchInterval = 0;
+            emit model->stakingStatusChanged(false);
+            pwalletMain->WriteStakingStatus(false);
+        }
+    } else {
+        nLastCoinStakeSearchInterval = 0;
+        model->generateCoins(false, 0);
+        emit model->stakingStatusChanged(false);
+        pwalletMain->WriteStakingStatus(false);
     }
 }
 
