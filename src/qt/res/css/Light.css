@@ -295,7 +295,7 @@ ToggleButton > QPushButton:enabled:checked {
 
 
 QToolTip{
-max-width:0px;;
+max-width:0px;
 max-height:0px;
 }
 
