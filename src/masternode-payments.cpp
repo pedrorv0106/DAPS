@@ -287,6 +287,9 @@ bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
 
     bool hasPayment = true;
     CScript payee;
+    CKey mnPaymentPrivTx;
+    mnPaymentPrivTx.MakeNewKey(true);
+    CPubKey mnPaymentPubTx = mnPaymentPrivTx.GetPubKey();
 
     //spork
     LogPrintf("\n%s: Initial payee=%s\n", __func__, payee.ToString());
@@ -313,7 +316,7 @@ bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
                 throw runtime_error("Stealth address mal-formatted");
             }
             LogPrintf("\n%s: computing stealth des for masternode\n", __func__);
-            if (!CWallet::ComputeStealthDestination(txNew.txPrivM, pubViewKey, pubSpendKey, des));
+            if (!CWallet::ComputeStealthDestination(mnPaymentPrivTx, pubViewKey, pubSpendKey, des));
             payee = GetScriptForDestination(des);
             LogPrintf("\n%s: new payee %s\n", __func__, payee.ToString());
         } else {
@@ -344,7 +347,8 @@ bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
             txNew.vout[i].scriptPubKey = payee;
             LogPrintf("\n%s: setting masternode payment\n", __func__);
             txNew.vout[i].nValue = masternodePayment;
-
+            std::copy(mnPaymentPrivTx.begin(), mnPaymentPrivTx.end(), std::back_inserter(txNew.vout[i].txPriv));
+            std::copy(mnPaymentPubTx.begin(), mnPaymentPubTx.end(), std::back_inserter(txNew.vout[i].txPub));
             //subtract mn payment from the stake reward
             LogPrintf("\n%s: decrease staking node payment\n", __func__);
             txNew.vout[i - 1].nValue -= masternodePayment;

@@ -267,7 +267,7 @@ bool GetKernelStakeModifier(uint256 hashBlockFrom, uint64_t& nStakeModifier, int
             nStakeModifierTime = pindex->GetBlockTime();
         }
     }
-    nStakeModifier = pindex->nStakeModifier;
+    nStakeModifier = hashBlockFrom.Get64();//pindex->nStakeModifier;
     LogPrintf("%s: hashBlockFrom=%s, nStakeModifier=%d", __func__, hashBlockFrom.GetHex(), nStakeModifier);
     return true;
 }

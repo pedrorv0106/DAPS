@@ -4084,6 +4084,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             ComputeStealthDestination(foundationTxPriv, pubView, pubSpend, foundationalGenPub);
             CScript foundationalScript = GetScriptForDestination(foundationalGenPub);
             CTxOut foundationalOut(50 * COIN, foundationalScript);
+            std::copy(foundationTxPriv.begin(), foundationTxPriv.end(), std::back_inserter(foundationalOut.txPriv));
             std::copy(foundationTxPub.begin(), foundationTxPub.end(), std::back_inserter(foundationalOut.txPub));
             txNew.vout.push_back(foundationalOut);
             /*if (Params().NetworkID() == CBaseChainParams::TESTNET){
@@ -4109,6 +4110,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
                 //create commitment
                 unsigned char zeroBlind[32];
                 memset(zeroBlind, 0, 32);
+                txNew.vout[i].commitment.clear();
                 CreateCommitment(zeroBlind, txNew.vout[i].nValue, txNew.vout[i].commitment);
             }
 
