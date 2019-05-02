@@ -452,6 +452,7 @@ public:
     CPubKey vchDefaultKey;
 
     std::set<COutPoint> setLockedCoins;
+    bool walletStakingInProgress;
 
     int64_t nTimeFirstKey;
 

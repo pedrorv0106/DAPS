@@ -220,6 +220,7 @@ bool CWallet::AddKeyPubKey(const CKey& secret, const CPubKey& pubkey)
 
 bool CWallet::WriteStakingStatus(bool status)
 {
+	walletStakingInProgress = true;
     return CWalletDB(strWalletFile).WriteStakingStatus(status);
 }
 bool CWallet::ReadStakingStatus()
