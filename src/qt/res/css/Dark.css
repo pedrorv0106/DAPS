@@ -205,6 +205,14 @@ QPushButton:pressed {
   border-width: 10px;
 }
 
+QPushButton#btn_rescan{
+  font-size: 19px;
+}
+
+QPushButton#btn_resync{
+  font-size: 15px;
+}
+
 /*** Spin Boxes, Combo Boxes ***/
 QWidget::up-button {
   border-radius: 10px 10px 0 0;
