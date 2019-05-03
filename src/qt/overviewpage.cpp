@@ -132,6 +132,11 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
     pingNetworkInterval = new QTimer();
 
     initSyncCircle(.8);
+
+    QTimer* timerBlockHeightLabel = new QTimer();
+    connect(timerBlockHeightLabel, SIGNAL(timeout()), this, SLOT(showBlockCurrentHeight()));
+    timerBlockHeightLabel->start(10000);
+
     //updateRecentTransactions();
 }
 
@@ -184,6 +189,9 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     currentWatchUnconfBalance = watchUnconfBalance;
     currentWatchImmatureBalance = watchImmatureBalance;
     CAmount nSpendableBalance = balance - immatureBalance;
+    if (nSpendableBalance < 0) {
+    	nSpendableBalance = pwalletMain->GetSpendableBalance();
+    }
     CAmount nSpendableDisplayed = nSpendableBalance; //if it is not staking
     if (nLastCoinStakeSearchInterval) {
         //if staking enabled
@@ -351,7 +359,13 @@ void OverviewPage::showBlockSync(bool fShow)
 
     ui->labelBlockCurrent->setText(QString::number(clientModel->getNumBlocks()));
     // if (!fShow)
-        ui->labelBlockCurrent->setAlignment(fShow? (Qt::AlignRight|Qt::AlignVCenter):(Qt::AlignHCenter|Qt::AlignTop));
+    ui->labelBlockCurrent->setAlignment(fShow? (Qt::AlignRight|Qt::AlignVCenter):(Qt::AlignHCenter|Qt::AlignTop));
+}
+
+void OverviewPage::showBlockCurrentHeight()
+{
+	ui->labelBlockCurrent->setText(QString::number(chainActive.Height()));
+	// if (!fShow)
 }
 
 void OverviewPage::initSyncCircle(float ratioToParent)

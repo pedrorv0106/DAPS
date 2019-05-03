@@ -689,6 +689,28 @@ Value getbalance(const Array& params, bool fHelp)
     return ValueFromAmount(nBalance);
 }
 
+Value getbalances(const Array& params, bool fHelp)
+{
+    if (fHelp)
+        throw runtime_error(
+            "getbalances"
+            "\nArguments:\n"
+            "\nResult:\n"
+            "total              (numeric) The total amount in DAPS received for this wallet.\n"
+        	"spendable 			(numeric) The total amount in DAPS spendable for this wallet.\n"
+        	"pending			(numeric) The total amount in DAPS pending for this wallet."
+            "\nExamples:\n"
+            "\nThe total amount in the server across all accounts\n" +
+            HelpExampleCli("getbalances", ""));
+
+    Object obj;
+    obj.push_back(Pair("total", ValueFromAmount(pwalletMain->GetBalance())));
+    obj.push_back(Pair("spendable", ValueFromAmount(pwalletMain->GetSpendableBalance())));
+    obj.push_back(Pair("pending", ValueFromAmount(pwalletMain->GetUnconfirmedBalance())));
+
+    return obj;
+}
+
 Value getunconfirmedbalance(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() > 0)

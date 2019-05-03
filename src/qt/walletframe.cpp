@@ -55,7 +55,6 @@ bool WalletFrame::addWallet(const QString& name, WalletModel* walletModel)
 
     // Ensure a walletView is able to show the main window
     connect(walletView, SIGNAL(showNormalIfMinimized()), gui, SLOT(showNormalIfMinimized()));
-
     return true;
 }
 

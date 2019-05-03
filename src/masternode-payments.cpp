@@ -286,42 +286,50 @@ bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
     if (!pindexPrev) return false;
 
     bool hasPayment = true;
+    std::vector<unsigned char> payeeAddr;
     CScript payee;
+    CKey mnPaymentPrivTx;
+    mnPaymentPrivTx.MakeNewKey(true);
+    CPubKey mnPaymentPubTx = mnPaymentPrivTx.GetPubKey();
 
     //spork
     LogPrintf("\n%s: Initial payee=%s\n", __func__, payee.ToString());
-    if (!masternodePayments.GetBlockPayee(pindexPrev->nHeight + 1, payee)) {
+    masternodePayments.GetBlockPayee(pindexPrev->nHeight + 1, payeeAddr);
+    if (payeeAddr.size() == 0) {
         //no masternode detected
         CMasternode* winningNode = mnodeman.GetCurrentMasterNode(1);
         if (winningNode) {
             //generate payee based on masternodeStealthAddress
-            std::vector<unsigned char> masternodeStealthAddress = winningNode->vin.masternodeStealthAddress;
-            std::string mnsa(masternodeStealthAddress.begin(), masternodeStealthAddress.end());
-            LogPrintf("\nCMasternodePayments: masternodeStealthAddress: %s\n", mnsa);
-            std::string myAddress;
-            pwalletMain->ComputeStealthPublicAddress("masteraccount", myAddress);
-            if (myAddress == mnsa) {
-                LogPrintf("\nCMasternodePayments: cannot pay staking reward and masternode reward to the same address\n");
-                return false;
-            }
-
-            //Parse stealth address
-            CPubKey pubViewKey, pubSpendKey, des;
-            bool hasPaymentID;
-            uint64_t paymentID;
-            if (!CWallet::DecodeStealthAddress(mnsa, pubViewKey, pubSpendKey, hasPaymentID, paymentID)) {
-                throw runtime_error("Stealth address mal-formatted");
-            }
-            LogPrintf("\n%s: computing stealth des for masternode\n", __func__);
-            if (!CWallet::ComputeStealthDestination(txNew.txPrivM, pubViewKey, pubSpendKey, des));
-            payee = GetScriptForDestination(des);
-            LogPrintf("\n%s: new payee %s\n", __func__, payee.ToString());
-        } else {
-            LogPrintf("\n%s: Failed to detect block to pay\n", __func__);
-            LogPrint("masternode","CreateNewBlock: Failed to detect masternode to pay\n");
-            hasPayment = false;
+            payeeAddr = winningNode->vin.masternodeStealthAddress;
         }
     }
+    if (payeeAddr.size() != 0) {
+    	std::string mnsa(payeeAddr.begin(), payeeAddr.end());
+    	LogPrintf("\nCMasternodePayments: masternodeStealthAddress: %s\n", mnsa);
+    	std::string myAddress;
+    	pwalletMain->ComputeStealthPublicAddress("masteraccount", myAddress);
+    	if (myAddress == mnsa) {
+    		LogPrintf("\nCMasternodePayments: cannot pay staking reward and masternode reward to the same address\n");
+    		return false;
+    	}
+
+    	//Parse stealth address
+    	CPubKey pubViewKey, pubSpendKey, des;
+    	bool hasPaymentID;
+    	uint64_t paymentID;
+    	if (!CWallet::DecodeStealthAddress(mnsa, pubViewKey, pubSpendKey, hasPaymentID, paymentID)) {
+    		throw runtime_error("Stealth address mal-formatted");
+    	}
+    	LogPrintf("\n%s: computing stealth des for masternode\n", __func__);
+    	if (!CWallet::ComputeStealthDestination(mnPaymentPrivTx, pubViewKey, pubSpendKey, des));
+    	payee = GetScriptForDestination(des);
+    	LogPrintf("\n%s: new payee %s\n", __func__, payee.ToString());
+    } else {
+    	LogPrintf("\n%s: Failed to detect block to pay\n", __func__);
+    	LogPrint("masternode","CreateNewBlock: Failed to detect masternode to pay\n");
+    	hasPayment = false;
+    }
+
 
     CAmount blockValue = GetBlockValue(pindexPrev->nHeight);
     CAmount masternodePayment = GetMasternodePayment(pindexPrev->nHeight, blockValue);
@@ -338,17 +346,18 @@ bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
             /**
              * Topdev update
              */
-	                LogPrintf("\n%s: increase txNew.vout\n", __func__);
+	        LogPrintf("\n%s: increase txNew.vout\n", __func__);
             txNew.vout.resize(i + 1);
             LogPrintf("\n%s: copying new payee\n", __func__);
             txNew.vout[i].scriptPubKey = payee;
             LogPrintf("\n%s: setting masternode payment\n", __func__);
             txNew.vout[i].nValue = masternodePayment;
-
+            std::copy(mnPaymentPrivTx.begin(), mnPaymentPrivTx.end(), std::back_inserter(txNew.vout[i].txPriv));
+            std::copy(mnPaymentPubTx.begin(), mnPaymentPubTx.end(), std::back_inserter(txNew.vout[i].txPub));
             //subtract mn payment from the stake reward
             LogPrintf("\n%s: decrease staking node payment\n", __func__);
             txNew.vout[i - 1].nValue -= masternodePayment;
-		            LogPrintf("\n%s: done masternode payment\n", __func__);
+		    LogPrintf("\n%s: done masternode payment\n", __func__);
 //            txNew.vout.resize(i + 2);
 //            txNew.vout[i].scriptPubKey = payee;
 //            txNew.vout[i].nValue = masternodePayment;
@@ -472,10 +481,10 @@ bool CMasternodePaymentWinner::Sign(CKey& keyMasternode, CPubKey& pubKeyMasterno
 {
     std::string errorMessage;
     std::string strMasterNodeSignMessage;
-
+    std::string payeeString(payee.begin(), payee.end());
     std::string strMessage = vinMasternode.prevout.ToStringShort() +
                              boost::lexical_cast<std::string>(nBlockHeight) +
-                             payee.ToString();
+							 payeeString;
 
     if (!obfuScationSigner.SignMessage(strMessage, errorMessage, vchSig, keyMasternode)) {
         LogPrint("masternode","CMasternodePing::Sign() - Error: %s\n", errorMessage.c_str());
@@ -490,7 +499,7 @@ bool CMasternodePaymentWinner::Sign(CKey& keyMasternode, CPubKey& pubKeyMasterno
     return true;
 }
 
-bool CMasternodePayments::GetBlockPayee(int nBlockHeight, CScript& payee)
+bool CMasternodePayments::GetBlockPayee(int nBlockHeight, std::vector<unsigned char>& payee)
 {
     if (mapMasternodeBlocks.count(nBlockHeight)) {
         return mapMasternodeBlocks[nBlockHeight].GetPayee(payee);
@@ -552,7 +561,7 @@ bool CMasternodePayments::AddWinningMasternode(CMasternodePaymentWinner& winnerI
         }
     }
 
-    mapMasternodeBlocks[winnerIn.nBlockHeight].AddPayee(winnerIn.payee, 1);
+    mapMasternodeBlocks[winnerIn.nBlockHeight].AddPayee(1, winnerIn.vinMasternode.masternodeStealthAddress);
 
     return true;
 }
@@ -626,14 +635,13 @@ std::string CMasternodeBlockPayees::GetRequiredPaymentsString()
     std::string ret = "Unknown";
 
     BOOST_FOREACH (CMasternodePayee& payee, vecPayments) {
-        CTxDestination address1;
-        ExtractDestination(payee.scriptPubKey, address1);
-        CBitcoinAddress address2(address1);
+        //CTxDestination address1;
+        std::string paymentAddress(payee.masternodeStealthAddress.begin(), payee.masternodeStealthAddress.end());
 
         if (ret != "Unknown") {
-            ret += ", " + address2.ToString() + ":" + boost::lexical_cast<std::string>(payee.nVotes);
+            ret += ", " + paymentAddress + ":" + boost::lexical_cast<std::string>(payee.nVotes);
         } else {
-            ret = address2.ToString() + ":" + boost::lexical_cast<std::string>(payee.nVotes);
+            ret = paymentAddress + ":" + boost::lexical_cast<std::string>(payee.nVotes);
         }
     }
 
@@ -807,9 +815,10 @@ bool CMasternodePaymentWinner::SignatureValid()
     CMasternode* pmn = mnodeman.Find(vinMasternode);
 
     if (pmn != NULL) {
+    	std::string payeeString(payee.begin(), payee.end());
         std::string strMessage = vinMasternode.prevout.ToStringShort() +
                                  boost::lexical_cast<std::string>(nBlockHeight) +
-                                 payee.ToString();
+                                 payeeString;
 
         std::string errorMessage = "";
         if (!obfuScationSigner.VerifyMessage(pmn->pubKeyMasternode, vchSig, strMessage, errorMessage)) {

@@ -778,17 +778,23 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
             if (in.prevout.n < prev.vout.size()) {
                 if (wallet->IsMine(prev.vout[in.prevout.n])) {
                     CAmount decodedAmount = 0;
-                    wallet->RevealTxOutAmount(prev, prev.vout[in.prevout.n], decodedAmount);
+                    CKey blind;
+                    pwalletMain->RevealTxOutAmount(prev, prev.vout[in.prevout.n], decodedAmount, blind);
                     totalIn += decodedAmount;
                 }
             }
         }
     }
-
+    CAmount firstOut = 0;
     for (CTxOut out: tx.vout){
         CAmount vamount;
-        if (wallet->RevealTxOutAmount(tx,out,vamount))
+        CKey blind;
+        if (wallet->RevealTxOutAmount(tx,out,vamount, blind)) {
+        	if (vamount != 0) {
+        		firstOut = vamount;
+        	}
             totalamount+=vamount;   //this is the total output
+        }
     }
 
     QList<TransactionRecord> decomposedTx = TransactionRecord::decomposeTransaction(wallet, tx);
@@ -826,14 +832,12 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
         case TransactionRecord::SendToAddress:
         case TransactionRecord::SendToOther:
             txData["type"] = QString("Sent");
-            //totalamount = 0;
-            //wallet->IsTransactionForMe(tx);
-            /*for (CTxOut out: tx.vout){
-                CAmount vamount;
-                if (wallet->RevealTxOutAmount(tx,out,vamount))
-                    totalamount+=vamount;   //this is the total output
-            }*/
-            txData["amount"] = BitcoinUnits::format(0, totalIn - totalamount); //absolute value of total amount
+            //check whether it is transaction sending to yourself
+            if (totalIn == totalamount + tx.nTxFee) {
+                txData["amount"] = BitcoinUnits::format(0, firstOut); //absolute value of total amount
+            } else {
+            	txData["amount"] = BitcoinUnits::format(0, totalIn - totalamount); //absolute value of total amount
+            }
             return txData;
             break;
         case 0:

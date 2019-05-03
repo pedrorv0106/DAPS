@@ -267,7 +267,7 @@ bool GetKernelStakeModifier(uint256 hashBlockFrom, uint64_t& nStakeModifier, int
             nStakeModifierTime = pindex->GetBlockTime();
         }
     }
-    nStakeModifier = pindex->nStakeModifier;
+    nStakeModifier = hashBlockFrom.Get64();//pindex->nStakeModifier;
     LogPrintf("%s: hashBlockFrom=%s, nStakeModifier=%d", __func__, hashBlockFrom.GetHex(), nStakeModifier);
     return true;
 }
@@ -295,10 +295,7 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlockHeader blockFrom, cons
     //assign new variables to make it easier to read
     //check encryptionKey hash
     uint256 hashOfKey = Hash(encryptionKey, encryptionKey + 33);
-    /*if (hashOfKey != txPrev.vout[prevout.n].maskValue.hashOfKey && !txPrev.IsCoinBase() && !txPrev.IsCoinStake()) {
-        LogPrintf("CheckStakeKernelHash: Hash key for decoding the value is not fit");
-        return false;
-    }*/
+
     CAmount nValueIn;// = txPrev.vout[prevout.n].nValue;
     uint256 val = txPrev.vout[prevout.n].maskValue.amount;
     uint256 mask = txPrev.vout[prevout.n].maskValue.mask;
@@ -324,7 +321,6 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlockHeader blockFrom, cons
     uint64_t nStakeModifier = 0;
     int nStakeModifierHeight = 0;
     int64_t nStakeModifierTime = 0;
-    LogPrintf("%s: get kernel staker modifier", __func__);
     if (!GetKernelStakeModifier(blockFrom.GetHash(), nStakeModifier, nStakeModifierHeight, nStakeModifierTime, fPrintProofOfStake)) {
         LogPrintf("CheckStakeKernelHash(): failed to get kernel stake modifier \n");
         return false;
@@ -363,7 +359,7 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlockHeader blockFrom, cons
         nTimeTx = nTryTime;
 
         if (fDebug || fPrintProofOfStake) {
-            LogPrintf("CheckStakeKernelHash() : using modifier %s at height=%d timestamp=%s for block from height=%d timestamp=%s\n",
+                LogPrintf("CheckStakeKernelHash() : using modifier %s at height=%d timestamp=%s for block from height=%d timestamp=%s\n",
                 boost::lexical_cast<std::string>(nStakeModifier).c_str(), nStakeModifierHeight,
                 DateTimeStrFormat("%Y-%m-%d %H:%M:%S", nStakeModifierTime).c_str(),
                 mapBlockIndex[blockFrom.GetHash()]->nHeight,
@@ -393,9 +389,10 @@ bool CheckProofOfStake(const CBlock block, uint256& hashProofOfStake)
     if (!GetTransaction(txin.prevout.hash, txPrev, hashBlock, true))
         return error("CheckProofOfStake() : INFO: read txPrev failed");
     //verify signature and script
-    if (!VerifyScript(txin.scriptSig, txPrev.vout[txin.prevout.n].scriptPubKey, STANDARD_SCRIPT_VERIFY_FLAGS, TransactionSignatureChecker(&tx, 0)))
-        return error("CheckProofOfStake() : VerifySignature failed on coinstake %s", tx.GetHash().ToString().c_str());
-
+    if (!VerifyScript(txin.scriptSig, txPrev.vout[txin.prevout.n].scriptPubKey, STANDARD_SCRIPT_VERIFY_FLAGS, TransactionSignatureChecker(&tx, 0))) {
+    	LogPrintf("\n%s: not successfully verified scriptSig=%s, fromPubKey=%s, txTo=%s\n", __func__, txin.scriptSig.ToString(), txPrev.vout[txin.prevout.n].scriptPubKey.ToString(), tx.GetHash().GetHex());
+    	return error("CheckProofOfStake() : VerifySignature failed on coinstake %s", tx.GetHash().ToString().c_str());
+    }
     CBlockIndex* pindex = NULL;
     BlockMap::iterator it = mapBlockIndex.find(hashBlock);
     if (it != mapBlockIndex.end())

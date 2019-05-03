@@ -59,6 +59,7 @@ MasternodeList::MasternodeList(QWidget* parent) : QDialog(parent),
     bool stkStatus = pwalletMain->ReadStakingStatus();
     ui->toggleStaking->setState(nLastCoinStakeSearchInterval | stkStatus);
     connect(ui->toggleStaking, SIGNAL(stateChanged(ToggleButton*)), this, SLOT(on_EnableStaking(ToggleButton*)));
+    ui->toggleStaking->setVisible(false);
 }
 
 MasternodeList::~MasternodeList()

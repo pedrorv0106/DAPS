@@ -183,6 +183,7 @@ public slots:
     void message(const QString& title, const QString& message, unsigned int style, bool* ret = NULL);
 
     void setStakingStatus();
+    void setStakingInProgress(bool);
 
     void exitApp();
 

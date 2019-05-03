@@ -17,6 +17,7 @@
 #include <QVariant>
 #include <QSettings>
 #include <QSizeGrip>
+#include <togglebutton.h>
 
 class OptionsModel;
 class WalletModel;
@@ -47,6 +48,7 @@ public:
     void bitcoinGUIInstallEvent(BitcoinGUI *gui);
 
 public slots:
+	void on_EnableStaking(ToggleButton*);
 
 protected:
     virtual void keyPressEvent(QKeyEvent* event);

@@ -1205,6 +1205,11 @@ void BitcoinGUI::setStakingStatus()
     if (pwalletMain) {
         fMultiSend = pwalletMain->isMultiSendEnabled();
         stkStatus = pwalletMain->ReadStakingStatus();
+        if(pwalletMain->walletStakingInProgress) {
+        	if (nLastCoinStakeSearchInterval == 0) {
+        		return;
+        	}
+        }
     }
 
     if (nLastCoinStakeSearchInterval || stkStatus) {
@@ -1214,6 +1219,12 @@ void BitcoinGUI::setStakingStatus()
         stakingAction->setText(tr("Not staking"));
         stakingAction->setIcon(QIcon(":/icons/staking_inactive"));
     }
+}
+void BitcoinGUI::setStakingInProgress(bool inProgress)
+{
+	if (inProgress) {
+		stakingAction->setText(tr("Staking In Progress"));
+	}
 }
 
 #ifdef ENABLE_WALLET
