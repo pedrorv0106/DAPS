@@ -48,7 +48,7 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
     connect(ui->lineEditOldPass, SIGNAL(textChanged(const QString &)), this, SLOT(onOldPassChanged()));
     //connect(ui->pushButtonSave, SIGNAL(clicked()), this, SLOT(on_pushButtonSave_clicked()));
 
-    QDoubleValidator *dblVal = new QDoubleValidator(0, 2100000000, 6, ui->lineEditWithhold);
+    QDoubleValidator *dblVal = new QDoubleValidator(0, Params().MAX_MONEY, 6, ui->lineEditWithhold);
     dblVal->setNotation(QDoubleValidator::StandardNotation);
     dblVal->setLocale(QLocale::C);
     ui->lineEditWithhold->setValidator(dblVal);
@@ -84,7 +84,7 @@ static inline int64_t roundint64(double d)
 
 CAmount OptionsPage::getValidatedAmount() {
     double dAmount = ui->lineEditWithhold->text().toDouble();
-    if (dAmount < 0.0 || dAmount > 2100000000.0)
+    if (dAmount < 0.0 || dAmount > Params().MAX_MONEY)
         throw runtime_error("Invalid amount, amount should be < 2.1B DAPS");
     CAmount nAmount = roundint64(dAmount * COIN);
     return nAmount;
@@ -253,6 +253,7 @@ void OptionsPage::on_EnableStaking(ToggleButton* widget)
         nLastCoinStakeSearchInterval = 0;
         model->generateCoins(false, 0);
         emit model->stakingStatusChanged(false);
+        pwalletMain->walletStakingInProgress = false;
         pwalletMain->WriteStakingStatus(false);
     }
 }

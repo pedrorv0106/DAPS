@@ -2302,7 +2302,7 @@ int64_t GetBlockValue(int nHeight) {
     } else {*/
         //if (Params().NetworkID() == CBaseChainParams::MAIN) {
         	if (nHeight < Params().nLastPOWBlock) {
-        		nSubsidy = 200000000 * COIN;
+        		nSubsidy = 300000000 * COIN;
         	} else {
                 nSubsidy = 950 * COIN;
             }
@@ -2403,9 +2403,7 @@ int64_t GetMasternodePayment(int nHeight, int64_t blockValue, int nMasternodeCou
         }
     }
 
-    if (nHeight <= 10500) {
-        ret = blockValue / 5;
-    } else if (nHeight > Params().LAST_POW_BLOCK()) {
+    if (nHeight > Params().LAST_POW_BLOCK()) {
         return GetSeeSaw(blockValueForSeeSaw, nMasternodeCount, nHeight);
     }
 

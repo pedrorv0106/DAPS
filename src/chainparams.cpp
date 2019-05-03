@@ -116,10 +116,11 @@ public:
         nTargetSpacing = 1 * 60;  // DAPScoin: 1 minute
         nMaturity = 100;
         nMasternodeCountDrift = 20;
-        nMaxMoneyOut = 2100000000 * COIN;
+        MAX_MONEY = 5000000000.0;
+        nMaxMoneyOut = MAX_MONEY * COIN;
 
         /** Height or Time Based Activations **/
-        nLastPOWBlock = 220;
+        nLastPOWBlock = 200;
         nStartPOABlock = 300;
         nModifierUpdateBlock = 615800;
         nPoABlockTime = 30 * 60; //a PoA block every 30 minutes
@@ -283,7 +284,8 @@ public:
         nMaturity = 15;
         nMasternodeCountDrift = 4;
         nModifierUpdateBlock = 51197; //approx Mon, 17 Apr 2017 04:00:00 GMT
-        nMaxMoneyOut = 2100000000 * COIN;
+        MAX_MONEY = 5000000000.0;
+        nMaxMoneyOut = MAX_MONEY * COIN;
         nZerocoinStartHeight = 201576;
         nZerocoinStartTime = 1546808115;
         nBlockEnforceSerialRange = 1; //Enforce serial range starting this block

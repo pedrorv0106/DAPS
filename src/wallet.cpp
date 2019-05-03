@@ -2252,6 +2252,16 @@ bool CWallet::SelectCoins(const CAmount& nTargetValue, set<pair<const CWalletTx*
                 if (getCTxOutValue(*pcoin, pcoin->vout[i]) == 1000000 * COIN && coin_type != ONLY_1000000) {
                 	continue;
                 }
+
+                LOCK(mempool.cs); // protect pool.mapNextTx
+                {
+                	COutPoint outpoint(wtxid, i);
+					if (mempool.mapNextTx.count(outpoint)) {
+						// Disable replacement feature for now
+						continue;
+					}
+                }
+
                 vCoins.push_back(COutput(pcoin, i, nDepth, true));
             }
         }
@@ -3900,6 +3910,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             for (const COutput& out : vCoins) {
                 //make sure not to outrun target amount
                 CAmount value = getCOutPutValue(out);
+                if (value == 1000000 * COIN) continue;
                 if (nAmountSelected + value >= nTargetAmount)
                     continue;
 
@@ -3918,6 +3929,14 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
                 //check that it is matured
                 if (out.nDepth < (out.tx->IsCoinStake() ? Params().COINBASE_MATURITY() : 10))
                     continue;
+
+                LOCK(mempool.cs); // protect pool.mapNextTx
+                {
+                	COutPoint outpoint(out.tx->GetHash(), out.i);
+                	if (mempool.mapNextTx.count(outpoint)) {
+                		continue;
+                	}
+                }
 
                 //add to our stake set
                 setStakeCoins.insert(make_pair(out.tx, out.i));
@@ -4004,6 +4023,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             		std::copy(sharedSec.begin(), sharedSec.begin() + 33, std::back_inserter(in.encryptionKey));
             		txNew.vin.push_back(in);
 
+            		//first UTXO for the staked amount
             		CAmount val = getCTxOutValue(*pcoin.first, pcoin.first->vout[pcoin.second]);
             		nCredit += val;
             		vwtxPrev.push_back(pcoin.first);
@@ -4017,6 +4037,18 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
 					CTxOut out(0, scriptPubKeyOut);
 					std::copy(txPub.begin(), txPub.end(), std::back_inserter(out.txPub));
 					txNew.vout.push_back(out);
+
+					//second UTXO for staking reward
+					//create a new pubkey
+					CKey myTxPrivStaking;
+					myTxPrivStaking.MakeNewKey(true);
+					CPubKey txPubStaking = myTxPrivStaking.GetPubKey();
+					CPubKey newPubStaking;
+					ComputeStealthDestination(myTxPrivStaking, view.GetPubKey(), spend.GetPubKey(), newPubStaking);
+					CScript scriptPubKeyOutStaking = GetScriptForDestination(newPubStaking);
+					CTxOut outStaking(0, scriptPubKeyOutStaking);
+					std::copy(txPubStaking.begin(), txPubStaking.end(), std::back_inserter(outStaking.txPub));
+					txNew.vout.push_back(outStaking);
 
 					//create second UTXO
 					/*CPubKey newPub2;
@@ -4051,7 +4083,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             CAmount nReward;
             const CBlockIndex* pIndex0 = chainActive.Tip();
             nReward = GetBlockValue(pIndex0->nHeight);
-            nCredit += nReward;
+            txNew.vout[1].nValue = nCredit;
 
             CAmount nMinFee = 0;
 
@@ -4059,7 +4091,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
                 txNew.vout[1].nValue = ((nCredit - nMinFee) / 2 / CENT) * CENT;
                 txNew.vout[2].nValue = nCredit - nMinFee - txNew.vout[1].nValue - 50 * COIN;
             } else*/
-            txNew.vout[1].nValue = nCredit - nMinFee - 50 * COIN;
+            txNew.vout[2].nValue = nReward - nMinFee - 50 * COIN;
 
             // Limit size
             unsigned int nBytes = ::GetSerializeSize(txNew, SER_NETWORK, PROTOCOL_VERSION);

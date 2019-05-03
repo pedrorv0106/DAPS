@@ -481,7 +481,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
             pblock->vtx[0].vout[0].nValue += nFees;
             pblocktemplate->vTxFees[0] = nFees;
         } else {
-        	pblock->vtx[1].vout[1].nValue += nFees;
+        	pblock->vtx[1].vout[2].nValue += nFees;
         	pblocktemplate->vTxFees[0] = nFees;
         }
         
@@ -498,10 +498,12 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
                 return NULL;
             }
         } else {
-            pwallet->EncodeTxOutAmount(pblock->vtx[1].vout[1], pblock->vtx[1].vout[1].nValue, sharedSec.begin());
-            nValue = pblock->vtx[1].vout[1].nValue;
+            sharedSec.Set(pblock->vtx[1].vout[2].txPub.begin(), pblock->vtx[1].vout[2].txPub.end());
+            pwallet->EncodeTxOutAmount(pblock->vtx[1].vout[2], pblock->vtx[1].vout[2].nValue, sharedSec.begin());
+            nValue = pblock->vtx[1].vout[2].nValue;
             LogPrintf("\n%s:Commitment value = %d\n", __func__, nValue);
-            if (!pwallet->CreateCommitment(zeroBlind, nValue, pblock->vtx[1].vout[1].commitment)) {
+            pblock->vtx[1].vout[2].commitment.clear();
+            if (!pwallet->CreateCommitment(zeroBlind, nValue, pblock->vtx[1].vout[2].commitment)) {
                 LogPrintf("\n%s: pos unable to create commitment to 0\n", __func__);
                 return NULL;
             }

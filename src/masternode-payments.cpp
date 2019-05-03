@@ -327,7 +327,7 @@ bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
     }
 
     CAmount blockValue = GetBlockValue(pindexPrev->nHeight);
-    CAmount masternodePayment = GetMasternodePayment(pindexPrev->nHeight, blockValue);
+    CAmount masternodePayment = GetMasternodePayment(pindexPrev->nHeight, blockValue - 50 * COIN);
     LogPrintf("\n%s: masternodePaymen=%d\n", __func__, masternodePayment);
     if (hasPayment) {
         if (fProofOfStake) {

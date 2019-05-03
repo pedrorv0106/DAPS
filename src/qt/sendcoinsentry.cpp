@@ -47,7 +47,7 @@ SendCoinsEntry::SendCoinsEntry(QWidget* parent) : QStackedWidget(parent),
     //Cam: Hide address book button
     ui->addressBookButton->setVisible(false);
 
-    QDoubleValidator *dblVal = new QDoubleValidator(0, 2100000000, 6, ui->payAmount);
+    QDoubleValidator *dblVal = new QDoubleValidator(0, Params().MAX_MONEY, 6, ui->payAmount);
     dblVal->setNotation(QDoubleValidator::StandardNotation);
     dblVal->setLocale(QLocale::C);
     ui->payAmount->setValidator(dblVal);
@@ -164,7 +164,7 @@ static inline int64_t roundint64(double d)
 
 CAmount SendCoinsEntry::getValidatedAmount() {
     double dAmount = ui->payAmount->text().toDouble();
-    if (dAmount < 0.0 || dAmount > 2100000000.0)
+    if (dAmount < 0.0 || dAmount > Params().MAX_MONEY)
         throw runtime_error("Invalid amount, amount should be < 2.1B DAPS");
     CAmount nAmount = roundint64(dAmount * COIN);
     return nAmount;
