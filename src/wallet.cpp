@@ -2249,7 +2249,7 @@ bool CWallet::SelectCoins(const CAmount& nTargetValue, set<pair<const CWalletTx*
                     continue;
                 if (mine == ISMINE_WATCH_ONLY)
                     continue;
-                if (getCTxOutValue(*pcoin, pcoin->vout[i]) == 1000000 && coin_type != ONLY_1000000) {
+                if (getCTxOutValue(*pcoin, pcoin->vout[i]) == 1000000 * COIN && coin_type != ONLY_1000000) {
                 	continue;
                 }
                 vCoins.push_back(COutput(pcoin, i, nDepth, true));
