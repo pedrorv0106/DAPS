@@ -190,6 +190,7 @@ QPushButton {
   font-weight: 400;
   padding: 10px 20px;
   max-width: 200px;
+  border: 1px solid white;
 }
 
 QPushButton:hover {
