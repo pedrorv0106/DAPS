@@ -226,6 +226,8 @@ void CMasternodeMan::AskForMN(CNode* pnode, CTxIn& vin)
     // ask for the mnb info once from the node that sent mnp
 
     LogPrint("masternode", "CMasternodeMan::AskForMN - Asking node for missing entry, vin: %s\n", vin.prevout.hash.ToString());
+    std::string stl(vin.masternodeStealthAddress.begin(), vin.masternodeStealthAddress.end());
+    LogPrint("masternode", "CMasternodeMan::AskForMN - stealth masternode address = %s\n", stl);
     pnode->PushMessage("dseg", vin);
     int64_t askAgain = GetTime() + MASTERNODE_MIN_MNP_SECONDS;
     mWeAskedForMasternodeListEntry[vin.prevout] = askAgain;

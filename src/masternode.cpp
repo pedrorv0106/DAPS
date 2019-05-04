@@ -489,7 +489,7 @@ bool CMasternodeBroadcast::CheckAndUpdate(int& nDos)
     CScript pubkeyScript;
     pubkeyScript = GetScriptForDestination(pubKeyCollateralAddress);
 
-    if (pubkeyScript.size() != 25) {
+    if ((pubkeyScript.size() != 35) || (pubkeyScript.size() != 67)) {
         LogPrint("masternode","mnb - pubkey the wrong size\n");
         nDos = 100;
         return false;
@@ -498,7 +498,7 @@ bool CMasternodeBroadcast::CheckAndUpdate(int& nDos)
     CScript pubkeyScript2;
     pubkeyScript2 = GetScriptForDestination(pubKeyMasternode);
 
-    if (pubkeyScript2.size() != 25) {
+    if ((pubkeyScript2.size() != 35) || (pubkeyScript2.size() != 67)) {
         LogPrint("masternode","mnb - pubkey2 the wrong size\n");
         nDos = 100;
         return false;
