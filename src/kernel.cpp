@@ -338,7 +338,6 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlockHeader blockFrom, cons
     unsigned int nTryTime = 0;
     unsigned int i;
     int nHeightStart = chainActive.Height();
-    LogPrintf("CheckStakeKernelHash: Mining proof of stake blocks with nHashDrift %d", nHashDrift);
     for (i = 0; i < (nHashDrift); i++) //iterate the hashing
     {
         //new block came in, move on
