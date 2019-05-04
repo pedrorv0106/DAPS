@@ -486,7 +486,7 @@ bool CMasternodeBroadcast::CheckAndUpdate(int& nDos)
         return false;
     }
     std::string mstl(vin.masternodeStealthAddress.begin(), vin.masternodeStealthAddress.end());
-    LogPrintf("\nCMasternodeBroadcast::CheckAndUpdate: pubKeyCollateralAddress=%s\n", pubkeyScript.ToString());
+    LogPrintf("\nCMasternodeBroadcast::CheckAndUpdate: pubKeyCollateralAddress=%s\n", mstl);
 
     CScript pubkeyScript;
     pubkeyScript = GetScriptForDestination(pubKeyCollateralAddress);
