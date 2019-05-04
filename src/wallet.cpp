@@ -2899,8 +2899,8 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                     } else {
                         //std::cout << "Is not dust" << std::endl;
                         // Insert change txn at random position:
-                        vector<CTxOut>::iterator position = txNew.vout.begin() + GetRandInt(txNew.vout.size() + 1);
-                        txNew.vout.insert(position, newTxOut);
+                        //vector<CTxOut>::iterator position = txNew.vout.begin() + GetRandInt(txNew.vout.size() + 1);
+                        txNew.vout.push_back(newTxOut);
                     }
 
                 } else {

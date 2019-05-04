@@ -759,8 +759,11 @@ vector<std::map<QString, QString> > getTXs(CWallet* wallet)
 {
     std::map<uint256, CWalletTx> txMap = wallet->mapWallet;
     vector<std::map<QString, QString> > txs;
-    for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx)
-        txs.push_back(getTx(wallet, tx->second));
+    for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
+    	if (tx->second.GetDepthInMainChain() > 0) {
+    		txs.push_back(getTx(wallet, tx->second));
+    	}
+    }
 
     return txs;
 }
@@ -790,7 +793,7 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
         CAmount vamount;
         CKey blind;
         if (wallet->IsMine(out) && wallet->RevealTxOutAmount(tx,out,vamount, blind)) {
-        	if (vamount != 0) {
+        	if (vamount != 0 && firstOut == 0) {
         		firstOut = vamount;
         	}
             totalamount+=vamount;   //this is the total output
@@ -829,15 +832,14 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
             return txData;
             break;
         case TransactionRecord::SendToSelf:
+        	txData["type"] = QString("Payment to yourself");
+        	txData["amount"] = BitcoinUnits::format(0, firstOut); //absolute value of total amount
+        	return txData;
+        	break;
         case TransactionRecord::SendToAddress:
         case TransactionRecord::SendToOther:
             txData["type"] = QString("Sent");
-            //check whether it is transaction sending to yourself
-            if (totalIn == totalamount + tx.nTxFee) {
-                txData["amount"] = BitcoinUnits::format(0, firstOut); //absolute value of total amount
-            } else {
-            	txData["amount"] = BitcoinUnits::format(0, totalIn - totalamount); //absolute value of total amount
-            }
+            txData["amount"] = BitcoinUnits::format(0, totalIn - totalamount); //absolute value of total amount
             return txData;
             break;
         case 0:
