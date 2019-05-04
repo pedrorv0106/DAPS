@@ -268,7 +268,6 @@ bool GetKernelStakeModifier(uint256 hashBlockFrom, uint64_t& nStakeModifier, int
         }
     }
     nStakeModifier = hashBlockFrom.Get64();//pindex->nStakeModifier;
-    LogPrintf("%s: hashBlockFrom=%s, nStakeModifier=%d", __func__, hashBlockFrom.GetHex(), nStakeModifier);
     return true;
 }
 
@@ -284,7 +283,6 @@ bool stakeTargetHit(uint256 hashProofOfStake, int64_t nValueIn, uint256 bnTarget
 {
     //get the stake weight - weight is equal to coin amount
     uint256 bnCoinDayWeight = uint256(nValueIn) / 100;
-    LogPrintf("%s: hashProofOfStake = %s, nValueIn = %d, bnCoinDayWeight * bnTargetPerCoinDay = %s", __func__, hashProofOfStake.GetHex(), nValueIn, (bnCoinDayWeight * bnTargetPerCoinDay).GetHex());
     // Now check if proof-of-stake hash meets target protocol
     return (uint256(hashProofOfStake) < bnCoinDayWeight * bnTargetPerCoinDay);
 }
