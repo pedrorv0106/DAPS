@@ -789,7 +789,7 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
     for (CTxOut out: tx.vout){
         CAmount vamount;
         CKey blind;
-        if (wallet->RevealTxOutAmount(tx,out,vamount, blind)) {
+        if (wallet->IsMine(out) && wallet->RevealTxOutAmount(tx,out,vamount, blind)) {
         	if (vamount != 0) {
         		firstOut = vamount;
         	}
@@ -853,6 +853,7 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
             break;
         case TransactionRecord::MNReward:
             txData["type"] = QString("Masternode");
+            txData["amount"] = BitcoinUnits::format(0,  TxRecord.credit); //absolute value of total amount
             break;     
         default:
             txData["type"] = QString("Unknown");
