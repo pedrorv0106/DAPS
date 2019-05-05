@@ -3956,9 +3956,6 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
 
             	// Read block header
             	CBlockHeader block = pindex->GetBlockHeader();
-            	if (block.GetBlockTime() + nStakeMinAge > nTxNewTime) {
-            		continue;
-            	}
             	bool fKernelFound = false;
             	uint256 hashProofOfStake = 0;
             	COutPoint prevoutStake = COutPoint(pcoin.first->GetHash(), pcoin.second);
