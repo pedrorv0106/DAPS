@@ -26,6 +26,19 @@
    <bool>false</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0">
+   <item alignment="Qt::AlignRight">
+    <widget class="QLabel" name="labelTheme">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Dark/Light Theme:</string>
+     </property>
+    </widget>
+   </item>
    <item>
     <widget class="ToggleButton" name="toggleTheme" native="true">
      <property name="sizePolicy">
@@ -48,6 +61,19 @@
        <width>150</width>
        <height>55</height>
       </size>
+     </property>
+    </widget>
+   </item>
+   <item alignment="Qt::AlignRight">
+    <widget class="QLabel" name="labelStaking">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Staking Enabled/Disabled:</string>
      </property>
     </widget>
    </item>
