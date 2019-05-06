@@ -833,13 +833,13 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
             break;
         case TransactionRecord::SendToSelf:
         	txData["type"] = QString("Payment to yourself");
-        	txData["amount"] = BitcoinUnits::format(0, firstOut); //absolute value of total amount
+        	txData["amount"] = BitcoinUnits::format(0, TxRecord.debit); //absolute value of total amount
         	return txData;
         	break;
         case TransactionRecord::SendToAddress:
         case TransactionRecord::SendToOther:
             txData["type"] = QString("Sent");
-            txData["amount"] = BitcoinUnits::format(0, totalIn - totalamount); //absolute value of total amount
+            txData["amount"] = BitcoinUnits::format(0, totalIn - totalamount - tx.nTxFee); //absolute value of total amount
             return txData;
             break;
         case 0:

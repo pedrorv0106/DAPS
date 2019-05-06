@@ -276,7 +276,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
                     nValue += nTxFee;
                     nTxFee = 0;
                 }
-                sub.debit = nDebit - nCredit;
+                sub.debit = nDebit - nCredit - wtx.nTxFee;
 
                 parts.append(sub);
             }
