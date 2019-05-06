@@ -248,8 +248,8 @@ int64_t CMasternode::GetLastPaid()
     CBlockIndex* pindexPrev = chainActive.Tip();
     if (pindexPrev == NULL) return false;
 
-    CScript mnpayee;
-    mnpayee = GetScriptForDestination(pubKeyCollateralAddress);
+    std::vector<unsigned char> mnpayee;
+    mnpayee = vin.masternodeStealthAddress;
 
     CHashWriter ss(SER_GETHASH, PROTOCOL_VERSION);
     ss << vin;

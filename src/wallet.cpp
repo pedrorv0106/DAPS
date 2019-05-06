@@ -2238,7 +2238,7 @@ bool CWallet::SelectCoins(const CAmount& nTargetValue, set<pair<const CWalletTx*
             int nDepth = pcoin->GetDepthInMainChain(false);
             //int cannotSpend = 0;
             //AvailableCoins(wtxid, pcoin, vCoins, cannotSpend, fOnlyConfirmed, coinControl, fIncludeZeroValue, nCoinType, fUseIX);
-            if (pcoin->IsCoinBase() && pcoin->GetBlocksToMaturity() > 0)
+            if ((pcoin->IsCoinBase() || pcoin->IsCoinStake()) && pcoin->GetBlocksToMaturity() > 0)
                 continue;
             if (nDepth == 0 && !pcoin->InMempool())
                 continue;
@@ -2260,6 +2260,15 @@ bool CWallet::SelectCoins(const CAmount& nTargetValue, set<pair<const CWalletTx*
 						// Disable replacement feature for now
 						continue;
 					}
+					CCoinsView dummy;
+					CCoinsViewCache view(&dummy);
+		            CCoinsViewMemPool viewMemPool(pcoinsTip, mempool);
+					view.SetBackend(viewMemPool);
+		            const CCoins* coins = view.AccessCoins(wtxid);
+
+		            if (!coins || !coins->IsAvailable(i)) {
+		                continue;
+		            }
                 }
 
                 vCoins.push_back(COutput(pcoin, i, nDepth, true));
@@ -2877,7 +2886,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                     std::copy(txPubChange.begin(), txPubChange.end(), std::back_inserter(newTxOut.txPub));
                     nBytes += ::GetSerializeSize(*(CTxOut*)&newTxOut, SER_NETWORK, PROTOCOL_VERSION);
                     //formulae for ring signature size
-                    int rsSize = (txNew.vout.size() + 2) * (ringSize + 1) * 32 /*SIJ*/ + 32 /*C*/ + (txNew.vout.size() + 2) * 33 /*key images*/;
+                    int rsSize = (txNew.vin.size() + 2) * (ringSize + 1) * 32 /*SIJ*/ + 32 /*C*/ + (txNew.vout.size() + 2) * 33 /*key images*/;
                     nBytes += rsSize;
                     CAmount nFeeNeeded = max(nFeePay, GetMinimumFee(nBytes, nTxConfirmTarget, mempool));
                     newTxOut.nValue -= nFeeNeeded;
@@ -3956,7 +3965,6 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
 
             	// Read block header
             	CBlockHeader block = pindex->GetBlockHeader();
-
             	bool fKernelFound = false;
             	uint256 hashProofOfStake = 0;
             	COutPoint prevoutStake = COutPoint(pcoin.first->GetHash(), pcoin.second);
