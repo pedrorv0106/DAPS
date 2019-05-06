@@ -6,20 +6,26 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>929</width>
-    <height>605</height>
+    <width>1050</width>
+    <height>610</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-    <horstretch>1</horstretch>
-    <verstretch>1</verstretch>
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
    </sizepolicy>
+  </property>
+  <property name="acceptDrops">
+   <bool>false</bool>
   </property>
   <property name="styleSheet">
    <string notr="true">QDialog{border-image: url(':/images/background') 0 0 0 0 stretch stretch;}</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0">
+  <property name="sizeGripEnabled">
+   <bool>false</bool>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0">
    <item>
     <widget class="ToggleButton" name="toggleTheme" native="true">
      <property name="sizePolicy">
@@ -44,6 +50,31 @@
       </size>
      </property>
     </widget>
+   </item>
+   <item>
+     <widget class="ToggleButton" name="toggleStaking" native="false">
+	   <property name="sizePolicy">
+	    <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+	      <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+	    </sizepolicy>
+	   </property>
+       <property name="layoutDirection">
+        <enum>Qt::RightToLeft</enum>
+       </property>
+       <property name="OptionA" stdset="0">
+        <string>Staking Enabled</string>
+       </property>
+       <property name="OptionB" stdset="0">
+        <string>Staking Disabled</string>
+       </property>
+       <property name="fixedSize" stdset="0">
+        <size>
+         <width>240</width>
+         <height>55</height>
+        </size>
+       </property>
+     </widget>
    </item>
    <item>
     <widget class="QLabel" name="labelPassword">

@@ -23,7 +23,6 @@
 #include <QAbstractItemDelegate>
 #include <QPainter>
 #include <QSettings>
-#include <QSizePolicy>
 #include <QTimer>
 #include <QtMath>
 
@@ -120,6 +119,7 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
                                               currentWatchUnconfBalance(-1),
                                               currentWatchImmatureBalance(-1),
                                               txdelegate(new TxViewDelegate()),
+                                              m_SizeGrip(this),
                                               filter(0)
 {
     nDisplayUnit = 0; // just make sure it's not unitialized
@@ -132,6 +132,11 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
     pingNetworkInterval = new QTimer();
 
     initSyncCircle(.8);
+
+    QTimer* timerBlockHeightLabel = new QTimer();
+    connect(timerBlockHeightLabel, SIGNAL(timeout()), this, SLOT(showBlockCurrentHeight()));
+    timerBlockHeightLabel->start(10000);
+
     //updateRecentTransactions();
 }
 
@@ -184,6 +189,9 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     currentWatchUnconfBalance = watchUnconfBalance;
     currentWatchImmatureBalance = watchImmatureBalance;
     CAmount nSpendableBalance = balance - immatureBalance;
+    if (nSpendableBalance < 0) {
+    	nSpendableBalance = pwalletMain->GetSpendableBalance();
+    }
     CAmount nSpendableDisplayed = nSpendableBalance; //if it is not staking
     if (nLastCoinStakeSearchInterval) {
         //if staking enabled
@@ -255,6 +263,18 @@ void OverviewPage::setClientModel(ClientModel* model)
         connect(model, SIGNAL(alertsChanged(QString)), this, SLOT(updateAlerts(QString)));
         updateAlerts(model->getStatusBarWarnings());
     }
+}
+
+void OverviewPage::resizeEvent(QResizeEvent* event)
+{
+    QWidget::resizeEvent(event);
+
+    m_SizeGrip.move  (width() - 17, height() - 17);
+    m_SizeGrip.resize(          17,            17);
+}
+
+void OverviewPage::bitcoinGUIInstallEvent(BitcoinGUI *gui) {
+    m_SizeGrip.installEventFilter((QObject*)gui);
 }
 
 void OverviewPage::setSpendableBalance(bool isStaking) {
@@ -339,7 +359,13 @@ void OverviewPage::showBlockSync(bool fShow)
 
     ui->labelBlockCurrent->setText(QString::number(clientModel->getNumBlocks()));
     // if (!fShow)
-        ui->labelBlockCurrent->setAlignment(fShow? (Qt::AlignRight|Qt::AlignVCenter):(Qt::AlignHCenter|Qt::AlignTop));
+    ui->labelBlockCurrent->setAlignment(fShow? (Qt::AlignRight|Qt::AlignVCenter):(Qt::AlignHCenter|Qt::AlignTop));
+}
+
+void OverviewPage::showBlockCurrentHeight()
+{
+	ui->labelBlockCurrent->setText(QString::number(chainActive.Height()));
+	// if (!fShow)
 }
 
 void OverviewPage::initSyncCircle(float ratioToParent)

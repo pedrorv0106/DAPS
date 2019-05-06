@@ -21,6 +21,7 @@ CCriticalSection cs_masternodes;
 MasternodeList::MasternodeList(QWidget* parent) : QDialog(parent),
                                                   ui(new Ui::MasternodeList),
                                                   clientModel(0),
+                                                  m_SizeGrip(this),
                                                   walletModel(0)
 {
     ui->setupUi(this);
@@ -58,6 +59,7 @@ MasternodeList::MasternodeList(QWidget* parent) : QDialog(parent),
     bool stkStatus = pwalletMain->ReadStakingStatus();
     ui->toggleStaking->setState(nLastCoinStakeSearchInterval | stkStatus);
     connect(ui->toggleStaking, SIGNAL(stateChanged(ToggleButton*)), this, SLOT(on_EnableStaking(ToggleButton*)));
+    ui->toggleStaking->setVisible(false);
 }
 
 MasternodeList::~MasternodeList()
@@ -79,6 +81,18 @@ void MasternodeList::showContextMenu(const QPoint& point)
 {
     QTableWidgetItem* item = ui->tableWidgetMyMasternodes->itemAt(point);
     if (item) contextMenu->exec(QCursor::pos());
+}
+
+void MasternodeList::resizeEvent(QResizeEvent* event)
+{
+    QWidget::resizeEvent(event);
+
+    m_SizeGrip.move  (width() - 17, height() - 17);
+    m_SizeGrip.resize(          17,            17);
+}
+
+void MasternodeList::bitcoinGUIInstallEvent(BitcoinGUI* gui) {
+    m_SizeGrip.installEventFilter((QObject*)gui);
 }
 
 void MasternodeList::StartAlias(std::string strAlias)

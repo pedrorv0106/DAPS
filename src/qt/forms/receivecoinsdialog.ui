@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>ReceiveCoinsDialog</class>
- <widget class="QWidget" name="ReceiveCoinsDialog">
+ <widget class="QDialog" name="ReceiveCoinsDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -10,8 +10,23 @@
     <height>708</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
   <property name="styleSheet">
    <string notr="true">QDialog{border-image: url(':/images/background') 0 0 0 0 stretch stretch;}</string>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>false</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1">
    <item>
@@ -196,7 +211,13 @@
          </spacer>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1">
+          <property name="spacing">
+           <number>6</number>
+          </property>
+          <property name="sizeConstraint">
+           <enum>QLayout::SetDefaultConstraint</enum>
+          </property>
           <item>
            <widget class="QPushButton" name="pushButtonCP">
             <property name="text">

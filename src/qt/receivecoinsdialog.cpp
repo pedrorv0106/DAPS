@@ -24,6 +24,7 @@
 
 ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
                                                           ui(new Ui::ReceiveCoinsDialog),
+                                                          m_SizeGrip(this),
                                                           model(0)
 {
     ui->setupUi(this);
@@ -69,7 +70,7 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
         ui->reqAddress->addItem(QString(accountList[0].c_str()) + " - " + QString(addrList[0].c_str()));
     }
 
-    QDoubleValidator *dblVal = new QDoubleValidator(0, 2100000000, 6, ui->reqAmount);
+    QDoubleValidator *dblVal = new QDoubleValidator(0, Params().MAX_MONEY, 6, ui->reqAmount);
     dblVal->setNotation(QDoubleValidator::StandardNotation);
     dblVal->setLocale(QLocale::C);
     ui->reqAmount->setValidator(dblVal);
@@ -83,7 +84,7 @@ static inline int64_t roundint64(double d)
 
 CAmount ReceiveCoinsDialog::getValidatedAmount() {
     double dAmount = ui->reqAmount->text().toDouble();
-    if (dAmount < 0.0 || dAmount > 2100000000.0)
+    if (dAmount < 0.0 || dAmount > Params().MAX_MONEY)
         throw runtime_error("Invalid amount, amount should be < 2.1B DAPS");
     CAmount nAmount = roundint64(dAmount * COIN);
     return nAmount;
@@ -198,6 +199,12 @@ void ReceiveCoinsDialog::on_receiveButton_clicked()
 void ReceiveCoinsDialog::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
+    m_SizeGrip.move  (width() - 17, height() - 17);
+    m_SizeGrip.resize(          17,            17);
+}
+
+void ReceiveCoinsDialog::bitcoinGUIInstallEvent(BitcoinGUI *gui) {
+    m_SizeGrip.installEventFilter((QObject*)gui);
 }
 
 void ReceiveCoinsDialog::keyPressEvent(QKeyEvent* event)
