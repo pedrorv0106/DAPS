@@ -137,7 +137,7 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
     connect(timerBlockHeightLabel, SIGNAL(timeout()), this, SLOT(showBlockCurrentHeight()));
     timerBlockHeightLabel->start(10000);
 
-    //updateRecentTransactions();
+    updateRecentTransactions();
 }
 
 void OverviewPage::handleTransactionClicked(const QModelIndex& index)
@@ -472,11 +472,12 @@ void OverviewPage::updateRecentTransactions(){
     }
     if (pwalletMain) {
         auto txs = WalletUtil::getTXs(pwalletMain);
-
-        for (int i = 0; i< (txs.size()>5)? 5:txs.size(); i++){
+        int length = (txs.size()>5)? 5:txs.size();
+        for (int i = 0; i< length; i++){
             TxEntry* entry = new TxEntry(this);
             ui->verticalLayoutRecent->addWidget(entry);
-            entry->setData(txs[i]["date"], txs[i]["address"] , txs[i]["amount"], txs[i]["ID"], txs[i]["type"]);
+            LogPrintf("\nupdateRecentTransactionsi = %d\n", i);
+            entry->setData(txs[i]["date"], txs[i]["address"] , txs[i]["amount"], txs[i]["id"], txs[i]["type"]);
             if (i % 2 == 0) {
                 entry->setStyleSheet("#bkg_widget { background-color: rgba(255,255,255,0.1); }");
             }
