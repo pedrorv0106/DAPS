@@ -179,6 +179,7 @@ QPushButton {
   font-weight: 400;
   padding: 10px 20px;
   max-width: 200px;
+  border: 1px solid white;
 }
 
 QPushButton:hover {
@@ -192,6 +193,14 @@ QPushButton:pressed {
   border-style: solid;
   border-color: #4e0049;
   border-width: 10px;
+}
+
+QPushButton#btn_rescan{
+  font-size: 19px;
+}
+
+QPushButton#btn_resync{
+  font-size: 15px;
 }
 
 /*** Spin Boxes, Combo Boxes ***/
@@ -342,5 +351,3 @@ margin-top: 2px; /* make non-selected tabs look smaller */
 }
 QTabBar::tab { color: #5E1C5A; }
 QTabBar::tab:selected { color: gray; }
-
-

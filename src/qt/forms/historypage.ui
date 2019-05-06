@@ -97,6 +97,21 @@
              <string>Received</string>
             </property>
            </item>
+           <item>
+            <property name="text">
+             <string>Mined</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Minted</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Masternode</string>
+            </property>
+           </item>
           </widget>
          </item>
          <item>
