@@ -79,15 +79,6 @@
             </color>
            </brush>
           </colorrole>
-          <colorrole role="PlaceholderText">
-           <brush brushstyle="NoBrush">
-            <color alpha="128">
-             <red>51</red>
-             <green>51</green>
-             <blue>51</blue>
-            </color>
-           </brush>
-          </colorrole>
          </active>
          <inactive>
           <colorrole role="Text">
@@ -142,17 +133,17 @@
        </attribute>
        <column>
         <property name="text">
+         <string>Alias</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
          <string>Address</string>
         </property>
        </column>
        <column>
         <property name="text">
          <string>Status</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Alias</string>
         </property>
        </column>
        <column>
