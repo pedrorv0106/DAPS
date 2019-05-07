@@ -72,7 +72,7 @@ CAmount WalletModel::getBalance(const CCoinControl* coinControl) const
     if (coinControl) {
 
         {   
-            LOCK(wallet->cs_wallet);
+            //LOCK(wallet->cs_wallet);
             CAmount nBalance = 0;
             std::vector<COutput> vCoins;
             wallet->AvailableCoins(vCoins, true, coinControl);

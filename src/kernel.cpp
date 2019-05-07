@@ -349,8 +349,11 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlockHeader blockFrom, cons
         hashProofOfStake = stakeHash(nTryTime, ss, prevout.n, prevout.hash, nTimeBlockFrom);
 
         // if stake hash does not meet the target then continue to next iteration
-        if (!stakeTargetHit(hashProofOfStake, nValueIn, bnTargetPerCoinDay))
+        if (!stakeTargetHit(hashProofOfStake, nValueIn, bnTargetPerCoinDay)) {
+        	if (fDebug)
+        		LogPrintf("\nCheckStakeKernelHash() : staking not found, you;re not lucky enough\n");
             continue;
+        }
 
         fSuccess = true; // if we make it this far then we have successfully created a stake hash
         nTimeTx = nTryTime;
