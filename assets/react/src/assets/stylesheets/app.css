@@ -1,3 +1,11 @@
+@font-face {
+  font-family: 'Strike fighter';
+  font-style: normal;
+  font-weight: normal;
+  src: 
+    url(../fonts/strikefighter.ttf) format('truetype');
+}
+
 body {}
 
 td,
