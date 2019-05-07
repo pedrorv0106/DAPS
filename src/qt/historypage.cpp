@@ -41,6 +41,7 @@ bool TxCompare (std::map<QString, QString> i, std::map<QString, QString> j) {
 
 HistoryPage::HistoryPage(QWidget* parent) : QDialog(parent),
                                             ui(new Ui::HistoryPage),
+                                            m_SizeGrip(this),
                                             model(0)
 
 {
@@ -125,8 +126,14 @@ void HistoryPage::resizeEvent(QResizeEvent* event)
     ui->tableView->setColumnWidth(2, this->width() * .65);
     ui->tableView->resizeColumnToContents(QHeaderView::ResizeToContents);
     ui->tableView->resizeColumnsToContents();
+
+    m_SizeGrip.move  (width() - 17, height() - 17);
+    m_SizeGrip.resize(          17,            17);
 }
 
+void HistoryPage::bitcoinGUIInstallEvent(BitcoinGUI *gui) {
+    m_SizeGrip.installEventFilter((QObject*)gui);
+}
 
 void HistoryPage::keyPressEvent(QKeyEvent* event)
 {
@@ -230,7 +237,13 @@ void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e){
     int col = 0;
     QStringList splits = d.split(" ");
     QString type = splits[0];
+    if (type == QString("Payment")) {
+    	type = d;
+    }
     QString addr = e.trimmed().mid(1, e.trimmed().length() - 2);
+    if (!e.trimmed().startsWith(QString("("))) {
+    	addr = e.trimmed();
+    }
     for (QString dataName : {"date", "type", "address", "amount"}) {
         QTableWidgetItem* cell = new QTableWidgetItem();
         switch (col) {

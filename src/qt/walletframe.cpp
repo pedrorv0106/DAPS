@@ -21,7 +21,7 @@ WalletFrame::WalletFrame(BitcoinGUI* _gui) : QFrame(_gui),
     walletStack = new QStackedWidget(this);
     walletFrameLayout->setContentsMargins(0, 0, 0, 0);
     walletFrameLayout->addWidget(walletStack);
-
+    walletFrameLayout->setSpacing(0);
     QLabel* noWallet = new QLabel(tr("No wallet has been loaded."));
     noWallet->setAlignment(Qt::AlignCenter);
     walletStack->addWidget(noWallet);
@@ -50,11 +50,11 @@ bool WalletFrame::addWallet(const QString& name, WalletModel* walletModel)
     /* TODO we should goto the currently selected page once dynamically adding wallets is supported */
     walletView->gotoOverviewPage();
     walletStack->addWidget(walletView);
+
     mapWalletViews[name] = walletView;
 
     // Ensure a walletView is able to show the main window
     connect(walletView, SIGNAL(showNormalIfMinimized()), gui, SLOT(showNormalIfMinimized()));
-
     return true;
 }
 
