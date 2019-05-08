@@ -18,9 +18,6 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
 #
     if [ "$BUILD_TARGET" = "windowsx64" ]; \
       then echo "Compiling for win64" && \
-        cd depends && \
-        make HOST=x86_64-w64-mingw32 && \
-        cd .. && \
         ./autogen.sh && \
         CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure --prefix=/ && \
         make -j2 && \
@@ -28,9 +25,6 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
 #
     elif [ "$BUILD_TARGET" = "windowsx86" ]; \
       then echo "Compiling for win86" && \
-        cd depends && \
-        make HOST=i686-w64-mingw32 && \
-        cd .. && \
         ./autogen.sh && \
         CONFIG_SITE=$PWD/depends/i686-w64-mingw32/share/config.site ./configure --prefix=/ && \
         make -j2 && \
