@@ -39,6 +39,10 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         ./autogen.sh && \
         ./configure && \
         make -j2 && \
+        strip src/dapscoind && \
+        strip src/dapscoin-cli && \
+        strip src/dapscoin-tx && \
+        strip src/qt/dapscoin-qt && \
         make install DESTDIR=/BUILD/; \
 #
     elif [ "$BUILD_TARGET" = "mac" ]; \
