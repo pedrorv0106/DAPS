@@ -47,6 +47,9 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="toolTip">
+      <string>Switch between Dark and Light theme</string>
+     </property>
      <property name="layoutDirection">
       <enum>Qt::RightToLeft</enum>
      </property>
@@ -85,6 +88,9 @@
           <verstretch>0</verstretch>
 	    </sizepolicy>
 	   </property>
+     <property name="toolTip">
+      <string>Enable or disable staking</string>
+     </property>
        <property name="layoutDirection">
         <enum>Qt::RightToLeft</enum>
        </property>
@@ -306,6 +312,9 @@
      </property>
      <property name="layoutDirection">
       <enum>Qt::RightToLeft</enum>
+     </property>
+     <property name="toolTip">
+      <string>Backup wallet to BackupWallet.dat in current directory</string>
      </property>
      <property name="text">
       <string>Backup Wallet</string>
