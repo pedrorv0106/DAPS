@@ -38,5 +38,8 @@ RUN apt-get install libboost-atomic-dev libboost-thread-dev libboost-system-dev 
     cmake -G Ninja .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_SHARED_LIBS=0 && \
     ninja && \
     ninja install
+	
+#Cleanup packages
+RUN apt-get autoremove -y
 
 CMD /bin/bash -c "trap: TERM INT; sleep infinity & wait"
