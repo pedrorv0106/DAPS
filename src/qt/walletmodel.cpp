@@ -72,7 +72,7 @@ CAmount WalletModel::getBalance(const CCoinControl* coinControl) const
     if (coinControl) {
 
         {   
-            LOCK(wallet->cs_wallet);
+            //LOCK(wallet->cs_wallet);
             CAmount nBalance = 0;
             std::vector<COutput> vCoins;
             wallet->AvailableCoins(vCoins, true, coinControl);
@@ -759,8 +759,11 @@ vector<std::map<QString, QString> > getTXs(CWallet* wallet)
 {
     std::map<uint256, CWalletTx> txMap = wallet->mapWallet;
     vector<std::map<QString, QString> > txs;
-    for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx)
-        txs.push_back(getTx(wallet, tx->second));
+    for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
+    	if (tx->second.GetDepthInMainChain() > 0) {
+    		txs.push_back(getTx(wallet, tx->second));
+    	}
+    }
 
     return txs;
 }
@@ -778,17 +781,23 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
             if (in.prevout.n < prev.vout.size()) {
                 if (wallet->IsMine(prev.vout[in.prevout.n])) {
                     CAmount decodedAmount = 0;
-                    wallet->RevealTxOutAmount(prev, prev.vout[in.prevout.n], decodedAmount);
+                    CKey blind;
+                    pwalletMain->RevealTxOutAmount(prev, prev.vout[in.prevout.n], decodedAmount, blind);
                     totalIn += decodedAmount;
                 }
             }
         }
     }
-
+    CAmount firstOut = 0;
     for (CTxOut out: tx.vout){
         CAmount vamount;
-        if (wallet->RevealTxOutAmount(tx,out,vamount))
+        CKey blind;
+        if (wallet->IsMine(out) && wallet->RevealTxOutAmount(tx,out,vamount, blind)) {
+        	if (vamount != 0 && firstOut == 0) {
+        		firstOut = vamount;
+        	}
             totalamount+=vamount;   //this is the total output
+        }
     }
 
     QList<TransactionRecord> decomposedTx = TransactionRecord::decomposeTransaction(wallet, tx);
@@ -823,17 +832,14 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
             return txData;
             break;
         case TransactionRecord::SendToSelf:
+        	txData["type"] = QString("Payment to yourself");
+        	txData["amount"] = BitcoinUnits::format(0, TxRecord.debit); //absolute value of total amount
+        	return txData;
+        	break;
         case TransactionRecord::SendToAddress:
         case TransactionRecord::SendToOther:
             txData["type"] = QString("Sent");
-            //totalamount = 0;
-            //wallet->IsTransactionForMe(tx);
-            /*for (CTxOut out: tx.vout){
-                CAmount vamount;
-                if (wallet->RevealTxOutAmount(tx,out,vamount))
-                    totalamount+=vamount;   //this is the total output
-            }*/
-            txData["amount"] = BitcoinUnits::format(0, totalIn - totalamount); //absolute value of total amount
+            txData["amount"] = BitcoinUnits::format(0, totalIn - totalamount - tx.nTxFee); //absolute value of total amount
             return txData;
             break;
         case 0:
@@ -849,6 +855,7 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
             break;
         case TransactionRecord::MNReward:
             txData["type"] = QString("Masternode");
+            txData["amount"] = BitcoinUnits::format(0,  TxRecord.credit); //absolute value of total amount
             break;     
         default:
             txData["type"] = QString("Unknown");

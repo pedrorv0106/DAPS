@@ -10,7 +10,7 @@ const NavBar = (props) => {
             <h1 id="dapsName"><a href="/">DAPS EXPLORER</a></h1>
         </div>
         <div id="ink" className={"Link " + Style.Link}>
-            <Link to={`/explorer/blocks/?limit=${props.pagesize}&page=0`} id="allLink">All Blocks</Link>
+            <Link to={`/explorer/overview/`} id="allLink">Overview</Link>
             <Link to={`../Posblocks/?limit=${props.pagesize}&page=0`} id="posLink">PoS Blocks</Link>
             <Link to={`../Poablocks/?limit=${props.pagesize}&page=0`} id="poalink">PoA Blocks</Link>
             <Link to={`/explorer/transactions/?limit=${props.pagesize}&page=0`} id="txLink">Transactions</Link>

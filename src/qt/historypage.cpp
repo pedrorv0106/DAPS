@@ -237,7 +237,13 @@ void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e){
     int col = 0;
     QStringList splits = d.split(" ");
     QString type = splits[0];
+    if (type == QString("Payment")) {
+    	type = d;
+    }
     QString addr = e.trimmed().mid(1, e.trimmed().length() - 2);
+    if (!e.trimmed().startsWith(QString("("))) {
+    	addr = e.trimmed();
+    }
     for (QString dataName : {"date", "type", "address", "amount"}) {
         QTableWidgetItem* cell = new QTableWidgetItem();
         switch (col) {

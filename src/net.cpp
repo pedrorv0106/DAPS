@@ -493,7 +493,7 @@ void CNode::ClearBanned() {
 }
 
 bool CNode::IsBanned(CNetAddr ip) {
-    /*bool fResult = false;
+    bool fResult = false;
     {
         LOCK(cs_setBanned);
         for (banmap_t::iterator it = setBanned.begin(); it != setBanned.end(); it++) {
@@ -503,7 +503,7 @@ bool CNode::IsBanned(CNetAddr ip) {
                 fResult = true;
         }
     }
-    return fResult;*/
+    return fResult;
     return false;
 }
 
@@ -1758,7 +1758,7 @@ void StartNode(boost::thread_group &threadGroup, CScheduler &scheduler) {
     if (pwalletMain) 
         storedStakingStatus = pwalletMain->ReadStakingStatus();
     if (GetBoolArg("-staking", true) || storedStakingStatus) {
-        std::cout << "Starting staking" << std::endl;
+        LogPrintf("Starting staking\n");
         threadGroup.create_thread(boost::bind(&TraceThread<void (*)()>, "stakemint", &ThreadStakeMinter));
     }
 }

@@ -214,7 +214,7 @@ class BlockExplorer extends Component {
           <div className={"ScreenView " + Style.ScreenView}>
 
             <Switch onChange={this.handleSwitch()}>
-              <Route exact path={route} component={OverviewPage} />
+              <Route exact path={route + "overview/"} component={OverviewPage} />
 
               <Route exact path={route + "blocks/"} component={() =>
                 <ListPage
