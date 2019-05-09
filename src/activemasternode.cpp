@@ -164,7 +164,8 @@ bool CActiveMasternode::SendMasternodePing(std::string& errorMessage)
     }
 
     LogPrintf("CActiveMasternode::SendMasternodePing() - Relay Masternode Ping vin = %s\n", vin.ToString());
-
+    std::string stl(vin.masternodeStealthAddress.begin(), vin.masternodeStealthAddress.end());
+    LogPrintf("CActiveMasternode::SendMasternodePing() - masternodestealthaddress = %s\n", stl);
     CMasternodePing mnp(vin);
     if (!mnp.Sign(keyMasternode, pubKeyMasternode)) {
         errorMessage = "Couldn't sign Masternode Ping";

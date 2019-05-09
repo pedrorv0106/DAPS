@@ -64,7 +64,7 @@ app.get(["/explorer/*", '/explorer/'], (req, res, next) => {
   res.set('content-type', 'text/html')
   res.send(fs.readFileSync(path.join(__dirname, '/dist/index.html')));
 });
-app.get('/', (req, res) => { res.redirect('explorer/blocks/?limit=20&page=0') });
+app.get('/', (req, res) => { res.redirect('explorer/overview/') });
 
 
 // chaincoinapi - get data direct from wallet

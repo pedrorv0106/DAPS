@@ -775,7 +775,7 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake, MineType mineType)
                     continue;
                 }
             }*/
-            MilliSleep(3000);
+            MilliSleep(10000);
 
         }
 
@@ -894,7 +894,7 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake, MineType mineType)
             }
         }
     }
-    std::cout << "Finish creating block" << std::endl;
+    LogPrintf("Finish creating block\n");
 }
 
 void static ThreadBitcoinMiner(void* parg)

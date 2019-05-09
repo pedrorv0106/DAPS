@@ -1,4 +1,5 @@
 import React, {Component} from 'react'
+import Style from './style.css'
 
 class OverviewPage extends Component {
     constructor (props) {
@@ -6,9 +7,24 @@ class OverviewPage extends Component {
     }
 
     render(){ return(
-        <div>
-        Hello from OverviewPage
-        </div>
+    	<div className={`Overview ${Style.page}`}>
+	        <div className={`Overview ${Style.logo}`}>
+	        </div>
+	        <p className={`Overview ${Style.title}`}> 
+	        	<span className={`Overview ${Style.word}`}>
+	        		DECENTRALIZED
+	        	</span>
+	        	<span className={`Overview ${Style.word}`}>
+	        		ANONYMOUS
+	        	</span>
+	        	<span className={`Overview ${Style.word}`}>
+	        		PAYMENT
+	        	</span>
+	        	<span className={`Overview ${Style.word}`}>
+	        		SYSTEM
+	        	</span> 	 	 	 
+	        </p>
+	    </div>
     )}
 }
 
