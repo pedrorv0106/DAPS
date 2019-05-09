@@ -116,7 +116,8 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle* networkStyle, QWidget* parent) : QMai
     /* Open CSS when configured */
     this->setStyleSheet(GUIUtil::loadStyleSheet());
 
-    // GUIUtil::restoreWindowGeometry("nWindow", QSize(850, 550), this);
+    this->setMinimumSize(1180, 700);
+    GUIUtil::restoreWindowGeometry("nWindow", QSize(1180, 700), this);
 
     QString windowTitle = tr("DAPScoin") + " - ";
 #ifdef ENABLE_WALLET
@@ -332,7 +333,7 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     QSettings settings;
     if (settings.value("fShowMasternodesTab").toBool()) {
         masternodeAction = new QAction(QIcon(":/icons/masternodes"), tr("&   Masternodes"), this);
-        masternodeAction->setStatusTip(tr("Browse masternodes"));
+        masternodeAction->setStatusTip(tr("Masternodes"));
         masternodeAction->setToolTip(masternodeAction->statusTip());
         masternodeAction->setCheckable(true);
 #ifdef Q_OS_MAC

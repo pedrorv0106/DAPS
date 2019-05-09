@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1050</width>
-    <height>610</height>
+    <height>472</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -25,7 +25,20 @@
   <property name="sizeGripEnabled">
    <bool>false</bool>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0">
+   <item alignment="Qt::AlignRight">
+    <widget class="QLabel" name="labelTheme">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Dark/Light Theme:</string>
+     </property>
+    </widget>
+   </item>
    <item>
     <widget class="ToggleButton" name="toggleTheme" native="true">
      <property name="sizePolicy">
@@ -33,6 +46,9 @@
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>Switch between Dark and Light theme</string>
      </property>
      <property name="layoutDirection">
       <enum>Qt::RightToLeft</enum>
@@ -46,8 +62,21 @@
      <property name="fixedSize" stdset="0">
       <size>
        <width>150</width>
-       <height>55</height>
+       <height>30</height>
       </size>
+     </property>
+    </widget>
+   </item>
+   <item alignment="Qt::AlignRight">
+    <widget class="QLabel" name="labelStaking">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Staking Enabled/Disabled:</string>
      </property>
     </widget>
    </item>
@@ -59,6 +88,9 @@
           <verstretch>0</verstretch>
 	    </sizepolicy>
 	   </property>
+     <property name="toolTip">
+      <string>Enable or disable staking</string>
+     </property>
        <property name="layoutDirection">
         <enum>Qt::RightToLeft</enum>
        </property>
@@ -265,7 +297,7 @@
      <property name="fixedSize" stdset="0">
       <size>
        <width>100</width>
-       <height>55</height>
+       <height>30</height>
       </size>
      </property>
     </widget>
@@ -280,6 +312,9 @@
      </property>
      <property name="layoutDirection">
       <enum>Qt::RightToLeft</enum>
+     </property>
+     <property name="toolTip">
+      <string>Backup wallet to BackupWallet.dat in current directory</string>
      </property>
      <property name="text">
       <string>Backup Wallet</string>

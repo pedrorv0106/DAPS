@@ -133,17 +133,17 @@
        </attribute>
        <column>
         <property name="text">
+         <string>Alias</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
          <string>Address</string>
         </property>
        </column>
        <column>
         <property name="text">
          <string>Status</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Alias</string>
         </property>
        </column>
        <column>

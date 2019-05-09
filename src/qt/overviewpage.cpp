@@ -314,6 +314,8 @@ void OverviewPage::setWalletModel(WalletModel* model)
 
         updateWatchOnlyLabels(model->haveWatchOnly());
         connect(model, SIGNAL(notifyWatchonlyChanged(bool)), this, SLOT(updateWatchOnlyLabels(bool)));
+
+        connect(walletModel, SIGNAL(RefreshRecent()), this, SLOT(refreshRecentTransactions()));
     }
 
     // update the display unit, to not use the default ("DAPS")
@@ -490,4 +492,9 @@ void OverviewPage::updateRecentTransactions(){
     } else {
         LogPrintf("\npwalletMain has not been initialized\n");
     }
+}
+
+void OverviewPage::refreshRecentTransactions() {
+	LogPrintf("\n: Refreshing history\n");
+	updateRecentTransactions();
 }
