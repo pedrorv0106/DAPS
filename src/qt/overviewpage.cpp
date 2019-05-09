@@ -137,6 +137,8 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
     connect(timerBlockHeightLabel, SIGNAL(timeout()), this, SLOT(showBlockCurrentHeight()));
     timerBlockHeightLabel->start(10000);
 
+    connect(walletModel, SIGNAL(RefreshRecent()), this, SLOT(refreshRecentTransactions()));
+
     //updateRecentTransactions();
 }
 
@@ -483,4 +485,9 @@ void OverviewPage::updateRecentTransactions(){
     } else {
         LogPrintf("\npwalletMain has not been initialized\n");
     }
+}
+
+void OverviewPage::refreshRecentTransactions() {
+	LogPrintf("\n: Refreshing history\n");
+	updateRecentTransactions();
 }
