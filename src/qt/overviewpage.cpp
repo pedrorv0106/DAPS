@@ -474,10 +474,13 @@ void OverviewPage::updateRecentTransactions(){
         auto txs = WalletUtil::getTXs(pwalletMain);
         int length = (txs.size()>5)? 5:txs.size();
         for (int i = 0; i< length; i++){
+        	uint256 txHash;
+        	txHash.SetHex(txs[i]["id"].toStdString());
             TxEntry* entry = new TxEntry(this);
             ui->verticalLayoutRecent->addWidget(entry);
-            LogPrintf("\nupdateRecentTransactionsi = %d\n", i);
-            entry->setData(txs[i]["date"], txs[i]["address"] , txs[i]["amount"], txs[i]["id"], txs[i]["type"]);
+            CWalletTx wtx = pwalletMain->mapWallet[txHash];
+            int64_t txTime = wtx.GetComputedTxTime();
+            entry->setData(txTime, txs[i]["address"] , txs[i]["amount"], txs[i]["id"], txs[i]["type"]);
             if (i % 2 == 0) {
                 entry->setStyleSheet("#bkg_widget { background-color: rgba(255,255,255,0.1); }");
             }
