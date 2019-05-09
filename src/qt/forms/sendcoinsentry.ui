@@ -23,9 +23,6 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
-   <property name="toolTip">
-    <string>This is a normal payment.</string>
-   </property>
    <property name="frameShape">
     <enum>QFrame::StyledPanel</enum>
    </property>
@@ -67,6 +64,9 @@
         </item>
         <item>
          <widget class="QValidatedLineEdit" name="payTo">
+          <property name="toolTip">
+           <string>DAPS Wallet Address to send to</string>
+          </property>
           <property name="placeholderText">
            <string>Wallet Address</string>
           </property>
@@ -117,6 +117,9 @@
         </item>
         <item>
          <widget class="QLineEdit" name="addAsLabel">
+          <property name="toolTip">
+           <string>An optional description to attach to the payment</string>
+          </property>
           <property name="placeholderText">
            <string>Description (Optional)</string>
           </property>
@@ -156,6 +159,9 @@
         </item>
         <item>
          <widget class="QLineEdit" name="payAmount">
+          <property name="toolTip">
+           <string>Amount of DAPS to send to address above</string>
+          </property>
           <property name="placeholderText">
            <string>DAPS Amount</string>
           </property>
