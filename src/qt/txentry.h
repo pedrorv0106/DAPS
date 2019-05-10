@@ -24,7 +24,7 @@ public:
     explicit TxEntry(QWidget* parent = 0);
     ~TxEntry();
 
-    void setData(QString Date, QString Address, QString Amount, QString ID, QString Type);
+    void setData(int64_t Date, QString Address, QString Amount, QString ID, QString Type);
     void expand(bool isExpanding);
 
 protected:

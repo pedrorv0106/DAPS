@@ -137,7 +137,7 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
     connect(timerBlockHeightLabel, SIGNAL(timeout()), this, SLOT(showBlockCurrentHeight()));
     timerBlockHeightLabel->start(10000);
 
-    //updateRecentTransactions();
+    updateRecentTransactions();
 }
 
 void OverviewPage::handleTransactionClicked(const QModelIndex& index)
@@ -314,6 +314,8 @@ void OverviewPage::setWalletModel(WalletModel* model)
 
         updateWatchOnlyLabels(model->haveWatchOnly());
         connect(model, SIGNAL(notifyWatchonlyChanged(bool)), this, SLOT(updateWatchOnlyLabels(bool)));
+
+        connect(walletModel, SIGNAL(RefreshRecent()), this, SLOT(refreshRecentTransactions()));
     }
 
     // update the display unit, to not use the default ("DAPS")
@@ -471,16 +473,54 @@ void OverviewPage::updateRecentTransactions(){
         delete item;
     }
     if (pwalletMain) {
-        auto txs = WalletUtil::getTXs(pwalletMain);
+    	vector<std::map<QString, QString>> txs;// = WalletUtil::getTXs(pwalletMain);
 
-        for (int i = 0; i< (txs.size()>5)? 5:txs.size(); i++){
+        std::map<uint256, CWalletTx> txMap = pwalletMain->mapWallet;
+        std::vector<CWalletTx> latestTxes;
+        for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
+        	if (tx->second.GetDepthInMainChain() > 0) {
+        		int64_t txTime = tx->second.GetComputedTxTime();
+        		int idx = -1;
+        		for (int i = 0; i < latestTxes.size(); i++) {
+        			if (txTime >= latestTxes[i].GetComputedTxTime()) {
+        				idx = i;
+        				break;
+        			}
+        		}
+        		if (idx == -1) {
+        			latestTxes.push_back(tx->second);
+        		} else {
+        			latestTxes.insert(latestTxes.begin() + idx, tx->second);
+        		}
+        	}
+        }
+
+        for (int i = 0; i < latestTxes.size(); i++) {
+        	txs.push_back(WalletUtil::getTx(pwalletMain, latestTxes[i]));
+        	if (txs.size() >= 5) break;
+        }
+
+        int length = (txs.size()>5)? 5:txs.size();
+        for (int i = 0; i< length; i++){
+        	uint256 txHash;
+        	txHash.SetHex(txs[i]["id"].toStdString());
             TxEntry* entry = new TxEntry(this);
             ui->verticalLayoutRecent->addWidget(entry);
-            entry->setData(txs[i]["date"], txs[i]["address"] , txs[i]["amount"], txs[i]["ID"], txs[i]["type"]);
+            CWalletTx wtx = pwalletMain->mapWallet[txHash];
+            int64_t txTime = wtx.GetComputedTxTime();
+            entry->setData(txTime, txs[i]["address"] , txs[i]["amount"], txs[i]["id"], txs[i]["type"]);
+            if (i % 2 == 0) {
+                entry->setStyleSheet("#bkg_widget { background-color: rgba(255,255,255,0.1); }");
+            }
         }
 
         ui->label_4->setVisible(txs.size());
     } else {
         LogPrintf("\npwalletMain has not been initialized\n");
     }
+}
+
+void OverviewPage::refreshRecentTransactions() {
+	LogPrintf("\n: Refreshing history\n");
+	updateRecentTransactions();
 }
