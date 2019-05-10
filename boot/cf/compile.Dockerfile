@@ -26,10 +26,10 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         ./autogen.sh && \
         CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure --prefix=/ && \
         make -j2 && \
-        make install DESTDIR=/BUILD/; && \ 
+        make install DESTDIR=/BUILD/ && \ 
         cd assets/cpuminer-2.5.0 && \ 
         ./build.sh && \
-        cp minerd.exe /BUILD/bin/dapscoin-poa-minerd.exe \
+        cp minerd.exe /BUILD/bin/dapscoin-poa-minerd.exe; \
 #
     elif [ "$BUILD_TARGET" = "windowsx86" ]; \
       then echo "Compiling for win86" && \
