@@ -55,7 +55,7 @@ void TxEntry::setData(int64_t Date, QString Address, QString Amount, QString ID,
     //QDateTime dateTime = QDateTime::fromString(Date, "M/dd/yy hh:mm").addYears(100);
 
     ui->labelTxAmount->setText(Amount);
-    ui->labelDate->setText(dateTime.date().toString(Qt::SystemLocaleShortDate) + QString("\n") + dateTime.toString("hh:mm:ss"));
+    ui->labelDate->setText(dateTime.date().toString("MMMM dd yyyy") + QString("\n") + dateTime.toString("hh:mm:ss"));
     ui->labelDate->setAlignment(Qt::AlignRight | Qt::AlignTop);
     /*ui->tableWidgetDate->horizontalHeaderItem(0)->setTextAlignment(Qt::AlignRight | Qt::AlignBottom);
     ui->tableWidgetDate->insertRow(0);

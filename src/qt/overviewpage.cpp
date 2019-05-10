@@ -473,7 +473,33 @@ void OverviewPage::updateRecentTransactions(){
         delete item;
     }
     if (pwalletMain) {
-        auto txs = WalletUtil::getTXs(pwalletMain);
+    	vector<std::map<QString, QString>> txs;// = WalletUtil::getTXs(pwalletMain);
+
+        std::map<uint256, CWalletTx> txMap = pwalletMain->mapWallet;
+        std::vector<CWalletTx> latestTxes;
+        for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
+        	if (tx->second.GetDepthInMainChain() > 0) {
+        		int64_t txTime = tx->second.GetComputedTxTime();
+        		int idx = -1;
+        		for (int i = 0; i < latestTxes.size(); i++) {
+        			if (txTime >= latestTxes[i].GetComputedTxTime()) {
+        				idx = i;
+        				break;
+        			}
+        		}
+        		if (idx == -1) {
+        			latestTxes.push_back(tx->second);
+        		} else {
+        			latestTxes.insert(latestTxes.begin() + idx, tx->second);
+        		}
+        	}
+        }
+
+        for (int i = 0; i < latestTxes.size(); i++) {
+        	txs.push_back(WalletUtil::getTx(pwalletMain, latestTxes[i]));
+        	if (txs.size() >= 5) break;
+        }
+
         int length = (txs.size()>5)? 5:txs.size();
         for (int i = 0; i< length; i++){
         	uint256 txHash;
