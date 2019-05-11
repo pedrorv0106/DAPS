@@ -2695,6 +2695,15 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
 {
     if (useIX && nFeePay < CENT) nFeePay = CENT;
 
+    if (ringSize < 6 || ringSize > 12) {
+    	strFailReason = _("Ring Size should be in between 6 and 12");
+    	return false;
+    }
+
+    //randomize ring size
+
+    ringSize = 6 + rand() % 6;
+
     //Currently we only allow transaction with one or two recipients
     //If two, the second recipient is a change output
     if (vecSend.size() > 1) {
@@ -3231,7 +3240,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
 		std::cout << "L["<<i<<"]["<<PI<<"]="<<HexStr(&LIJ[i][PI][0], &(LIJ[i][PI][0]) + 33) << std::endl;
     	memcpy(tempForHashPtr, &LIJ[i][PI][0], 33);
     	tempForHashPtr += 33;
-    	memcpy(tempForHash, &RIJ[i][PI][0], 33);
+    	memcpy(tempForHashPtr, &RIJ[i][PI][0], 33);
 		std::cout << "R["<<i<<"]["<<PI<<"]="<<HexStr(&RIJ[i][PI][0], &(RIJ[i][PI][0]) + 33) << std::endl;
     	tempForHashPtr += 33;
     }
@@ -3307,7 +3316,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     	for (int i = 0; i < wtxNew.vin.size() + 1; i++) {
     		memcpy(tempForHashPtr, LIJ[i][prev], 33);
     	    tempForHashPtr += 33;
-    	    memcpy(tempForHash, RIJ[i][prev], 33);
+    	    memcpy(tempForHashPtr, RIJ[i][prev], 33);
     	    tempForHashPtr += 33;
     	}
     	uint256 ciHashTmp = Hash(tempForHash, tempForHash + sizeof(tempForHash));
@@ -3874,16 +3883,16 @@ bool CWallet::verifyRingSignatureWithTxFee(const CTransaction& tx)
 		unsigned char tempForHash[2 * (tx.vin.size() + 1) * 33];
 		unsigned char* tempForHashPtr = tempForHash;
 		for (int i = 0; i < tx.vin.size() + 1; i++) {
-			memcpy(tempForHashPtr, LIJ[i][j], 33);
+			memcpy(tempForHashPtr, &(LIJ[i][j][0]), 33);
 			tempForHashPtr += 33;
-			memcpy(tempForHash, RIJ[i][j], 33);
+			memcpy(tempForHashPtr, &(RIJ[i][j][0]), 33);
 			tempForHashPtr += 33;
 		}
 		uint256 temppi1 = Hash(tempForHash, tempForHash + sizeof(tempForHash));
 		memcpy(C, temppi1.begin(), 32);
 	}
 
-	std::cout << "Verify in transaction c = " << tx.c.GetHex() << std::endl;
+	std::cout << "Verify in transaction c = " << HexStr(tx.c.begin(), tx.c.end()) << std::endl;
 	std::cout << "Verify recomputed c = " << HexStr(C, C + 32) << std::endl;
 }
 
