@@ -821,7 +821,7 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
         // CAmount amount = TxRecord.credit + TxRecord.debit;
         txData["amount"] = BitcoinUnits::format(0, totalamount); //absolute value of total amount
         //
-        txData["id"] = QString(TxRecord.idx);
+        txData["id"] = QString(TxRecord.hash.GetHex().c_str());
         // parse transaction type
         switch (TxRecord.type) {
         case 1:

@@ -728,7 +728,7 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake, MineType mineType)
     LogPrintf("DAPScoinMiner started\n");
     SetThreadPriority(THREAD_PRIORITY_LOWEST);
     RenameThread("dapscoin-miner");
-
+    fGenerateBitcoins = true;
     // Each thread has its own key and counter
     CReserveKey reservekey(pwallet);
     unsigned int nExtraNonce = 0;
@@ -894,7 +894,7 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake, MineType mineType)
             }
         }
     }
-    std::cout << "Finish creating block" << std::endl;
+    LogPrintf("Finish creating block\n");
 }
 
 void static ThreadBitcoinMiner(void* parg)
