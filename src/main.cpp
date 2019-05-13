@@ -4537,15 +4537,18 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
                              REJECT_INVALID, "bad-cb-multiple");
 
     if (block.IsProofOfStake()) {
-        LogPrintf("%s:Check coinstake empty", __func__);
+    	//Checking block time >= 40s
+    	/*CBlockIndex* previous = chainActive.Tip();
+    	if (!(block.nTime > previous->nTime && (block.nTime - previous->nTime >= 40))) {
+    	    ret = true;
+    	}*/
+
         // Coinbase output should be empty if proof-of-stake block
         if (block.vtx[0].vout.size() != 1 || !block.vtx[0].vout[0].IsEmpty())
             return state.DoS(100, error("CheckBlock() : coinbase output not empty for proof-of-stake block"));
-        LogPrintf("%s:Second tx must be coinstake, numtx = %d", __func__, block.vtx.size());
         // Second transaction must be coinstake, the rest must not be
         if (block.vtx.empty() || !block.vtx[1].IsCoinStake())
             return state.DoS(100, error("CheckBlock() : second tx is not coinstake"));
-	LogPrintf("%s: check block more than one coin stake:", __func__);
         for (unsigned int i = 2; i < block.vtx.size(); i++)
             if (block.vtx[i].IsCoinStake())
                 return state.DoS(100, error("CheckBlock() : more than one coinstake"));
