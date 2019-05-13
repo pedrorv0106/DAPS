@@ -8,8 +8,8 @@ class Footer extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            MasterNode: (props.data.data && props.data.data['MASTER NODES'] && props.data.data['MASTER NODES'][0]) || [],
-            Node: (props.data.data && props.data.data['NODES'] && props.data.data['NODES'][0]) || [],
+            MasterNode: (props.data.data && props.data.data['MASTER NODES'] && props.data.data['MASTER NODES'][0]) || 0,
+            Node: (props.data.data && props.data.data['NODES'] && props.data.data['NODES'][0]) || 0,
         }
 
         this.Links = {
@@ -46,19 +46,9 @@ class Footer extends Component {
 
     componentWillReceiveProps(props) {
         this.setState({
-            MasterNode: (props.data.data && props.data.data['MASTER NODES'] && props.data.data['MASTER NODES'][0]) || [],
-            Node: (props.data.data && props.data.data['NODES'] && props.data.data['NODES'][0]) || [],
+            MasterNode: (props.data.data && props.data.data['MASTER NODES'] && props.data.data['MASTER NODES'][0]) || 0,
+            Node: (props.data.data && props.data.data['NODES'] && props.data.data['NODES'][0]) || 0,
         });
-
-        
-        if (window && window.$) {
-            window.$('#StakingState').style.width = String(stakingPercent) + '%';
-            window.$('#StakingCount').textContent = this.state.Node - this.state.MasterNode;
-            window.$('#StakingPercent').textContent = String(stakingPercent) + '%';
-            window.$('#MasterState').style.width = String(masterPercent) + '%';
-            window.$('#MasterCount').textContent = this.state.MasterNode;
-            window.$('#MasterPercent').textContent = String(masterPercent) + '%';
-        }
     }
 
     render() {
@@ -76,7 +66,7 @@ class Footer extends Component {
                     </div>
                    </div>
             );
-
+        
         let stakingPercent = 100 - masterPercent;
         let stakingStyle = {
             width: String(stakingPercent) + '%'
