@@ -11,14 +11,13 @@
 #include "db.h"
 #include "key.h"
 #include "keystore.h"
-#include "libzerocoin/Accumulator.h"
-#include "libzerocoin/Denominations.h"
 
 #include <list>
 #include <stdint.h>
 #include <string>
 #include <utility>
 #include <vector>
+#include "bignum.h"
 
 class CAccount;
 class CStealthAccount;

@@ -7,7 +7,6 @@
 
 #include "main.h"
 
-#include "accumulators.h"
 #include "addrman.h"
 #include "alert.h"
 #include "chainparams.h"
@@ -1092,8 +1091,6 @@ bool CheckTransaction(const CTransaction &tx, bool fzcActive, bool fRejectBadUTX
                          REJECT_INVALID, "bad-txns-oversize");
 
     // Check for negative or overflow output values
-    CAmount nValueOut = 0;
-    int nZCSpendCount = 0;
     BOOST_FOREACH(
     const CTxOut &txout, tx.vout) {
         if (txout.IsEmpty() && !tx.IsCoinBase() && !tx.IsCoinStake())
@@ -1327,7 +1324,6 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
                                  REJECT_NONSTANDARD, "bad-txns-too-many-sigops");
         }
 
-        CAmount nValueOut = tx.GetValueOut();
         CAmount nFees = 0;//nValueIn - nValueOut;
         double dPriority = 0;
         view.GetPriority(tx, chainActive.Height());
@@ -2099,8 +2095,6 @@ bool CheckInputs(const CTransaction &tx, CValidationState &state, const CCoinsVi
         // This is also true for mempool checks.
         CBlockIndex *pindexPrev = mapBlockIndex.find(inputs.GetBestBlock())->second;
         int nSpendHeight = pindexPrev->nHeight + 1;
-        CAmount nValueIn = 0;
-        CAmount nFees = 0;
         for (unsigned int i = 0; i < tx.vin.size(); i++) {
             const COutPoint &prevout = tx.vin[i].prevout;
             const CCoins *coins = inputs.AccessCoins(prevout.hash);
@@ -2274,15 +2268,6 @@ DisconnectBlock(CBlock &block, CValidationState &state, CBlockIndex *pindex, CCo
     // move best block pointer to prevout block
     view.SetBestBlock(pindex->pprev->GetBlockHash());
 
-    if (!fVerifyingBlocks) {
-        //if block is an accumulator checkpoint block, remove checkpoint and checksums from db
-        uint256 nCheckpoint = pindex->nAccumulatorCheckpoint;
-        if (nCheckpoint != pindex->pprev->nAccumulatorCheckpoint) {
-            if (!EraseAccumulatorValues(nCheckpoint, pindex->pprev->nAccumulatorCheckpoint))
-                return error("DisconnectBlock(): failed to erase checkpoint");
-        }
-    }
-
     if (pfClean) {
         *pfClean = fClean;
         return true;
@@ -2320,6 +2305,74 @@ static CCheckQueue<CScriptCheck> scriptcheckqueue(128);
 void ThreadScriptCheck() {
     RenameThread("dapscoin-scriptch");
     scriptcheckqueue.Thread();
+}
+
+bool RecalculateDAPSSupply(int nHeightStart) {
+    if (nHeightStart > chainActive.Height())
+        return false;
+
+    CBlockIndex *pindex = chainActive[nHeightStart];
+    CAmount nSupplyPrev = pindex->pprev->nMoneySupply;
+
+    while (true) {
+        if (pindex->nHeight % 1000 == 0)
+            LogPrintf("%s : block %d...\n", __func__, pindex->nHeight);
+
+        CBlock block;
+        assert(ReadBlockFromDisk(block, pindex));
+
+        CAmount nValueIn = 0;
+        CAmount nValueOut = 0;
+        CAmount nFees = 0;
+        for (const CTransaction tx : block.vtx) {
+        	nFees += tx.nTxFee;
+        	if (tx.IsCoinStake()) {
+        		for (unsigned int i = 0; i < tx.vin.size(); i++) {
+        			CAmount nTemp;// = txPrev.vout[prevout.n].nValue;
+        			uint256 hashBlock;
+        			CTransaction txPrev;
+        			GetTransaction(tx.vin[i].prevout.hash, txPrev, hashBlock, true);
+        			const CTxOut& out = txPrev.vout[tx.vin[i].prevout.n];
+        			if (out.nValue >0) {
+        				nValueIn += out.nValue;
+        			} else {
+        				uint256 val = out.maskValue.amount;
+        				uint256 mask = out.maskValue.mask;
+        				CKey decodedMask;
+        				CPubKey sharedSec;
+        				sharedSec.Set(tx.vin[i].encryptionKey.begin(), tx.vin[i].encryptionKey.begin() + 33);
+        				ECDHInfo::Decode(mask.begin(), val.begin(), sharedSec, decodedMask, nTemp);
+        				//Verify commitment
+        				std::vector<unsigned char> commitment;
+        				CWallet::CreateCommitment(decodedMask.begin(), nTemp, commitment);
+        				if (commitment != out.commitment) {
+        					throw runtime_error("Commitment for coinstake not correct");
+        				}
+        				nValueIn += nTemp;
+        			}
+        		}
+        	}
+
+            for (unsigned int i = 0; i < tx.vout.size(); i++) {
+                if (i == 0 && tx.IsCoinStake())
+                    continue;
+
+                nValueOut += tx.vout[i].nValue;
+            }
+        }
+
+        // Rewrite money supply
+        pindex->nMoneySupply = nSupplyPrev + nValueOut - nValueIn - nFees;
+        nSupplyPrev = pindex->nMoneySupply;
+
+        assert(pblocktree->WriteBlockIndex(CDiskBlockIndex(pindex)));
+
+        if (pindex->nHeight < chainActive.Height())
+            pindex = chainActive.Next(pindex);
+        else
+            break;
+    }
+    return true;
 }
 
 bool ReindexAccumulators(list <uint256> &listMissingCheckpoints, string &strError) {
@@ -2637,10 +2690,6 @@ void FlushStateToDisk() {
 /** Update chainActive and related internal data structures. */
 void static UpdateTip(CBlockIndex *pindexNew) {
     chainActive.SetTip(pindexNew);
-
-    // If turned on AutoZeromint will automatically convert DAPS to zDAPS
-    if (pwalletMain && pwalletMain->isZeromintEnabled())
-        pwalletMain->AutoZeromint();
 
     // New best block
     nTimeBestReceived = GetTime();
@@ -3919,9 +3968,6 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
     // Preliminary checks
     int64_t nStartTime = GetTimeMillis();
     bool checked = CheckBlock(*pblock, state);
-
-    int nMints = 0;
-    int nSpends = 0;
 
     // ppcoin: check proof-of-stake
     // Limited duplicity on stake: prevents block flood attack
@@ -5586,7 +5632,6 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
         vRecv >> block;
         uint256 hashBlock = block.GetHash();
         CInv inv(MSG_BLOCK, hashBlock);
-        static int showed = 0;
         //if (chainActive.Height() <= 900 && showed <= 1000) {
             //showed++;
             //LogPrintf("\n%s: block=%s, height = %d\n", __func__, block.GetHash().GetHex(), chainActive.Height());

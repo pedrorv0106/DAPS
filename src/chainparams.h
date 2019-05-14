@@ -149,7 +149,7 @@ protected:
     std::string strSporkKey;
     std::string strObfuscationPoolDummyAddress;
     int64_t nStartMasternodePayments;
-
+	int64_t nBudget_Fee_Confirmations;
     int nBlockEnforceSerialRange;
     int nBlockRecalculateAccumulators;
     int nBlockFirstFraudulent;

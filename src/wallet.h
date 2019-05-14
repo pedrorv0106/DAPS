@@ -383,11 +383,6 @@ public:
         nAutoCombineThreshold = 0;
     }
 
-    bool isZeromintEnabled()
-    {
-        return fEnableZeromint;
-    }
-
     void setZDapsAutoBackups(bool fEnabled)
     {
         fBackupMints = fEnabled;
@@ -588,7 +583,6 @@ public:
     bool CreateCoinAudit(const CKeyStore& keystore, unsigned int nBits, int64_t nSearchInterval, CMutableTransaction& txNew, unsigned int& nTxNewTime);
     bool MultiSend();
     void AutoCombineDust();
-    void AutoZeromint();
 
     static CFeeRate minTxFee;
     static CAmount GetMinimumFee(unsigned int nTxBytes, unsigned int nConfirmTarget, const CTxMemPool& pool);
@@ -1210,18 +1204,10 @@ public:
         CAmount nCredit = 0;
         uint256 hashTx = GetHash();
         for (unsigned int i = 0; i < vout.size(); i++) {
-            const CTxOut& txout = vout[i];
             const CTxIn vin = CTxIn(hashTx, i);
 
             if (pwallet->IsSpent(hashTx, i) || pwallet->IsLockedCoin(hashTx, i)) continue;
             if (fMasterNode && vout[i].nValue == 1000000 * COIN) continue; // do not count MN-like outputs
-
-            const int rounds = pwallet->GetInputObfuscationRounds(vin);
-            if (rounds >= -2 && rounds < nZeromintPercentage) {
-                nCredit += pwallet->GetCredit(*this, txout, ISMINE_SPENDABLE);
-                if (!MoneyRange(nCredit))
-                    throw std::runtime_error("CWalletTx::GetAnonamizableCredit() : value out of range");
-            }
         }
 
         nAnonymizableCreditCached = nCredit;
@@ -1244,17 +1230,8 @@ public:
         CAmount nCredit = 0;
         uint256 hashTx = GetHash();
         for (unsigned int i = 0; i < vout.size(); i++) {
-            const CTxOut& txout = vout[i];
             const CTxIn vin = CTxIn(hashTx, i);
-
             if (pwallet->IsSpent(hashTx, i) || !pwallet->IsDenominated(vin)) continue;
-
-            const int rounds = pwallet->GetInputObfuscationRounds(vin);
-            if (rounds >= nZeromintPercentage) {
-                nCredit += pwallet->GetCredit(*this, txout, ISMINE_SPENDABLE);
-                if (!MoneyRange(nCredit))
-                    throw std::runtime_error("CWalletTx::GetAnonymizedCredit() : value out of range");
-            }
         }
 
         nAnonymizedCreditCached = nCredit;

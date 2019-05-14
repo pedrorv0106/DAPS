@@ -106,7 +106,7 @@ Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDe
     	result.push_back(Pair("previouspoahash", block.hashPrevPoABlock.GetHex()));
         Array posBlockInfos;
 
-        for (int i = 0; i < block.posBlocksAudited.size(); i++) {
+        for (size_t i = 0; i < block.posBlocksAudited.size(); i++) {
             Object objPoSBlockInfo;
 
             PoSBlockInfoToJSON(block.posBlocksAudited[i].hash,
@@ -299,18 +299,6 @@ Value getblock(const Array& params, bool fHelp)
             "  \"previousblockhash\" : \"hash\",  (string) The hash of the previous block\n"
             "  \"nextblockhash\" : \"hash\"       (string) The hash of the next block\n"
             "  \"moneysupply\" : \"supply\"       (numeric) The money supply when this block was added to the blockchain\n"
-            "  \"zDAPSsupply\" :\n"
-            "  {\n"
-            "     \"1\" : n,            (numeric) supply of 1 zDAPS denomination\n"
-            "     \"5\" : n,            (numeric) supply of 5 zDAPS denomination\n"
-            "     \"10\" : n,           (numeric) supply of 10 zDAPS denomination\n"
-            "     \"50\" : n,           (numeric) supply of 50 zDAPS denomination\n"
-            "     \"100\" : n,          (numeric) supply of 100 zDAPS denomination\n"
-            "     \"500\" : n,          (numeric) supply of 500 zDAPS denomination\n"
-            "     \"1000\" : n,         (numeric) supply of 1000 zDAPS denomination\n"
-            "     \"5000\" : n,         (numeric) supply of 5000 zDAPS denomination\n"
-            "     \"total\" : n,        (numeric) The total supply of all zDAPS denominations\n"
-            "  }\n"
             "}\n"
             "\nResult (for verbose=false):\n"
             "\"data\"             (string) A string that is serialized, hex-encoded data for block 'hash'.\n"

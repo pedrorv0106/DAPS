@@ -9,14 +9,12 @@
 #include "main.h"
 #include "pow.h"
 #include "uint256.h"
-#include "accumulators.h"
 
 #include <stdint.h>
 
 #include <boost/thread.hpp>
 
 using namespace std;
-using namespace libzerocoin;
 
 void static BatchWriteCoins(CLevelDBBatch& batch, const uint256& hash, const CCoins& coins)
 {
@@ -283,10 +281,6 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
 
                 //populate accumulator checksum map in memory
                 if(pindexNew->nAccumulatorCheckpoint != 0 && pindexNew->nAccumulatorCheckpoint != nPreviousCheckpoint) {
-                    //Don't load any invalid checkpoints
-                    if (!InvalidCheckpointRange(pindexNew->nHeight))
-                        LoadAccumulatorValuesFromDB(pindexNew->nAccumulatorCheckpoint);
-
                     nPreviousCheckpoint = pindexNew->nAccumulatorCheckpoint;
                 }
 

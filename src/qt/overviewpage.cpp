@@ -148,14 +148,13 @@ OverviewPage::~OverviewPage()
     delete ui;
 }
 
-void OverviewPage::getPercentage(CAmount nUnlockedBalance, CAmount nZerocoinBalance, QString& sDAPSPercentage, QString& szDAPSPercentage)
+void OverviewPage::getPercentage(CAmount nUnlockedBalance, QString& sDAPSPercentage)
 {
     int nPrecision = 2;
 
     double dPercentage = 100.0;
     
     sDAPSPercentage = "(" + QLocale(QLocale::system()).toString(dPercentage, 'f', nPrecision) + " %)";
-    
 }
 
 void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, 
@@ -200,7 +199,7 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
 
     CAmount nTotalBalance = balance + unconfirmedBalance;
     CAmount nUnlockedBalance = nTotalBalance - nLockedBalance;
-    getPercentage(nUnlockedBalance, zerocoinBalance, sPercentage, szPercentage);
+    getPercentage(nUnlockedBalance, sPercentage);
 }
 
 // show/hide watch-only labels

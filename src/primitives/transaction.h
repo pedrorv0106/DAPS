@@ -386,7 +386,7 @@ public:
     bool IsMNCollateralTx() const {
         if (txType == TX_TYPE_REVEAL_AMOUNT) {
             uint32_t numCollateral = 0;
-            for (int i = 0; i < vout.size(); i++) {
+            for (size_t i = 0; i < vout.size(); i++) {
                 if (vout[i].nValue == 1000000 * COIN) {
                     numCollateral++;
                 }
@@ -472,7 +472,7 @@ struct CMutableTransaction
     bool IsMNCollateralTx() const {
         if (txType == TX_TYPE_REVEAL_AMOUNT) {
             uint32_t numCollateral = 0;
-            for (int i = 0; i < vout.size(); i++) {
+            for (size_t i = 0; i < vout.size(); i++) {
                 if (vout[i].nValue == 1000000 * COIN) {
                     numCollateral++;
                 }

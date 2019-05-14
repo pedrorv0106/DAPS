@@ -28,6 +28,7 @@
 #include "txmempool.h"
 #include "uint256.h"
 #include "undo.h"
+#include "bignum.h"
 
 #include <algorithm>
 #include <exception>

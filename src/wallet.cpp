@@ -7,7 +7,6 @@
 
 #include "wallet.h"
 
-#include "accumulators.h"
 #include "base58.h"
 #include "checkpoints.h"
 #include "coincontrol.h"
@@ -23,8 +22,6 @@
 #include "util.h"
 #include "utilmoneystr.h"
 
-#include "denomination_functions.h"
-#include "libzerocoin/Denominations.h"
 #include <assert.h>
 #include "secp256k1.h"
 #include <boost/algorithm/string.hpp>
@@ -1080,7 +1077,7 @@ int CWallet::GetInputObfuscationRounds(CTxIn in) const
 {
     LOCK(cs_wallet);
     int realObfuscationRounds = GetRealInputObfuscationRounds(in, 0);
-    return realObfuscationRounds > nZeromintPercentage ? nZeromintPercentage : realObfuscationRounds;
+    return realObfuscationRounds > 0 ? 0 : realObfuscationRounds;
 }
 
 bool CWallet::IsDenominated(const CTxIn& txin) const
@@ -1219,6 +1216,7 @@ void CWalletTx::GetAmounts(list<COutputEntry>& listReceived,
             continue;
 
         // In either case, we need to get the destination address
+        CTxDestination address;
         if (!ExtractDestination(txout.scriptPubKey, address)) {
             if (!IsCoinStake() && !IsCoinBase()) {
                 LogPrintf("CWalletTx::GetAmounts: Unknown transaction type found, txid %s\n", this->GetHash().ToString());
@@ -1635,7 +1633,6 @@ CAmount CWallet::GetNormalizedAnonymizedBalance()
                 if (pcoin->GetDepthInMainChain() < 0) continue;
 
                 int rounds = GetInputObfuscationRounds(vin);
-                nTotal += pcoin->vout[i].nValue * rounds / nZeromintPercentage;
             }
         }
     }
@@ -2175,7 +2172,7 @@ bool CWallet::SelectCoins(const CAmount& nTargetValue, set<pair<const CWalletTx*
                 CTxIn vin = CTxIn(out.tx->GetHash(), out.i);
                 int rounds = GetInputObfuscationRounds(vin);
                 // make sure it's actually anonymized
-                if (rounds < nZeromintPercentage) continue;
+                if (rounds < 0) continue;
             }
 
             nValueRet += getCOutPutValue(out);
@@ -2196,7 +2193,6 @@ bool CWallet::SelectCoins(const CAmount& nTargetValue, set<pair<const CWalletTx*
                     CTxIn vin = CTxIn(out.tx->GetHash(), out.i);
                     int rounds = GetInputObfuscationRounds(vin);
                     // make sure it's actually anonymized
-                    if (rounds < nZeromintPercentage) continue;
                     nValueRet += outValue;
                     setCoinsRet.insert(make_pair(out.tx, out.i));
                 }
@@ -5231,41 +5227,6 @@ bool CWallet::GetDestData(const CTxDestination& dest, const std::string& key, st
     return false;
 }
 
-// CWallet::AutoZeromint() gets called with each new incoming block
-void CWallet::AutoZeromint()
-{
-    // Wait until blockchain + masternodes are fully synced and wallet is unlocked.
-    if (!masternodeSync.IsSynced() || IsLocked()){
-        // Re-adjust startup time in case syncing needs a long time.
-        nStartupTime = GetAdjustedTime();
-        return;
-    }
-
-    // After sync wait even more to reduce load when wallet was just started
-    int64_t nWaitTime = GetAdjustedTime() - nStartupTime;
-    if (nWaitTime < AUTOMINT_DELAY){
-        LogPrint("zero", "CWallet::AutoZeromint(): time since sync-completion or last Automint (%ld sec) < default waiting time (%ld sec). Waiting again...\n", nWaitTime, AUTOMINT_DELAY);
-        return;
-    }
-
-    CAmount nBalance = GetUnlockedCoins(); // We only consider unlocked coins, this also excludes masternode-vins
-    // from being accidentally minted
-    CAmount nMintAmount = 0;
-    CAmount nToMintAmount = 0;
-
-    // Use the biggest denomination smaller than the needed zDAPS We'll only mint exact denomination to make minting faster.
-    // Exception: for big amounts use 6666 (6666 = 1*5000 + 1*1000 + 1*500 + 1*100 + 1*50 + 1*10 + 1*5 + 1) to create all
-    // possible denominations to avoid having 5000 denominations only.
-    // If a preferred denomination is used (means nPreferredDenom != 0) do nothing until we have enough DAPS to mint this denomination
-
-    if (nPreferredDenom > 0){
-        if (nToMintAmount >= nPreferredDenom)
-            nToMintAmount = nPreferredDenom;  // Enough coins => mint preferred denomination
-        else
-            nToMintAmount = 0;                // Not enough coins => do nothing and wait for more coins
-    }
-}
-
 void CWallet::AutoCombineDust()
 {
     if (IsInitialBlockDownload() || IsLocked()) {
@@ -5950,7 +5911,7 @@ bool CWallet::IsTransactionForMe(const CTransaction& tx) {
             continue;
         }
         CPubKey txPub(out.txPub);
-        for (int i = 0; i < spends.size(); i++) {
+        for (size_t i = 0; i < spends.size(); i++) {
             CKey& spend = spends[i];
             CKey& view = views[i];
             const CPubKey& pubSpendKey = spend.GetPubKey();
@@ -5968,7 +5929,9 @@ bool CWallet::IsTransactionForMe(const CTransaction& tx) {
             unsigned char *pHS = HS.begin();
             unsigned char expectedDestination[65];
             memcpy(expectedDestination, pubSpendKey.begin(), pubSpendKey.size());
-            secp256k1_ec_pubkey_tweak_add(expectedDestination, pubSpendKey.size(), pHS);
+            if (!secp256k1_ec_pubkey_tweak_add(expectedDestination, pubSpendKey.size(), pHS)) {
+            	continue;
+            }
             CPubKey expectedDes(expectedDestination, expectedDestination + 33);
             //LogPrintf("expectedDes Stealth destination:%s", expectedDes.GetHex());
             CScript scriptPubKey = GetScriptForDestination(expectedDes);
@@ -6018,7 +5981,7 @@ bool CWallet::AllMyPublicAddresses(std::vector<std::string>& addresses, std::vec
     ComputeStealthPublicAddress("masteraccount", masterAddr);
     accountNames.push_back("Master Account");
     results.push_back(masterAddr);
-    for(int i = 0; i < results.size(); i++) {
+    for(size_t i = 0; i < results.size(); i++) {
         std::string& accountName = results[i];
         std::string stealthAddr;
         if (ComputeStealthPublicAddress(accountName, stealthAddr)) {
@@ -6043,7 +6006,7 @@ bool CWallet::allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& vie
     }
     std::vector<std::string> results;
     boost::split(results, labelList, [](char c){return c == ',';});
-    for(int i = 0; i < results.size(); i++) {
+    for(size_t i = 0; i < results.size(); i++) {
         std::string& accountName = results[i];
         CStealthAccount stealthAcc;
         if (ReadStealthAccount(accountName, stealthAcc)) {
