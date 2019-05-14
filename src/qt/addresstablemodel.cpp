@@ -17,13 +17,11 @@
 
 const QString AddressTableModel::Send = "S";
 const QString AddressTableModel::Receive = "R";
-const QString AddressTableModel::Zerocoin = "X";
 
 struct AddressTableEntry {
     enum Type {
         Sending,
         Receiving,
-        Zerocoin,
         Hidden /* QSortFilterProxyModel will filter these out */
     };
 
@@ -150,7 +148,6 @@ public:
                                                                cachedAddressTable.begin(), cachedAddressTable.end(), pubCoin, AddressTableEntryLessThan());
         int lowerIndex = (lower - cachedAddressTable.begin());
         bool inModel = (lower != upper);
-        AddressTableEntry::Type newEntryType = AddressTableEntry::Zerocoin;
         
         switch(status)
         {

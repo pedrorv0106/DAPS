@@ -63,11 +63,6 @@ enum txnouttype
     TX_SCRIPTHASH,
     TX_MULTISIG,
     TX_NULL_DATA,
-    /**
-     * @author Top1st
-     * @type zerocoin
-     */
-    TX_ZEROCOINMINT,
 };
 
 class CNoDestination {

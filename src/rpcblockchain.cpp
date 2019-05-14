@@ -118,15 +118,6 @@ Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDe
         result.push_back(Pair("poscount", (int)block.posBlocksAudited.size()));
     }
 
-//    Object zdapsObj;
-//    for (auto denom : libzerocoin::zerocoinDenomList) {
-//        zdapsObj.push_back(Pair(to_string(denom), ValueFromAmount(blockindex->mapZerocoinSupply.at(denom) * (denom*COIN))));
-//    }
-//    zdapsObj.emplace_back(Pair("total", ValueFromAmount(blockindex->GetZerocoinSupply())));
-//    result.emplace_back(Pair("zDAPSsupply", zdapsObj));
-
-
-
     return result;
 }
 
@@ -708,11 +699,6 @@ Value getfeeinfo(const Array& params, bool fHelp)
                 continue;
 
             for (unsigned int j = 0; j < tx.vin.size(); j++) {
-                if (tx.vin[j].scriptSig.IsZerocoinSpend()) {
-                    nValueIn += tx.vin[j].nSequence * COIN;
-                    continue;
-                }
-
                 COutPoint prevout = tx.vin[j].prevout;
                 CTransaction txPrev;
                 uint256 hashBlock;
@@ -934,9 +920,7 @@ Value getinvalid (const Array& params, bool fHelp)
             objTx.emplace_back(Pair("mixed_with_valid", objMixedValid));
 
         CScript scriptPubKey = tx.vout[out.n].scriptPubKey;
-        if (scriptPubKey.IsZerocoinMint()) {
-            nMint += nValue;
-        } else if (!fSpent) {
+        if (!fSpent) {
             CTxDestination dest;
             if (!ExtractDestination(scriptPubKey, dest)) {
                 continue;

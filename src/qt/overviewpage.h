@@ -72,9 +72,6 @@ private:
     CAmount currentBalance;
     CAmount currentUnconfirmedBalance;
     CAmount currentImmatureBalance;
-    CAmount currentZerocoinBalance;
-    CAmount currentUnconfirmedZerocoinBalance;
-    CAmount currentimmatureZerocoinBalance;
     CAmount currentWatchOnlyBalance;
     CAmount currentWatchUnconfBalance;
     CAmount currentWatchImmatureBalance;

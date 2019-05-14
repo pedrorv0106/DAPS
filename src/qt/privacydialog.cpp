@@ -9,7 +9,6 @@
 #include "addresstablemodel.h"
 #include "bitcoinunits.h"
 #include "coincontroldialog.h"
-#include "libzerocoin/Denominations.h"
 #include "optionsmodel.h"
 #include "sendcoinsentry.h"
 #include "walletmodel.h"
@@ -91,15 +90,6 @@ PrivacyDialog::PrivacyDialog(QWidget* parent) : QDialog(parent),
     // Hide those placeholder elements needed for CoinControl interaction
     ui->WarningLabel->hide();    // Explanatory text visible in QT-Creator
     ui->dummyHideWidget->hide(); // Dummy widget with elements to hide
-
-    //temporary disable for maintenance
-    if(GetAdjustedTime() > GetSporkValue(SPORK_16_ZEROCOIN_MAINTENANCE_MODE)) {
-        ui->pushButtonMintzDAPS->setEnabled(false);
-        ui->pushButtonMintzDAPS->setToolTip(tr("zDAPS is currently disabled due to maintenance."));
-
-        ui->pushButtonSpendzDAPS->setEnabled(false);
-        ui->pushButtonSpendzDAPS->setToolTip(tr("zDAPS is currently disabled due to maintenance."));
-    }
 }
 
 PrivacyDialog::~PrivacyDialog()
@@ -114,7 +104,7 @@ void PrivacyDialog::setModel(WalletModel* walletModel)
     if (walletModel && walletModel->getOptionsModel()) {
         // Keep up to date with wallet
         setBalance(walletModel->getBalance(), walletModel->getUnconfirmedBalance(), walletModel->getImmatureBalance(),
-                   walletModel->getZerocoinBalance(), walletModel->getUnconfirmedZerocoinBalance(), walletModel->getImmatureZerocoinBalance(),
+                   0, 0, 0,
                    walletModel->getWatchBalance(), walletModel->getWatchUnconfirmedBalance(), walletModel->getWatchImmatureBalance());
         
         connect(walletModel, SIGNAL(balanceChanged(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)), this, 
@@ -146,13 +136,6 @@ void PrivacyDialog::on_pushButtonMintzDAPS_clicked()
     if (!walletModel || !walletModel->getOptionsModel())
         return;
 
-    if(GetAdjustedTime() > GetSporkValue(SPORK_16_ZEROCOIN_MAINTENANCE_MODE)) {
-        QMessageBox::information(this, tr("Mint Zerocoin"),
-                                 tr("zDAPS is currently undergoing maintenance."), QMessageBox::Ok,
-                                 QMessageBox::Ok);
-        return;
-    }
-
     // Reset message text
     ui->TEMintStatus->setPlainText(tr("Mint Status: Okay"));
 
@@ -182,8 +165,6 @@ void PrivacyDialog::on_pushButtonMintzDAPS_clicked()
     int64_t nTime = GetTimeMillis();
     
     CWalletTx wtx;
-    vector<CZerocoinMint> vMints;
-    string strError = pwalletMain->MintZerocoin(nAmount, wtx, vMints, CoinControlDialog::coinControl);
     
     // Return if something went wrong during minting
     if (strError != ""){
@@ -192,28 +173,14 @@ void PrivacyDialog::on_pushButtonMintzDAPS_clicked()
     }
 
     double fDuration = (double)(GetTimeMillis() - nTime)/1000.0;
-
-    // Minting successfully finished. Show some stats for entertainment.
-    QString strStatsHeader = tr("Successfully minted ") + ui->labelMintAmountValue->text() + tr(" zDAPS in ") +
-                             QString::number(fDuration) + tr(" sec. Used denominations:\n");
-    
-    // Clear amount to avoid double spending when accidentally clicking twice
-    ui->labelMintAmountValue->setText ("0");
             
     QString strStats = "";
     ui->TEMintStatus->setPlainText(strStatsHeader);
 
-    for (CZerocoinMint mint : vMints) {
-        boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-        strStats = strStats + QString::number(mint.GetDenomination()) + " ";
-        ui->TEMintStatus->setPlainText(strStatsHeader + strStats);
-        ui->TEMintStatus->repaint ();
-        
-    }
 
     // Available balance isn't always updated, so force it.
     setBalance(walletModel->getBalance(), walletModel->getUnconfirmedBalance(), walletModel->getImmatureBalance(), 
-               walletModel->getZerocoinBalance(), walletModel->getUnconfirmedZerocoinBalance(), walletModel->getImmatureZerocoinBalance(),
+               0, 0, 0,
                walletModel->getWatchBalance(), walletModel->getWatchUnconfirmedBalance(), walletModel->getWatchImmatureBalance());
     coinControlUpdateLabels();
 
@@ -225,15 +192,6 @@ void PrivacyDialog::on_pushButtonMintReset_clicked()
     if (!walletModel || !walletModel->getOptionsModel())
         return;
 
-    ui->TEMintStatus->setPlainText(tr("Starting ResetMintZerocoin: rescanning complete blockchain, this will need up to 30 minutes depending on your hardware. \nPlease be patient..."));
-    ui->TEMintStatus->repaint ();
-
-    int64_t nTime = GetTimeMillis();
-    string strResetMintResult = pwalletMain->ResetMintZerocoin(false); // do not do the extended search from GUI
-    double fDuration = (double)(GetTimeMillis() - nTime)/1000.0;
-    ui->TEMintStatus->setPlainText(QString::fromStdString(strResetMintResult) + tr("Duration: ") + QString::number(fDuration) + tr(" sec.\n"));
-    ui->TEMintStatus->repaint ();
-
     return;
 }
 
@@ -241,14 +199,6 @@ void PrivacyDialog::on_pushButtonSpentReset_clicked()
 {
     if (!walletModel || !walletModel->getOptionsModel())
         return;
-
-    ui->TEMintStatus->setPlainText(tr("Starting ResetSpentZerocoin: "));
-    ui->TEMintStatus->repaint ();
-    int64_t nTime = GetTimeMillis();
-    string strResetSpentResult = pwalletMain->ResetSpentZerocoin();
-    double fDuration = (double)(GetTimeMillis() - nTime)/1000.0;
-    ui->TEMintStatus->setPlainText(QString::fromStdString(strResetSpentResult) + tr("Duration: ") + QString::number(fDuration) + tr(" sec.\n"));
-    ui->TEMintStatus->repaint ();
 
     return;
 }
@@ -258,12 +208,6 @@ void PrivacyDialog::on_pushButtonSpendzDAPS_clicked()
 
     if (!walletModel || !walletModel->getOptionsModel() || !pwalletMain)
         return;
-
-    if(GetAdjustedTime() > GetSporkValue(SPORK_16_ZEROCOIN_MAINTENANCE_MODE)) {
-        QMessageBox::information(this, tr("Mint Zerocoin"),
-                                 tr("zDAPS is currently undergoing maintenance."), QMessageBox::Ok, QMessageBox::Ok);
-        return;
-    }
 
     // Request unlock if wallet was locked or unlocked for mixing:
     WalletModel::EncryptionStatus encStatus = walletModel->getEncryptionStatus();
@@ -305,27 +249,10 @@ void PrivacyDialog::sendzDAPS()
 
     // Handle 'Pay To' address options
     CBitcoinAddress address(ui->payTo->text().toStdString());
-    if(ui->payTo->text().isEmpty()){
-        QMessageBox::information(this, tr("Spend Zerocoin"), tr("No 'Pay To' address provided, creating local payment"), QMessageBox::Ok, QMessageBox::Ok);
-    }
-    else{
-        if (!address.IsValid()) {
-            QMessageBox::warning(this, tr("Spend Zerocoin"), tr("Invalid Dapscoin Address"), QMessageBox::Ok, QMessageBox::Ok);
-            ui->payTo->setFocus();
-            return;
-        }
-    }
 
     // Double is allowed now
     double dAmount = ui->zDAPSpayAmount->text().toDouble();
     CAmount nAmount = roundint64(dAmount* COIN);
-
-    // Check amount validity
-    if (!MoneyRange(nAmount) || nAmount <= 0.0) {
-        QMessageBox::warning(this, tr("Spend Zerocoin"), tr("Invalid Send Amount"), QMessageBox::Ok, QMessageBox::Ok);
-        ui->zDAPSpayAmount->setFocus();
-        return;
-    }
 
     // Convert change to zDAPS
     bool fMintChange = ui->checkBoxMintChange->isChecked();

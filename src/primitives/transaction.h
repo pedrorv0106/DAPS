@@ -231,11 +231,6 @@ public:
         return (nValue < 3*minRelayTxFee.GetFee(nSize));
     }
 
-    bool IsZerocoinMint() const
-    {
-        return !scriptPubKey.empty() && scriptPubKey.IsZerocoinMint();
-    }
-
     friend bool operator==(const CTxOut& a, const CTxOut& b)
     {
         return (a.nValue       == b.nValue &&
@@ -359,38 +354,12 @@ public:
     // Compute modified tx size for priority calculation (optionally given tx size)
     unsigned int CalculateModifiedSize(unsigned int nTxSize=0) const;
 
-    bool IsZerocoinSpend() const
-    {
-        return !IsCoinAudit() && (vin.size() > 0 && vin[0].prevout.IsNull() && vin[0].scriptSig[0] == OP_ZEROCOINSPEND);
-    }
-
-    bool IsZerocoinMint() const
-    {
-    	if (IsCoinAudit()) {
-    		return false;
-    	}
-        for(const CTxOut& txout : vout) {
-            if (txout.scriptPubKey.IsZerocoinMint())
-                return true;
-        }
-        return false;
-    }
-
-    bool ContainsZerocoins() const
-    {
-        return !IsCoinAudit() && (IsZerocoinSpend() || IsZerocoinMint());
-    }
-
-    CAmount GetZerocoinMinted() const;
-    CAmount GetZerocoinSpent() const;
-    int GetZerocoinMintCount() const;
-
     bool UsesUTXO(const COutPoint out);
     std::list<COutPoint> GetOutPoints() const;
 
     bool IsCoinBase() const
     {
-        return (vin.size() == 1 && vin[0].prevout.IsNull() && !ContainsZerocoins());
+        return (vin.size() == 1 && vin[0].prevout.IsNull());
     }
 
     bool IsCoinAudit() const

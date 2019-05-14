@@ -112,9 +112,6 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
                                               currentBalance(-1),
                                               currentUnconfirmedBalance(-1),
                                               currentImmatureBalance(-1),
-                                              currentZerocoinBalance(-1),
-                                              currentUnconfirmedZerocoinBalance(-1),
-                                              currentimmatureZerocoinBalance(-1),
                                               currentWatchOnlyBalance(-1),
                                               currentWatchUnconfBalance(-1),
                                               currentWatchImmatureBalance(-1),
@@ -154,23 +151,9 @@ OverviewPage::~OverviewPage()
 void OverviewPage::getPercentage(CAmount nUnlockedBalance, CAmount nZerocoinBalance, QString& sDAPSPercentage, QString& szDAPSPercentage)
 {
     int nPrecision = 2;
-    double dzPercentage = 0.0;
 
-    if (nZerocoinBalance <= 0){
-        dzPercentage = 0.0;
-    }
-    else{
-        if (nUnlockedBalance <= 0){
-            dzPercentage = 100.0;
-        }
-        else{
-            dzPercentage = 100.0 * (double)(nZerocoinBalance / (double)(nZerocoinBalance + nUnlockedBalance));
-        }
-    }
-
-    double dPercentage = 100.0 - dzPercentage;
+    double dPercentage = 100.0;
     
-    szDAPSPercentage = "(" + QLocale(QLocale::system()).toString(dzPercentage, 'f', nPrecision) + " %)";
     sDAPSPercentage = "(" + QLocale(QLocale::system()).toString(dPercentage, 'f', nPrecision) + " %)";
     
 }
@@ -182,9 +165,6 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     currentBalance = balance;
     currentUnconfirmedBalance = unconfirmedBalance;
     currentImmatureBalance = immatureBalance;
-    currentZerocoinBalance = zerocoinBalance;
-    currentUnconfirmedZerocoinBalance = unconfirmedZerocoinBalance;
-    currentimmatureZerocoinBalance = immatureZerocoinBalance;
     currentWatchOnlyBalance = watchOnlyBalance;
     currentWatchUnconfBalance = watchUnconfBalance;
     currentWatchImmatureBalance = watchImmatureBalance;
@@ -221,31 +201,6 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     CAmount nTotalBalance = balance + unconfirmedBalance;
     CAmount nUnlockedBalance = nTotalBalance - nLockedBalance;
     getPercentage(nUnlockedBalance, zerocoinBalance, sPercentage, szPercentage);
-
-
-    /**
-* @author Wang
-* @type zerocoin
-*/
-
-    // Adjust bubble-help according to AutoMint settings
-    QString automintHelp = tr("Current percentage of zDAPS.\nIf AutoMint is enabled this percentage will settle around the configured AutoMint percentage (default = 10%).\n");
-    bool fEnableZeromint = GetBoolArg("-enablezeromint", false);
-    int nZeromintPercentage = GetArg("-zeromintpercentage", 10);
-    if (fEnableZeromint) {
-        automintHelp += tr("AutoMint is currently enabled and set to ") + QString::number(nZeromintPercentage) + "%.\n";
-        automintHelp += tr("To disable AutoMint add 'enablezeromint=0' in dapscoin.conf.");
-    }
-    else {
-        automintHelp += tr("AutoMint is currently disabled.\nTo enable AutoMint change 'enablezeromint=0' to 'enablezeromint=1' in dapscoin.conf");
-    }
-
-    // REMOVE static int cachedTxLocks = 0;
-
-    // REMOVE if (cachedTxLocks != nCompleteTXLocks) {
-    // REMOVE     cachedTxLocks = nCompleteTXLocks;
-    // REMOVE     ui->listTransactions->update();
-    // REMOVE }
 }
 
 // show/hide watch-only labels
@@ -303,7 +258,7 @@ void OverviewPage::setWalletModel(WalletModel* model)
 
         // Keep up to date with wallet
         setBalance(model->getBalance(), model->getUnconfirmedBalance(), model->getImmatureBalance(),
-                   model->getZerocoinBalance(), model->getUnconfirmedZerocoinBalance(), model->getImmatureZerocoinBalance(), 
+                   0, 0, 0,
                    model->getWatchBalance(), model->getWatchUnconfirmedBalance(), model->getWatchImmatureBalance());
         connect(model, SIGNAL(balanceChanged(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)), this, 
                          SLOT(setBalance(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)));
@@ -327,7 +282,7 @@ void OverviewPage::updateDisplayUnit()
     if (walletModel && walletModel->getOptionsModel()) {
         nDisplayUnit = walletModel->getOptionsModel()->getDisplayUnit();
         if (currentBalance != -1)
-            setBalance(currentBalance, currentUnconfirmedBalance, currentImmatureBalance, currentZerocoinBalance, currentUnconfirmedZerocoinBalance, currentimmatureZerocoinBalance,
+            setBalance(currentBalance, currentUnconfirmedBalance, currentImmatureBalance, 0, 0, 0,
                 currentWatchOnlyBalance, currentWatchUnconfBalance, currentWatchImmatureBalance);
 
         // Update txdelegate->unit with the current unit
