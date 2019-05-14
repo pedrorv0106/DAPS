@@ -1862,17 +1862,14 @@ bool CWallet::AvailableCoins(const uint256 wtxid, const CWalletTx* pcoin, vector
 
         if ((pcoin->IsCoinBase() || pcoin->IsCoinStake()) && pcoin->GetBlocksToMaturity() > 0)
             return false;
-
         int nDepth = pcoin->GetDepthInMainChain(false);
         // do not use IX for inputs that have less then 6 blockchain confirmations
         if (fUseIX && nDepth < 6)
             return false;
-
         // We should not consider coins which aren't at least in our mempool
         // It's possible for these to be conflicted via ancestors which we may never be able to detect
         if (nDepth == 0 && !pcoin->InMempool())
             return false;
-
         for (unsigned int i = 0; i < pcoin->vout.size(); i++) {
             if (pcoin->vout[i].IsEmpty()) {
                 cannotSpend++;
@@ -1899,13 +1896,11 @@ bool CWallet::AvailableCoins(const uint256 wtxid, const CWalletTx* pcoin, vector
                 if (pcoin->vout[i].IsZerocoinMint())
                     continue;
             }
-
             isminetype mine = IsMine(pcoin->vout[i]);
             if (mine == ISMINE_NO)
                 continue;
             if (mine == ISMINE_WATCH_ONLY)
                 continue;
-
             if (IsLockedCoin(wtxid, i) && nCoinType != ONLY_1000000)
                 continue;
             if (value <= 0 && !fIncludeZeroValue)
@@ -2055,27 +2050,31 @@ bool CWallet::MintableCoins()
 
     vector<COutput> vCoins;
 
-    LOCK2(cs_main, cs_wallet);
-    for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
-        const uint256& wtxid = it->first;
-        const CWalletTx* pcoin = &(*it).second;
+    {
+    	LOCK2(cs_main, cs_wallet);
+    	for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
+    		const uint256& wtxid = it->first;
+    		const CWalletTx* pcoin = &(*it).second;
 
-        int nDepth = pcoin->GetDepthInMainChain(false);
-        int cannotSpend = 0;
-        AvailableCoins(wtxid, pcoin, vCoins, cannotSpend, true);
-        if (!vCoins.empty()) {
-            for (const COutput& out : vCoins) {
-                int64_t nTxTime = out.tx->GetTxTime();
-                if (out.tx->IsZerocoinSpend()) {
-                    if (!out.tx->IsInMainChain())
-                        continue;
-                    nTxTime = mapBlockIndex.at(out.tx->hashBlock)->GetBlockTime();
-                }
+    		int nDepth = pcoin->GetDepthInMainChain(false);
+    		int cannotSpend = 0;
+    		{
+    			AvailableCoins(wtxid, pcoin, vCoins, cannotSpend, true);
+    			if (!vCoins.empty()) {
+    				for (const COutput& out : vCoins) {
+    					int64_t nTxTime = out.tx->GetTxTime();
+    					if (out.tx->IsZerocoinSpend()) {
+    						if (!out.tx->IsInMainChain())
+    							continue;
+    						nTxTime = mapBlockIndex.at(out.tx->hashBlock)->GetBlockTime();
+    					}
 
-                if (GetAdjustedTime() - nTxTime > nStakeMinAge)
-                    return true;
-            }
-        }
+    					if (GetAdjustedTime() - nTxTime > nStakeMinAge)
+    						return true;
+    				}
+    			}
+    		}
+    	}
     }
 
     return false;
@@ -3907,12 +3906,11 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             //int nDepth = pcoin->GetDepthInMainChain(false);
             vector<COutput> vCoins;
             int cannotSpend = 0;
-            AvailableCoins(wtxid, pcoin, vCoins, cannotSpend, true, NULL, false, STAKABLE_COINS, false);
-            if (vCoins.empty() && cannotSpend == pcoin->vout.size()) {
-                //tobeRemoveds.push_back(it);
-                //notAbleToSpend.push_back(it);
-                continue;
+            {
+            	//LOCK2(cs_main, cs_wallet);
+            	AvailableCoins(wtxid, pcoin, vCoins, cannotSpend, true, NULL, false, STAKABLE_COINS, false);
             }
+
             CAmount nAmountSelected = 0;
             for (const COutput& out : vCoins) {
                 //make sure not to outrun target amount
@@ -3934,6 +3932,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
                     continue;
 
                 //check that it is matured
+
                 if (out.nDepth < (out.tx->IsCoinStake() ? Params().COINBASE_MATURITY() : 10))
                     continue;
 
@@ -3948,6 +3947,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
                 //add to our stake set
                 setStakeCoins.insert(make_pair(out.tx, out.i));
                 nAmountSelected += value;
+
             }
 
             BOOST_FOREACH (PAIRTYPE(const CWalletTx*, unsigned int) pcoin, setStakeCoins) {

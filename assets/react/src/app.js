@@ -214,7 +214,7 @@ class BlockExplorer extends Component {
           <div className={"ScreenView " + Style.ScreenView}>
 
             <Switch onChange={this.handleSwitch()}>
-              <Route exact path={route} component={OverviewPage} />
+              <Route exact path={route + "overview/"} component={OverviewPage} />
 
               <Route exact path={route + "blocks/"} component={() =>
                 <ListPage
@@ -239,10 +239,11 @@ class BlockExplorer extends Component {
         </div>
 
         <StatusBar id="networkStatusBar" getData={Actions.getNetworkDetailData} className={`StatusBar ${Style.StatusBar}`}
-          lift={(netstate) => { Object.keys(netstate).forEach((key) => Object.assign(this.state.netStatus, { [key]: netstate[key] })) }} />
+          // lift={(netstate) => { Object.keys(netstate).forEach((key) => Object.assign(this.state.netStatus, { [key]: netstate[key] })) }} />
+          lift={(netstate) => { this.setState({netStatus: netstate}) }} />
       </div>
 
-      <Footer />
+      <Footer data={this.state.netStatus}/>
     </div>
     )
   }

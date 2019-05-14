@@ -126,6 +126,7 @@ public:
                     qWarning() << "TransactionTablePriv::updateWallet : Warning: Got CT_NEW, but transaction is not in wallet";
                     break;
                 }
+
                 // Added -- insert at the right position
                 QList<TransactionRecord> toInsert =
                     TransactionRecord::decomposeTransaction(wallet, mi->second);
@@ -237,6 +238,7 @@ void TransactionTableModel::updateTransaction(const QString& hash, int status, b
     updated.SetHex(hash.toStdString());
 
     priv->updateWallet(updated, status, showTransaction);
+    emit walletModel->RefreshRecent();
 }
 
 void TransactionTableModel::updateConfirmations()
