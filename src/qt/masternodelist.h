@@ -19,7 +19,7 @@
 #define MASTERNODELIST_UPDATE_SECONDS 15
 #define MASTERNODELIST_FILTER_COOLDOWN_SECONDS 3
 
-class BitcoinGUI;
+// class BitcoinGUI;
 
 namespace Ui
 {
@@ -46,7 +46,7 @@ public:
     void setWalletModel(WalletModel* walletModel);
     void StartAlias(std::string strAlias);
     void StartAll(std::string strCommand = "start-all");
-    void bitcoinGUIInstallEvent(BitcoinGUI *gui);
+    // void bitcoinGUIInstallEvent(BitcoinGUI *gui);
     QString getStakingStatusError();
 
 private:
@@ -68,7 +68,7 @@ private:
     WalletModel* walletModel;
     CCriticalSection cs_mnlistupdate;
     QString strCurrentFilter;
-    QSizeGrip m_SizeGrip;
+    // QSizeGrip m_SizeGrip;
     virtual void resizeEvent(QResizeEvent* event);
 
 private Q_SLOTS:
