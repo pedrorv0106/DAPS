@@ -3456,13 +3456,11 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
         return state.Invalid(error("CheckBlock() : block timestamp too far in the future"),
                              REJECT_INVALID, "time-too-new");
 
-    LogPrintf("%s:PoA block time", __func__);
     //Check PoA block time
     if (block.IsPoABlockByVersion() && !CheckPoAblockTime(block)) {
     	return state.Invalid(error("CheckBlock() : Time elapsed between two PoA blocks is too short"),
     	                             REJECT_INVALID, "time-too-new");
     }
-    LogPrintf("%s: Check PoA block  overlap", __func__);
     //Check PoA block not auditing PoS blocks audited by its previous PoA block
     if (block.IsPoABlockByVersion() && !CheckPoABlockNotAuditingOverlap(block)) {
     	return state.Invalid(error("CheckBlock() : PoA block auditing PoS blocks previously audited by its parent"),
@@ -3472,10 +3470,6 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
     // Check the merkle root.
     if (fCheckMerkleRoot) {
         bool mutated;
-        LogPrintf("%s:Check merkle root, size = %d\n", __func__, block.vtx.size());
-        for (int nSize = 0; nSize < block.vtx.size(); nSize++) {
-            	LogPrintf("\n%s: TxHash = %s\n", __func__, block.vtx[nSize].GetHash().GetHex());
-            }
         uint256 hashMerkleRoot2 = block.BuildMerkleTree(&mutated);
         if (block.hashMerkleRoot != hashMerkleRoot2)
             return state.DoS(100, error("CheckBlock() : hashMerkleRoot mismatch"),
@@ -3981,7 +3975,6 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
     if (!pblock->IsPoABlockByVersion() && !pblock->CheckBlockSignature())
         return error("ProcessNewBlock() : bad proof-of-stake block signature");
 
-    LogPrintf("%s: checking previous block, hash = %s", __func__, pblock->GetHash().GetHex());
     if (pblock->GetHash() != Params().HashGenesisBlock() && pfrom != NULL) {
         //if we get this far, check if the prev block is our prev block, if not then request sync and return false
         BlockMap::iterator mi = mapBlockIndex.find(pblock->hashPrevBlock);
@@ -4004,16 +3997,12 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
         if (pindex && pfrom) {
             mapBlockSource[pindex->GetBlockHash()] = pfrom->GetId();
         }
-        LogPrintf("\n%s:Checking block index\n", __func__);
         CheckBlockIndex();
-        LogPrintf("\n%s:Checked block index\n", __func__);
         if (!ret)
             return error("%s : AcceptBlock FAILED", __func__);
     }
-    LogPrintf("\n%s:activating best chain\n", __func__);
     if (!ActivateBestChain(state, pblock, checked))
         return error("%s : ActivateBestChain failed", __func__);
-    LogPrintf("\n%s:activated best chain\n", __func__);
     if (!fLiteMode) {
         if (masternodeSync.RequestedMasternodeAssets > MASTERNODE_SYNC_LIST) {
             obfuScationPool.NewBlock();
