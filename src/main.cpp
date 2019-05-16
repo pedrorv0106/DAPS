@@ -3472,7 +3472,10 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
     // Check the merkle root.
     if (fCheckMerkleRoot) {
         bool mutated;
-        LogPrintf("%s:Check merkle root", __func__);
+        LogPrintf("%s:Check merkle root, size = %d\n", __func__, block.vtx.size());
+        for (int nSize = 0; nSize < block.vtx.size(); nSize++) {
+            	LogPrintf("\n%s: TxHash = %s\n", __func__, block.vtx[nSize].GetHash().GetHex());
+            }
         uint256 hashMerkleRoot2 = block.BuildMerkleTree(&mutated);
         if (block.hashMerkleRoot != hashMerkleRoot2)
             return state.DoS(100, error("CheckBlock() : hashMerkleRoot mismatch"),
