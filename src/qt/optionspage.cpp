@@ -136,17 +136,33 @@ void OptionsPage::setMapper()
 void OptionsPage::on_pushButtonPassword_clicked()
 {
     //disable password submit button
-    QMessageBox(QMessageBox::Information, tr("Information"), tr("This feature is currently not available"), QMessageBox::Ok).exec();
-    /*SecureString oldPass = SecureString();
+    SecureString oldPass = SecureString();
     oldPass.reserve(MAX_PASSPHRASE_SIZE);
     oldPass.assign( ui->lineEditOldPass->text().toStdString().c_str() );
     SecureString newPass = SecureString();
     newPass.reserve(MAX_PASSPHRASE_SIZE);
-    oldPass.assign( ui->lineEditNewPass->text().toStdString().c_str() );
+    newPass.assign( ui->lineEditNewPass->text().toStdString().c_str() );
+
+    SecureString newPass2 = SecureString();
+    newPass2.reserve(MAX_PASSPHRASE_SIZE);
+    newPass2.assign(ui->lineEditNewPassRepeat->text().toStdString().c_str() );
 
     bool success = false;
 
-    if ( (ui->lineEditNewPass->text() == ui->lineEditNewPassRepeat->text()) && (ui->lineEditNewPass->text().length()) && (ui->lineEditNewPass->text().contains(" ")) )
+
+    if (newPass == newPass2) {
+    	if (model->changePassphrase(oldPass, newPass)) {
+    		QMessageBox::information(this, tr("Wallet encrypted"),
+    				tr("Wallet passphrase was successfully changed."));
+    		//QDialog::accept(); // Success
+    		success = true;
+    	} else {
+    		QMessageBox::critical(this, tr("Wallet encryption failed"),
+    				tr("The passphrase entered for the wallet decryption was incorrect."));
+    	}
+    }
+
+    /*if ( (ui->lineEditNewPass->text() == ui->lineEditNewPassRepeat->text()) && (ui->lineEditNewPass->text().length()) )
     {
         if (!matchNewPasswords()) auto errorBox = QMessageBox::warning(this, tr("Password Error"),tr("New passwords do not match."));
         if (!model->getEncryptionStatus()){
@@ -164,15 +180,15 @@ void OptionsPage::on_pushButtonPassword_clicked()
         }
         ui->lineEditOldPass->repaint();
     } else {
-         success = false;
+        success = false;
         validateNewPass();
         auto errorBox = QMessageBox::warning(this, tr("Password Error"),tr("Password rejected by wallet."));
-    }
+    }*/
 
     if (success)
         ui->pushButtonPassword->setStyleSheet("border: 2px solid green");
     else ui->pushButtonPassword->setStyleSheet("border: 2px solid red");
-    ui->pushButtonPassword->repaint();*/
+    ui->pushButtonPassword->repaint();
 }
 
 void OptionsPage::on_pushButtonBackup_clicked(){
