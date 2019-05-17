@@ -43,7 +43,7 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         su && \
         apt-get remove libzmq3-dev -y && \
         ./autogen.sh && \
-        ./configure && \
+        CONFIG_SITE=$PWD/depends/x86_64-pc-linux-gnu/share/config.site ./configure --prefix=/ && \
         make -j2 && \
         strip src/dapscoind && \
         strip src/dapscoin-cli && \
