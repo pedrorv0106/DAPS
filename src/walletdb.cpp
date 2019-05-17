@@ -299,6 +299,16 @@ bool CWalletDB::ReadStakingStatus() {
     return status;
 }
 
+bool CWalletDB::WriteScannedBlockHeight(int height)
+{
+	return Write(std::string("scannedblockheight"), height);
+}
+bool CWalletDB::ReadScannedBlockHeight(int& height)
+{
+	return Read(std::string("scannedblockheight"), height);
+}
+
+
 bool CWalletDB::ReadAccount(const string& strAccount, CAccount& account)
 {
     account.SetNull();

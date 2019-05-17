@@ -398,7 +398,7 @@ RecentRequestsTableModel* WalletModel::getRecentRequestsTableModel()
 
 WalletModel::EncryptionStatus WalletModel::getEncryptionStatus() const
 {
-    if (!wallet->IsCrypted()) {
+    if (!wallet->IsLocked()) {
         return Unencrypted;
     } else if (wallet->fWalletUnlockAnonymizeOnly) {
         return UnlockedForAnonymizationOnly;

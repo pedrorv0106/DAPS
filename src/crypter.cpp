@@ -191,11 +191,13 @@ bool DecryptAES256(const SecureString& sKey, const std::string& sCiphertext, con
 
 bool CCryptoKeyStore::SetCrypted()
 {
+	LogPrintf("\nSetting crypted, fUseCrypto = %d\n", fUseCrypto);
     LOCK(cs_KeyStore);
     if (fUseCrypto)
         return true;
     if (!mapKeys.empty())
         return false;
+	LogPrintf("\nSetting crypted, fUseCrypto = %d\n", fUseCrypto);
     fUseCrypto = true;
     return true;
 }

@@ -237,6 +237,7 @@ void OptionsPage::on_EnableStaking(ToggleButton* widget)
     	}
     	widget->setState(false);
     	pwalletMain->WriteStakingStatus(false);
+    	pwalletMain->walletStakingInProgress = false;
         return;
     }
 	if (widget->getState()){

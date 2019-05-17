@@ -928,6 +928,9 @@ bool CWallet::AddToWalletIfInvolvingMe(const CTransaction& tx, const CBlock* pbl
         bool fExisted = mapWallet.count(tx.GetHash()) != 0;
         if (fExisted && !fUpdate) return false;
         IsTransactionForMe(tx);
+        if (!IsCrypted()) {
+        	CWalletDB(strWalletFile).WriteScannedBlockHeight(mapBlockIndex[pblock->GetHash()]->nHeight);
+        }
         if (fExisted || IsMine(tx) || IsFromMe(tx)) {
             CWalletTx wtx(this, tx);
             // Get merkle branch if transaction was found in a block
@@ -6588,6 +6591,10 @@ bool CWallet::ComputeStealthDestination(const CKey& secret, const CPubKey& pubVi
 
 bool CWallet::GenerateAddress(CPubKey& pub, CPubKey& txPub, CKey& txPriv) const {
     CKey view, spend;
+    if (!IsLocked()) {
+    	LogPrintf("\n%s:Wallet is locked\n", __func__);
+    	return false;
+    }
     myViewPrivateKey(view);
     mySpendPrivateKey(spend);
     txPriv.MakeNewKey(true);
@@ -6714,8 +6721,7 @@ bool CWallet::IsTransactionForMe(const CTransaction& tx) {
         LogPrintf("Cannot obtain private view key");
     }*/
     std::vector<CKey> spends, views;
-    allMyPrivateKeys(spends, views);
-    if (spends.size() != views.size()) {
+    if (!allMyPrivateKeys(spends, views) || spends.size() != views.size()) {
         return false;
     }
     for (const CTxOut& out: tx.vout) {
@@ -6804,6 +6810,10 @@ bool CWallet::AllMyPublicAddresses(std::vector<std::string>& addresses, std::vec
 
 bool CWallet::allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views)
 {
+	if (IsCrypted()) {
+    	LogPrintf("\nWallet is locked, unlock it before being able to compute the precise balance\n");
+		return false;
+	}
     std::string labelList;
     CKey spend, view;
     mySpendPrivateKey(spend);
@@ -6877,29 +6887,43 @@ void CWallet::createMasterKey() const {
 }
 
 bool CWallet::mySpendPrivateKey(CKey& spend) const {
-    std::string spendAccountLabel = "spendaccount";
-    CAccount spendAccount;
-    CWalletDB pDB(strWalletFile);
-    if (!pDB.ReadAccount(spendAccountLabel, spendAccount)) {
-        LogPrintf("Cannot Load Spend private key, now create the master keys");
-        createMasterKey();
-        pDB.ReadAccount(spendAccountLabel, spendAccount);
-    }
-    const CKeyID& keyID = spendAccount.vchPubKey.GetID();
-    GetKey(keyID, spend);
+	{
+		LOCK2(cs_main, cs_wallet);
+		if (IsLocked()) {
+			LogPrintf("\n%s:Wallet is locked\n", __func__);
+			return false;
+		}
+		std::string spendAccountLabel = "spendaccount";
+		CAccount spendAccount;
+		CWalletDB pDB(strWalletFile);
+		if (!pDB.ReadAccount(spendAccountLabel, spendAccount)) {
+			LogPrintf("Cannot Load Spend private key, now create the master keys");
+			createMasterKey();
+			pDB.ReadAccount(spendAccountLabel, spendAccount);
+		}
+		const CKeyID& keyID = spendAccount.vchPubKey.GetID();
+		GetKey(keyID, spend);
+	}
     return true;
 }
 bool CWallet::myViewPrivateKey(CKey& view) const {
-    std::string viewAccountLabel = "viewaccount";
-    CAccount viewAccount;
-    CWalletDB pDB(strWalletFile);
-    if (!pDB.ReadAccount(viewAccountLabel, viewAccount)) {
-        LogPrintf("Cannot Load view private key, now create the master keys");
-        createMasterKey();
-        pDB.ReadAccount(viewAccountLabel, viewAccount);
-    }
-    const CKeyID& keyID = viewAccount.vchPubKey.GetID();
-    GetKey(keyID, view);
+	{
+		LOCK2(cs_main, cs_wallet);
+		if (IsLocked()) {
+			LogPrintf("\n%s:Wallet is locked\n", __func__);
+			return false;
+		}
+		std::string viewAccountLabel = "viewaccount";
+		CAccount viewAccount;
+		CWalletDB pDB(strWalletFile);
+		if (!pDB.ReadAccount(viewAccountLabel, viewAccount)) {
+			LogPrintf("Cannot Load view private key, now create the master keys");
+			createMasterKey();
+			pDB.ReadAccount(viewAccountLabel, viewAccount);
+		}
+		const CKeyID& keyID = viewAccount.vchPubKey.GetID();
+		GetKey(keyID, view);
+	}
     return true;
 }
 
