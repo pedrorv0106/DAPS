@@ -1678,7 +1678,6 @@ Value walletpassphrase(const Array& params, bool fHelp)
         nWalletUnlockTime = GetTime () + nSleepTime;
         RPCRunLater ("lockwallet", boost::bind (LockWallet, pwalletMain), nSleepTime);
     }
-
     return Value::null;
 }
 
@@ -1717,7 +1716,6 @@ Value walletpassphrasechange(const Array& params, bool fHelp)
 
     if (!pwalletMain->ChangeWalletPassphrase(strOldWalletPass, strNewWalletPass))
         throw JSONRPCError(RPC_WALLET_PASSPHRASE_INCORRECT, "Error: The wallet passphrase entered was incorrect.");
-
     return Value::null;
 }
 

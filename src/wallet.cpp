@@ -346,6 +346,22 @@ bool CWallet::LoadMultiSig(const CScript& dest)
     return CCryptoKeyStore::AddMultiSig(dest);
 }
 
+void CWallet::RescanAfterUnlock() {
+	if (IsLocked()) {
+		return;
+	}
+	//rescan from scanned position stored in database
+	int scannedHeight = 0;
+	CWalletDB(strWalletFile).ReadScannedBlockHeight(scannedHeight);
+	CBlockIndex* pindex;
+	if (scannedHeight > chainActive.Height() || scannedHeight == 0) {
+		pindex = chainActive.Genesis();
+	} else {
+		pindex = chainActive[scannedHeight];
+	}
+	ScanForWalletTransactions(pindex, true);
+}
+
 bool CWallet::Unlock(const SecureString& strWalletPassphrase, bool anonymizeOnly)
 {
     SecureString strWalletPassphraseFinal;
@@ -370,6 +386,7 @@ bool CWallet::Unlock(const SecureString& strWalletPassphrase, bool anonymizeOnly
                 continue; // try another master key
             if (CCryptoKeyStore::Unlock(vMasterKey)) {
                 fWalletUnlockAnonymizeOnly = anonymizeOnly;
+                pwalletMain->RescanAfterUnlock();
                 return true;
             }
         }
@@ -414,7 +431,7 @@ bool CWallet::ChangeWalletPassphrase(const SecureString& strOldWalletPassphrase,
                 CWalletDB(strWalletFile).WriteMasterKey(pMasterKey.first, pMasterKey.second);
                 if (fWasLocked)
                     Lock();
-
+                pwalletMain->RescanAfterUnlock();
                 return true;
             }
         }
@@ -928,8 +945,14 @@ bool CWallet::AddToWalletIfInvolvingMe(const CTransaction& tx, const CBlock* pbl
         bool fExisted = mapWallet.count(tx.GetHash()) != 0;
         if (fExisted && !fUpdate) return false;
         IsTransactionForMe(tx);
-        if (!IsCrypted()) {
-        	CWalletDB(strWalletFile).WriteScannedBlockHeight(mapBlockIndex[pblock->GetHash()]->nHeight);
+        if (pblock && mapBlockIndex.count(pblock->GetHash()) == 1) {
+        	if (!IsCrypted() || !IsLocked()) {
+        		try {
+        			CWalletDB(strWalletFile).WriteScannedBlockHeight(mapBlockIndex[pblock->GetHash()]->nHeight);
+        		} catch (std::exception &e) {
+        			LogPrintf("\nCannot open data base or wallet is locked\n");
+        		}
+        	}
         }
         if (fExisted || IsMine(tx) || IsFromMe(tx)) {
             CWalletTx wtx(this, tx);
@@ -945,9 +968,9 @@ bool CWallet::AddToWalletIfInvolvingMe(const CTransaction& tx, const CBlock* pbl
 void CWallet::SyncTransaction(const CTransaction& tx, const CBlock* pblock)
 {
     LOCK2(cs_main, cs_wallet);
-    if (!AddToWalletIfInvolvingMe(tx, pblock, true))
+    if (!AddToWalletIfInvolvingMe(tx, pblock, true)) {
         return; // Not one of ours
-
+    }
     // If a transaction changes 'conflicted' state, that changes the balance
     // available of the outputs it spends. So force those to be
     // recomputed, also:
@@ -6951,6 +6974,11 @@ bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmou
         amount = amountMap[out.scriptPubKey];
         blind = blindMap[out.scriptPubKey];
         return true;
+    }
+
+    if (IsLocked()) {
+    	LogPrintf("\nWallet is locked, please unlock it before revealing transaction amount\n");
+    	return true;
     }
 
     std::set<CKeyID> keyIDs;
