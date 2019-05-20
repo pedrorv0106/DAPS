@@ -1477,7 +1477,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
         LogPrintf(" wallet      %15dms\n", GetTimeMillis() - nStart);
 
         RegisterValidationInterface(pwalletMain);
-
+    	int height = -1;
         CBlockIndex* pindexRescan = chainActive.Tip();
         if (GetBoolArg("-rescan", false)) {
             pindexRescan = chainActive.Genesis();
@@ -1487,7 +1487,14 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
             if (walletdb.ReadBestBlock(locator)) {
                 pindexRescan = FindForkInGlobalIndex(chainActive, locator);
             } else {
-                pindexRescan = chainActive.Genesis();
+                if (!walletdb.ReadScannedBlockHeight(height)) {
+                	if (height > chainActive.Height()) {
+                		pindexRescan = chainActive.Genesis();
+                	} else {
+                		pindexRescan = chainActive[height];
+                	}
+                } else
+                	pindexRescan = chainActive.Genesis();
             }
         }
         if (chainActive.Tip() && chainActive.Tip() != pindexRescan) {

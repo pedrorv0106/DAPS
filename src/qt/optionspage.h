@@ -21,7 +21,7 @@
 
 class OptionsModel;
 class WalletModel;
-class BitcoinGUI;
+// class BitcoinGUI;
 
 namespace Ui
 {
@@ -45,7 +45,7 @@ public:
     void setModel(WalletModel* model);
     void setMapper();
     bool matchNewPasswords();
-    void bitcoinGUIInstallEvent(BitcoinGUI *gui);
+    // void bitcoinGUIInstallEvent(BitcoinGUI *gui);
 
 public slots:
 	void on_EnableStaking(ToggleButton*);
@@ -60,7 +60,7 @@ private:
     OptionsModel* options;
     QDataWidgetMapper* mapper;
     QSettings settings;
-    QSizeGrip m_SizeGrip;
+    // QSizeGrip m_SizeGrip;
     QMenu* contextMenu;
     virtual void resizeEvent(QResizeEvent* event);
     CAmount getValidatedAmount();
