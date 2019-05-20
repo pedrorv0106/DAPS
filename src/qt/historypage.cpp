@@ -14,6 +14,7 @@
 #include "optionsmodel.h"
 #include "transactionrecord.h"
 #include "walletmodel.h"
+#include "revealtxdialog.h"
 
 #include <algorithm>
 
@@ -111,12 +112,25 @@ void HistoryPage::on_cellClicked(int row, int column)
     QString address = cell->data(0).toString();
     std::string stdAddress = address.trimmed().toStdString();
     if (pwalletMain->addrToTxHashMap.count(stdAddress) == 1) {
-        QMessageBox txHashShow;
-        txHashShow.setText("Transaction Hash.");
-        txHashShow.setInformativeText(pwalletMain->addrToTxHashMap[stdAddress].c_str());
-        txHashShow.setStyleSheet(GUIUtil::loadStyleSheet());
-        txHashShow.setStyleSheet("QMessageBox {messagebox-text-interaction-flags: 5;}");
-        txHashShow.exec();
+        // QMessageBox txHashShow;
+        // txHashShow.setText("Transaction Hash.");
+        // txHashShow.setInformativeText(pwalletMain->addrToTxHashMap[stdAddress].c_str());
+        // txHashShow.setStyleSheet(GUIUtil::loadStyleSheet());
+        // txHashShow.setStyleSheet("QMessageBox {messagebox-text-interaction-flags: 5;}");
+        // txHashShow.exec();
+
+        RevealTxDialog txdlg;
+        txdlg.setStyleSheet(GUIUtil::loadStyleSheet());
+
+        txdlg.setTxID(pwalletMain->addrToTxHashMap[stdAddress].c_str());
+
+        txdlg.setTxAddress(stdAddress.c_str());
+
+        CKey view;
+        pwalletMain->myViewPrivateKey(view);
+        txdlg.setTxPrivKey(CBitcoinSecret(view).ToString().c_str());
+        
+        txdlg.exec();
     }
 }
 
