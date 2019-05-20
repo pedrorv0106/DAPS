@@ -346,10 +346,15 @@ bool CWallet::LoadMultiSig(const CScript& dest)
     return CCryptoKeyStore::AddMultiSig(dest);
 }
 
-void CWallet::RescanAfterUnlock() {
+bool CWallet::RescanAfterUnlock() {
 	if (IsLocked()) {
-		return;
+		return false;
 	}
+
+	if (fImporting || fReindex) {
+		return false;
+	}
+
 	//rescan from scanned position stored in database
 	int scannedHeight = 0;
 	CWalletDB(strWalletFile).ReadScannedBlockHeight(scannedHeight);
@@ -360,6 +365,7 @@ void CWallet::RescanAfterUnlock() {
 		pindex = chainActive[scannedHeight];
 	}
 	ScanForWalletTransactions(pindex, true);
+	return true;
 }
 
 bool CWallet::Unlock(const SecureString& strWalletPassphrase, bool anonymizeOnly)
@@ -762,9 +768,9 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
         }
 
         Lock();
-        Unlock(strWalletPassphrase);
-        NewKeyPool();
-        Lock();
+        //Unlock(strWalletPassphrase);
+        //NewKeyPool();
+        //Lock();
 
         // Need to completely rewrite the wallet file; if we don't, bdb might keep
         // bits of the unencrypted private key in slack space in the database file.
@@ -1318,7 +1324,7 @@ bool CWalletTx::WriteToDisk()
  * from or to us. If fUpdate is true, found transactions that already
  * exist in the wallet will be updated.
  */
-int CWallet::ScanForWalletTransactions(CBlockIndex* pindexStart, bool fUpdate)
+int CWallet::ScanForWalletTransactions(CBlockIndex* pindexStart, bool fUpdate, int height)
 {
     int ret = 0;
     int64_t nNow = GetTime();
@@ -1329,8 +1335,9 @@ int CWallet::ScanForWalletTransactions(CBlockIndex* pindexStart, bool fUpdate)
 
         // no need to read and scan block, if block was created before
         // our wallet birthday (as adjusted for block time variability)
-        while (pindex && nTimeFirstKey && (pindex->GetBlockTime() < (nTimeFirstKey - 7200)))
+        while (pindex && nTimeFirstKey && (pindex->GetBlockTime() < (nTimeFirstKey - 7200))) {
             pindex = chainActive.Next(pindex);
+        }
 
         ShowProgress(_("Rescanning..."), 0); // show rescan progress in GUI as dialog or on splashscreen, if -rescan on startup
         double dProgressStart = Checkpoints::GuessVerificationProgress(pindex, false);
@@ -6614,7 +6621,7 @@ bool CWallet::ComputeStealthDestination(const CKey& secret, const CPubKey& pubVi
 
 bool CWallet::GenerateAddress(CPubKey& pub, CPubKey& txPub, CKey& txPriv) const {
     CKey view, spend;
-    if (!IsLocked()) {
+    if (IsLocked()) {
     	LogPrintf("\n%s:Wallet is locked\n", __func__);
     	return false;
     }
@@ -6833,8 +6840,8 @@ bool CWallet::AllMyPublicAddresses(std::vector<std::string>& addresses, std::vec
 
 bool CWallet::allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views)
 {
-	if (IsCrypted()) {
-    	LogPrintf("\nWallet is locked, unlock it before being able to compute the precise balance\n");
+	if (IsLocked()) {
+    	//LogPrintf("\nWallet is locked, unlock it before being able to compute the precise balance\n");
 		return false;
 	}
     std::string labelList;

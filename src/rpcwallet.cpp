@@ -47,9 +47,6 @@ void EnsureWalletIsUnlocked()
 {
     if (pwalletMain->IsLocked() || pwalletMain->fWalletUnlockAnonymizeOnly)
         throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Please enter the wallet passphrase with walletpassphrase first.");
-    if (!pwalletMain->IsLocked()) {
-    	std::cout << "Wallet is unlocked" << std::endl;
-    }
 }
 
 void WalletTxToJSON(const CWalletTx& wtx, Object& entry)
@@ -3211,6 +3208,8 @@ Value rescanwallettransactions(const Array& params, bool fHelp) {
     if (nHeight >= chainActive.Height()) {
     	nHeight = 0;
     }
-    pwalletMain->ScanForWalletTransactions(chainActive[nHeight], true);
+    if (!pwalletMain->RescanAfterUnlock()) {
+    	return "Wait for wallet to finish reimport/reindex";
+    }
     return "Started rescanning from block " + nHeight;
 }
