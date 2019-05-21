@@ -346,6 +346,28 @@ bool CWallet::LoadMultiSig(const CScript& dest)
     return CCryptoKeyStore::AddMultiSig(dest);
 }
 
+bool CWallet::RescanAfterUnlock() {
+	if (IsLocked()) {
+		return false;
+	}
+
+	if (fImporting || fReindex) {
+		return false;
+	}
+
+	//rescan from scanned position stored in database
+	int scannedHeight = 0;
+	CWalletDB(strWalletFile).ReadScannedBlockHeight(scannedHeight);
+	CBlockIndex* pindex;
+	if (scannedHeight > chainActive.Height() || scannedHeight == 0) {
+		pindex = chainActive.Genesis();
+	} else {
+		pindex = chainActive[scannedHeight];
+	}
+	ScanForWalletTransactions(pindex, true);
+	return true;
+}
+
 bool CWallet::Unlock(const SecureString& strWalletPassphrase, bool anonymizeOnly)
 {
     SecureString strWalletPassphraseFinal;
@@ -370,6 +392,7 @@ bool CWallet::Unlock(const SecureString& strWalletPassphrase, bool anonymizeOnly
                 continue; // try another master key
             if (CCryptoKeyStore::Unlock(vMasterKey)) {
                 fWalletUnlockAnonymizeOnly = anonymizeOnly;
+                pwalletMain->RescanAfterUnlock();
                 return true;
             }
         }
@@ -414,7 +437,7 @@ bool CWallet::ChangeWalletPassphrase(const SecureString& strOldWalletPassphrase,
                 CWalletDB(strWalletFile).WriteMasterKey(pMasterKey.first, pMasterKey.second);
                 if (fWasLocked)
                     Lock();
-
+                pwalletMain->RescanAfterUnlock();
                 return true;
             }
         }
@@ -745,9 +768,9 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
         }
 
         Lock();
-        Unlock(strWalletPassphrase);
-        NewKeyPool();
-        Lock();
+        //Unlock(strWalletPassphrase);
+        //NewKeyPool();
+        //Lock();
 
         // Need to completely rewrite the wallet file; if we don't, bdb might keep
         // bits of the unencrypted private key in slack space in the database file.
@@ -928,6 +951,15 @@ bool CWallet::AddToWalletIfInvolvingMe(const CTransaction& tx, const CBlock* pbl
         bool fExisted = mapWallet.count(tx.GetHash()) != 0;
         if (fExisted && !fUpdate) return false;
         IsTransactionForMe(tx);
+        if (pblock && mapBlockIndex.count(pblock->GetHash()) == 1) {
+        	if (!IsCrypted() || !IsLocked()) {
+        		try {
+        			CWalletDB(strWalletFile).WriteScannedBlockHeight(mapBlockIndex[pblock->GetHash()]->nHeight);
+        		} catch (std::exception &e) {
+        			LogPrintf("\nCannot open data base or wallet is locked\n");
+        		}
+        	}
+        }
         if (fExisted || IsMine(tx) || IsFromMe(tx)) {
             CWalletTx wtx(this, tx);
             // Get merkle branch if transaction was found in a block
@@ -942,9 +974,9 @@ bool CWallet::AddToWalletIfInvolvingMe(const CTransaction& tx, const CBlock* pbl
 void CWallet::SyncTransaction(const CTransaction& tx, const CBlock* pblock)
 {
     LOCK2(cs_main, cs_wallet);
-    if (!AddToWalletIfInvolvingMe(tx, pblock, true))
+    if (!AddToWalletIfInvolvingMe(tx, pblock, true)) {
         return; // Not one of ours
-
+    }
     // If a transaction changes 'conflicted' state, that changes the balance
     // available of the outputs it spends. So force those to be
     // recomputed, also:
@@ -1292,7 +1324,7 @@ bool CWalletTx::WriteToDisk()
  * from or to us. If fUpdate is true, found transactions that already
  * exist in the wallet will be updated.
  */
-int CWallet::ScanForWalletTransactions(CBlockIndex* pindexStart, bool fUpdate)
+int CWallet::ScanForWalletTransactions(CBlockIndex* pindexStart, bool fUpdate, int height)
 {
     int ret = 0;
     int64_t nNow = GetTime();
@@ -1303,8 +1335,9 @@ int CWallet::ScanForWalletTransactions(CBlockIndex* pindexStart, bool fUpdate)
 
         // no need to read and scan block, if block was created before
         // our wallet birthday (as adjusted for block time variability)
-        while (pindex && nTimeFirstKey && (pindex->GetBlockTime() < (nTimeFirstKey - 7200)))
+        while (pindex && nTimeFirstKey && (pindex->GetBlockTime() < (nTimeFirstKey - 7200))) {
             pindex = chainActive.Next(pindex);
+        }
 
         ShowProgress(_("Rescanning..."), 0); // show rescan progress in GUI as dialog or on splashscreen, if -rescan on startup
         double dProgressStart = Checkpoints::GuessVerificationProgress(pindex, false);
@@ -6588,6 +6621,10 @@ bool CWallet::ComputeStealthDestination(const CKey& secret, const CPubKey& pubVi
 
 bool CWallet::GenerateAddress(CPubKey& pub, CPubKey& txPub, CKey& txPriv) const {
     CKey view, spend;
+    if (IsLocked()) {
+    	LogPrintf("\n%s:Wallet is locked\n", __func__);
+    	return false;
+    }
     myViewPrivateKey(view);
     mySpendPrivateKey(spend);
     txPriv.MakeNewKey(true);
@@ -6714,8 +6751,7 @@ bool CWallet::IsTransactionForMe(const CTransaction& tx) {
         LogPrintf("Cannot obtain private view key");
     }*/
     std::vector<CKey> spends, views;
-    allMyPrivateKeys(spends, views);
-    if (spends.size() != views.size()) {
+    if (!allMyPrivateKeys(spends, views) || spends.size() != views.size()) {
         return false;
     }
     for (const CTxOut& out: tx.vout) {
@@ -6804,6 +6840,10 @@ bool CWallet::AllMyPublicAddresses(std::vector<std::string>& addresses, std::vec
 
 bool CWallet::allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views)
 {
+	if (IsLocked()) {
+    	//LogPrintf("\nWallet is locked, unlock it before being able to compute the precise balance\n");
+		return false;
+	}
     std::string labelList;
     CKey spend, view;
     mySpendPrivateKey(spend);
@@ -6877,29 +6917,43 @@ void CWallet::createMasterKey() const {
 }
 
 bool CWallet::mySpendPrivateKey(CKey& spend) const {
-    std::string spendAccountLabel = "spendaccount";
-    CAccount spendAccount;
-    CWalletDB pDB(strWalletFile);
-    if (!pDB.ReadAccount(spendAccountLabel, spendAccount)) {
-        LogPrintf("Cannot Load Spend private key, now create the master keys");
-        createMasterKey();
-        pDB.ReadAccount(spendAccountLabel, spendAccount);
-    }
-    const CKeyID& keyID = spendAccount.vchPubKey.GetID();
-    GetKey(keyID, spend);
+	{
+		LOCK2(cs_main, cs_wallet);
+		if (IsLocked()) {
+			LogPrintf("\n%s:Wallet is locked\n", __func__);
+			return false;
+		}
+		std::string spendAccountLabel = "spendaccount";
+		CAccount spendAccount;
+		CWalletDB pDB(strWalletFile);
+		if (!pDB.ReadAccount(spendAccountLabel, spendAccount)) {
+			LogPrintf("Cannot Load Spend private key, now create the master keys");
+			createMasterKey();
+			pDB.ReadAccount(spendAccountLabel, spendAccount);
+		}
+		const CKeyID& keyID = spendAccount.vchPubKey.GetID();
+		GetKey(keyID, spend);
+	}
     return true;
 }
 bool CWallet::myViewPrivateKey(CKey& view) const {
-    std::string viewAccountLabel = "viewaccount";
-    CAccount viewAccount;
-    CWalletDB pDB(strWalletFile);
-    if (!pDB.ReadAccount(viewAccountLabel, viewAccount)) {
-        LogPrintf("Cannot Load view private key, now create the master keys");
-        createMasterKey();
-        pDB.ReadAccount(viewAccountLabel, viewAccount);
-    }
-    const CKeyID& keyID = viewAccount.vchPubKey.GetID();
-    GetKey(keyID, view);
+	{
+		LOCK2(cs_main, cs_wallet);
+		if (IsLocked()) {
+			LogPrintf("\n%s:Wallet is locked\n", __func__);
+			return false;
+		}
+		std::string viewAccountLabel = "viewaccount";
+		CAccount viewAccount;
+		CWalletDB pDB(strWalletFile);
+		if (!pDB.ReadAccount(viewAccountLabel, viewAccount)) {
+			LogPrintf("Cannot Load view private key, now create the master keys");
+			createMasterKey();
+			pDB.ReadAccount(viewAccountLabel, viewAccount);
+		}
+		const CKeyID& keyID = viewAccount.vchPubKey.GetID();
+		GetKey(keyID, view);
+	}
     return true;
 }
 
@@ -6927,6 +6981,11 @@ bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmou
         amount = amountMap[out.scriptPubKey];
         blind = blindMap[out.scriptPubKey];
         return true;
+    }
+
+    if (IsLocked()) {
+    	LogPrintf("\nWallet is locked, please unlock it before revealing transaction amount\n");
+    	return true;
     }
 
     std::set<CKeyID> keyIDs;

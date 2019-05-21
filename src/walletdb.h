@@ -99,6 +99,9 @@ public:
     bool WriteStakingStatus(bool status);
     bool ReadStakingStatus();
 
+    bool WriteScannedBlockHeight(int height);
+    bool ReadScannedBlockHeight(int& height);
+
     bool WriteReserveAmount(const double &amount);
     bool ReadReserveAmount(double &amount);
 

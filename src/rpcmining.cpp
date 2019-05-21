@@ -563,7 +563,9 @@ Value getblocktemplate(const Array& params, bool fHelp)
         }
         CPubKey des, txPub;
         CKey txPriv;
-        pwalletMain->GenerateAddress(des, txPub, txPriv);
+        if (!pwalletMain->GenerateAddress(des, txPub, txPriv)) {
+        	throw runtime_error("Wallet is locked, please unlock it");
+        }
         CScript scriptDummy = CScript() << OP_TRUE;
         pblocktemplate = CreateNewBlock(scriptDummy, txPub, txPriv, pwalletMain, false);
         if (!pblocktemplate)
