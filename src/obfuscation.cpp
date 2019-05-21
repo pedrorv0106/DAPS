@@ -2107,7 +2107,7 @@ bool CObfuScationSigner::IsVinAssociatedWithPubkey(CTxIn& vin, CPubKey& pubkey)
     CScript payee2;
     payee2 = GetScriptForDestination(pubkey);
 
-    std::cout << "IsVinAssociatedWithPubkey:" << payee2.ToString() << std::endl;
+    LogPrintf("IsVinAssociatedWithPubkey:%s\n", payee2.ToString());
 
     CTransaction txVin;
     uint256 hash;
@@ -2119,7 +2119,7 @@ bool CObfuScationSigner::IsVinAssociatedWithPubkey(CTxIn& vin, CPubKey& pubkey)
         }
     }
 
-    std::cout << "IsVinAssociatedWithPubkey: not match" << std::endl;
+    LogPrintf("IsVinAssociatedWithPubkey: not match\n");
 
     return false;
 }
