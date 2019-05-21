@@ -64,14 +64,14 @@ isminetype IsMine(const CKeyStore& keystore, const CScript& scriptPubKey)
      */
     case TX_ZEROCOINMINT:
     case TX_PUBKEY:
-        LogPrintf("\n%s: 1 \n", __func__);
+        //LogPrintf("\n%s: 1 \n", __func__);
         keyID = CPubKey(vSolutions[0]).GetID();
-        LogPrintf("\n%s: 2 \n", __func__);
+        //LogPrintf("\n%s: 2 \n", __func__);
         if(keystore.HaveKey(keyID)) {
-            LogPrintf("\n%s: 3 \n", __func__);
+            //LogPrintf("\n%s: 3 \n", __func__);
             return ISMINE_SPENDABLE;
         }
-        LogPrintf("\n%s: 4 \n", __func__);
+        //LogPrintf("\n%s: 4 \n", __func__);
         break;
     case TX_PUBKEYHASH:
         keyID = CKeyID(uint160(vSolutions[0]));
