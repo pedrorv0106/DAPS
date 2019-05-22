@@ -29,7 +29,7 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         cp *.exe /BUILD/bin/; \
 #
     elif [ "$BUILD_TARGET" = "windowsx86" ]; \
-      then echo "Compiling for Windows 32-bit cross-compile (i686-w64-mingw32)..." && \
+      then echo "Compiling for Windows 32-bit (i686-w64-mingw32)..." && \
         cd depends && \
         make HOST=i686-w64-mingw32 && \
         cd .. && \
