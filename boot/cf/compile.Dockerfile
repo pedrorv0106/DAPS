@@ -17,7 +17,7 @@ COPY . /DAPS/
 RUN cd /DAPS/ && mkdir -p /BUILD/ && \
 #
     if [ "$BUILD_TARGET" = "windowsx64" ]; \
-      then echo "Compiling for win64" && \
+      then echo "Compiling for Windows 64-bit (x86_64-w64-mingw32)..." && \
         cd depends && \
         make HOST=x86_64-w64-mingw32 && \
         cd .. && \
@@ -29,7 +29,7 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         cp *.exe /BUILD/bin/; \
 #
     elif [ "$BUILD_TARGET" = "windowsx86" ]; \
-      then echo "Compiling for win86" && \
+      then echo "Compiling for Windows 32-bit cross-compile (i686-w64-mingw32)..." && \
         cd depends && \
         make HOST=i686-w64-mingw32 && \
         cd .. && \
@@ -41,7 +41,7 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         cp *.exe /BUILD/bin/; \
 #
     elif [ "$BUILD_TARGET" = "linux" ]; \
-       then echo "Compiling for linux" && \
+       then echo "Compiling for Linux (x86_64-pc-linux-gnu)..." && \
         su && \
         apt-get remove libzmq3-dev -y && \
         ./autogen.sh && \
@@ -50,7 +50,7 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         make install DESTDIR=/BUILD/; \
 #
     elif [ "$BUILD_TARGET" = "mac" ]; \
-       then echo "Compiling for mac" && \
+       then echo "Compiling for MacOS (x86_64-apple-darwin11)..." && \
         ./autogen.sh --with-gui=yes && \
         CONFIG_SITE=$PWD/depends/x86_64-apple-darwin11/share/config.site ./configure --prefix=/ && \
         make HOST="x86_64-apple-darwin11" -j2 && \
