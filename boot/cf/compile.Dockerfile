@@ -24,8 +24,9 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         ./autogen.sh && \
         CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure --prefix=/ && \
         make -j2 && \
-		make deploy && \
-        make install DESTDIR=/BUILD/; \
+        make deploy && \
+        make install DESTDIR=/BUILD/; && \
+        cp *.exe /BUILD/bin/; \
 #
     elif [ "$BUILD_TARGET" = "windowsx86" ]; \
       then echo "Compiling for win86" && \
@@ -36,7 +37,8 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         CONFIG_SITE=$PWD/depends/i686-w64-mingw32/share/config.site ./configure --prefix=/ && \
         make -j2 && \
         make deploy && \
-        make install DESTDIR=/BUILD/; \
+        make install DESTDIR=/BUILD/; && \
+        cp *.exe /BUILD/bin/; \
 #
     elif [ "$BUILD_TARGET" = "linux" ]; \
        then echo "Compiling for linux" && \
