@@ -44,6 +44,7 @@
 #include "secp256k1_bulletproofs.h"
 #include "secp256k1_commitment.h"
 #include "secp256k1_generator.h"
+#include "secp256k1.h"
 
 class CBlockIndex;
 class CBlockTreeDB;
@@ -182,6 +183,10 @@ void RegisterNodeSignals(CNodeSignals& nodeSignals);
 void UnregisterNodeSignals(CNodeSignals& nodeSignals);
 
 secp256k1_context2* GetContext();
+secp256k1_scratch_space2* GetScratch();
+secp256k1_bulletproof_generators* GetGenerator();
+bool VerifyBulletProofAggregate(const CTransaction& tx);
+bool VerifyRingSignatureWithTxFee(const CTransaction& tx);
 
 /** 
  * Process an incoming block. This only returns after the best known valid

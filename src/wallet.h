@@ -767,6 +767,7 @@ public:
     bool myViewPrivateKey(CKey& view) const;
     static bool CreateCommitment(const CAmount val, CKey& blind, std::vector<unsigned char>& commitment);
     static bool CreateCommitment(const unsigned char* blind, CAmount val, std::vector<unsigned char>& commitment);
+    static bool CreateCommitmentWithZeroBlind(const CAmount val, unsigned char* pBlind, std::vector<unsigned char>& commitment);
     bool WriteStakingStatus(bool status);
     bool ReadStakingStatus();
 private:
@@ -781,12 +782,11 @@ private:
         const std::vector<uint8_t> &extra, 
         CTransaction& tx, 
         CKey& txPrivKey);
-    bool generateBulletProof(CTransaction& tx);
-    bool verifyBulletProof(const CTransaction& tx);
+    bool generateBulletProofAggregate(CTransaction& tx);
     bool generateRingSignature(CTransaction& tx, int& myIndex, int ringSize);
-    bool verifyRingSignatureWithTxFee(const CTransaction& tx);
     bool computeSharedSec(const CTransaction& tx, const CTxOut& out, CPubKey& sharedSec) const;
     int walletIdxCache = 0;
+    bool isMatchMyKeyImage(const CKeyImage& ki, const COutPoint& out);
 };
 
 

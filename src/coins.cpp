@@ -233,11 +233,21 @@ bool CCoinsViewCache::HaveInputs(const CTransaction& tx) const
 {
     if (!tx.IsCoinBase()) {
         for (unsigned int i = 0; i < tx.vin.size(); i++) {
-            const COutPoint& prevout = tx.vin[i].prevout;
-            const CCoins* coins = AccessCoins(prevout.hash);
+        	//check output and decoys
+        	std::vector<COutPoint> alldecoys = tx.vin[i].decoys;
 
-            if (!coins || !coins->IsAvailable(prevout.n)) {
-                return false;
+        	alldecoys.push_back(tx.vin[i].prevout);
+
+            for (int j = 0; j < alldecoys.size(); j++) {
+            	const CCoins* coins = AccessCoins(alldecoys[j].hash);
+
+            	if (!coins || !coins->IsAvailable(alldecoys[j].n)) {
+            		CTransaction prev;
+            		uint256 bh;
+            		if (!GetTransaction(alldecoys[j].hash, prev, bh, true)) {
+            			return false;
+            		}
+            	}
             }
         }
     }

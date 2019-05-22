@@ -262,8 +262,6 @@ CAmount GetValueIn(CCoinsViewCache view, const CTransaction& tx)
                 CKey decodedMask;
                 CPubKey sharedSec;
                 sharedSec.Set(tx.vin[i].encryptionKey.begin(), tx.vin[i].encryptionKey.begin() + 33);
-                LogPrintf("\n%s: sharedSec = %s\n", __func__, sharedSec.GetHex());
-                LogPrintf("\n%s: sharedSec = %s\n", __func__, val.GetHex());
                 ECDHInfo::Decode(mask.begin(), val.begin(), sharedSec, decodedMask, nValueIn);
                 //Verify commitment
                 std::vector<unsigned char> commitment;
@@ -308,6 +306,216 @@ secp256k1_context2* GetContext() {
     static secp256k1_context2 *both;
     if (!both) both = secp256k1_context_create2(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
     return both;
+}
+
+secp256k1_scratch_space2* GetScratch() {
+    static secp256k1_scratch_space2 *scratch;
+    if (!scratch) scratch = secp256k1_scratch_space_create(GetContext(), 1024 * 1024 * 1024);
+    return scratch;
+}
+
+secp256k1_bulletproof_generators* GetGenerator() {
+    static secp256k1_bulletproof_generators *generator;
+    if (!generator) generator = secp256k1_bulletproof_generators_create(GetContext(), &secp256k1_generator_const_g, 64 * 1024);
+    return generator;
+}
+
+bool VerifyBulletProofAggregate(const CTransaction& tx)
+{
+	size_t len = tx.bulletproofs.size();
+
+	if (len == 0) return false;
+
+	secp256k1_pedersen_commitment commitments[tx.vout.size()];
+	int i = 0;
+	for (i = 0; i < tx.vout.size(); i++) {
+		secp256k1_pedersen_commitment_parse(GetContext(), &commitments[i], &(tx.vout[i].commitment[0]));
+	}
+	return secp256k1_bulletproof_rangeproof_verify(GetContext(), GetScratch(), GetGenerator(), &(tx.bulletproofs[0]), len, NULL, commitments, tx.vout.size(), 64, &secp256k1_generator_const_h, NULL, 0);
+}
+
+bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
+{
+	unsigned char allInPubKeys[tx.vin.size() + 1][tx.vin[0].decoys.size() + 1][33];
+	unsigned char allKeyImages[tx.vin.size() + 1][33];
+	unsigned char allInCommitments[tx.vin.size()][tx.vin[0].decoys.size() + 1][33];
+	unsigned char allOutCommitments[tx.vout.size()][33];
+
+	unsigned char SIJ[tx.vin.size() + 1][tx.vin[0].decoys.size() + 1][32];
+	unsigned char LIJ[tx.vin.size() + 1][tx.vin[0].decoys.size() + 1][33];
+	unsigned char RIJ[tx.vin.size() + 1][tx.vin[0].decoys.size() + 1][33];
+
+    secp256k1_context2 *both = GetContext();
+
+	//generating LIJ and RIJ at PI
+	for (int j = 0; j < tx.vin.size(); j++) {
+		memcpy(allKeyImages[j], tx.vin[j].keyImage.begin(), 33);
+	}
+
+	//extract all public keys
+	for (int i = 0; i < tx.vin.size(); i++) {
+		std::vector<COutPoint> decoysForIn;
+		decoysForIn.push_back(tx.vin[i].prevout);
+		for(int j = 0; j < tx.vin[i].decoys.size(); j++) {
+			decoysForIn.push_back(tx.vin[i].decoys[j]);
+		}
+		for (int j = 0; j < tx.vin[0].decoys.size() + 1; j++) {
+			CTransaction txPrev;
+			uint256 hashBlock;
+			if (!GetTransaction(decoysForIn[j].hash, txPrev, hashBlock)) {
+				return false;
+			}
+			CPubKey extractedPub;
+			if (!ExtractPubKey(txPrev.vout[decoysForIn[j].n].scriptPubKey, extractedPub)) {
+				return false;
+			}
+			memcpy(allInPubKeys[i][j], extractedPub.begin(), 33);
+			memcpy(allInCommitments[i][j], &(txPrev.vout[decoysForIn[j].n].commitment[0]), 33);
+			std::cout << "verifyRingSignatureWithTxFee In commitment:" << HexStr(&(txPrev.vout[decoysForIn[j].n].commitment[0]), &(txPrev.vout[decoysForIn[j].n].commitment[0]) + 33) << std::endl;
+		}
+	}
+	memcpy(allKeyImages[tx.vin.size()], tx.ntxFeeKeyImage.begin(), 33);
+
+	for (int i = 0; i < tx.vin[0].decoys.size() + 1; i++) {
+		std::vector<uint256> S_column = tx.S[i];
+		for (int j = 0; j < tx.vin.size() + 1; j++) {
+			memcpy(SIJ[j][i], S_column[j].begin(), 32);
+		}
+	}
+
+	//printing SIJ
+	std::cout << "Verifying SJI" << std::endl;
+	for (int i = 0; i < tx.vin[0].decoys.size() + 1; i++) {
+		for (int j = 0; j < tx.vin.size() + 1; j++) {
+			std::cout << "S["<<j<<","<<i<<"] = " << HexStr(SIJ[j][i], SIJ[j][i] + 32) << std::endl;
+		}
+	}
+
+	//compute allInPubKeys[tx.vin.size()][..]
+	secp256k1_pedersen_commitment allInCommitmentsPacked[tx.vin.size()][tx.vin[0].decoys.size() + 1];
+	secp256k1_pedersen_commitment allOutCommitmentsPacked[tx.vout.size() + 1]; //+1 for tx fee
+
+	for (int i = 0; i < tx.vout.size(); i++) {
+		memcpy(allOutCommitments[i], &(tx.vout[i].commitment[0]), 33);
+		if (!secp256k1_pedersen_commitment_parse(both, &allOutCommitmentsPacked[i], allOutCommitments[i])) {
+			std::cout << "verifyRingSignatureWithTxFee: cannot secp256k1_pedersen_commitment_parse" << std::endl;
+			return false;
+		}
+	}
+
+	//commitment to tx fee, blind = 0
+	unsigned char txFeeBlind[32];
+	memset(txFeeBlind, 0, 32);
+	secp256k1_pedersen_commit(both, &allOutCommitmentsPacked[tx.vout.size()], txFeeBlind, tx.nTxFee, &secp256k1_generator_const_h, &secp256k1_generator_const_g);
+
+	//filling the additional pubkey elements for decoys: allInPubKeys[wtxNew.vin.size()][..]
+	//allInPubKeys[wtxNew.vin.size()][j] = sum of allInPubKeys[..][j] + sum of allInCommitments[..][j] + sum of allOutCommitments
+	const secp256k1_pedersen_commitment *outCptr[tx.vout.size() + 1];
+	for(int i = 0; i < tx.vout.size() + 1; i++) {
+		outCptr[i] = &allOutCommitmentsPacked[i];
+	}
+
+	secp256k1_pedersen_commitment inPubKeysToCommitments[tx.vin.size()][tx.vin[0].decoys.size() + 1];
+	for(int i = 0; i < tx.vin.size(); i++) {
+		for (int j = 0; j < tx.vin[0].decoys.size() + 1; j++) {
+			secp256k1_pedersen_serialized_pubkey_to_commitment(allInPubKeys[i][j], 33, &inPubKeysToCommitments[i][j]);
+		}
+	}
+
+	for (int j = 0; j < tx.vin[0].decoys.size() + 1; j++) {
+		const secp256k1_pedersen_commitment *inCptr[tx.vin.size()*2];
+		for (int k = 0; k < tx.vin.size(); k++) {
+			if (!secp256k1_pedersen_commitment_parse(both, &allInCommitmentsPacked[k][j], allInCommitments[k][j])) {
+				std::cout << "verifyRingSignatureWithTxFee: Cannot parse the commitment for inputs" << std::endl;
+				return false;
+			}
+			inCptr[k] = &allInCommitmentsPacked[k][j];
+		}
+
+		for (int k = tx.vin.size(); k < 2*tx.vin.size(); k++) {
+			inCptr[k] = &inPubKeysToCommitments[k - tx.vin.size()][j];
+		}
+		secp256k1_pedersen_commitment out;
+		size_t length;
+		if (!secp256k1_pedersen_commitment_sum(both, inCptr, tx.vin.size() * 2, outCptr, tx.vout.size() + 1, &out)) {
+			return false;
+		}
+		if (!secp256k1_pedersen_commitment_to_serialized_pubkey(&out, allInPubKeys[tx.vin.size()][j], &length)) {
+			return false;
+		}
+		std::cout << "verifyRingSignatureWithTxFee: Last pubkey:" << HexStr(allInPubKeys[tx.vin.size()][j], allInPubKeys[tx.vin.size()][j] + 33) << std::endl;
+	}
+
+
+	//verification
+	unsigned char C[32];
+	memcpy(C, tx.c.begin(), 32);
+	std::cout << "Verifying" << std::endl;
+	for (int j = 0; j < tx.vin[0].decoys.size() + 1; j++) {
+		std::cout << "C["<<j << "]= " << HexStr(C, C + 32) << std::endl;
+		for (int i = 0; i < tx.vin.size() + 1; i++) {
+			//compute LIJ, RIJ
+			unsigned char P[33];
+			memcpy(P, allInPubKeys[i][j], 33);
+			if (!secp256k1_ec_pubkey_tweak_mul(P, 33, C)) {
+				return false;
+			}
+    		std::cout << "P[" << i << "][" << j << "] = " << HexStr(allInPubKeys[i][j], allInPubKeys[i][j] + 33) << std::endl;
+    		std::cout << "CP=" << HexStr(P, P + 33) << std::endl;
+
+			if (!secp256k1_ec_pubkey_tweak_add(P, 33, SIJ[i][j])) {
+				return false;
+			}
+
+			memcpy(LIJ[i][j], P, 33);
+			std::cout << "L[" << i << "][" << j << "] = " << HexStr(LIJ[i][j], LIJ[i][j] + 33) << std::endl;
+
+			//compute RIJ
+			unsigned char sh[33];
+			CPubKey pkij;
+			pkij.Set(allInPubKeys[i][j], allInPubKeys[i][j] + 33);
+			PointHashingSuccessively(pkij, SIJ[i][j], sh);
+
+			unsigned char ci[33];
+			memcpy(ci, allKeyImages[i], 33);
+			if (!secp256k1_ec_pubkey_tweak_mul(ci, 33, C)) {
+				return false;
+			}
+
+			//convert shp into commitment
+			secp256k1_pedersen_commitment SHP_commitment;
+			secp256k1_pedersen_serialized_pubkey_to_commitment(sh, 33, &SHP_commitment);
+
+			//convert CI*I into commitment
+			secp256k1_pedersen_commitment cii_commitment;
+			secp256k1_pedersen_serialized_pubkey_to_commitment(ci, 33, &cii_commitment);
+
+			const secp256k1_pedersen_commitment *twoElements[2];
+			twoElements[0] = &SHP_commitment;
+			twoElements[1] = &cii_commitment;
+
+			secp256k1_pedersen_commitment sum;
+			secp256k1_pedersen_commitment_sum_pos(both, twoElements, 2, &sum);
+			size_t tempLength;
+			secp256k1_pedersen_commitment_to_serialized_pubkey(&sum, RIJ[i][j], &tempLength);
+			std::cout << "R["<<i<<"]["<<j<<"]="<<HexStr(RIJ[i][j], RIJ[i][j] + 33) << std::endl;
+		}
+
+		//compute C
+		unsigned char tempForHash[2 * (tx.vin.size() + 1) * 33];
+		unsigned char* tempForHashPtr = tempForHash;
+		for (int i = 0; i < tx.vin.size() + 1; i++) {
+			memcpy(tempForHashPtr, &(LIJ[i][j][0]), 33);
+			tempForHashPtr += 33;
+			memcpy(tempForHashPtr, &(RIJ[i][j][0]), 33);
+			tempForHashPtr += 33;
+		}
+		uint256 temppi1 = Hash(tempForHash, tempForHash + sizeof(tempForHash));
+		memcpy(C, temppi1.begin(), 32);
+	}
+
+	std::cout << "Verify in transaction c = " << HexStr(tx.c.begin(), tx.c.end()) << std::endl;
+	std::cout << "Verify recomputed c = " << HexStr(C, C + 32) << std::endl;
 }
 
 bool IsKeyImageSpend2(const std::string& kiHex, int kd, int nHeight) {
@@ -1021,7 +1229,7 @@ bool GetCoinAge(const CTransaction &tx, const unsigned int nTxTime, uint64_t &nC
         // First try finding the previous transaction in database
         CTransaction txPrev;
         uint256 hashBlockPrev;
-        if (!GetTransaction(txin.prevout.hash, txPrev, hashBlockPrev, true)) {
+        if (!GetTransaction(txin.prevout.hash, txPrev, hashBlockPrev)) {
             LogPrintf("GetCoinAge: failed to find vin transaction \n");
             continue; // previous transaction not in main chain
         }
@@ -2392,18 +2600,15 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
     // Check it again in case a previous version let a bad block in
     if (!fAlreadyChecked && !CheckBlock(block, state, !fJustCheck, !fJustCheck))
         return false;
-    LogPrintf("\n%s: Checked block\n", __func__);
     // verify that the view's current state corresponds to the previous block
     uint256 hashPrevBlock = pindex->pprev == NULL ? uint256(0) : pindex->pprev->GetBlockHash();
     if (hashPrevBlock != view.GetBestBlock())
         LogPrintf("%s: hashPrev=%s view=%s\n", __func__, hashPrevBlock.ToString().c_str(),
                   view.GetBestBlock().ToString().c_str());
     assert(hashPrevBlock == view.GetBestBlock());
-    LogPrintf("\n%s: hash asserted\n", __func__);
     // Special case for the genesis block, skipping connection of its transactions
     // (its coinbase is unspendable)
     if (block.GetHash() == Params().HashGenesisBlock()) {
-        LogPrintf("\n%s: SetBestBlock = %s\n", __func__, pindex->GetBlockHash().GetHex());
         view.SetBestBlock(pindex->GetBlockHash());
         return true;
     }
@@ -3094,7 +3299,6 @@ ActivateBestChainStep(CValidationState &state, CBlockIndex *pindexMostWork, CBlo
  * that is already loaded (to avoid loading it again from disk).
  */
 bool ActivateBestChain(CValidationState &state, CBlock *pblock, bool fAlreadyChecked) {
-	LogPrintf("\n%s: starting\n", __func__);
     CBlockIndex *pindexNewTip = NULL;
     CBlockIndex *pindexMostWork = NULL;
     do {
@@ -3107,18 +3311,14 @@ bool ActivateBestChain(CValidationState &state, CBlock *pblock, bool fAlreadyChe
                 MilliSleep(50);
                 continue;
             }
-        	LogPrintf("\n%s: find most work chain\n", __func__);
             pindexMostWork = FindMostWorkChain();
-        	LogPrintf("\n%s: found most work chain\n", __func__);
             // Whether we have anything to do at all.
             if (pindexMostWork == NULL || pindexMostWork == chainActive.Tip())
                 return true;
-        	LogPrintf("\n%s: activating ActivateBestChainStep\n", __func__);
             if (!ActivateBestChainStep(state, pindexMostWork,
                                        pblock && pblock->GetHash() == pindexMostWork->GetBlockHash() ? pblock : NULL,
                                        fAlreadyChecked))
                 return false;
-        	LogPrintf("\n%s: activated ActivateBestChainStep\n", __func__);
             pindexNewTip = chainActive.Tip();
             fInitialDownload = IsInitialBlockDownload();
             break;
@@ -3485,7 +3685,6 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
 
     //Proof of Audit: Check audited PoS blocks infor merkle root
     {
-	LogPrintf("%s:PoA merkle root", __func__);
     	bool fMutated;
     	if (!CheckPoAMerkleRoot(block, &fMutated)) {
     		return state.DoS(100, error("CheckBlock() : hashPoAMerkleRoot mismatch"),
@@ -3596,7 +3795,6 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
     } else {
         LogPrintf("CheckBlock() : skipping transaction locking checks\n");
     }
-    LogPrintf("%s:Check block payee\n", __func__);
     // masternode payments / budgets
     CBlockIndex *pindexPrev = chainActive.Tip();
     LogPrintf("%s: chain height = %d, new hash=%s\n", __func__, chainActive.Height(), block.GetHash().GetHex());
@@ -3638,7 +3836,6 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
         return state.DoS(100, error("CheckBlock() : out-of-bounds SigOpCount"),
                          REJECT_INVALID, "bad-blk-sigops", true);
 
-	LogPrintf("%s: successfully check block", __func__);
     return true;
 }
 

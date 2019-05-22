@@ -159,6 +159,28 @@ static void bench_bulletproof_rangeproof_prove(void* arg) {
     }
 }
 
+void simple_test_bench_bulletproof_rangeproof_prove(size_t nCommits, uint64_t* values) {
+	unsigned char proof[2000];
+	size_t len;
+	secp256k1_context2* context = secp256k1_context_create2(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
+	secp256k1_scratch_space2* scratch = secp256k1_scratch_space_create(context, 1024 * 1024 * 1024);
+	secp256k1_generator* generators = secp256k1_bulletproof_generators_create(context, &secp256k1_generator_const_g, 64 * 1024);
+    unsigned char blind[32] = "and my kingdom too for a blinder";
+    unsigned char nonce[32] = "and my kingdom too for a blinder";
+    unsigned char blinds[nCommits][32];
+    int i = 0;
+    secp256k1_pedersen_commitment commitments[nCommits];
+    const unsigned char *blind_ptr[nCommits];
+    for (i = 0; i < nCommits; i++) {
+        memcpy(blinds[i], blind, 32);
+        blind_ptr[i] = blinds[i];
+        secp256k1_pedersen_commit(context, &commitments[i], blind_ptr[i], values[i], &secp256k1_generator_const_h, &secp256k1_generator_const_g);
+    }
+    CHECK(secp256k1_bulletproof_rangeproof_prove(context, scratch, generators, proof, &len, values, NULL, blind_ptr, nCommits, &secp256k1_generator_const_h, 64, nonce, NULL, 0) == 1);
+
+    CHECK(secp256k1_bulletproof_rangeproof_verify(context, scratch, generators, proof, len, NULL, commitments, nCommits, 64, &secp256k1_generator_const_h, NULL, 0) == 1);
+}
+
 static void bench_bulletproof_rangeproof_verify(void* arg) {
     size_t i;
     bench_bulletproof_rangeproof_t *data = (bench_bulletproof_rangeproof_t*)arg;
@@ -304,7 +326,7 @@ int main(void) {
     rp_data.common = &data;
     c_data.common = &data;
 
-    run_circuit_test(&c_data, "pedersen-3");
+    /*run_circuit_test(&c_data, "pedersen-3");
     run_circuit_test(&c_data, "pedersen-6");
     run_circuit_test(&c_data, "pedersen-12");
     run_circuit_test(&c_data, "pedersen-24");
@@ -315,8 +337,9 @@ int main(void) {
     run_circuit_test(&c_data, "pedersen-768");
     run_circuit_test(&c_data, "pedersen-1536");
     run_circuit_test(&c_data, "pedersen-3072");
-    run_circuit_test(&c_data, "SHA2");
-
+    run_circuit_test(&c_data, "SHA2");*/
+    uint64_t values[5] = {100, 200, 300, 400, 500};
+    simple_test_bench_bulletproof_rangeproof_prove(2, values);
     run_rangeproof_test(&rp_data, 8, 1);
     run_rangeproof_test(&rp_data, 16, 1);
     run_rangeproof_test(&rp_data, 32, 1);

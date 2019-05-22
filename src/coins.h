@@ -18,6 +18,8 @@
 #include <boost/foreach.hpp>
 #include <boost/unordered_map.hpp>
 
+bool GetTransaction(const uint256& hash, CTransaction& tx, uint256& hashBlock, bool fAllowSlow);
+
 /** 
 
     ****Note - for DAPScoin we added fCoinStake to the 2nd bit. Keep in mind when reading the following and adjust as needed.
