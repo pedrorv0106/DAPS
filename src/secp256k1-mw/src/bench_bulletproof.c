@@ -338,7 +338,7 @@ int main(void) {
     run_circuit_test(&c_data, "pedersen-1536");
     run_circuit_test(&c_data, "pedersen-3072");
     run_circuit_test(&c_data, "SHA2");*/
-    uint64_t values[5] = {100, 200, 300, 400, 500};
+    uint64_t values[5] = {300000000000000000, 300000000000000000, 300000000000000000, 400, 500};
     simple_test_bench_bulletproof_rangeproof_prove(2, values);
     run_rangeproof_test(&rp_data, 8, 1);
     run_rangeproof_test(&rp_data, 16, 1);

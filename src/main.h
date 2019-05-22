@@ -187,6 +187,7 @@ secp256k1_scratch_space2* GetScratch();
 secp256k1_bulletproof_generators* GetGenerator();
 bool VerifyBulletProofAggregate(const CTransaction& tx);
 bool VerifyRingSignatureWithTxFee(const CTransaction& tx);
+void DestroyContext();
 
 /** 
  * Process an incoming block. This only returns after the best known valid

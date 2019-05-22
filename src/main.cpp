@@ -310,7 +310,7 @@ secp256k1_context2* GetContext() {
 
 secp256k1_scratch_space2* GetScratch() {
     static secp256k1_scratch_space2 *scratch;
-    if (!scratch) scratch = secp256k1_scratch_space_create(GetContext(), 1024 * 1024 * 1024);
+    if (!scratch) scratch = secp256k1_scratch_space_create(GetContext(), 1024 * 1024 * 2048);
     return scratch;
 }
 
@@ -318,6 +318,12 @@ secp256k1_bulletproof_generators* GetGenerator() {
     static secp256k1_bulletproof_generators *generator;
     if (!generator) generator = secp256k1_bulletproof_generators_create(GetContext(), &secp256k1_generator_const_g, 64 * 1024);
     return generator;
+}
+
+void DestroyContext() {
+	secp256k1_bulletproof_generators_destroy(GetContext(), GetGenerator());
+	secp256k1_scratch_space_destroy(GetScratch());
+	secp256k1_context_destroy(GetContext());
 }
 
 bool VerifyBulletProofAggregate(const CTransaction& tx)
@@ -371,7 +377,6 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 			}
 			memcpy(allInPubKeys[i][j], extractedPub.begin(), 33);
 			memcpy(allInCommitments[i][j], &(txPrev.vout[decoysForIn[j].n].commitment[0]), 33);
-			std::cout << "verifyRingSignatureWithTxFee In commitment:" << HexStr(&(txPrev.vout[decoysForIn[j].n].commitment[0]), &(txPrev.vout[decoysForIn[j].n].commitment[0]) + 33) << std::endl;
 		}
 	}
 	memcpy(allKeyImages[tx.vin.size()], tx.ntxFeeKeyImage.begin(), 33);
@@ -383,14 +388,6 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 		}
 	}
 
-	//printing SIJ
-	std::cout << "Verifying SJI" << std::endl;
-	for (int i = 0; i < tx.vin[0].decoys.size() + 1; i++) {
-		for (int j = 0; j < tx.vin.size() + 1; j++) {
-			std::cout << "S["<<j<<","<<i<<"] = " << HexStr(SIJ[j][i], SIJ[j][i] + 32) << std::endl;
-		}
-	}
-
 	//compute allInPubKeys[tx.vin.size()][..]
 	secp256k1_pedersen_commitment allInCommitmentsPacked[tx.vin.size()][tx.vin[0].decoys.size() + 1];
 	secp256k1_pedersen_commitment allOutCommitmentsPacked[tx.vout.size() + 1]; //+1 for tx fee
@@ -398,7 +395,6 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 	for (int i = 0; i < tx.vout.size(); i++) {
 		memcpy(allOutCommitments[i], &(tx.vout[i].commitment[0]), 33);
 		if (!secp256k1_pedersen_commitment_parse(both, &allOutCommitmentsPacked[i], allOutCommitments[i])) {
-			std::cout << "verifyRingSignatureWithTxFee: cannot secp256k1_pedersen_commitment_parse" << std::endl;
 			return false;
 		}
 	}
@@ -426,7 +422,6 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 		const secp256k1_pedersen_commitment *inCptr[tx.vin.size()*2];
 		for (int k = 0; k < tx.vin.size(); k++) {
 			if (!secp256k1_pedersen_commitment_parse(both, &allInCommitmentsPacked[k][j], allInCommitments[k][j])) {
-				std::cout << "verifyRingSignatureWithTxFee: Cannot parse the commitment for inputs" << std::endl;
 				return false;
 			}
 			inCptr[k] = &allInCommitmentsPacked[k][j];
@@ -443,7 +438,6 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 		if (!secp256k1_pedersen_commitment_to_serialized_pubkey(&out, allInPubKeys[tx.vin.size()][j], &length)) {
 			return false;
 		}
-		std::cout << "verifyRingSignatureWithTxFee: Last pubkey:" << HexStr(allInPubKeys[tx.vin.size()][j], allInPubKeys[tx.vin.size()][j] + 33) << std::endl;
 	}
 
 
@@ -452,7 +446,6 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 	memcpy(C, tx.c.begin(), 32);
 	std::cout << "Verifying" << std::endl;
 	for (int j = 0; j < tx.vin[0].decoys.size() + 1; j++) {
-		std::cout << "C["<<j << "]= " << HexStr(C, C + 32) << std::endl;
 		for (int i = 0; i < tx.vin.size() + 1; i++) {
 			//compute LIJ, RIJ
 			unsigned char P[33];
@@ -460,15 +453,12 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 			if (!secp256k1_ec_pubkey_tweak_mul(P, 33, C)) {
 				return false;
 			}
-    		std::cout << "P[" << i << "][" << j << "] = " << HexStr(allInPubKeys[i][j], allInPubKeys[i][j] + 33) << std::endl;
-    		std::cout << "CP=" << HexStr(P, P + 33) << std::endl;
 
 			if (!secp256k1_ec_pubkey_tweak_add(P, 33, SIJ[i][j])) {
 				return false;
 			}
 
 			memcpy(LIJ[i][j], P, 33);
-			std::cout << "L[" << i << "][" << j << "] = " << HexStr(LIJ[i][j], LIJ[i][j] + 33) << std::endl;
 
 			//compute RIJ
 			unsigned char sh[33];
@@ -498,7 +488,6 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 			secp256k1_pedersen_commitment_sum_pos(both, twoElements, 2, &sum);
 			size_t tempLength;
 			secp256k1_pedersen_commitment_to_serialized_pubkey(&sum, RIJ[i][j], &tempLength);
-			std::cout << "R["<<i<<"]["<<j<<"]="<<HexStr(RIJ[i][j], RIJ[i][j] + 33) << std::endl;
 		}
 
 		//compute C
@@ -514,8 +503,7 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 		memcpy(C, temppi1.begin(), 32);
 	}
 
-	std::cout << "Verify in transaction c = " << HexStr(tx.c.begin(), tx.c.end()) << std::endl;
-	std::cout << "Verify recomputed c = " << HexStr(C, C + 32) << std::endl;
+	return HexStr(tx.c.begin(), tx.c.end()) == HexStr(C, C + 32);
 }
 
 bool IsKeyImageSpend2(const std::string& kiHex, int kd, int nHeight) {
@@ -1490,6 +1478,20 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
             if (!view.HaveInputs(tx))
                 return state.Invalid(error("AcceptToMemoryPool : inputs already spent"),
                                      REJECT_DUPLICATE, "bad-txns-inputs-spent");
+
+            if (!tx.IsCoinStake() && !tx.IsCoinBase() && !tx.IsCoinAudit()) {
+            	if (!tx.IsCoinAudit()) {
+            		if (!VerifyRingSignatureWithTxFee(tx))
+            			return state.DoS(100, error("AcceptToMemoryPool() : Ring Signature check for transaction %s failed",
+            					tx.GetHash().ToString()),
+            					REJECT_INVALID, "bad-ring-signature");
+            		if (!VerifyBulletProofAggregate(tx))
+            			return state.DoS(100, error("AcceptToMemoryPool() : Bulletproof check for transaction %s failed",
+            					tx.GetHash().ToString()),
+            					REJECT_INVALID, "bad-bulletproof");
+            	}
+            }
+
             //LogPrintf("\n%s:checked have inputs\n", __func__);
             // Check key images not duplicated with what in db
             for (const CTxIn& txin: tx.vin) {
@@ -2325,23 +2327,6 @@ bool CheckInputs(const CTransaction &tx, CValidationState &state, const CCoinsVi
                                  REJECT_INVALID, "bad-txns-inputvalues-outofrange");*/
         }
 
-        if (!tx.IsCoinStake()) {
-            /*if (nValueIn < tx.GetValueOut())
-                return state.DoS(100, error("CheckInputs() : %s value in (%s) < value out (%s)",
-                                            tx.GetHash().ToString(), FormatMoney(nValueIn),
-                                            FormatMoney(tx.GetValueOut())),
-                                 REJECT_INVALID, "bad-txns-in-belowout");
-
-            // Tally transaction fees
-            CAmount nTxFee = nValueIn - tx.GetValueOut();
-            if (nTxFee < 0)
-                return state.DoS(100, error("CheckInputs() : %s nTxFee < 0", tx.GetHash().ToString()),
-                                 REJECT_INVALID, "bad-txns-fee-negative");
-            nFees += nTxFee;
-            if (!MoneyRange(nFees))
-                return state.DoS(100, error("CheckInputs() : nFees out of range"),
-                                 REJECT_INVALID, "bad-txns-fee-outofrange");*/
-        }
         // The first loop above does all the inexpensive checks.
         // Only if ALL inputs pass do we perform expensive ECDSA signature checks.
         // Helps prevent CPU exhaustion attacks.
@@ -2685,9 +2670,18 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
                              REJECT_INVALID, "bad-blk-sigops");
 
         if (!block.IsPoABlockByVersion() && !tx.IsCoinBase()) {
-            /*if (!view.HaveInputs(tx))
-                return state.DoS(100, error("ConnectBlock() : inputs missing/spent"),
-                                 REJECT_INVALID, "bad-txns-inputs-missingorspent");*/
+        	if (!tx.IsCoinStake()) {
+        		if (!tx.IsCoinAudit()) {
+        			if (!VerifyRingSignatureWithTxFee(tx))
+        				return state.DoS(100, error("ConnectBlock() : Ring Signature check for transaction %s failed",
+        						tx.GetHash().ToString()),
+        						REJECT_INVALID, "bad-ring-signature");
+        			if (!VerifyBulletProofAggregate(tx))
+        				return state.DoS(100, error("ConnectBlock() : Bulletproof check for transaction %s failed",
+        						tx.GetHash().ToString()),
+        						REJECT_INVALID, "bad-bulletproof");
+        		}
+        	}
 
             // Check that the inputs are not marked as invalid/fraudulent
             for (CTxIn in : tx.vin) {
@@ -2729,7 +2723,6 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
             nValueIn += valTemp;
 
             std::vector <CScriptCheck> vChecks;
-            //LogPrintf("%s: start checking inputs %s", __func__, tx.GetH);
             if (!CheckInputs(tx, state, view, fScriptChecks, flags, false, nScriptCheckThreads ? &vChecks : NULL))
                 return false;
             //LogPrintf("%s: done checking inputs %s", __func__);
@@ -4033,7 +4026,6 @@ bool AcceptBlock(CBlock &block, CValidationState &state, CBlockIndex **ppindex, 
     AssertLockHeld(cs_main);
 
     CBlockIndex *&pindex = *ppindex;
-    LogPrintf("%s: checking previous block index, chain height = %d", __func__, chainActive.Height());
     // Get prev block index
     CBlockIndex *pindexPrev = NULL;
     if (block.GetHash() != Params().HashGenesisBlock()) {
@@ -4059,7 +4051,6 @@ bool AcceptBlock(CBlock &block, CValidationState &state, CBlockIndex **ppindex, 
                              REJECT_INVALID, "bad-prevblk");
         }
     }
-    LogPrintf("%s: about to check work", __func__);
     if (block.GetHash() != Params().HashGenesisBlock() && !CheckWork(block, pindexPrev))
         return false;
 

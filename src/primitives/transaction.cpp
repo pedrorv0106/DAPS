@@ -135,6 +135,7 @@ CTransaction& CTransaction::operator=(const CTransaction &tx) {
     *const_cast<uint64_t*>(&paymentID) = tx.paymentID;
     *const_cast<uint32_t*>(&txType) = tx.txType;
     masternodeStealthAddress = tx.masternodeStealthAddress;
+    bulletproofs = tx.bulletproofs;
     c = tx.c;
     S = tx.S;
     //*const_cast<std::vector<CKeyImage>*>(&keyImages) = tx.keyImages;

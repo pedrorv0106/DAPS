@@ -270,7 +270,6 @@ int secp256k1_bulletproof_rangeproof_prove(const secp256k1_context2* ctx, secp25
         secp256k1_pedersen_ecmult(&commitj, &blinds[i], value[i], &value_genp, &gens->blinding_gen[0]);
         secp256k1_ge_set_gej(&commitp[i], &commitj);
     }
-
     ret = secp256k1_bulletproof_rangeproof_prove_impl(&ctx->ecmult_ctx, scratch, proof, plen, nbits, value, min_value, blinds, commitp, n_commits, &value_genp, gens, nonce, extra_commit, extra_commit_len);
     secp256k1_scratch_deallocate_frame(scratch);
     return ret;

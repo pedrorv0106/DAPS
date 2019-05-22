@@ -3615,20 +3615,21 @@ bool CWallet::generateBulletProofAggregate(CTransaction& tx)
 	unsigned char proof[2000];
 	size_t len;
 
-	unsigned char nonce[32];
-	GetRandBytes(nonce, 32);
+	unsigned char nonce[32] = "and my kingdom too for a blinde";
+	//GetRandBytes(nonce, 32);
 	unsigned char blinds[tx.vout.size()][32];
 	memset(blinds, 0, tx.vout.size() * 32);
-	uint64_t values[tx.vout.size()];
+	uint64_t values[] = {300000000*COIN, 300000000*COIN, 3};
 	int i = 0;
 	const unsigned char *blind_ptr[tx.vout.size()];
 	for (i = 0; i < tx.vout.size(); i++) {
-		memcpy(blinds[i], tx.vout[i].maskValue.inMemoryRawBind.begin(), tx.vout[i].maskValue.inMemoryRawBind.size());
+		memcpy(&blinds[i][0], tx.vout[i].maskValue.inMemoryRawBind.begin(), 32);
+		std::cout << "Blind:" << HexStr(blinds[i], blinds[i] + 32);
 		blind_ptr[i] = blinds[i];
 		values[i] = tx.vout[i].nValue;
 	}
 	int ret = secp256k1_bulletproof_rangeproof_prove(GetContext(), GetScratch(), GetGenerator(), proof, &len, values, NULL, blind_ptr, tx.vout.size(), &secp256k1_generator_const_h, 64, nonce, NULL, 0);
-
+	//free(values);
 	if (ret == 0) return false;
 	std::copy(proof, proof + len, std::back_inserter(tx.bulletproofs));
 	return true;

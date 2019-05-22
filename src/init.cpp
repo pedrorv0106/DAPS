@@ -260,6 +260,7 @@ void Shutdown()
     delete pwalletMain;
     pwalletMain = NULL;
 #endif
+    DestroyContext();
     LogPrintf("%s: done\n", __func__);
 }
 
