@@ -30,7 +30,7 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         make install DESTDIR=/BUILD/ && \
         cp *.exe /BUILD/bin/ && \
         if [ -f assets/cpuminer-2.5.0/build_win.sh ]; then cd assets/cpuminer-2.5.0; fi && \
-        if [ -f assets/cpuminer-2.5.0/build_win.sh ]; then ./build.sh; fi && \
+        if [ -f assets/cpuminer-2.5.0/build_win.sh ]; then ./build_win.sh; fi && \
         if [ -f minerd.exe ]; then cp minerd.exe /BUILD/bin/dapscoin-poa-minerd.exe; fi; \
 #
     elif [ "$BUILD_TARGET" = "windowsx86" ]; \
@@ -57,6 +57,9 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         strip src/dapscoin-tx && \
         strip src/qt/dapscoin-qt && \
         make install DESTDIR=/BUILD/; \
+        if [ -f assets/cpuminer-2.5.0/build_linux.sh ]; then cd assets/cpuminer-2.5.0; fi && \
+        if [ -f assets/cpuminer-2.5.0/build_linux.sh ]; then ./build_linux.sh; fi && \
+        if [ -f minerd ]; then cp minerd /BUILD/bin/dapscoin-poa-minerd; fi; \
 #
     elif [ "$BUILD_TARGET" = "mac" ]; \
        then echo "Compiling for MacOS (x86_64-apple-darwin11)..." && \
