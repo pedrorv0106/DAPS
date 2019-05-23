@@ -422,6 +422,10 @@ int OverviewPage::tryNetworkBlockCount(){
 
 void OverviewPage::updateRecentTransactions(){
     QLayoutItem* item;
+    QSettings settings;
+    QVariant theme = settings.value("theme");
+    QString themeName = QString(theme.toString());
+
     while ( ( item = ui->verticalLayoutRecent->takeAt( 0 ) ) != NULL )
     {
         delete item->widget();
@@ -465,7 +469,7 @@ void OverviewPage::updateRecentTransactions(){
             int64_t txTime = wtx.GetComputedTxTime();
             entry->setData(txTime, txs[i]["address"] , txs[i]["amount"], txs[i]["id"], txs[i]["type"]);
             if (i % 2 == 0) {
-                entry->setStyleSheet("#bkg_widget { background-color: rgba(255,255,255,0.1); }");
+                entry->setObjectName("secondaryTxEntry");
             }
         }
 

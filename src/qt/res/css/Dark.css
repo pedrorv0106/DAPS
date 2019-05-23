@@ -34,6 +34,30 @@ QDialog {
   );
 }
 
+#HistoryPage {
+  border-image: url(':/images/background') 0 0 0 0 stretch stretch;
+}
+
+#MasternodeList {
+  border-image: url(':/images/background') 0 0 0 0 stretch stretch;
+}
+
+#OptionsPage {
+  border-image: url(':/images/background') 0 0 0 0 stretch stretch;
+}
+
+#OverviewPage {
+  border-image: url(':/images/background') 0 0 0 0 stretch stretch;
+}
+
+#ReceiveCoinsDialog {
+  border-image: url(':/images/background') 0 0 0 0 stretch stretch;
+}
+
+#SendCoinsDialog {
+  border-image: url(':/images/background') 0 0 0 0 stretch stretch;
+}
+
 QDialog .QTabWidget QTabBar::tab {
   background-color:#FFFFFF;
   color:#000000;
@@ -315,6 +339,24 @@ ToggleButton > QPushButton:enabled:checked {
   border-radius:0; 
   border: none; 
   background: transparent;
+}
+
+#secondaryTxEntry,
+#secondaryTxEntry QTableView::item,
+#secondaryTxEntry QTableWidgetView::item,
+#secondaryTxEntry QHeaderView::section,
+#secondaryTxEntry QTableView::selectrows {
+  padding: 0px;
+  margin: 0px;
+}
+#secondaryTxEntry QPushButton {
+  border-radius:0; 
+  border: none; 
+  background: transparent;
+}
+
+#secondaryTxEntry > #bkg_widget { 
+  background-color: rgba(255,255,255,0.1); 
 }
 
 QTabWidget::pane { /* The tab widget frame */
