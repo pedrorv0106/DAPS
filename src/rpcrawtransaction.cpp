@@ -91,8 +91,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
                 int total = txin.decoys.size() + 1;
                 std::vector<COutPoint> allDecoys = txin.decoys;
                 srand (time(NULL));
-                int mytxIdx = rand() % total;
-                allDecoys.insert(allDecoys.begin() + mytxIdx, txin.prevout);
+                allDecoys.insert(allDecoys.begin(), txin.prevout);
                 for (int i = 0; i < allDecoys.size(); i++) {
                     Object decoy;
                     decoy.push_back(Pair("txid", allDecoys[i].hash.GetHex()));
@@ -150,7 +149,9 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
             memset(zeroBlind, 0, 32);
             const unsigned char* pBlind;
             pwalletMain->RevealTxOutAmount(tx, txout, decodedAmount, blind);
-            if (txout.nValue >0) {
+            if (tx.IsMNCollateralTx()) {
+            	pBlind = blind.begin();
+            } else if (txout.nValue >0) {
             	pBlind = zeroBlind;
             } else {
             	pBlind = blind.begin();

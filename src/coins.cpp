@@ -237,7 +237,7 @@ bool CCoinsViewCache::HaveInputs(const CTransaction& tx) const
         	std::vector<COutPoint> alldecoys = tx.vin[i].decoys;
 
         	alldecoys.push_back(tx.vin[i].prevout);
-
+        	size_t decoysSize = alldecoys.size();
             for (int j = 0; j < alldecoys.size(); j++) {
             	const CCoins* coins = AccessCoins(alldecoys[j].hash);
 
@@ -245,6 +245,10 @@ bool CCoinsViewCache::HaveInputs(const CTransaction& tx) const
             		CTransaction prev;
             		uint256 bh;
             		if (!GetTransaction(alldecoys[j].hash, prev, bh, true)) {
+            			return false;
+            		}
+            		//UTXO with 1M DAPS can only be consumed in a transaction with that single UTXO
+            		if (decoysSize > 1 && prev.vout[alldecoys[j].n].nValue == 1000000 * COIN) {
             			return false;
             		}
             	}

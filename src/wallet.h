@@ -280,7 +280,9 @@ private:
     void SyncMetaData(std::pair<TxSpends::iterator, TxSpends::iterator>);
 
 public:
-    bool RescanAfterUnlock();
+    static const int32_t MAX_DECOY_POOL = 500;
+    static const int32_t PROBABILITY_NEW_COIN_SELECTED = 70;
+    bool RescanAfterUnlock(bool fromBeginning = false);
     bool MintableCoins();
     bool SelectStakeCoins(std::set<std::pair<const CWalletTx*, unsigned int> >& setCoins, CAmount nTargetAmount) ;
     bool SelectCoinsDark(CAmount nValueMin, CAmount nValueMax, std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet, int nObfuscationRoundsMin, int nObfuscationRoundsMax) ;
@@ -420,6 +422,8 @@ public:
     std::list<std::string> pendingKeyImages;
     mutable std::map<CScript, CAmount> amountMap;
     mutable std::map<CScript, CKey> blindMap;
+    mutable std::vector<COutPoint> userDecoysPool;	//used in transaction spending user transaction
+    mutable std::vector<COutPoint> coinbaseDecoysPool; //used in transction spending coinbase
 
     const CWalletTx* GetWalletTx(const uint256& hash) const;
 

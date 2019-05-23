@@ -343,7 +343,7 @@ bool CWallet::LoadMultiSig(const CScript& dest)
     return CCryptoKeyStore::AddMultiSig(dest);
 }
 
-bool CWallet::RescanAfterUnlock() {
+bool CWallet::RescanAfterUnlock(bool fromBeginning) {
 	if (IsLocked()) {
 		return false;
 	}
@@ -355,6 +355,7 @@ bool CWallet::RescanAfterUnlock() {
 	//rescan from scanned position stored in database
 	int scannedHeight = 0;
 	CWalletDB(strWalletFile).ReadScannedBlockHeight(scannedHeight);
+	if (fromBeginning) scannedHeight = 0;
 	CBlockIndex* pindex;
 	if (scannedHeight > chainActive.Height() || scannedHeight == 0) {
 		pindex = chainActive.Genesis();
@@ -2894,12 +2895,12 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                 txNew.vin.push_back(CTxIn(coin.first->GetHash(), coin.second));
 
                 // Sign
-                int nIn = 0;
+                /*int nIn = 0;
                 BOOST_FOREACH (const PAIRTYPE(const CWalletTx*, unsigned int) & coin, setCoins)
                 if (!SignSignature(*this, *coin.first, txNew, nIn++)) {
                     strFailReason = _("Signing transaction failed");
                     return false;
-                }
+                }*/
                 // Embed the constructed transaction data in wtxNew.
                 *static_cast<CTransaction*>(&wtxNew) = CTransaction(txNew);
 
@@ -2965,7 +2966,6 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     CPubKey pkRaw;
     pkRaw.Set(pubkeyRaw, pubkeyRaw + 33);
     std::cout << "Serialized commitment parsed to public key:" << pkRaw.GetHex() << std::endl;*/
-    LogPrintf("\n%s: Create commitment\n", __func__);
     for(CTxOut& out: wtxNew.vout) {
         if (!out.IsEmpty()) {
             secp256k1_pedersen_commitment commitment;
@@ -3093,7 +3093,6 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
         memcpy(allInPubKeys[j][PI], tempPubKey.begin(), 33);
 
         memcpy(allInCommitments[j][PI], &(inTx.vout[myOutpoint.n].commitment[0]), 33);
-        std::cout << "In Commitment:" << HexStr(allInCommitments[j][PI], allInCommitments[j][PI] + 33);
         CKey alpha;
         alpha.MakeNewKey(true);
         memcpy(ALPHA[j], alpha.begin(), 32);
@@ -3115,15 +3114,11 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     memcpy(allInPubKeys[wtxNew.vin.size()][PI], additionalPubKey.begin(), 33);
     PointHashingSuccessively(additionalPubKey, myBlinds[myBlindsIdx], allKeyImages[wtxNew.vin.size()]);
 
-    std::cout << "allInPubKeys[" << wtxNew.vin.size() << "][" << PI << "]" << HexStr(&allInPubKeys[wtxNew.vin.size()][PI][0], &allInPubKeys[wtxNew.vin.size()][PI][0] + 33) << std::endl;
-
-
     //verify that additional public key = sum of wtx.vin.size() real public keys + sum of wtx.vin.size() commitments - sum of wtx.vout.size() commitments - commitment to zero of transction fee
 
     //filling LIJ & RIJ at [j][PI]
     CKey alpha_additional;
     alpha_additional.MakeNewKey(true);
-    std::cout << "Alpha = " << HexStr(alpha_additional.begin(), alpha_additional.end());
     memcpy(ALPHA[wtxNew.vin.size()], alpha_additional.begin(), 32);
     CPubKey LIJ_PI_additional = alpha_additional.GetPubKey();
     memcpy(LIJ[wtxNew.vin.size()][PI], LIJ_PI_additional.begin(), 33);
@@ -3161,7 +3156,6 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                 }
                 memcpy(allInPubKeys[i][j], extractedPub.begin(), 33);
                 memcpy(allInCommitments[i][j], &(txPrev.vout[decoysForIn[j].n].commitment[0]), 33);
-                std::cout << "In commitment:" << HexStr(&(txPrev.vout[decoysForIn[j].n].commitment[0]), &(txPrev.vout[decoysForIn[j].n].commitment[0]) + 33) << std::endl;
             }
         }
     }
@@ -3216,9 +3210,6 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     		//convert allInPubKeys to pederson commitment to compute sum of all in public keys
     		secp256k1_pedersen_commitment_sum(both, inCptr, wtxNew.vin.size()*2, outCptr, wtxNew.vout.size() + 1, &out);
     	    secp256k1_pedersen_commitment_to_serialized_pubkey(&out, allInPubKeys[wtxNew.vin.size()][j], &length);
-    	    std::cout << "Last pubkey:" << HexStr(allInPubKeys[wtxNew.vin.size()][j], allInPubKeys[wtxNew.vin.size()][j] + 33) << std::endl;
-    	} else {
-    	    std::cout << "Last pubkey of PI:" << HexStr(allInPubKeys[wtxNew.vin.size()][j], allInPubKeys[wtxNew.vin.size()][j] + 33) << std::endl;
     	}
     }
 
@@ -3231,11 +3222,9 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     unsigned char tempForHash[2 * (wtxNew.vin.size() + 1) * 33];
     unsigned char* tempForHashPtr = tempForHash;
     for (int i = 0; i < wtxNew.vin.size() + 1; i++) {
-		std::cout << "L["<<i<<"]["<<PI<<"]="<<HexStr(&LIJ[i][PI][0], &(LIJ[i][PI][0]) + 33) << std::endl;
     	memcpy(tempForHashPtr, &LIJ[i][PI][0], 33);
     	tempForHashPtr += 33;
     	memcpy(tempForHashPtr, &RIJ[i][PI][0], 33);
-		std::cout << "R["<<i<<"]["<<PI<<"]="<<HexStr(&RIJ[i][PI][0], &(RIJ[i][PI][0]) + 33) << std::endl;
     	tempForHashPtr += 33;
     }
     uint256 temppi1 = Hash(tempForHash, tempForHash + sizeof(tempForHash));
@@ -3250,15 +3239,11 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     			strFailReason = _("Cannot compute LIJ for ring signature in secp256k1_ec_pubkey_tweak_mul");
     			return false;
     		}
-    		std::cout << "C[" << PI_interator << "] = " << HexStr(CI[PI_interator], CI[PI_interator] + 32) << std::endl;
-    		std::cout << "P[" << j << "][" << PI_interator << "] = " << HexStr(allInPubKeys[j][PI_interator], allInPubKeys[j][PI_interator] + 33) << std::endl;
-    		std::cout << "CP = " << HexStr(CP, CP + 33) << std::endl;
     		if (!secp256k1_ec_pubkey_tweak_add(CP, 33, SIJ[j][PI_interator])) {
     			strFailReason = _("Cannot compute LIJ for ring signature in secp256k1_ec_pubkey_tweak_add");
     			return false;
     		}
 			memcpy(LIJ[j][PI_interator], CP, 33);
-			std::cout << "L["<<j<<"]["<<PI_interator<<"]="<<HexStr(&LIJ[j][PI_interator][0], &LIJ[j][PI_interator][0] + 33) << std::endl;
 
 			//compute RIJ
 			//first compute CI * I
@@ -3291,7 +3276,6 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
 			if (secp256k1_pedersen_commitment_to_serialized_pubkey(&sum, RIJ[j][PI_interator], &tempLength)) {
 				strFailReason = _("Cannot compute two elements and serialize it to pubkey");
 			}
-			std::cout << "R["<<j<<"]["<<PI_interator<<"]="<<HexStr(&RIJ[j][PI_interator][0], &RIJ[j][PI_interator][0] + 33) << std::endl;
     	}
 
     	PI_interator++;
@@ -3326,15 +3310,6 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     	sumArray[0] = ALPHA[j];
     	sumArray[1] = cx;
     	secp256k1_pedersen_blind_sum(both, SIJ[j][PI], sumArray, 2, 1);
-
-    	//recompute Alpha
-    	unsigned char recomputedAlpha[32];
-    	const unsigned char *sumArray2[2];
-    	sumArray2[0] = SIJ[j][PI];
-    	sumArray2[1] = cx;
-    	secp256k1_pedersen_blind_sum(both, recomputedAlpha, sumArray2, 2, 2);
-        std::cout << "Recomputed Alpha = " << HexStr(recomputedAlpha, recomputedAlpha + 32);
-
     }
     memcpy(wtxNew.c.begin(), CI[0], 32);
     //i for decoy index => PI
@@ -3615,8 +3590,8 @@ bool CWallet::generateBulletProofAggregate(CTransaction& tx)
 	unsigned char proof[2000];
 	size_t len;
 
-	unsigned char nonce[32] = "and my kingdom too for a blinde";
-	//GetRandBytes(nonce, 32);
+	unsigned char nonce[32];
+	GetRandBytes(nonce, 32);
 	unsigned char blinds[tx.vout.size()][32];
 	memset(blinds, 0, tx.vout.size() * 32);
 	uint64_t values[] = {300000000*COIN, 300000000*COIN, 3};
@@ -3624,7 +3599,6 @@ bool CWallet::generateBulletProofAggregate(CTransaction& tx)
 	const unsigned char *blind_ptr[tx.vout.size()];
 	for (i = 0; i < tx.vout.size(); i++) {
 		memcpy(&blinds[i][0], tx.vout[i].maskValue.inMemoryRawBind.begin(), 32);
-		std::cout << "Blind:" << HexStr(blinds[i], blinds[i] + 32);
 		blind_ptr[i] = blinds[i];
 		values[i] = tx.vout[i].nValue;
 	}
@@ -3637,6 +3611,40 @@ bool CWallet::generateBulletProofAggregate(CTransaction& tx)
 
 bool CWallet::generateRingSignature(CTransaction& tx, int& myIndex, int ringSize)
 {
+	if (coinbaseDecoysPool.size() <= 14) {
+		for (int i = chainActive.Height() - Params().COINBASE_MATURITY(); i > 0; i --) {
+			if (coinbaseDecoysPool.size() > 14) break;
+			CBlockIndex* p= chainActive[i];
+			CBlock b;
+			if (ReadBlockFromDisk(b, p)) {
+				int coinbaseIdx = 0;
+				if (p->IsProofOfStake()) {
+					coinbaseIdx = 1;
+				}
+				CTransaction& coinbase = b.vtx[coinbaseIdx];
+
+				for (int i = 0; i < coinbase.vout.size(); i++) {
+					if (!coinbase.vout[i].IsNull() && !coinbase.vout[i].IsEmpty()) {
+						if ((rand() % 100) <= CWallet::PROBABILITY_NEW_COIN_SELECTED) {
+							COutPoint newOutPoint(coinbase.GetHash(), i);
+							if(std::find(pwalletMain->coinbaseDecoysPool.begin(), pwalletMain->coinbaseDecoysPool.end(), newOutPoint) != pwalletMain->coinbaseDecoysPool.end()) {
+								continue;
+							}
+							//add new coinbase transaction to the pool
+							if (pwalletMain->coinbaseDecoysPool.size() >= CWallet::MAX_DECOY_POOL) {
+								int selected = rand() % CWallet::MAX_DECOY_POOL;
+								pwalletMain->coinbaseDecoysPool[selected] = newOutPoint;
+							} else {
+								pwalletMain->coinbaseDecoysPool.push_back(newOutPoint);
+							}
+						}
+					}
+				}
+			}
+
+		}
+	}
+
     //Choose decoys
     int chainHeight = chainActive.Height();
     myIndex = -1;
@@ -3657,58 +3665,75 @@ bool CWallet::generateRingSignature(CTransaction& tx, int& myIndex, int ringSize
         }
 
         pendingKeyImages.push_back(ki.GetHex());
-
-        if (getCTxOutValue(txPrev, txPrev.vout[tx.vin[i].prevout.n]) == 1000000) {
-            //no ring signature
-            continue;
-        }
-
-        int randBlock = rand() % chainHeight;
-        bool enough = false;
         int numDecoys = 0;
-        int numReadBlock = 0;
-        while(randBlock > 0 && numDecoys < ringSize && numReadBlock < 10) {
-            CBlockIndex* bIndex = chainActive[randBlock];
-
-            CBlock block;
-            if (!ReadBlockFromDisk(block, bIndex)) {
-                randBlock--;
-                numReadBlock++;
-                continue;
-            }
-            //std::cout << "block height: " << randBlock << std::endl;
-            const std::vector<CTransaction>& vtx = block.vtx;
-            for (int j = 0; j < vtx.size(); j++) {
-                for (int k = 0; k < vtx[j].vout.size(); k++) {
-                    const CTxOut& out = vtx[j].vout[k];
-                    if (out.IsEmpty()) {
-                        continue;
-                    }
-                    bool duplicated = false;
-                    COutPoint outpoint(vtx[j].GetHash(), k);
-                    for (int d = 0; d < tx.vin[i].decoys.size(); d++) {
-                        if (tx.vin[i].decoys[d] == outpoint) {
-                            duplicated = true;
-                            break;
-                        }
-                    }
-                    if (duplicated) {
-                        continue;
-                    }
-                    //std::cout << "tx hash:" << outpoint.hash.GetHex() << std::endl;
-                    tx.vin[i].decoys.push_back(outpoint);
-                    numDecoys++;
-                    if (numDecoys == ringSize) {
-                        break;
-                    }
-                }
-                if (numDecoys == ringSize) {
-                    break;
-                }
-            }
-            randBlock--;
-            numReadBlock++;
+        if (txPrev.IsCoinAudit() || txPrev.IsCoinBase() || txPrev.IsCoinStake()) {
+        	if (coinbaseDecoysPool.size() >= ringSize * 5) {
+        		while(numDecoys < ringSize) {
+        			bool duplicated = false;
+        			COutPoint outpoint = coinbaseDecoysPool[rand() % coinbaseDecoysPool.size()];
+        			for (int d = 0; d < tx.vin[i].decoys.size(); d++) {
+        				if (tx.vin[i].decoys[d] == outpoint) {
+        					duplicated = true;
+        					break;
+        				}
+        			}
+        			if (duplicated) {
+        				continue;
+        			}
+        			//std::cout << "tx hash:" << outpoint.hash.GetHex() << std::endl;
+        			tx.vin[i].decoys.push_back(outpoint);
+        			numDecoys++;
+        		}
+        	} else if (coinbaseDecoysPool.size() >= ringSize) {
+        		for (int j = 0; j < coinbaseDecoysPool.size(); j++) {
+        			tx.vin[i].decoys.push_back(coinbaseDecoysPool[j]);
+        			numDecoys++;
+        			if (numDecoys == ringSize) break;
+        		}
+        	} else {
+        		LogPrintf("\nDont have enough decoys, please wait for around 10 minutes and re-try\n");
+        		return false;
+        	}
+        } else {
+        	std::vector<COutPoint> decoySet = userDecoysPool;
+        	decoySet.insert(decoySet.end(), coinbaseDecoysPool.begin(), coinbaseDecoysPool.end());
+        	if (decoySet.size() >= ringSize * 5) {
+        		while(numDecoys < ringSize) {
+        			bool duplicated = false;
+        			COutPoint outpoint = decoySet[rand() % decoySet.size()];
+        			for (int d = 0; d < tx.vin[i].decoys.size(); d++) {
+        				if (tx.vin[i].decoys[d] == outpoint) {
+        					duplicated = true;
+        					break;
+        				}
+        			}
+        			if (duplicated) {
+        				continue;
+        			}
+        			//std::cout << "tx hash:" << outpoint.hash.GetHex() << std::endl;
+        			tx.vin[i].decoys.push_back(outpoint);
+        			numDecoys++;
+        		}
+        	} else if (decoySet.size() >= ringSize) {
+        		for (int j = 0; j < decoySet.size(); j++) {
+        			tx.vin[i].decoys.push_back(decoySet[j]);
+        			numDecoys++;
+        			if (numDecoys == ringSize) break;
+        		}
+        	} else {
+        		LogPrintf("\nDont have enough decoys, please wait for around 10 minutes and re-try\n");
+        		return false;
+        	}
         }
+    }
+    myIndex = rand() % (tx.vin[0].decoys.size() + 1) - 1;
+
+    if (myIndex != -1) {
+    	for(int i = 0; i < tx.vin.size(); i++) {
+    		COutPoint prevout = tx.vin[i].prevout;
+    		tx.vin[i].prevout = tx.vin[i].decoys[myIndex];
+    		tx.vin[i].decoys[myIndex] = prevout;
+    	}
     }
 
     return true;
@@ -6044,6 +6069,16 @@ bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmou
     if (tx.IsMNCollateralTx()) {
         if (out.nValue > 0) {
             amount = out.nValue;
+            CPubKey sharedSec;
+            computeSharedSec(tx, out, sharedSec);
+            std::cout << "SharedSec = " << sharedSec.GetHex() << std::endl;
+            uint256 val = out.maskValue.amount;
+            uint256 mask = out.maskValue.mask;
+            CKey decodedMask;
+            ECDHInfo::Decode(mask.begin(), val.begin(), sharedSec, decodedMask, amount);
+            amountMap[out.scriptPubKey] = amount;
+            blindMap[out.scriptPubKey] = decodedMask;
+            blind.Set(blindMap[out.scriptPubKey].begin(), blindMap[out.scriptPubKey].end(), true);
             return true;
         }
     }

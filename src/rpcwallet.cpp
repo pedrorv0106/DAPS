@@ -2682,7 +2682,7 @@ Value revealspendprivatekey(const Array& params, bool fHelp) {
 }
 
 Value rescanwallettransactions(const Array& params, bool fHelp) {
-    if (fHelp || params.size() != 0)
+    if (fHelp || params.size() > 1)
         throw runtime_error(
                 "rescanwallettransactions \n"
                 "\nRescan wallet transaction.\n"
@@ -2707,7 +2707,11 @@ Value rescanwallettransactions(const Array& params, bool fHelp) {
     if (nHeight >= chainActive.Height()) {
     	nHeight = 0;
     }
-    if (!pwalletMain->RescanAfterUnlock()) {
+    bool fromBeginning = false;
+    if (params.size() == 1) {
+    	fromBeginning = true;
+    }
+    if (!pwalletMain->RescanAfterUnlock(fromBeginning)) {
     	return "Wait for wallet to finish reimport/reindex";
     }
     return "Started rescanning from block " + nHeight;

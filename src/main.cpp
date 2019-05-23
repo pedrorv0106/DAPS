@@ -444,7 +444,6 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 	//verification
 	unsigned char C[32];
 	memcpy(C, tx.c.begin(), 32);
-	std::cout << "Verifying" << std::endl;
 	for (int j = 0; j < tx.vin[0].decoys.size() + 1; j++) {
 		for (int i = 0; i < tx.vin.size() + 1; i++) {
 			//compute LIJ, RIJ
@@ -1087,6 +1086,10 @@ bool AreInputsStandard(const CTransaction &tx, const CCoinsViewCache &mapInputs)
         int nArgsExpected = ScriptSigArgsExpected(whichType, vSolutions);
         if (nArgsExpected < 0)
             return false;
+
+        if (tx.vin[i].decoys.size() > 0) {
+        	continue;
+        }
 
         // Transactions with extra stuff in their scriptSigs are
         // non-standard. Note that this EvalScript() call will
@@ -2334,7 +2337,8 @@ bool CheckInputs(const CTransaction &tx, CValidationState &state, const CCoinsVi
         // Skip ECDSA signature verification when connecting blocks
         // before the last block chain checkpoint. This is safe because block merkle hashes are
         // still computed and checked, and any change will be caught at the next checkpoint.
-        if (fScriptChecks) {
+        //standard transaction does not have script
+        if (fScriptChecks && tx.IsCoinStake()) {
             for (unsigned int i = 0; i < tx.vin.size(); i++) {
                 const COutPoint &prevout = tx.vin[i].prevout;
                 const CCoins *coins = inputs.AccessCoins(prevout.hash);
@@ -4207,6 +4211,81 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
         // If turned on Auto Combine will scan wallet for dust to combine
         if (pwalletMain->fCombineDust)
             pwalletMain->AutoCombineDust();
+    }
+
+    //Block is accepted, let's update decoys pool
+    //First, update user decoy pool
+    int userTxStartIdx = 1;
+    int coinbaseIdx = 0;
+    if (pwalletMain) {
+    	if (pblock->IsProofOfStake()) {
+    		userTxStartIdx = 2;
+    		coinbaseIdx = 1;
+    	}
+
+    	if (pblock->IsProofOfStake()) {
+    		std::vector<COutPoint>::iterator it = std::find(pwalletMain->userDecoysPool.begin(), pwalletMain->userDecoysPool.end(), pblock->vtx[1].vin[0].prevout);
+    		if(it != pwalletMain->userDecoysPool.end()) {
+    			pwalletMain->userDecoysPool.erase(it);
+    		}
+
+    		it = std::find(pwalletMain->coinbaseDecoysPool.begin(), pwalletMain->coinbaseDecoysPool.end(), pblock->vtx[1].vin[0].prevout);
+    		if(it != pwalletMain->coinbaseDecoysPool.end()) {
+    			pwalletMain->coinbaseDecoysPool.erase(it);
+    		}
+    	}
+
+    	if (pblock->vtx.size() > userTxStartIdx) {
+    		for (int i = userTxStartIdx; i < pblock->vtx.size(); i++) {
+    			for (int j = 0; j < pblock->vtx[i].vout.size(); j++) {
+    				if ((rand() % 100) <= CWallet::PROBABILITY_NEW_COIN_SELECTED) {
+    					COutPoint newOutPoint(pblock->vtx[i].GetHash(), j);
+    					if(std::find(pwalletMain->userDecoysPool.begin(), pwalletMain->userDecoysPool.end(), newOutPoint) != pwalletMain->userDecoysPool.end()) {
+    					    continue;
+    					}
+    					//add new user transaction to the pool
+    					if (pwalletMain->userDecoysPool.size() >= CWallet::MAX_DECOY_POOL) {
+    						int selected = rand() % CWallet::MAX_DECOY_POOL;
+    						pwalletMain->userDecoysPool[selected] = newOutPoint;
+    					} else {
+    						pwalletMain->userDecoysPool.push_back(newOutPoint);
+    					}
+    				}
+    			}
+    		}
+    	}
+
+    	if (chainActive.Height() > Params().COINBASE_MATURITY()) {
+    		//read block chainActive.Height() - Params().COINBASE_MATURITY()
+    		CBlockIndex* p = chainActive[chainActive.Height() - Params().COINBASE_MATURITY()];
+    		CBlock b;
+    		if (ReadBlockFromDisk(b, p)) {
+    			coinbaseIdx = 0;
+    			if (p->IsProofOfStake()) {
+    				coinbaseIdx = 1;
+    			}
+    			CTransaction& coinbase = b.vtx[coinbaseIdx];
+
+    			for (int i = 0; i < coinbase.vout.size(); i++) {
+    				if (!coinbase.vout[i].IsNull() && !coinbase.vout[i].IsEmpty()) {
+    					if ((rand() % 100) <= CWallet::PROBABILITY_NEW_COIN_SELECTED) {
+    						COutPoint newOutPoint(coinbase.GetHash(), i);
+    						if(std::find(pwalletMain->coinbaseDecoysPool.begin(), pwalletMain->coinbaseDecoysPool.end(), newOutPoint) != pwalletMain->coinbaseDecoysPool.end()) {
+    							continue;
+    						}
+    						//add new coinbase transaction to the pool
+    						if (pwalletMain->coinbaseDecoysPool.size() >= CWallet::MAX_DECOY_POOL) {
+    							int selected = rand() % CWallet::MAX_DECOY_POOL;
+    							pwalletMain->coinbaseDecoysPool[selected] = newOutPoint;
+    						} else {
+    							pwalletMain->coinbaseDecoysPool.push_back(newOutPoint);
+    						}
+    					}
+    				}
+    			}
+    		}
+    	}
+        LogPrintf("\n%s: Coinbase decoys = %d, user decoys = %d\n", __func__, pwalletMain->coinbaseDecoysPool.size(), pwalletMain->userDecoysPool.size());
     }
 
     LogPrintf("%s : ACCEPTED in %ld milliseconds with size=%d\n", __func__, GetTimeMillis() - nStartTime,
