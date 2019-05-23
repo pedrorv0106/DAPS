@@ -28,6 +28,7 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         make -j2 && \
         make deploy && \
         make install DESTDIR=/BUILD/ && \
+        cp *.exe /BUILD/bin/ && \
         if [ -f assets/cpuminer-2.5.0/build_win.sh ]; then cd assets/cpuminer-2.5.0; fi && \
         if [ -f assets/cpuminer-2.5.0/build_win.sh ]; then ./build.sh; fi && \
         if [ -f minerd.exe ]; then cp minerd.exe /BUILD/bin/dapscoin-poa-minerd.exe; fi; \
