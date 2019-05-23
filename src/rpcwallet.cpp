@@ -19,6 +19,7 @@
 #include "walletdb.h"
 
 #include <stdint.h>
+#include <fstream>
 #include <boost/algorithm/string.hpp>
 
 #include "libzerocoin/Coin.h"
@@ -140,6 +141,7 @@ CBitcoinAddress GetAccountAddress(string strAccount, bool bForceNew = false)
 
     // Generate a new key
     if (!account.vchPubKey.IsValid() || bForceNew || bKeyUsed) {
+    	EnsureWalletIsUnlocked();
         if (!pwalletMain->GetKeyFromPool(account.vchPubKey))
             throw JSONRPCError(RPC_WALLET_KEYPOOL_RAN_OUT, "Error: Keypool ran out, please call keypoolrefill first");
 
@@ -686,6 +688,28 @@ Value getbalance(const Array& params, bool fHelp)
     CAmount nBalance = GetAccountBalance(strAccount, nMinDepth, filter);
 
     return ValueFromAmount(nBalance);
+}
+
+Value getbalances(const Array& params, bool fHelp)
+{
+    if (fHelp)
+        throw runtime_error(
+            "getbalances"
+            "\nArguments:\n"
+            "\nResult:\n"
+            "total              (numeric) The total amount in DAPS received for this wallet.\n"
+        	"spendable 			(numeric) The total amount in DAPS spendable for this wallet.\n"
+        	"pending			(numeric) The total amount in DAPS pending for this wallet."
+            "\nExamples:\n"
+            "\nThe total amount in the server across all accounts\n" +
+            HelpExampleCli("getbalances", ""));
+
+    Object obj;
+    obj.push_back(Pair("total", ValueFromAmount(pwalletMain->GetBalance())));
+    obj.push_back(Pair("spendable", ValueFromAmount(pwalletMain->GetSpendableBalance())));
+    obj.push_back(Pair("pending", ValueFromAmount(pwalletMain->GetUnconfirmedBalance())));
+
+    return obj;
 }
 
 Value getunconfirmedbalance(const Array& params, bool fHelp)
@@ -1619,8 +1643,7 @@ Value walletpassphrase(const Array& params, bool fHelp)
             "\nLock the wallet again (before 60 seconds)\n" + HelpExampleCli("walletlock", "") +
             "\nAs json rpc call\n" + HelpExampleRpc("walletpassphrase", "\"my pass phrase\", 60"));
 
-    //Cam: Disable now for beta-test
-    /*if (fHelp)
+    if (fHelp)
         return true;
     if (!pwalletMain->IsCrypted())
         throw JSONRPCError(RPC_WALLET_WRONG_ENC_STATE, "Error: running with an unencrypted wallet, but walletpassphrase was called.");
@@ -1652,9 +1675,7 @@ Value walletpassphrase(const Array& params, bool fHelp)
         nWalletUnlockTime = GetTime () + nSleepTime;
         RPCRunLater ("lockwallet", boost::bind (LockWallet, pwalletMain), nSleepTime);
     }
-
-    return Value::null;*/
-    return "This feature is currently not available.";
+    return Value::null;
 }
 
 
@@ -1670,8 +1691,7 @@ Value walletpassphrasechange(const Array& params, bool fHelp)
             "\nExamples:\n" +
             HelpExampleCli("walletpassphrasechange", "\"old one\" \"new one\"") + HelpExampleRpc("walletpassphrasechange", "\"old one\", \"new one\""));
 
-    //Cam: Disable now for beta-test
-    /*if (fHelp)
+    if (fHelp)
         return true;
     if (!pwalletMain->IsCrypted())
         throw JSONRPCError(RPC_WALLET_WRONG_ENC_STATE, "Error: running with an unencrypted wallet, but walletpassphrasechange was called.");
@@ -1693,9 +1713,7 @@ Value walletpassphrasechange(const Array& params, bool fHelp)
 
     if (!pwalletMain->ChangeWalletPassphrase(strOldWalletPass, strNewWalletPass))
         throw JSONRPCError(RPC_WALLET_PASSPHRASE_INCORRECT, "Error: The wallet passphrase entered was incorrect.");
-
-    return Value::null;*/
-    return "This feature is currently not available.";
+    return Value::null;
 }
 
 
@@ -1753,7 +1771,7 @@ Value encryptwallet(const Array& params, bool fHelp)
             "\nAs a json rpc call\n" + HelpExampleRpc("encryptwallet", "\"my pass phrase\""));
 
     //Cam: Disable now for beta-test!
-    /*if (fHelp)
+    if (fHelp)
         return true;
     if (pwalletMain->IsCrypted())
         throw JSONRPCError(RPC_WALLET_WRONG_ENC_STATE, "Error: running with an encrypted wallet, but encryptwallet was called.");
@@ -1769,6 +1787,7 @@ Value encryptwallet(const Array& params, bool fHelp)
             "encryptwallet <passphrase>\n"
             "Encrypts the wallet with <passphrase>.");
 
+
     if (!pwalletMain->EncryptWallet(strWalletPass))
         throw JSONRPCError(RPC_WALLET_ENCRYPTION_FAILED, "Error: Failed to encrypt the wallet.");
 
@@ -1776,8 +1795,7 @@ Value encryptwallet(const Array& params, bool fHelp)
     // slack space in .dat files; that is bad if the old data is
     // unencrypted private keys. So:
     StartShutdown();
-    return "wallet encrypted; dapscoin server stopping, restart to run with encrypted wallet. The keypool has been flushed, you need to make a new backup.";*/
-    return "This feature is currently not available.";
+    return "wallet encrypted; dapscoin server stopping, restart to run with encrypted wallet. The keypool has been flushed, you need to make a new backup.";
 }
 
 Value lockunspent(const Array& params, bool fHelp)
@@ -1973,6 +1991,10 @@ Value reservebalance(const Array& params, bool fHelp)
             if (nAmount < 0)
                 throw runtime_error("amount cannot be negative.\n");
             nReserveBalance = nAmount;
+
+            CWalletDB walletdb(pwalletMain->strWalletFile);
+            walletdb.WriteReserveAmount(nReserveBalance / COIN);
+
         } else {
             if (params.size() > 1)
                 throw runtime_error("cannot specify amount to turn off reserve.\n");
@@ -2927,9 +2949,7 @@ Value createprivacyaccount(const Array& params, bool fHelp)
                            "Error: There is no privacy wallet, please use createprivacywallet to create one.");
     }
 
-    if(pwalletMain->IsCrypted())
-        throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED,
-                           "Error: Please enter the wallet passphrase with walletpassphrase first.");
+    //EnsureWalletIsUnlocked();
 
     CWalletDB walletdb(pwalletMain->strWalletFile);
     Object ret;
@@ -2985,6 +3005,8 @@ Value createprivacysubaddress(const Array& params, bool fHelp)
         throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
                            "Error: There is no privacy wallet, please use createprivacywallet to create one.");
     }
+
+    EnsureWalletIsUnlocked();
 
     std::string label = params[0].get_str();
 
@@ -3128,9 +3150,7 @@ Value revealviewprivatekey(const Array& params, bool fHelp) {
                            "Error: There is no privacy wallet, please use createprivacywallet to create one.");
     }
 
-    if (pwalletMain->IsCrypted())
-        throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED,
-                           "Error: Please enter the wallet passphrase with walletpassphrase first.");
+    EnsureWalletIsUnlocked();
 
     CKey view;
     pwalletMain->myViewPrivateKey(view);
@@ -3155,11 +3175,41 @@ Value revealspendprivatekey(const Array& params, bool fHelp) {
                            "Error: There is no privacy wallet, please use createprivacywallet to create one.");
     }
 
-    if (pwalletMain->IsCrypted())
-        throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED,
-                           "Error: Please enter the wallet passphrase with walletpassphrase first.");
+    EnsureWalletIsUnlocked();
 
     CKey spend;
     pwalletMain->mySpendPrivateKey(spend);
     return CBitcoinSecret(spend).ToString();
+}
+
+Value rescanwallettransactions(const Array& params, bool fHelp) {
+    if (fHelp || params.size() != 0)
+        throw runtime_error(
+                "rescanwallettransactions \n"
+                "\nRescan wallet transaction.\n"
+                "\nArguments:\n"
+                "\nResult:\n"
+                "\"scanned wallet transaction\"    \n"
+                "\nExamples:\n" +
+                HelpExampleCli("rescanwallettransactions", "") + HelpExampleCli("rescanwallettransactions", "\"\"") +
+                HelpExampleCli("rescanwallettransactions", "") + HelpExampleRpc("rescanwallettransactions", ""));
+
+    if (!pwalletMain) {
+        //privacy wallet is already created
+        throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
+                           "Error: There is no privacy wallet, please use createprivacywallet to create one.");
+    }
+
+    EnsureWalletIsUnlocked();
+
+    int nHeight = 0;
+    CWalletDB walletdb(pwalletMain->strWalletFile);
+    walletdb.ReadScannedBlockHeight(nHeight);
+    if (nHeight >= chainActive.Height()) {
+    	nHeight = 0;
+    }
+    if (!pwalletMain->RescanAfterUnlock()) {
+    	return "Wait for wallet to finish reimport/reindex";
+    }
+    return "Started rescanning from block " + nHeight;
 }

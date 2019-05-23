@@ -19,10 +19,16 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <property name="styleSheet">
-   <string notr="true">QDialog{border-image: url(':/images/overviewbackground') 0 0 0 0 stretch stretch;}</string>
+  <property name="sizeGripEnabled">
+   <bool>false</bool>
   </property>
   <layout class="QVBoxLayout" name="topLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
    <item>
     <widget class="QLabel" name="labelAlerts">
      <property name="visible">
@@ -43,6 +49,9 @@
     <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0">
+       <property name="spacing">
+        <number>0</number>
+       </property>
        <item>
         <widget class="QWidget" name="widgetSyncBlocks" native="true">
          <property name="sizePolicy">
@@ -59,8 +68,8 @@
          </property>
          <property name="baseSize">
           <size>
-           <width>328</width>
-           <height>328</height>
+           <width>228</width>
+           <height>228</height>
           </size>
          </property>
          <widget class="QWidget" name="layoutWidget_2">
@@ -465,6 +474,12 @@
           <enum>QFrame::Raised</enum>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_2">
             <item>
@@ -474,6 +489,9 @@
                 <weight>75</weight>
                 <bold>true</bold>
                </font>
+              </property>
+              <property name="toolTip">
+               <string>Recent transactions</string>
               </property>
               <property name="text">
                <string>Recent transactions</string>

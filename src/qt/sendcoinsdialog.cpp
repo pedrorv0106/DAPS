@@ -34,6 +34,7 @@
 SendCoinsDialog::SendCoinsDialog(QWidget* parent) : QDialog(parent),
                                                     ui(new Ui::SendCoinsDialog),
                                                     clientModel(0),
+                                                    // m_SizeGrip(this),
                                                     model(0),
                                                     fNewRecipientAllowed(true)
 {
@@ -78,6 +79,18 @@ void SendCoinsDialog::setModel(WalletModel* model)
     }
 }
 
+// void SendCoinsDialog::resizeEvent(QResizeEvent* event)
+// {
+//     QWidget::resizeEvent(event);
+
+//     m_SizeGrip.move  (width() - 17, height() - 17);
+//     m_SizeGrip.resize(          17,            17);
+// }
+
+// void SendCoinsDialog::bitcoinGUIInstallEvent(BitcoinGUI *gui) {
+//     m_SizeGrip.installEventFilter((QObject*)gui);
+// }
+
 void SendCoinsDialog::setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, 
                               const CAmount& zerocoinBalance, const CAmount& unconfirmedZerocoinBalance, const CAmount& immatureZerocoinBalance,
                               const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance)
@@ -115,8 +128,8 @@ void SendCoinsDialog::on_sendButton_clicked(){
             } else if (recipient.amount > nReserveBalance) {
                 QMessageBox(QMessageBox::Information, tr("Warning"), tr("Insufficient Reserve Funds! Send with smaller amount or turn off staking mode"), QMessageBox::Ok).exec();
             }
+            return;
         }
-        return;
     }
 
     CWalletTx resultTx; 
@@ -143,6 +156,7 @@ void SendCoinsDialog::on_sendButton_clicked(){
         txcomplete.setStyleSheet(GUIUtil::loadStyleSheet());
         txcomplete.setStyleSheet("QMessageBox {messagebox-text-interaction-flags: 5;}");
         txcomplete.exec();
+        WalletUtil::getTx(pwalletMain, resultTx.GetHash());
     }
 }
 
@@ -151,8 +165,8 @@ SendCoinsEntry* SendCoinsDialog::addEntry()
     SendCoinsEntry* entry = new SendCoinsEntry(this);
     entry->setModel(model);
     ui->entries->addWidget(entry);
-    connect(entry, SIGNAL(removeEntry(SendCoinsEntry*)), this, SLOT(removeEntry(SendCoinsEntry*)));
-    connect(entry, SIGNAL(payAmountChanged()), this, SLOT(coinControlUpdateLabels()));
+    //connect(entry, SIGNAL(removeEntry(SendCoinsEntry*)), this, SLOT(removeEntry(SendCoinsEntry*)));
+    //connect(entry, SIGNAL(payAmountChanged()), this, SLOT(coinControlUpdateLabels()));
 
     ui->scrollAreaWidgetContents->resize(ui->scrollAreaWidgetContents->sizeHint());
     qApp->processEvents();

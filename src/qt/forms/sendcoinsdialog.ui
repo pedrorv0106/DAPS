@@ -13,8 +13,8 @@
   <property name="windowTitle">
    <string>Send Coins</string>
   </property>
-  <property name="styleSheet">
-   <string notr="true">QDialog{border-image: url(':/images/background') 0 0 0 0 stretch stretch;}</string>
+  <property name="sizeGripEnabled">
+   <bool>false</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
    <property name="bottomMargin">
@@ -42,6 +42,9 @@
        </item>
        <item>
         <widget class="QLabel" name="label">
+         <property name="toolTip">
+          <string>Your current spendable balance</string>
+         </property>
          <property name="text">
           <string>Balance:</string>
          </property>
@@ -57,6 +60,9 @@
          </property>
          <property name="cursor">
           <cursorShape>IBeamCursor</cursorShape>
+         </property>
+         <property name="toolTip">
+          <string>Your current spendable balance</string>
          </property>
          <property name="text">
           <string notr="true">123.456 DAPS</string>

@@ -14,25 +14,28 @@ ENV DESTDIR=$DESTDIR
 #COPY source
 COPY . /DAPS/
 
+RUN apt-get autoremove -y
+
 RUN cd /DAPS/ && mkdir -p /BUILD/ && \
 #
     if [ "$BUILD_TARGET" = "windowsx64" ]; \
       then echo "Compiling for Windows 64-bit (x86_64-w64-mingw32)..." && \
-        cd depends && \
-        make HOST=x86_64-w64-mingw32 && \
-        cd .. && \
+        if [ -d depends/chilkat/include ]; then mkdir -p depends/x86_64-w64-mingw32/include/chilkat-9.5.0; fi && \
+        if [ -d depends/chilkat/include ]; then cp depends/chilkat/include/* depends/x86_64-w64-mingw32/include/chilkat-9.5.0; fi && \
+        if [ -d depends/chilkat/lib ]; then cp depends/chilkat/lib/* depends/x86_64-w64-mingw32/lib; fi && \
         ./autogen.sh && \
         CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure --prefix=/ && \
         make -j2 && \
-        make deploy && \
-        make install DESTDIR=/BUILD/ && \
-        cp *.exe /BUILD/bin/; \
+        make install DESTDIR=/BUILD/ && \ 
+        cd assets/cpuminer-2.5.0 && \ 
+        ./build.sh && \
+        cp minerd.exe /BUILD/bin/dapscoin-poa-minerd.exe; \
 #
     elif [ "$BUILD_TARGET" = "windowsx86" ]; \
       then echo "Compiling for Windows 32-bit (i686-w64-mingw32)..." && \
-        cd depends && \
-        make HOST=i686-w64-mingw32 && \
-        cd .. && \
+        if [ -d depends/chilkat/x86/include ]; then mkdir -p depends/i686-w64-mingw32/include/chilkat-9.5.0; fi && \
+        if [ -d depends/chilkat/x86/include ]; then cp depends/chilkat/x86/include/* depends/i686-w64-mingw32/include/chilkat-9.5.0; fi && \
+        if [ -d depends/chilkat/x86/lib ]; then cp depends/chilkat/x86/lib/* depends/i686-w64-mingw32/lib; fi && \
         ./autogen.sh && \
         CONFIG_SITE=$PWD/depends/i686-w64-mingw32/share/config.site ./configure --prefix=/ && \
         make -j2 && \
@@ -47,6 +50,10 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         ./autogen.sh && \
         ./configure && \
         make -j2 && \
+        strip src/dapscoind && \
+        strip src/dapscoin-cli && \
+        strip src/dapscoin-tx && \
+        strip src/qt/dapscoin-qt && \
         make install DESTDIR=/BUILD/; \
 #
     elif [ "$BUILD_TARGET" = "mac" ]; \

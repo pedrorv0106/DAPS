@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>ReceiveCoinsDialog</class>
- <widget class="QWidget" name="ReceiveCoinsDialog">
+ <widget class="QDialog" name="ReceiveCoinsDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -10,8 +10,20 @@
     <height>708</height>
    </rect>
   </property>
-  <property name="styleSheet">
-   <string notr="true">QDialog{border-image: url(':/images/background') 0 0 0 0 stretch stretch;}</string>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>false</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1">
    <item>
@@ -51,7 +63,7 @@
         <item row="5" column="0">
          <widget class="QLabel" name="label_3">
           <property name="toolTip">
-           <string>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the DAPScoin network.</string>
+           <string>An optional message to attach to the payment request, which will be displayed when the request is opened.&lt;br&gt;Note: The message will not be sent with the payment over the DAPScoin network.</string>
           </property>
           <property name="text">
            <string>Payment ID:</string>
@@ -78,12 +90,16 @@
          </widget>
         </item>
         <item row="3" column="1">
-         <widget class="QComboBox" name="reqAddress"/>
+         <widget class="QComboBox" name="reqAddress">
+          <property name="toolTip">
+           <string>List of addresses to receive with</string>
+          </property>
+         </widget>
         </item>
         <item row="3" column="0">
          <widget class="QLabel" name="label_2">
           <property name="toolTip">
-           <string>An optional label to associate with the new receiving address.</string>
+           <string>List of addresses to receive with</string>
           </property>
           <property name="text">
            <string>Address:</string>
@@ -102,6 +118,9 @@
               <width>150</width>
               <height>0</height>
              </size>
+            </property>
+            <property name="toolTip">
+             <string>Submit payment request for address selected above</string>
             </property>
             <property name="text">
              <string>&amp;Submit</string>
@@ -142,8 +161,11 @@
         </item>
         <item row="4" column="1">
          <widget class="QLineEdit" name="reqAmount">
+          <property name="toolTip">
+           <string>An optional amount to request. Leave this empty or zero to not request a specific amount.</string>
+          </property>
           <property name="placeholderText">
-           <string>DAPS Amount</string>
+           <string>DAPS Amount (optional)</string>
           </property>
          </widget>
         </item>
@@ -196,9 +218,18 @@
          </spacer>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1">
+          <property name="spacing">
+           <number>6</number>
+          </property>
+          <property name="sizeConstraint">
+           <enum>QLayout::SetDefaultConstraint</enum>
+          </property>
           <item>
            <widget class="QPushButton" name="pushButtonCP">
+            <property name="toolTip">
+             <string>Copy Master Account address to clipboard</string>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -206,6 +237,9 @@
           </item>
           <item>
            <widget class="QLineEdit" name="lineEditAddress">
+            <property name="toolTip">
+             <string>Master Account address</string>
+            </property>
             <property name="inputMask">
              <string notr="true"/>
             </property>

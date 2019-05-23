@@ -14,10 +14,12 @@
 #include <QMenu>
 #include <QPoint>
 #include <QVariant>
+#include <QSizeGrip>
 #include <QList>
 
 class OptionsModel;
 class WalletModel;
+// class BitcoinGUI;
 
 namespace Ui
 {
@@ -46,6 +48,7 @@ public:
 
     void setModel(WalletModel* model);
     void loadAccount();
+    // void bitcoinGUIInstallEvent(BitcoinGUI *gui);
 
 public slots:
     void clear();
@@ -61,6 +64,7 @@ private:
     GUIUtil::TableViewLastColumnResizingFixer* columnResizingFixer;
     WalletModel* model;
     QMenu* contextMenu;
+    // QSizeGrip m_SizeGrip;
     void copyColumnToClipboard(int column);
     virtual void resizeEvent(QResizeEvent* event);
     CAmount getValidatedAmount();

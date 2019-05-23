@@ -23,7 +23,6 @@
 #include <QAbstractItemDelegate>
 #include <QPainter>
 #include <QSettings>
-#include <QSizePolicy>
 #include <QTimer>
 #include <QtMath>
 
@@ -120,6 +119,7 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
                                               currentWatchUnconfBalance(-1),
                                               currentWatchImmatureBalance(-1),
                                               txdelegate(new TxViewDelegate()),
+                                              // m_SizeGrip(this),
                                               filter(0)
 {
     nDisplayUnit = 0; // just make sure it's not unitialized
@@ -132,7 +132,12 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
     pingNetworkInterval = new QTimer();
 
     initSyncCircle(.8);
-    // updateRecentTransactions();
+
+    QTimer* timerBlockHeightLabel = new QTimer();
+    connect(timerBlockHeightLabel, SIGNAL(timeout()), this, SLOT(showBlockCurrentHeight()));
+    timerBlockHeightLabel->start(10000);
+
+    updateRecentTransactions();
 }
 
 void OverviewPage::handleTransactionClicked(const QModelIndex& index)
@@ -184,6 +189,9 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     currentWatchUnconfBalance = watchUnconfBalance;
     currentWatchImmatureBalance = watchImmatureBalance;
     CAmount nSpendableBalance = balance - immatureBalance;
+    if (nSpendableBalance < 0) {
+    	nSpendableBalance = pwalletMain->GetSpendableBalance();
+    }
     CAmount nSpendableDisplayed = nSpendableBalance; //if it is not staking
     if (nLastCoinStakeSearchInterval) {
         //if staking enabled
@@ -257,6 +265,18 @@ void OverviewPage::setClientModel(ClientModel* model)
     }
 }
 
+// void OverviewPage::resizeEvent(QResizeEvent* event)
+// {
+//     QWidget::resizeEvent(event);
+
+//     m_SizeGrip.move  (width() - 17, height() - 17);
+//     m_SizeGrip.resize(          17,            17);
+// }
+
+// void OverviewPage::bitcoinGUIInstallEvent(BitcoinGUI *gui) {
+//     m_SizeGrip.installEventFilter((QObject*)gui);
+// }
+
 void OverviewPage::setSpendableBalance(bool isStaking) {
     //std::cout << "changing status:" << isStaking << std::endl;
     CAmount nSpendableDisplayed = this->walletModel->getSpendableBalance();
@@ -273,6 +293,7 @@ void OverviewPage::setWalletModel(WalletModel* model)
     this->walletModel = model;
     if (model && model->getOptionsModel()) {
         // Set up transaction list
+        LogPrintf("\n%s:setWalletModel\n", __func__);
         filter = new TransactionFilterProxy();
         filter->setSourceModel(model->getTransactionTableModel());
         filter->setLimit(NUM_ITEMS);
@@ -294,6 +315,8 @@ void OverviewPage::setWalletModel(WalletModel* model)
 
         updateWatchOnlyLabels(model->haveWatchOnly());
         connect(model, SIGNAL(notifyWatchonlyChanged(bool)), this, SLOT(updateWatchOnlyLabels(bool)));
+
+        connect(walletModel, SIGNAL(RefreshRecent()), this, SLOT(refreshRecentTransactions()));
     }
 
     // update the display unit, to not use the default ("DAPS")
@@ -339,7 +362,13 @@ void OverviewPage::showBlockSync(bool fShow)
 
     ui->labelBlockCurrent->setText(QString::number(clientModel->getNumBlocks()));
     // if (!fShow)
-        ui->labelBlockCurrent->setAlignment(fShow? (Qt::AlignRight|Qt::AlignVCenter):(Qt::AlignHCenter|Qt::AlignTop));
+    ui->labelBlockCurrent->setAlignment(fShow? (Qt::AlignRight|Qt::AlignVCenter):(Qt::AlignHCenter|Qt::AlignTop));
+}
+
+void OverviewPage::showBlockCurrentHeight()
+{
+	ui->labelBlockCurrent->setText(QString::number(chainActive.Height()));
+	// if (!fShow)
 }
 
 void OverviewPage::initSyncCircle(float ratioToParent)
@@ -439,18 +468,64 @@ int OverviewPage::tryNetworkBlockCount(){
 
 void OverviewPage::updateRecentTransactions(){
     QLayoutItem* item;
+    QSettings settings;
+    QVariant theme = settings.value("theme");
+    QString themeName = QString(theme.toString());
+
     while ( ( item = ui->verticalLayoutRecent->takeAt( 0 ) ) != NULL )
     {
         delete item->widget();
         delete item;
     }
-    auto txs = WalletUtil::getTXs(pwalletMain);
+    if (pwalletMain) {
+    	vector<std::map<QString, QString>> txs;// = WalletUtil::getTXs(pwalletMain);
 
-    for (int i = 0; i< (txs.size()>5)? 5:txs.size(); i++){
-        TxEntry* entry = new TxEntry(this);
-        ui->verticalLayoutRecent->addWidget(entry);
-        entry->setData(txs[i]["date"], txs[i]["address"] , txs[i]["amount"], txs[i]["ID"], txs[i]["type"]);
+        std::map<uint256, CWalletTx> txMap = pwalletMain->mapWallet;
+        std::vector<CWalletTx> latestTxes;
+        for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
+        	if (tx->second.GetDepthInMainChain() > 0) {
+        		int64_t txTime = tx->second.GetComputedTxTime();
+        		int idx = -1;
+        		for (int i = 0; i < latestTxes.size(); i++) {
+        			if (txTime >= latestTxes[i].GetComputedTxTime()) {
+        				idx = i;
+        				break;
+        			}
+        		}
+        		if (idx == -1) {
+        			latestTxes.push_back(tx->second);
+        		} else {
+        			latestTxes.insert(latestTxes.begin() + idx, tx->second);
+        		}
+        	}
+        }
+
+        for (int i = 0; i < latestTxes.size(); i++) {
+        	txs.push_back(WalletUtil::getTx(pwalletMain, latestTxes[i]));
+        	if (txs.size() >= 5) break;
+        }
+
+        int length = (txs.size()>5)? 5:txs.size();
+        for (int i = 0; i< length; i++){
+        	uint256 txHash;
+        	txHash.SetHex(txs[i]["id"].toStdString());
+            TxEntry* entry = new TxEntry(this);
+            ui->verticalLayoutRecent->addWidget(entry);
+            CWalletTx wtx = pwalletMain->mapWallet[txHash];
+            int64_t txTime = wtx.GetComputedTxTime();
+            entry->setData(txTime, txs[i]["address"] , txs[i]["amount"], txs[i]["id"], txs[i]["type"]);
+            if (i % 2 == 0) {
+                entry->setObjectName("secondaryTxEntry");
+            }
+        }
+
+        ui->label_4->setVisible(txs.size());
+    } else {
+        LogPrintf("\npwalletMain has not been initialized\n");
     }
+}
 
-    ui->label_4->setVisible(txs.size());
+void OverviewPage::refreshRecentTransactions() {
+	LogPrintf("\n: Refreshing history\n");
+	updateRecentTransactions();
 }

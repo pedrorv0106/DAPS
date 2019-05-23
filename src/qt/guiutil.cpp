@@ -89,7 +89,7 @@ namespace GUIUtil
 {
 QString dateTimeStr(const QDateTime& date)
 {
-    return date.date().toString(Qt::SystemLocaleShortDate) + QString(" ") + date.toString("hh:mm");
+    return date.date().toString(Qt::SystemLocaleShortDate) + QString(" ") + date.toString("hh:mm:ss");
 }
 
 QString dateTimeStr(qint64 nTime)
@@ -836,8 +836,8 @@ QString loadStyleSheet()
     QString styleSheet;
     QSettings settings;
     QVariant theme = settings.value("theme");
-    QString cssName = QString(":/css/"+theme.toString());
-
+    QString cssName = QString(":/css/" + theme.toString());
+    LogPrintf("\nloadStyleSheet: Loading stylesheet %s\n", cssName.toStdString());
         // Build-in CSS
     settings.setValue("fCSSexternal", false);
 

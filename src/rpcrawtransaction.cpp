@@ -70,8 +70,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
     entry.push_back(Pair("txid", tx.GetHash().GetHex()));
     entry.push_back(Pair("version", tx.nVersion));
     entry.push_back(Pair("locktime", (int64_t)tx.nLockTime));
-    CPubKey txPubKey(tx.txPub);
-    entry.push_back(Pair("txpubkey", txPubKey.GetHex()));
+    entry.push_back(Pair("txfee", ValueFromAmount(tx.nTxFee)));
     if (tx.hasPaymentID) {
         entry.push_back(Pair("paymentid", tx.paymentID));
     }
@@ -106,7 +105,8 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
                         if (allDecoys[i].n < prev.vout.size()) {
                             if (pwalletMain->IsMine(prev.vout[allDecoys[i].n])) {
                                 CAmount decodedAmount;
-                                pwalletMain->RevealTxOutAmount(prev, prev.vout[allDecoys[i].n], decodedAmount);
+                                CKey blind;
+                                pwalletMain->RevealTxOutAmount(prev, prev.vout[allDecoys[i].n], decodedAmount, blind);
                                 decoy.push_back(Pair("decoded_amount", ValueFromAmount(decodedAmount)));
                             }
                         }
@@ -138,12 +138,33 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
         out.push_back(Pair("scriptPubKey", o));
         out.push_back(Pair("encoded_amount", txout.maskValue.amount.GetHex()));
         out.push_back(Pair("encoded_mask", txout.maskValue.mask.GetHex()));
+        CPubKey txPubKey(txout.txPub);
+        out.push_back(Pair("txpubkey", txPubKey.GetHex()));
+        out.push_back(Pair("commitment", HexStr(txout.commitment.begin(), txout.commitment.end())));
 
 #ifdef ENABLE_WALLET
         if (pwalletMain->IsMine(txout)) {
             CAmount decodedAmount;
-            pwalletMain->RevealTxOutAmount(tx, txout, decodedAmount);
+            CKey blind;
+            unsigned char zeroBlind[32];
+            memset(zeroBlind, 0, 32);
+            const unsigned char* pBlind;
+            pwalletMain->RevealTxOutAmount(tx, txout, decodedAmount, blind);
+            if (txout.nValue >0) {
+            	pBlind = zeroBlind;
+            } else {
+            	pBlind = blind.begin();
+            }
             out.push_back(Pair("decoded_amount", ValueFromAmount(decodedAmount)));
+            std::cout << "Revealed amount = " << decodedAmount << std::endl;
+            std::cout << "Revealed mask = " << HexStr(pBlind, pBlind + 32) << std::endl;
+            std::cout << "Out commitment = " << HexStr(&(txout.commitment[0]), &(txout.commitment[0]) + 33) << std::endl;
+            secp256k1_pedersen_commitment commit;
+            secp256k1_context2 *both = GetContext();
+            secp256k1_pedersen_commit(both, &commit, pBlind, decodedAmount, &secp256k1_generator_const_h, &secp256k1_generator_const_g);
+            unsigned char serialized[33];
+            secp256k1_pedersen_commitment_serialize(both, serialized, &commit);
+            std::cout << "computed commitment = " << HexStr(serialized, serialized + 33) << std::endl;
         }
 #endif
         vout.push_back(out);

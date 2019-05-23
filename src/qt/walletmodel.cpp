@@ -70,13 +70,17 @@ WalletModel::~WalletModel()
 CAmount WalletModel::getBalance(const CCoinControl* coinControl) const
 {
     if (coinControl) {
-        CAmount nBalance = 0;
-        std::vector<COutput> vCoins;
-        wallet->AvailableCoins(vCoins, true, coinControl);
-        BOOST_FOREACH (const COutput& out, vCoins)
-            if (out.fSpendable)
-                nBalance += wallet->getCTxOutValue(*out.tx, out.tx->vout[out.i]);
-        return nBalance;
+
+        {   
+            //LOCK(wallet->cs_wallet);
+            CAmount nBalance = 0;
+            std::vector<COutput> vCoins;
+            wallet->AvailableCoins(vCoins, true, coinControl);
+            BOOST_FOREACH (const COutput& out, vCoins)
+                if (out.fSpendable)
+                    nBalance += wallet->getCTxOutValue(*out.tx, out.tx->vout[out.i]);
+            return nBalance;
+        }
     }
 
     return wallet->GetBalance();
@@ -184,7 +188,7 @@ void WalletModel::checkBalanceChanged()
 {
     TRY_LOCK(cs_main, lockMain);
     if (!lockMain) return;
-
+    LogPrintf("\n%s:Checking balance changed\n", __func__);
     CAmount newBalance = getBalance();
     CAmount newUnconfirmedBalance = getUnconfirmedBalance();
     CAmount newImmatureBalance = getImmatureBalance();
@@ -394,7 +398,7 @@ RecentRequestsTableModel* WalletModel::getRecentRequestsTableModel()
 
 WalletModel::EncryptionStatus WalletModel::getEncryptionStatus() const
 {
-    if (!wallet->IsCrypted()) {
+    if (!wallet->IsLocked()) {
         return Unencrypted;
     } else if (wallet->fWalletUnlockAnonymizeOnly) {
         return UnlockedForAnonymizationOnly;
@@ -755,8 +759,11 @@ vector<std::map<QString, QString> > getTXs(CWallet* wallet)
 {
     std::map<uint256, CWalletTx> txMap = wallet->mapWallet;
     vector<std::map<QString, QString> > txs;
-    for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx)
-        txs.push_back(getTx(wallet, tx->second));
+    for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
+    	if (tx->second.GetDepthInMainChain() > 0) {
+    		txs.push_back(getTx(wallet, tx->second));
+    	}
+    }
 
     return txs;
 }
@@ -772,22 +779,29 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
         if (mi != wallet->mapWallet.end()) {
             const CWalletTx& prev = (*mi).second;
             if (in.prevout.n < prev.vout.size()) {
-                if (pwalletMain->IsMine(prev.vout[in.prevout.n])) {
+                if (wallet->IsMine(prev.vout[in.prevout.n])) {
                     CAmount decodedAmount = 0;
-                    pwalletMain->RevealTxOutAmount(prev, prev.vout[in.prevout.n], decodedAmount);
+                    CKey blind;
+                    pwalletMain->RevealTxOutAmount(prev, prev.vout[in.prevout.n], decodedAmount, blind);
                     totalIn += decodedAmount;
                 }
             }
         }
     }
-
+    CAmount firstOut = 0;
     for (CTxOut out: tx.vout){
         CAmount vamount;
-        if (wallet->RevealTxOutAmount(tx,out,vamount))
+        CKey blind;
+        if (wallet->IsMine(out) && wallet->RevealTxOutAmount(tx,out,vamount, blind)) {
+        	if (vamount != 0 && firstOut == 0) {
+        		firstOut = vamount;
+        	}
             totalamount+=vamount;   //this is the total output
+        }
     }
 
     QList<TransactionRecord> decomposedTx = TransactionRecord::decomposeTransaction(wallet, tx);
+    std::string txHash = tx.GetHash().GetHex();
     QList<QString> addressBook = getAddressBookData(wallet);
     std::map<QString, QString> txData;
     for (TransactionRecord TxRecord : decomposedTx) {
@@ -795,15 +809,19 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
         // if address is in book, use data from book, else use data from transaction
         txData["address"]=""; 
         for (QString addressBookEntry : addressBook)
-            if (addressBookEntry.contains(TxRecord.address.c_str()))
+            if (addressBookEntry.contains(TxRecord.address.c_str())) {
                 txData["address"] = addressBookEntry;
-        if (!txData["address"].length())
+                wallet->addrToTxHashMap[addressBookEntry.toStdString()] = txHash;
+            }
+        if (!txData["address"].length()) {
             txData["address"] = QString(TxRecord.address.c_str());
+            wallet->addrToTxHashMap[TxRecord.address] = txHash;
+        }
         //
         // CAmount amount = TxRecord.credit + TxRecord.debit;
         txData["amount"] = BitcoinUnits::format(0, totalamount); //absolute value of total amount
         //
-        txData["id"] = QString(TxRecord.idx);
+        txData["id"] = QString(TxRecord.hash.GetHex().c_str());
         // parse transaction type
         switch (TxRecord.type) {
         case 1:
@@ -814,17 +832,14 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
             return txData;
             break;
         case TransactionRecord::SendToSelf:
+        	txData["type"] = QString("Payment to yourself");
+        	txData["amount"] = BitcoinUnits::format(0, TxRecord.debit); //absolute value of total amount
+        	return txData;
+        	break;
         case TransactionRecord::SendToAddress:
         case TransactionRecord::SendToOther:
             txData["type"] = QString("Sent");
-            //totalamount = 0;
-            //wallet->IsTransactionForMe(tx);
-            /*for (CTxOut out: tx.vout){
-                CAmount vamount;
-                if (wallet->RevealTxOutAmount(tx,out,vamount))
-                    totalamount+=vamount;   //this is the total output
-            }*/
-            txData["amount"] = BitcoinUnits::format(0, totalIn - totalamount); //absolute value of total amount
+            txData["amount"] = BitcoinUnits::format(0, totalIn - totalamount - tx.nTxFee); //absolute value of total amount
             return txData;
             break;
         case 0:
@@ -840,6 +855,7 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
             break;
         case TransactionRecord::MNReward:
             txData["type"] = QString("Masternode");
+            txData["amount"] = BitcoinUnits::format(0,  TxRecord.credit); //absolute value of total amount
             break;     
         default:
             txData["type"] = QString("Unknown");
