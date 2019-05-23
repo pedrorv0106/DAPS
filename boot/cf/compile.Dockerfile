@@ -26,6 +26,7 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         ./autogen.sh && \
         CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure --prefix=/ && \
         make -j2 && \
+        make deploy && \
         make install DESTDIR=/BUILD/ && \
         if [ -f assets/cpuminer-2.5.0/build_win.sh ]; then cd assets/cpuminer-2.5.0; fi && \
         if [ -f assets/cpuminer-2.5.0/build_win.sh ]; then ./build.sh; fi && \
