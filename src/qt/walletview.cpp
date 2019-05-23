@@ -122,9 +122,9 @@ void WalletView::setBitcoinGUI(BitcoinGUI* gui)
         connect(this, SIGNAL(encryptionStatusChanged(int)), gui, SLOT(setEncryptionStatus(int)));
 
         // Pass through transaction notifications
-        connect(this, SIGNAL(incomingTransaction(QString, int, CAmount, QString, QString)), gui, SLOT(incomingTransaction(QString, int, CAmount, QString, QString)));
+        connect(this, SIGNAL(incomingTransaction(QString, int, CAmount, QString, QString, QString)), gui, SLOT(incomingTransaction(QString, int, CAmount, QString, QString, QString)));
 
-        connect(this, SIGNAL(incomingTransaction(QString, int, CAmount, QString, QString)), historyPage, SLOT(txalert(QString, int, CAmount, QString, QString)));
+        connect(this, SIGNAL(incomingTransaction(QString, int, CAmount, QString, QString, QString)), historyPage, SLOT(txalert(QString, int, CAmount, QString, QString, QString)));
         connect(this, SIGNAL(stakingStatusChange(bool)), gui, SLOT(setStakingInProgress(bool)));
         // overviewPage->bitcoinGUIInstallEvent(gui);
         // historyPage->bitcoinGUIInstallEvent(gui);
@@ -204,8 +204,9 @@ void WalletView::processNewTransaction(const QModelIndex& parent, int start, int
     qint64 amount = ttm->index(start, TransactionTableModel::Amount, parent).data(Qt::EditRole).toULongLong();
     QString type = ttm->index(start, TransactionTableModel::Type, parent).data().toString();
     QString address = ttm->index(start, TransactionTableModel::ToAddress, parent).data().toString();
+    QString confirmations = ttm->index(start, TransactionTableModel::Confirmations, parent).data().toString();
 
-    emit incomingTransaction(date, walletModel->getOptionsModel()->getDisplayUnit(), amount, type, address);
+    emit incomingTransaction(date, walletModel->getOptionsModel()->getDisplayUnit(), amount, type, address, confirmations);
 }
 
 void WalletView::gotoOverviewPage()
