@@ -211,7 +211,7 @@ TransactionTableModel::TransactionTableModel(CWallet* wallet, WalletModel* paren
                                                                                      priv(new TransactionTablePriv(wallet, this)),
                                                                                      fProcessingQueuedTransactions(false)
 {
-    columns << QString() << QString() << tr("Date") << tr("Type") << tr("Address") << BitcoinUnits::getAmountColumnTitle(walletModel->getOptionsModel()->getDisplayUnit());
+    columns << QString() << QString() << tr("Date") << tr("Type") << tr("Address") << BitcoinUnits::getAmountColumnTitle(walletModel->getOptionsModel()->getDisplayUnit()) << tr("Confirmations");
     priv->refreshWallet();
 
     connect(walletModel->getOptionsModel(), SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit()));
@@ -371,6 +371,11 @@ QString TransactionTableModel::formatTxType(const TransactionRecord* wtx) const
     default:
         return QString();
     }
+}
+
+QString TransactionTableModel::formatTxConfirmations(const TransactionRecord* wtx) const
+{
+    return QString::number(wtx->status.depth);
 }
 
 QVariant TransactionTableModel::txAddressDecoration(const TransactionRecord* wtx) const
@@ -546,6 +551,8 @@ QVariant TransactionTableModel::data(const QModelIndex& index, int role) const
             return formatTxToAddress(rec, false);
         case Amount:
             return formatTxAmount(rec, true, BitcoinUnits::separatorAlways);
+        case Confirmations:
+            return formatTxConfirmations(rec);
         }
         break;
     case Qt::EditRole:
@@ -563,6 +570,8 @@ QVariant TransactionTableModel::data(const QModelIndex& index, int role) const
             return formatTxToAddress(rec, true);
         case Amount:
             return qint64(rec->credit + rec->debit);
+        case Confirmations:
+            return formatTxConfirmations(rec);
         }
         break;
     case Qt::ToolTipRole:
@@ -636,6 +645,8 @@ QVariant TransactionTableModel::headerData(int section, Qt::Orientation orientat
                 return tr("Destination address of transaction.");
             case Amount:
                 return tr("Amount removed from or added to balance.");
+            case Confirmations:
+                return tr("Confirmed Count.");
             }
         }
     }
