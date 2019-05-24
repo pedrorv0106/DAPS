@@ -253,7 +253,19 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
             if (tx.IsCoinBase() || tx.IsCoinStake() || !IsFinalTx(tx, nHeight)){
                 continue;
             }
+            bool fKeyImageCheck = true;
+            // Check key images not duplicated with what in db
+            for (const CTxIn& txin: tx.vin) {
+            	const CKeyImage& keyImage = txin.keyImage;
+            	if (IsKeyImageSpend1(keyImage.GetHex(), chainActive.Tip()->nHeight + 1)) {
+            		fKeyImageCheck = false;
+            		break;
+            	}
+            }
 
+            if (!fKeyImageCheck) {
+            	continue;
+            }
             COrphan* porphan = NULL;
             double dPriority = 0;
             CAmount nTotalIn = 0;
@@ -292,13 +304,13 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
                     break;
                 }
 
-                const CCoins* coins = view.AccessCoins(txin.prevout.hash);
-                assert(coins);
+                //const CCoins* coins = view.AccessCoins(txin.prevout.hash);
+                //assert(coins);
 
                 //CAmount nValueIn = coins->vout[txin.prevout.n].nValue;
                 //nTotalIn += nValueIn;
 
-                int nConf = nHeight - coins->nHeight;
+                //int nConf = nHeight - coins->nHeight;
 
                 //dPriority += (double)nValueIn * nConf;
             }

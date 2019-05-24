@@ -501,9 +501,10 @@ set<uint256> CWallet::GetConflicts(const uint256& txid) const
     std::pair<TxSpends::const_iterator, TxSpends::const_iterator> range;
 
     BOOST_FOREACH (const CTxIn& txin, wtx.vin) {
-        if (mapTxSpends.count(txin.prevout) <= 1)
+    	COutPoint prevout = findMyOutPoint(txin);
+        if (mapTxSpends.count(prevout) <= 1)
             continue; // No conflict if zero or one spends
-        range = mapTxSpends.equal_range(txin.prevout);
+        range = mapTxSpends.equal_range(prevout);
         for (TxSpends::const_iterator it = range.first; it != range.second; ++it)
             result.insert(it->second);
     }
@@ -612,6 +613,7 @@ void CWallet::AddToSpends(const COutPoint& outpoint, const uint256& wtxid)
     pair<TxSpends::iterator, TxSpends::iterator> range;
     range = mapTxSpends.equal_range(outpoint);
     SyncMetaData(range);
+    inSpendQueueOutpoints.erase(outpoint);
 }
 
 
@@ -621,19 +623,13 @@ void CWallet::AddToSpends(const uint256& wtxid)
     CWalletTx& thisTx = mapWallet[wtxid];
     if (thisTx.IsCoinBase()) // Coinbases don't spend anything!
         return;
-
+    std::cout << "AddToSpends" << std::endl;
     BOOST_FOREACH (const CTxIn& txin, thisTx.vin) {
     	CKeyImage ki = txin.keyImage;
-    	if (isMatchMyKeyImage(ki, txin.prevout)) {
-            AddToSpends(txin.prevout, wtxid);
+    	COutPoint prevout = findMyOutPoint(txin);
+    	if (!prevout.IsNull() && isMatchMyKeyImage(ki, prevout)) {
+            AddToSpends(prevout, wtxid);
             continue;
-    	} else {
-    		for(int i = 0; i < txin.decoys.size(); i++) {
-    			if (isMatchMyKeyImage(ki, txin.decoys[i])) {
-    			   AddToSpends(txin.decoys[i], wtxid);
-    			   continue;
-    			}
-    		}
     	}
     }
 }
@@ -644,7 +640,15 @@ bool CWallet::isMatchMyKeyImage(const CKeyImage& ki, const COutPoint& out)
 	CTxOut& o = mapWallet[out.hash].vout[out.n];
 	CKeyImage computed;
 	generate_key_image_helper(o.scriptPubKey, computed);
-	return (computed == ki);
+	std::cout << "Computed:" << computed.GetHex() << std::endl;
+	std::cout << "KI:" << ki.GetHex() << std::endl;
+	std::cout << "hash:" << out.hash.GetHex() << std::endl;
+	std::cout << "i = " << out.n << std::endl;
+	std::cout << "script = " << o.scriptPubKey.ToString() << std::endl;
+	bool ret = (computed == ki);
+	if (ret)
+		std::cout << "Matching key image:" << ki.GetHex() << std::endl;
+	return ret;
 }
 
 bool CWallet::GetMasternodeVinAndKeys(CTxIn& txinRet, CPubKey& pubKeyRet, CKey& keyRet, std::string strTxHash, std::string strOutputIndex)
@@ -1000,8 +1004,9 @@ void CWallet::SyncTransaction(const CTransaction& tx, const CBlock* pblock)
     // available of the outputs it spends. So force those to be
     // recomputed, also:
     BOOST_FOREACH (const CTxIn& txin, tx.vin) {
-        if (mapWallet.count(txin.prevout.hash))
-            mapWallet[txin.prevout.hash].MarkDirty();
+    	COutPoint prevout = findMyOutPoint(txin);
+        if (mapWallet.count(prevout.hash))
+            mapWallet[prevout.hash].MarkDirty();
     }
 }
 
@@ -1022,26 +1027,74 @@ isminetype CWallet::IsMine(const CTxIn& txin) const
 {
     {
         LOCK(cs_wallet);
-        map<uint256, CWalletTx>::const_iterator mi = mapWallet.find(txin.prevout.hash);
+        COutPoint prevout = findMyOutPoint(txin);
+        map<uint256, CWalletTx>::const_iterator mi = mapWallet.find(prevout.hash);
         if (mi != mapWallet.end()) {
             const CWalletTx& prev = (*mi).second;
-            if (txin.prevout.n < prev.vout.size())
-                return IsMine(prev.vout[txin.prevout.n]);
+            bool ret = false;
+            if (prevout.n < prev.vout.size())
+                return IsMine(prev.vout[prevout.n]);
         }
     }
     return ISMINE_NO;
+}
+
+COutPoint CWallet::findMyOutPoint(const CTxIn& txin) const
+{
+	COutPoint outpoint;
+	{
+		std::cout << "1" << std::endl;
+		LOCK(cs_wallet);
+		bool ret = false;
+		CWalletTx prev;
+		if (mapWallet.count(txin.prevout.hash))
+			prev = mapWallet[txin.prevout.hash];
+		if (txin.prevout.n < prev.vout.size())
+			ret = IsMine(prev.vout[txin.prevout.n]);
+		std::cout << "2" << std::endl;
+		if (ret) {
+			CKeyImage ki;
+			if (generate_key_image_helper(prev.vout[txin.prevout.n].scriptPubKey, ki)) {
+				if (ki == txin.keyImage) {
+					outpoint = txin.prevout;
+					return outpoint;
+				}
+			}
+		}
+		std::cout << "3" << std::endl;
+
+		for (int i = 0; i < txin.decoys.size(); i++) {
+			if (mapWallet.count(txin.decoys[i].hash))
+				prev = mapWallet[txin.decoys[i].hash];
+			else continue;
+			if (txin.decoys[i].n < prev.vout.size())
+				ret = IsMine(prev.vout[txin.decoys[i].n]);
+			if (ret) {
+				CKeyImage ki;
+				if (generate_key_image_helper(prev.vout[txin.decoys[i].n].scriptPubKey, ki)) {
+					if (ki == txin.keyImage) {
+						outpoint = txin.decoys[i];
+						return outpoint;
+					}
+				}
+			}
+		}
+		std::cout << "4" << std::endl;
+	}
+	return outpoint;
 }
 
 CAmount CWallet::GetDebit(const CTxIn& txin, const isminefilter& filter) const
 {
     {
         LOCK(cs_wallet);
-        map<uint256, CWalletTx>::const_iterator mi = mapWallet.find(txin.prevout.hash);
+        COutPoint prevout = findMyOutPoint(txin);
+        map<uint256, CWalletTx>::const_iterator mi = mapWallet.find(prevout.hash);
         if (mi != mapWallet.end()) {
             const CWalletTx& prev = (*mi).second;
-            if (txin.prevout.n < prev.vout.size())
-                if (IsMine(prev.vout[txin.prevout.n]) & filter)
-                    return getCTxOutValue(prev, prev.vout[txin.prevout.n]);
+            if (prevout.n < prev.vout.size())
+                if (IsMine(prev.vout[prevout.n]) & filter)
+                    return getCTxOutValue(prev, prev.vout[prevout.n]);
         }
     }
     return 0;
@@ -1138,10 +1191,11 @@ bool CWallet::IsDenominated(const CTxIn& txin) const
 {
     {
         LOCK(cs_wallet);
-        map<uint256, CWalletTx>::const_iterator mi = mapWallet.find(txin.prevout.hash);
+        COutPoint prevout = findMyOutPoint(txin);
+        map<uint256, CWalletTx>::const_iterator mi = mapWallet.find(prevout.hash);
         if (mi != mapWallet.end()) {
             const CWalletTx& prev = (*mi).second;
-            if (txin.prevout.n < prev.vout.size()) return IsDenominatedAmount(getCTxOutValue(prev, prev.vout[txin.prevout.n]));
+            if (prevout.n < prev.vout.size()) return IsDenominatedAmount(getCTxOutValue(prev, prev.vout[prevout.n]));
         }
     }
     return false;
@@ -2215,6 +2269,12 @@ bool CWallet::SelectCoins(const CAmount& nTargetValue, set<pair<const CWalletTx*
                 LOCK(mempool.cs); // protect pool.mapNextTx
                 {
                 	COutPoint outpoint(wtxid, i);
+
+                	if (mapTxSpends.count(outpoint)) continue;
+
+                	if (inSpendQueueOutpoints.count(outpoint)) {
+                		continue;
+                	}
 					if (mempool.mapNextTx.count(outpoint)) {
 						// Disable replacement feature for now
 						continue;
@@ -2601,10 +2661,11 @@ bool CWallet::GetBudgetSystemCollateralTX(CWalletTx& tx, uint256 hash, bool useI
 bool CWallet::ConvertList(std::vector<CTxIn> vCoins, std::vector<CAmount>& vecAmounts)
 {
     BOOST_FOREACH (CTxIn i, vCoins) {
-        if (mapWallet.count(i.prevout.hash)) {
-            CWalletTx& wtx = mapWallet[i.prevout.hash];
-            if (i.prevout.n < wtx.vout.size()) {
-                vecAmounts.push_back(getCTxOutValue(wtx, wtx.vout[i.prevout.n]));
+    	COutPoint prevout = findMyOutPoint(i);
+        if (mapWallet.count(prevout.hash)) {
+            CWalletTx& wtx = mapWallet[prevout.hash];
+            if (prevout.n < wtx.vout.size()) {
+                vecAmounts.push_back(getCTxOutValue(wtx, wtx.vout[prevout.n]));
             }
         } else {
             LogPrintf("ConvertList -- Couldn't find transaction\n");
@@ -3227,8 +3288,14 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     	memcpy(tempForHashPtr, &RIJ[i][PI][0], 33);
     	tempForHashPtr += 33;
     }
+
+	if (PI_interator == wtxNew.vin[0].decoys.size() + 1) PI_interator = 0;
     uint256 temppi1 = Hash(tempForHash, tempForHash + sizeof(tempForHash));
-    memcpy(CI[PI + 1], temppi1.begin(), 32);
+	if (PI_interator == 0) {
+	    memcpy(CI[0], temppi1.begin(), 32);
+	} else {
+	    memcpy(CI[PI_interator], temppi1.begin(), 32);
+	}
 
     while (PI_interator != PI) {
     	for (int j = 0; j < wtxNew.vin.size() + 1; j++) {
@@ -3236,6 +3303,9 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     		unsigned char CP[33];
     		memcpy(CP, allInPubKeys[j][PI_interator], 33);
     		if (!secp256k1_ec_pubkey_tweak_mul(CP, 33, CI[PI_interator])) {
+    			std::cout << "CP = " << HexStr(CP, CP + 33) << std::endl;
+    			std::cout << "My index = " << myIndex << std::endl;
+    			std::cout << "Ring size = " << ringSize << std::endl;
     			strFailReason = _("Cannot compute LIJ for ring signature in secp256k1_ec_pubkey_tweak_mul");
     			return false;
     		}
@@ -3728,9 +3798,14 @@ bool CWallet::generateRingSignature(CTransaction& tx, int& myIndex, int ringSize
     }
     myIndex = rand() % (tx.vin[0].decoys.size() + 1) - 1;
 
+    for(int i = 0; i < tx.vin.size(); i++) {
+    	COutPoint prevout = tx.vin[i].prevout;
+    	inSpendQueueOutpointsPerSession.push_back(prevout);
+    }
+
     if (myIndex != -1) {
     	for(int i = 0; i < tx.vin.size(); i++) {
-    		COutPoint prevout = tx.vin[i].prevout;
+        	COutPoint prevout = tx.vin[i].prevout;
     		tx.vin[i].prevout = tx.vin[i].decoys[myIndex];
     		tx.vin[i].decoys[myIndex] = prevout;
     	}
@@ -4302,12 +4377,13 @@ bool CWallet::CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey, std:
                 set<uint256> updated_hahes;
                 BOOST_FOREACH (const CTxIn& txin, wtxNew.vin) {
                     // notify only once
-                    if (updated_hahes.find(txin.prevout.hash) != updated_hahes.end()) continue;
+                	COutPoint prevout = findMyOutPoint(txin);
+                    if (updated_hahes.find(prevout.hash) != updated_hahes.end()) continue;
 
-                    CWalletTx& coin = mapWallet[txin.prevout.hash];
+                    CWalletTx& coin = mapWallet[prevout.hash];
                     coin.BindWallet(this);
-                    NotifyTransactionChanged(this, txin.prevout.hash, CT_UPDATED);
-                    updated_hahes.insert(txin.prevout.hash);
+                    NotifyTransactionChanged(this, prevout.hash, CT_UPDATED);
+                    updated_hahes.insert(prevout.hash);
                 }
             }
 
@@ -4358,10 +4434,11 @@ CAmount CWallet::GetTotalValue(std::vector<CTxIn> vCoins)
     CAmount nTotalValue = 0;
     CWalletTx wtx;
     BOOST_FOREACH (CTxIn i, vCoins) {
-        if (mapWallet.count(i.prevout.hash)) {
-            CWalletTx& wtx = mapWallet[i.prevout.hash];
-            if (i.prevout.n < wtx.vout.size()) {
-                nTotalValue += wtx.vout[i.prevout.n].nValue;
+    	COutPoint prevout = findMyOutPoint(i);
+        if (mapWallet.count(prevout.hash)) {
+            CWalletTx& wtx = mapWallet[prevout.hash];
+            if (prevout.n < wtx.vout.size()) {
+                nTotalValue += wtx.vout[prevout.n].nValue;
             }
         } else {
             LogPrintf("GetTotalValue -- Couldn't find transaction\n");
@@ -5835,9 +5912,12 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
         throw runtime_error(strError);
     }
     if (!pwalletMain->CommitTransaction(wtxNew, reservekey, (!fUseIX ? "tx" : "ix"))) {
-        std::cout << "Cannot create transaction" << std::endl;
+    	inSpendQueueOutpointsPerSession.clear();
         throw runtime_error(
                 "Error: The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.");
+    }
+    for(int i = 0; i < inSpendQueueOutpointsPerSession.size(); i++) {
+    	inSpendQueueOutpoints[inSpendQueueOutpointsPerSession[i]] = true;
     }
     return true;
 }
@@ -6133,19 +6213,18 @@ bool CWallet::findCorrespondingPrivateKey(const CTxOut &txout, CKey &key) const 
     std::set<CKeyID> keyIDs;
     GetKeys(keyIDs);
     BOOST_FOREACH(const CKeyID &keyID, keyIDs) {
-                    CBitcoinAddress address(keyID);
-                    GetKey(keyID, key);
-                    CPubKey pub = key.GetPubKey();
-                    CScript script = GetScriptForDestination(pub);
-                    if (script == txout.scriptPubKey) {
-                        return true;
-                    }
-                }
+        CBitcoinAddress address(keyID);
+        GetKey(keyID, key);
+        CPubKey pub = key.GetPubKey();
+        CScript script = GetScriptForDestination(pub);
+        if (script == txout.scriptPubKey) {
+            return true;
+        }
+    }
     return false;
 }
 
 bool CWallet::generate_key_image_helper(const CScript& scriptPubKey, CKeyImage& img) const {
-    //std::cout << "Script key:" << scriptPubKey.ToString() << std::endl;
     std::set<CKeyID> keyIDs;
     GetKeys(keyIDs);
     CKey key;

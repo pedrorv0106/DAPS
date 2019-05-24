@@ -291,7 +291,7 @@ public:
     bool HasCollateralInputs(bool fOnlyConfirmed = true);
     bool IsCollateralAmount(CAmount nInputAmount) const;
     int CountInputsWithAmount(CAmount nInputAmount);
-
+    COutPoint findMyOutPoint(const CTxIn& txin) const;
     bool SelectCoinsCollateral(std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet) ;
 
     /*
@@ -420,6 +420,8 @@ public:
     std::map<std::string, bool> keyImagesSpends;
     std::map<std::string, std::string> keyImageMap;//mapping from: txhashHex-n to key image str, n = index
     std::list<std::string> pendingKeyImages;
+    std::map<COutPoint, bool> inSpendQueueOutpoints;
+    std::vector<COutPoint> inSpendQueueOutpointsPerSession;
     mutable std::map<CScript, CAmount> amountMap;
     mutable std::map<CScript, CKey> blindMap;
     mutable std::vector<COutPoint> userDecoysPool;	//used in transaction spending user transaction
@@ -1429,10 +1431,11 @@ public:
         // Trusted if all inputs are from us and are in the mempool:
         BOOST_FOREACH (const CTxIn& txin, vin) {
             // Transactions not sent by us: not trusted
-            const CWalletTx* parent = pwallet->GetWalletTx(txin.prevout.hash);
+        	COutPoint prevout = pwallet->findMyOutPoint(txin);
+            const CWalletTx* parent = pwallet->GetWalletTx(prevout.hash);
             if (parent == NULL)
                 return false;
-            const CTxOut& parentOut = parent->vout[txin.prevout.n];
+            const CTxOut& parentOut = parent->vout[prevout.n];
             if (pwallet->IsMine(parentOut) != ISMINE_SPENDABLE)
                 return false;
         }

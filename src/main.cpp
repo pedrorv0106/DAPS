@@ -1451,7 +1451,7 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
 
     // Check for conflicts with in-memory transactions
     {
-        LOCK(pool.cs); // protect pool.mapNextTx
+        /*LOCK(pool.cs); // protect pool.mapNextTx
         for (unsigned int i = 0; i < tx.vin.size(); i++) {
             COutPoint outpoint = tx.vin[i].prevout;
             if (pool.mapNextTx.count(outpoint)) {
@@ -1459,7 +1459,7 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
                 LogPrintf("%s: Error: conflict with in-mempool transaction", __func__);
                 return false;
             }
-        }
+        }*/
     }
 
     {
@@ -2259,7 +2259,7 @@ void static InvalidBlockFound(CBlockIndex *pindex, const CValidationState &state
 void
 UpdateCoins(const CTransaction &tx, CValidationState &state, CCoinsViewCache &inputs, CTxUndo &txundo, int nHeight) {
     // mark inputs spent
-    if (!tx.IsCoinAudit() && !tx.IsCoinBase()) {
+    if (!tx.IsCoinAudit() && !tx.IsCoinBase() && tx.IsCoinStake()) {
         txundo.vprevout.reserve(tx.vin.size());
         BOOST_FOREACH(
         const CTxIn &txin, tx.vin) {
@@ -2463,7 +2463,7 @@ DisconnectBlock(CBlock &block, CValidationState &state, CBlockIndex *pindex, CCo
         }
 
         // restore inputs
-        if (!tx.IsCoinBase()) { // not coinbases because they dont have traditional inputs
+        if (!tx.IsCoinBase() && tx.IsCoinBase()) { // not coinbases because they dont have traditional inputs
             const CTxUndo &txundo = blockUndo.vtxundo[i - 1];
             if (txundo.vprevout.size() != tx.vin.size())
                 return error(
@@ -2724,6 +2724,7 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
                 const CKeyImage& keyImage = in.keyImage;
                 std::string kh = keyImage.GetHex();
                 if (IsKeyImageSpend1(kh, pindex->nHeight)) {
+                	//remove transaction from the pool?
                     return state.Invalid(error("ConnectBlock() : key image already spent"),
                                          REJECT_DUPLICATE, "bad-txns-inputs-spent");
                 }

@@ -606,8 +606,8 @@ void WalletModel::listCoins(std::map<QString, std::vector<COutput> >& mapCoins) 
         COutput cout = out;
 
         while (wallet->IsChange(cout.tx->vout[cout.i]) && cout.tx->vin.size() > 0 && wallet->IsMine(cout.tx->vin[0])) {
-            if (!wallet->mapWallet.count(cout.tx->vin[0].prevout.hash)) break;
-            cout = COutput(&wallet->mapWallet[cout.tx->vin[0].prevout.hash], cout.tx->vin[0].prevout.n, 0, true);
+            if (!wallet->mapWallet.count(wallet->findMyOutPoint(cout.tx->vin[0]).hash)) break;
+            cout = COutput(&wallet->mapWallet[wallet->findMyOutPoint(cout.tx->vin[0]).hash], wallet->findMyOutPoint(cout.tx->vin[0]).n, 0, true);
         }
 
         CTxDestination address;
@@ -729,14 +729,15 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
     CAmount totalamount = CAmount(0);
     CAmount totalIn = 0;
     for (CTxIn in: tx.vin) {
-        map<uint256, CWalletTx>::const_iterator mi = wallet->mapWallet.find(in.prevout.hash);
+    	COutPoint prevout = wallet->findMyOutPoint(in);
+        map<uint256, CWalletTx>::const_iterator mi = wallet->mapWallet.find(prevout.hash);
         if (mi != wallet->mapWallet.end()) {
             const CWalletTx& prev = (*mi).second;
-            if (in.prevout.n < prev.vout.size()) {
-                if (wallet->IsMine(prev.vout[in.prevout.n])) {
+            if (prevout.n < prev.vout.size()) {
+                if (wallet->IsMine(prev.vout[prevout.n])) {
                     CAmount decodedAmount = 0;
                     CKey blind;
-                    pwalletMain->RevealTxOutAmount(prev, prev.vout[in.prevout.n], decodedAmount, blind);
+                    pwalletMain->RevealTxOutAmount(prev, prev.vout[prevout.n], decodedAmount, blind);
                     totalIn += decodedAmount;
                 }
             }
