@@ -1378,6 +1378,35 @@ CAmount GetMinRelayFee(const CTransaction &tx, unsigned int nBytes, bool fAllowF
     return nMinFee;
 }
 
+bool CheckHaveInputs(const CCoinsViewCache& view, const CTransaction& tx)
+{
+	if (!tx.IsCoinBase()) {
+		for (unsigned int i = 0; i < tx.vin.size(); i++) {
+			//check output and decoys
+			std::vector<COutPoint> alldecoys = tx.vin[i].decoys;
+
+			alldecoys.push_back(tx.vin[i].prevout);
+			size_t decoysSize = alldecoys.size();
+			for (int j = 0; j < alldecoys.size(); j++) {
+				const CCoins* coins = view.AccessCoins(alldecoys[j].hash);
+
+				if (!coins || !coins->IsAvailable(alldecoys[j].n)) {
+					CTransaction prev;
+					uint256 bh;
+					if (!GetTransaction(alldecoys[j].hash, prev, bh, true)) {
+						return false;
+					}
+					//UTXO with 1M DAPS can only be consumed in a transaction with that single UTXO
+					if (decoysSize > 1 && prev.vout[alldecoys[j].n].nValue == 1000000 * COIN) {
+						return false;
+					}
+				}
+			}
+		}
+	}
+	return true;
+}
+
 
 bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransaction &tx, bool fLimitFree,
                         bool *pfMissingInputs, bool fRejectInsaneFee, bool ignoreFees) {
@@ -1478,9 +1507,12 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
 
             // are the actual inputs available?
             //LogPrintf("\n%s:check inputs available\n", __func__);
-            if (!view.HaveInputs(tx))
-                return state.Invalid(error("AcceptToMemoryPool : inputs already spent"),
+            if (!CheckHaveInputs(view, tx)) {
+                //check input spents
+
+            	return state.Invalid(error("AcceptToMemoryPool : inputs already spent"),
                                      REJECT_DUPLICATE, "bad-txns-inputs-spent");
+            }
 
             if (!tx.IsCoinStake() && !tx.IsCoinBase() && !tx.IsCoinAudit()) {
             	if (!tx.IsCoinAudit()) {
@@ -1702,7 +1734,7 @@ bool AcceptableInputs(CTxMemPool &pool, CValidationState &state, const CTransact
             }
 
             // are the actual inputs available?
-            if (!view.HaveInputs(tx))
+            if (!CheckHaveInputs(view, tx))
                 return state.Invalid(error("AcceptableInputs : inputs already spent"),
                                      REJECT_DUPLICATE, "bad-txns-inputs-spent");
 
@@ -2301,7 +2333,7 @@ bool CheckInputs(const CTransaction &tx, CValidationState &state, const CCoinsVi
 
         // This doesn't trigger the DoS code on purpose; if it did, it would make it easier
         // for an attacker to attempt to split the network.
-        if (!inputs.HaveInputs(tx))
+        if (!CheckHaveInputs(inputs, tx))
             return state.Invalid(error("CheckInputs() : %s inputs unavailable", tx.GetHash().ToString()));
 
         // While checking, GetBestBlock() refers to the parent block.

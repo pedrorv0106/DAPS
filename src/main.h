@@ -243,6 +243,8 @@ std::string GetWarnings(std::string strFor);
 bool GetTransaction(const uint256& hash, CTransaction& tx, uint256& hashBlock, bool fAllowSlow = false);
 /** Find the best known block, and make it the tip of the block chain */
 
+bool CheckHaveInputs(const CCoinsViewCache& view, const CTransaction& tx);
+
 bool DisconnectBlocksAndReprocess(int blocks);
 
 // ***TODO***

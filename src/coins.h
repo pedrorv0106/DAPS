@@ -18,7 +18,7 @@
 #include <boost/foreach.hpp>
 #include <boost/unordered_map.hpp>
 
-bool GetTransaction(const uint256& hash, CTransaction& tx, uint256& hashBlock, bool fAllowSlow);
+extern bool GetTransaction(const uint256& hash, CTransaction& tx, uint256& hashBlock, bool fAllowSlow);
 
 /** 
 

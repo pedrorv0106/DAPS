@@ -368,7 +368,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
                 std::make_heap(vecPriority.begin(), vecPriority.end(), comparer);
             }
 
-            if (!view.HaveInputs(tx))
+            if (!CheckHaveInputs(view, tx))
                 continue;
 
             CAmount nTxFees = tx.nTxFee;
