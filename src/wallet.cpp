@@ -646,14 +646,7 @@ bool CWallet::isMatchMyKeyImage(const CKeyImage& ki, const COutPoint& out)
 	CTxOut& o = mapWallet[out.hash].vout[out.n];
 	std::string outpoint = out.hash.GetHex() + std::to_string(out.n);
 	CKeyImage computed = outpointToKeyImages[outpoint];
-	std::cout << "Computed:" << computed.GetHex() << std::endl;
-	std::cout << "KI:" << ki.GetHex() << std::endl;
-	std::cout << "hash:" << out.hash.GetHex() << std::endl;
-	std::cout << "i = " << out.n << std::endl;
-	std::cout << "script = " << o.scriptPubKey.ToString() << std::endl;
 	bool ret = (computed == ki);
-	if (ret)
-		std::cout << "Matching key image:" << ki.GetHex() << std::endl;
 	return ret;
 }
 
@@ -3158,7 +3151,6 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
         CKey alpha;
         alpha.MakeNewKey(true);
         memcpy(ALPHA[j], alpha.begin(), 32);
-        std::cout << "Alpha = " << HexStr(alpha.begin(), alpha.end());
         CPubKey LIJ_PI = alpha.GetPubKey();
         memcpy(LIJ[j][PI], LIJ_PI.begin(), 33);
         PointHashingSuccessively(tempPubKey, alpha.begin(), RIJ[j][PI]);
