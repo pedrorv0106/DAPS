@@ -101,6 +101,9 @@ public:
     bool WriteReserveAmount(const double &amount);
     bool ReadReserveAmount(double &amount);
 
+    bool WriteTxPrivateKey(const std::string& outpointKey, const std::string& k);
+    bool ReadTxPrivateKey(const std::string& outpointKey, std::string& k);
+
     bool WriteKey(const CPubKey& vchPubKey, const CPrivKey& vchPrivKey, const CKeyMetadata& keyMeta);
     bool WriteCryptedKey(const CPubKey& vchPubKey, const std::vector<unsigned char>& vchCryptedSecret, const CKeyMetadata& keyMeta);
     bool WriteMasterKey(unsigned int nID, const CMasterKey& kMasterKey);

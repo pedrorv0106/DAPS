@@ -1084,6 +1084,17 @@ bool CWalletDB::WriteDestData(const std::string& address, const std::string& key
     return Write(std::make_pair(std::string("destdata"), std::make_pair(address, key)), value);
 }
 
+bool CWalletDB::WriteTxPrivateKey(const std::string& outpointKey, const std::string& k)
+{
+	return Write(std::make_pair(std::string("txpriv"), outpointKey), k);
+}
+
+bool CWalletDB::ReadTxPrivateKey(const std::string& outpointKey, std::string& k)
+{
+	return Read(std::make_pair(std::string("txpriv"), outpointKey), k);
+}
+
+
 bool CWalletDB::EraseDestData(const std::string& address, const std::string& key)
 {
     nWalletDBUpdated++;

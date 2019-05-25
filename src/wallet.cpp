@@ -2786,6 +2786,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                     BOOST_FOREACH (const PAIRTYPE(CScript, CAmount) & s, vecSend) {
                         CTxOut txout(s.second, s.first);
                         CPubKey txPub = txPrivDes.GetPubKey();
+                        txPrivKeys.push_back(txPrivDes);
                         std::copy(txPub.begin(), txPub.end(), std::back_inserter(txout.txPub));
                         if (txout.IsDust(::minRelayTxFee)) {
                             strFailReason = _("Transaction amount too small");
@@ -2824,6 +2825,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                                 out.nValue = s.second / nSplitBlock;
                                 out.scriptPubKey = s.first;
                             }
+                            txPrivKeys.push_back(txPrivDes);
                             CPubKey txPub = txPrivDes.GetPubKey();
                             std::copy(txPub.begin(), txPub.end(), std::back_inserter(out.txPub));
                             //Encode amount and mask using symmetric encryption with key as the diffie hellman shared key
@@ -2919,6 +2921,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                     }*/
 
                     CTxOut newTxOut(nChange, scriptChange);
+                    txPrivKeys.push_back(coinControl->txPriv);
                     CPubKey txPubChange = coinControl->txPriv.GetPubKey();
                     std::copy(txPubChange.begin(), txPubChange.end(), std::back_inserter(newTxOut.txPub));
                     nBytes += ::GetSerializeSize(*(CTxOut*)&newTxOut, SER_NETWORK, PROTOCOL_VERSION);
@@ -3056,7 +3059,6 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
 
     int myBlindsIdx = 0;
     //additional member in the ring = Sum of All input public keys + sum of all input commitments - sum of all output commitments
-    LogPrintf("\n%s: Collecting my blinding factors as private keys\n", __func__);
     for (int j = 0; j < wtxNew.vin.size(); j++) {
         COutPoint myOutpoint;
         if (myIndex == -1) {
@@ -5939,6 +5941,13 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
     }
     for(int i = 0; i < inSpendQueueOutpointsPerSession.size(); i++) {
     	inSpendQueueOutpoints[inSpendQueueOutpointsPerSession[i]] = true;
+    	inSpendQueueOutpointsPerSession.clear();
+    }
+    uint256 hash = wtxNew.GetHash();
+    int maxTxPrivKeys = txPrivKeys.size() > wtxNew.vout.size() ? wtxNew.vout.size() : txPrivKeys.size();
+    for (int i = 0; i < maxTxPrivKeys; i++) {
+    	std::string key = hash.GetHex() + std::to_string(i);
+    	CWalletDB(strWalletFile).WriteTxPrivateKey(key, CBitcoinSecret(txPrivKeys[i]).ToString());
     }
     return true;
 }
