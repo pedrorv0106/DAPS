@@ -409,6 +409,7 @@ public:
 
     std::map<CTxDestination, CAddressBookData> mapAddressBook;
     std::map<std::string, std::string> addrToTxHashMap;
+    std::vector<CKey> txPrivKeys;	//only for temporary storing tx private keys for user transactions, dont care staking transactions
 
     CPubKey vchDefaultKey;
 
