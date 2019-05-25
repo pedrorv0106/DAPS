@@ -334,9 +334,10 @@ bool VerifyBulletProofAggregate(const CTransaction& tx)
 	if (len == 0) return false;
 
 	secp256k1_pedersen_commitment commitments[tx.vout.size()];
-	int i = 0;
+	size_t i = 0;
 	for (i = 0; i < tx.vout.size(); i++) {
-		secp256k1_pedersen_commitment_parse(GetContext(), &commitments[i], &(tx.vout[i].commitment[0]));
+		if (!secp256k1_pedersen_commitment_parse(GetContext(), &commitments[i], &(tx.vout[i].commitment[0])))
+			throw runtime_error("Failed to parse pedersen commitment");
 	}
 	return secp256k1_bulletproof_rangeproof_verify(GetContext(), GetScratch(), GetGenerator(), &(tx.bulletproofs[0]), len, NULL, commitments, tx.vout.size(), 64, &secp256k1_generator_const_h, NULL, 0);
 }
@@ -355,18 +356,18 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
     secp256k1_context2 *both = GetContext();
 
 	//generating LIJ and RIJ at PI
-	for (int j = 0; j < tx.vin.size(); j++) {
+	for (size_t j = 0; j < tx.vin.size(); j++) {
 		memcpy(allKeyImages[j], tx.vin[j].keyImage.begin(), 33);
 	}
 
 	//extract all public keys
-	for (int i = 0; i < tx.vin.size(); i++) {
+	for (size_t i = 0; i < tx.vin.size(); i++) {
 		std::vector<COutPoint> decoysForIn;
 		decoysForIn.push_back(tx.vin[i].prevout);
-		for(int j = 0; j < tx.vin[i].decoys.size(); j++) {
+		for(size_t j = 0; j < tx.vin[i].decoys.size(); j++) {
 			decoysForIn.push_back(tx.vin[i].decoys[j]);
 		}
-		for (int j = 0; j < tx.vin[0].decoys.size() + 1; j++) {
+		for (size_t j = 0; j < tx.vin[0].decoys.size() + 1; j++) {
 			CTransaction txPrev;
 			uint256 hashBlock;
 			if (!GetTransaction(decoysForIn[j].hash, txPrev, hashBlock)) {
@@ -382,9 +383,9 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 	}
 	memcpy(allKeyImages[tx.vin.size()], tx.ntxFeeKeyImage.begin(), 33);
 
-	for (int i = 0; i < tx.vin[0].decoys.size() + 1; i++) {
+	for (size_t i = 0; i < tx.vin[0].decoys.size() + 1; i++) {
 		std::vector<uint256> S_column = tx.S[i];
-		for (int j = 0; j < tx.vin.size() + 1; j++) {
+		for (size_t j = 0; j < tx.vin.size() + 1; j++) {
 			memcpy(SIJ[j][i], S_column[j].begin(), 32);
 		}
 	}
@@ -393,7 +394,7 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 	secp256k1_pedersen_commitment allInCommitmentsPacked[tx.vin.size()][tx.vin[0].decoys.size() + 1];
 	secp256k1_pedersen_commitment allOutCommitmentsPacked[tx.vout.size() + 1]; //+1 for tx fee
 
-	for (int i = 0; i < tx.vout.size(); i++) {
+	for (size_t i = 0; i < tx.vout.size(); i++) {
 		memcpy(allOutCommitments[i], &(tx.vout[i].commitment[0]), 33);
 		if (!secp256k1_pedersen_commitment_parse(both, &allOutCommitmentsPacked[i], allOutCommitments[i])) {
 			return false;
@@ -403,32 +404,33 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 	//commitment to tx fee, blind = 0
 	unsigned char txFeeBlind[32];
 	memset(txFeeBlind, 0, 32);
-	secp256k1_pedersen_commit(both, &allOutCommitmentsPacked[tx.vout.size()], txFeeBlind, tx.nTxFee, &secp256k1_generator_const_h, &secp256k1_generator_const_g);
+	if (!secp256k1_pedersen_commit(both, &allOutCommitmentsPacked[tx.vout.size()], txFeeBlind, tx.nTxFee, &secp256k1_generator_const_h, &secp256k1_generator_const_g))
+		throw runtime_error("Failed to computed commitment");
 
 	//filling the additional pubkey elements for decoys: allInPubKeys[wtxNew.vin.size()][..]
 	//allInPubKeys[wtxNew.vin.size()][j] = sum of allInPubKeys[..][j] + sum of allInCommitments[..][j] + sum of allOutCommitments
 	const secp256k1_pedersen_commitment *outCptr[tx.vout.size() + 1];
-	for(int i = 0; i < tx.vout.size() + 1; i++) {
+	for(size_t i = 0; i < tx.vout.size() + 1; i++) {
 		outCptr[i] = &allOutCommitmentsPacked[i];
 	}
 
 	secp256k1_pedersen_commitment inPubKeysToCommitments[tx.vin.size()][tx.vin[0].decoys.size() + 1];
-	for(int i = 0; i < tx.vin.size(); i++) {
-		for (int j = 0; j < tx.vin[0].decoys.size() + 1; j++) {
+	for(size_t i = 0; i < tx.vin.size(); i++) {
+		for (size_t j = 0; j < tx.vin[0].decoys.size() + 1; j++) {
 			secp256k1_pedersen_serialized_pubkey_to_commitment(allInPubKeys[i][j], 33, &inPubKeysToCommitments[i][j]);
 		}
 	}
 
-	for (int j = 0; j < tx.vin[0].decoys.size() + 1; j++) {
+	for (size_t j = 0; j < tx.vin[0].decoys.size() + 1; j++) {
 		const secp256k1_pedersen_commitment *inCptr[tx.vin.size()*2];
-		for (int k = 0; k < tx.vin.size(); k++) {
+		for (size_t k = 0; k < tx.vin.size(); k++) {
 			if (!secp256k1_pedersen_commitment_parse(both, &allInCommitmentsPacked[k][j], allInCommitments[k][j])) {
 				return false;
 			}
 			inCptr[k] = &allInCommitmentsPacked[k][j];
 		}
 
-		for (int k = tx.vin.size(); k < 2*tx.vin.size(); k++) {
+		for (size_t k = tx.vin.size(); k < 2*tx.vin.size(); k++) {
 			inCptr[k] = &inPubKeysToCommitments[k - tx.vin.size()][j];
 		}
 		secp256k1_pedersen_commitment out;
@@ -445,8 +447,8 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 	//verification
 	unsigned char C[32];
 	memcpy(C, tx.c.begin(), 32);
-	for (int j = 0; j < tx.vin[0].decoys.size() + 1; j++) {
-		for (int i = 0; i < tx.vin.size() + 1; i++) {
+	for (size_t j = 0; j < tx.vin[0].decoys.size() + 1; j++) {
+		for (size_t i = 0; i < tx.vin.size() + 1; i++) {
 			//compute LIJ, RIJ
 			unsigned char P[33];
 			memcpy(P, allInPubKeys[i][j], 33);
@@ -485,15 +487,17 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 			twoElements[1] = &cii_commitment;
 
 			secp256k1_pedersen_commitment sum;
-			secp256k1_pedersen_commitment_sum_pos(both, twoElements, 2, &sum);
+			if (!secp256k1_pedersen_commitment_sum_pos(both, twoElements, 2, &sum))
+				throw runtime_error("failed to compute secp256k1_pedersen_commitment_sum_pos");
 			size_t tempLength;
-			secp256k1_pedersen_commitment_to_serialized_pubkey(&sum, RIJ[i][j], &tempLength);
+			if (!secp256k1_pedersen_commitment_to_serialized_pubkey(&sum, RIJ[i][j], &tempLength))
+				throw runtime_error("failed to serialize pedersen commitment");
 		}
 
 		//compute C
 		unsigned char tempForHash[2 * (tx.vin.size() + 1) * 33];
 		unsigned char* tempForHashPtr = tempForHash;
-		for (int i = 0; i < tx.vin.size() + 1; i++) {
+		for (size_t i = 0; i < tx.vin.size() + 1; i++) {
 			memcpy(tempForHashPtr, &(LIJ[i][j][0]), 33);
 			tempForHashPtr += 33;
 			memcpy(tempForHashPtr, &(RIJ[i][j][0]), 33);
@@ -512,8 +516,8 @@ bool IsKeyImageSpend2(const std::string& kiHex, int kd, int nHeight) {
         CBlockIndex* pblockindex = chainActive[kd];
 
         if (ReadBlockFromDisk(block, pblockindex)) {
-            for (int i = 0; i < block.vtx.size(); i++) {
-                for (int j = 0; j < block.vtx[i].vin.size(); j++) {
+            for (size_t i = 0; i < block.vtx.size(); i++) {
+                for (size_t j = 0; j < block.vtx[i].vin.size(); j++) {
                     if (block.vtx[i].vin[j].keyImage.GetHex() == kiHex) {
                         LogPrintf("%s: keyimage spent in nHeight=%d", __func__, kd);
                         if (pwalletMain) {
@@ -1388,7 +1392,7 @@ bool CheckHaveInputs(const CCoinsViewCache& view, const CTransaction& tx)
 
 			alldecoys.push_back(tx.vin[i].prevout);
 			size_t decoysSize = alldecoys.size();
-			for (int j = 0; j < alldecoys.size(); j++) {
+			for (size_t j = 0; j < alldecoys.size(); j++) {
 				const CCoins* coins = view.AccessCoins(alldecoys[j].hash);
 
 				if (!coins || !coins->IsAvailable(alldecoys[j].n)) {
@@ -1622,14 +1626,14 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
     if (pwalletMain) {
     	LOCK(pwalletMain->cs_wallet);
     	if (pwalletMain->mapWallet.count(tx.GetHash()) == 1) {
-    		for (int i = 0; i < tx.vin.size(); i++) {
+    		for (size_t i = 0; i < tx.vin.size(); i++) {
     			std::string outpoint = tx.vin[i].prevout.hash.GetHex() + std::to_string(tx.vin[i].prevout.n);
     			if (pwalletMain->outpointToKeyImages[outpoint] == tx.vin[i].keyImage) {
     				pwalletMain->inSpendQueueOutpoints[tx.vin[i].prevout] = true;
     				continue;
     			}
 
-    			for (int j = 0; j < tx.vin[i].decoys.size(); j++) {
+    			for (size_t j = 0; j < tx.vin[i].decoys.size(); j++) {
     				std::string outpoint = tx.vin[i].decoys[j].hash.GetHex() + std::to_string(tx.vin[i].decoys[j].n);
     				if (pwalletMain->outpointToKeyImages[outpoint] == tx.vin[i].keyImage) {
     					pwalletMain->inSpendQueueOutpoints[tx.vin[i].decoys[j]] = true;
@@ -2146,6 +2150,8 @@ bool VerifyDerivedAddress(const CTxOut& out, std::string stealth) {
 	CKey foundationTxPriv;
 	foundationTxPriv.Set(&(out.txPriv[0]), &(out.txPriv[0]) + 32, true);
 	CPubKey foundationTxPub = foundationTxPriv.GetPubKey();
+	CPubKey origin(out.txPub.begin(), out.txPub.end());
+	if (foundationTxPub != origin) return false;
 	CWallet::ComputeStealthDestination(foundationTxPriv, pubView, pubSpend, foundationalGenPub);
 	CScript foundationalScript = GetScriptForDestination(foundationalGenPub);
 	return foundationalScript != out.scriptPubKey;
@@ -4318,16 +4324,16 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
     		}
     	}
 
-    	if (pblock->vtx.size() > userTxStartIdx) {
-    		for (int i = userTxStartIdx; i < pblock->vtx.size(); i++) {
-    			for (int j = 0; j < pblock->vtx[i].vout.size(); j++) {
+    	if ((int)pblock->vtx.size() > userTxStartIdx) {
+    		for (int i = userTxStartIdx; i < (int)pblock->vtx.size(); i++) {
+    			for (int j = 0; j < (int)pblock->vtx[i].vout.size(); j++) {
     				if ((rand() % 100) <= CWallet::PROBABILITY_NEW_COIN_SELECTED) {
     					COutPoint newOutPoint(pblock->vtx[i].GetHash(), j);
     					if(std::find(pwalletMain->userDecoysPool.begin(), pwalletMain->userDecoysPool.end(), newOutPoint) != pwalletMain->userDecoysPool.end()) {
     					    continue;
     					}
     					//add new user transaction to the pool
-    					if (pwalletMain->userDecoysPool.size() >= CWallet::MAX_DECOY_POOL) {
+    					if ((int32_t)pwalletMain->userDecoysPool.size() >= CWallet::MAX_DECOY_POOL) {
     						int selected = rand() % CWallet::MAX_DECOY_POOL;
     						pwalletMain->userDecoysPool[selected] = newOutPoint;
     					} else {
@@ -4349,7 +4355,7 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
     			}
     			CTransaction& coinbase = b.vtx[coinbaseIdx];
 
-    			for (int i = 0; i < coinbase.vout.size(); i++) {
+    			for (int i = 0; i < (int)coinbase.vout.size(); i++) {
     				if (!coinbase.vout[i].IsNull() && !coinbase.vout[i].IsEmpty()) {
     					if ((rand() % 100) <= CWallet::PROBABILITY_NEW_COIN_SELECTED) {
     						COutPoint newOutPoint(coinbase.GetHash(), i);
@@ -4357,7 +4363,7 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
     							continue;
     						}
     						//add new coinbase transaction to the pool
-    						if (pwalletMain->coinbaseDecoysPool.size() >= CWallet::MAX_DECOY_POOL) {
+    						if ((int)pwalletMain->coinbaseDecoysPool.size() >= CWallet::MAX_DECOY_POOL) {
     							int selected = rand() % CWallet::MAX_DECOY_POOL;
     							pwalletMain->coinbaseDecoysPool[selected] = newOutPoint;
     						} else {

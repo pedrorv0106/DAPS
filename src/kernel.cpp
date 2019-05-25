@@ -292,8 +292,6 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlockHeader blockFrom, cons
 {
     //assign new variables to make it easier to read
     //check encryptionKey hash
-    uint256 hashOfKey = Hash(encryptionKey, encryptionKey + 33);
-
     CAmount nValueIn;// = txPrev.vout[prevout.n].nValue;
     uint256 val = txPrev.vout[prevout.n].maskValue.amount;
     uint256 mask = txPrev.vout[prevout.n].maskValue.mask;
