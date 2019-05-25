@@ -2125,6 +2125,32 @@ bool fLargeWorkForkFound = false;
 bool fLargeWorkInvalidChainFound = false;
 CBlockIndex *pindexBestForkTip = NULL, *pindexBestForkBase = NULL;
 
+bool VerifyZeroBlindCommitment(const CTxOut& out) {
+	if (out.nValue == 0) return true;
+	unsigned char zeroBlind[32];
+	std::vector<unsigned char> commitment;
+	CWallet::CreateCommitmentWithZeroBlind(out.nValue, zeroBlind, commitment);
+	return commitment == out.commitment;
+}
+
+bool VerifyDerivedAddress(const CTxOut& out, std::string stealth) {
+	CPubKey foundationalGenPub, pubView, pubSpend;
+	bool hasPaymentID;
+	uint64_t paymentID;
+	if (!CWallet::DecodeStealthAddress(stealth, pubView, pubSpend, hasPaymentID, paymentID)) {
+		LogPrintf("\n%s: Cannot decode foundational address", __func__);
+		return false;
+	}
+
+	//reconstruct destination address from masternode address and tx private key
+	CKey foundationTxPriv;
+	foundationTxPriv.Set(&(out.txPriv[0]), &(out.txPriv[0]) + 32, true);
+	CPubKey foundationTxPub = foundationTxPriv.GetPubKey();
+	CWallet::ComputeStealthDestination(foundationTxPriv, pubView, pubSpend, foundationalGenPub);
+	CScript foundationalScript = GetScriptForDestination(foundationalGenPub);
+	return foundationalScript != out.scriptPubKey;
+}
+
 void CheckForkWarningConditions() {
     AssertLockHeld(cs_main);
     // Before we get past initial download, we cannot reliably alert about forks
@@ -3665,6 +3691,7 @@ bool CheckBlockHeader(const CBlockHeader &block, CValidationState &state, bool f
     return true;
 }
 
+
 bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bool fCheckMerkleRoot, bool fCheckSig) {
     // These are checks that are independent of context.
 
@@ -3759,6 +3786,34 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
         for (unsigned int i = 2; i < block.vtx.size(); i++)
             if (block.vtx[i].IsCoinStake())
                 return state.DoS(100, error("CheckBlock() : more than one coinstake"));
+
+        //check foundation wallet address is receiving 50 DAPS
+        const CTransaction& coinstake = block.vtx[1];
+        int numUTXO = coinstake.vout.size();
+
+        //verify commitments for all UTXOs
+        for (int i = 1; i < numUTXO; i++) {
+        	if (!VerifyZeroBlindCommitment(coinstake.vout[i]))
+        		return state.DoS(100, error("CheckBlock() : PoS rewards commitment not correct"));
+        }
+
+        const CTxOut& foundationOut = coinstake.vout[numUTXO - 1];
+        if (foundationOut.nValue != 50)
+        	return state.DoS(100, error("CheckBlock() : Incorrect amount PoS rewards for foundation"));
+
+        if (!VerifyDerivedAddress(foundationOut, FOUNDATION_WALLET))
+        	return state.DoS(100, error("CheckBlock() : Incorrect derived address PoS rewards for foundation"));
+
+        const CTxOut& mnOut = coinstake.vout[numUTXO - 2];
+        std::string mnsa(mnOut.masternodeStealthAddress.begin(), mnOut.masternodeStealthAddress.end());
+        if (!VerifyDerivedAddress(mnOut, mnsa))
+                	return state.DoS(100, error("CheckBlock() : Incorrect derived address for masternode rewards"));
+    }
+
+    if (block.IsProofOfAudit() || block.IsProofOfWork()) {
+    	//verify commitment
+    	if (!VerifyZeroBlindCommitment(block.vtx[0].vout[0]))
+    	   return state.DoS(100, error("CheckBlock() : PoS rewards commitment not correct"));
     }
 
     /**
