@@ -1152,7 +1152,7 @@ void BitcoinGUI::closeEvent(QCloseEvent* event)
 }
 
 #ifdef ENABLE_WALLET
-void BitcoinGUI::incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address)
+void BitcoinGUI::incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address, const QString &confirmations)
 {
     // Only send notifications when not disabled
     if (!bdisableSystemnotifications) {
@@ -1161,11 +1161,13 @@ void BitcoinGUI::incomingTransaction(const QString& date, int unit, const CAmoun
             tr("Date: %1\n"
                "Amount: %2\n"
                "Type: %3\n"
-               "Address: %4\n")
+               "Address: %4\n"
+               "Confirmations: %5\n")
                 .arg(date)
                 .arg(BitcoinUnits::formatWithUnit(unit, amount, true))
                 .arg(type)
-                .arg(address),
+                .arg(address)
+                .arg(confirmations),
             CClientUIInterface::MSG_INFORMATION);
 
         pwalletMain->fMultiSendNotify = false;

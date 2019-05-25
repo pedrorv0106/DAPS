@@ -153,7 +153,7 @@ void HistoryPage::updateTableData(CWallet* wallet)
     for (int row = 0; row < (short)txs.size(); row++) {
         ui->tableView->insertRow(row);
         int col = 0;
-        for (QString dataName : {"date", "type", "address", "amount"}) {
+        for (QString dataName : {"date", "type", "address", "amount", "confirmations"}) {
             QString data = txs[row].at(dataName);
             QString date = data;
             QTableWidgetItem* cell = new QTableWidgetItem();
@@ -226,7 +226,7 @@ void HistoryPage::syncTime(QDateTimeEdit* calendar, QTimeEdit* clock)
     calendar->setTime(clock->time());
 }
 
-void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e){
+void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e, QString f){
     //updateTableData(pwalletMain);
     //ui->tableView->setRowCount(0);
     //auto txs = WalletUtil::getTXs(wallet);
@@ -244,7 +244,7 @@ void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e){
     if (!e.trimmed().startsWith(QString("("))) {
     	addr = e.trimmed();
     }
-    for (QString dataName : {"date", "type", "address", "amount"}) {
+    for (QString dataName : {"date", "type", "address", "amount", "confirmations"}) {
         QTableWidgetItem* cell = new QTableWidgetItem();
         switch (col) {
 
@@ -259,6 +259,9 @@ void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e){
                 break;
             case 3: /*amount*/
                 cell->setData(0, BitcoinUnits::format(0, c));
+                break;
+            case 4: /*confirmations*/
+                cell->setData(0, f);
                 break;
                 /*default:
                     cell->setData(0, data);

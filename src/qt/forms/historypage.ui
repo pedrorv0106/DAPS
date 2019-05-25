@@ -170,8 +170,17 @@
        <property name="cornerButtonEnabled">
         <bool>false</bool>
        </property>
+       <attribute name="horizontalHeaderVisible">
+        <bool>true</bool>
+       </attribute>
        <attribute name="horizontalHeaderCascadingSectionResizes">
         <bool>false</bool>
+       </attribute>
+       <attribute name="horizontalHeaderDefaultSectionSize">
+        <number>150</number>
+       </attribute>
+       <attribute name="horizontalHeaderMinimumSectionSize">
+        <number>150</number>
        </attribute>
        <attribute name="verticalHeaderVisible">
         <bool>false</bool>
@@ -194,6 +203,11 @@
        <column>
         <property name="text">
          <string>Amount (DAPS)</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Confirmations</string>
         </property>
        </column>
       </widget>

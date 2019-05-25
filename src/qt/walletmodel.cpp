@@ -759,6 +759,18 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
     std::string txHash = tx.GetHash().GetHex();
     QList<QString> addressBook = getAddressBookData(wallet);
     std::map<QString, QString> txData;
+    
+    if (tx.hashBlock != 0) {
+        BlockMap::iterator mi = mapBlockIndex.find(tx.hashBlock);
+        if (mi != mapBlockIndex.end() && (*mi).second) {
+            CBlockIndex* pindex = (*mi).second;
+            if (chainActive.Contains(pindex))
+                txData["confirmations"] = QString::number(1 + chainActive.Height() - pindex->nHeight);
+            else
+                txData["confirmations"] = QString::number(0);
+        }
+    }
+
     for (TransactionRecord TxRecord : decomposedTx) {
         txData["date"] = QString(GUIUtil::dateTimeStr(TxRecord.time));
         // if address is in book, use data from book, else use data from transaction
