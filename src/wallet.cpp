@@ -4104,7 +4104,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
                 LogPrintf("\n%s: Cannot fill block payee", __func__);
                 return false;
             }
-            std::string foundational = "41iA4tAZ6oJUHJuHQJwEQVKLKbkKK9cRw7HNn2DqaFUsVbEVAmY31vyUHkyGoHJ3FEYkb8fjMNLekZuo6wqEfcTd18x9kq6x2zL";
+            const std::string foundational = FOUNDATION_WALLET;
             CPubKey foundationalGenPub, pubView, pubSpend;
             bool hasPaymentID;
             uint64_t paymentID;
