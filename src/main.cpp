@@ -344,14 +344,20 @@ bool VerifyBulletProofAggregate(const CTransaction& tx)
 
 bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 {
-	unsigned char allInPubKeys[tx.vin.size() + 1][tx.vin[0].decoys.size() + 1][33];
-	unsigned char allKeyImages[tx.vin.size() + 1][33];
-	unsigned char allInCommitments[tx.vin.size()][tx.vin[0].decoys.size() + 1][33];
-	unsigned char allOutCommitments[tx.vout.size()][33];
+	if (tx.vin.size() >= 30) return false;
 
-	unsigned char SIJ[tx.vin.size() + 1][tx.vin[0].decoys.size() + 1][32];
-	unsigned char LIJ[tx.vin.size() + 1][tx.vin[0].decoys.size() + 1][33];
-	unsigned char RIJ[tx.vin.size() + 1][tx.vin[0].decoys.size() + 1][33];
+	const size_t MAX_VIN = 32;
+	const size_t MAX_DECOYS = 13;	//padding 1 for safety reasons
+	const size_t MAX_VOUT = 5;
+
+	unsigned char allInPubKeys[MAX_VIN + 1][MAX_DECOYS + 1][33];
+	unsigned char allKeyImages[MAX_VIN + 1][33];
+	unsigned char allInCommitments[MAX_VIN][MAX_DECOYS + 1][33];
+	unsigned char allOutCommitments[MAX_VOUT][33];
+
+	unsigned char SIJ[MAX_VIN + 1][MAX_DECOYS + 1][32];
+	unsigned char LIJ[MAX_VIN + 1][MAX_DECOYS + 1][33];
+	unsigned char RIJ[MAX_VIN + 1][MAX_DECOYS + 1][33];
 
     secp256k1_context2 *both = GetContext();
 
@@ -391,8 +397,8 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 	}
 
 	//compute allInPubKeys[tx.vin.size()][..]
-	secp256k1_pedersen_commitment allInCommitmentsPacked[tx.vin.size()][tx.vin[0].decoys.size() + 1];
-	secp256k1_pedersen_commitment allOutCommitmentsPacked[tx.vout.size() + 1]; //+1 for tx fee
+	secp256k1_pedersen_commitment allInCommitmentsPacked[MAX_VIN][MAX_DECOYS + 1];
+	secp256k1_pedersen_commitment allOutCommitmentsPacked[MAX_VOUT + 1]; //+1 for tx fee
 
 	for (size_t i = 0; i < tx.vout.size(); i++) {
 		memcpy(allOutCommitments[i], &(tx.vout[i].commitment[0]), 33);
@@ -409,12 +415,12 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 
 	//filling the additional pubkey elements for decoys: allInPubKeys[wtxNew.vin.size()][..]
 	//allInPubKeys[wtxNew.vin.size()][j] = sum of allInPubKeys[..][j] + sum of allInCommitments[..][j] + sum of allOutCommitments
-	const secp256k1_pedersen_commitment *outCptr[tx.vout.size() + 1];
+	const secp256k1_pedersen_commitment *outCptr[MAX_VOUT + 1];
 	for(size_t i = 0; i < tx.vout.size() + 1; i++) {
 		outCptr[i] = &allOutCommitmentsPacked[i];
 	}
 
-	secp256k1_pedersen_commitment inPubKeysToCommitments[tx.vin.size()][tx.vin[0].decoys.size() + 1];
+	secp256k1_pedersen_commitment inPubKeysToCommitments[MAX_VIN][MAX_DECOYS + 1];
 	for(size_t i = 0; i < tx.vin.size(); i++) {
 		for (size_t j = 0; j < tx.vin[0].decoys.size() + 1; j++) {
 			secp256k1_pedersen_serialized_pubkey_to_commitment(allInPubKeys[i][j], 33, &inPubKeysToCommitments[i][j]);

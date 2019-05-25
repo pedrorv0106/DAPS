@@ -3042,17 +3042,26 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
         }
     }
 
+    if (wtxNew.vin.size() >= 30) {
+    	strFailReason = _("Failed due to transaction size too large");
+    	return false;
+    }
+
+    const size_t MAX_VIN = 32;
+    const size_t MAX_DECOYS = 13;	//padding 1 for safety reasons
+    const size_t MAX_VOUT = 5;
+
     std::vector<secp256k1_pedersen_commitment> myInputCommiments;
     int totalCommits = wtxNew.vin.size() + wtxNew.vout.size();
     int npositive = wtxNew.vin.size();
-    unsigned char myBlinds[wtxNew.vin.size() + totalCommits + 1][32];	//myBlinds is used for compuitng additional private key in the ring =
-    memset(myBlinds, 0, (wtxNew.vin.size() + totalCommits + 1) * 32);
-    const unsigned char *bptr[wtxNew.vin.size() + totalCommits + 1];
+    unsigned char myBlinds[MAX_VIN + MAX_VIN + MAX_VOUT + 1][32];	//myBlinds is used for compuitng additional private key in the ring =
+    memset(myBlinds, 0, (MAX_VIN + MAX_VIN + MAX_VOUT + 1) * 32);
+    const unsigned char *bptr[MAX_VIN + MAX_VIN + MAX_VOUT + 1];
     //all in pubkeys + an additional public generated from commitments
-    unsigned char allInPubKeys[wtxNew.vin.size() + 1][wtxNew.vin[0].decoys.size() + 1][33];
-    unsigned char allKeyImages[wtxNew.vin.size() + 1][33];
-    unsigned char allInCommitments[wtxNew.vin.size()][wtxNew.vin[0].decoys.size() + 1][33];
-    unsigned char allOutCommitments[wtxNew.vout.size()][33];
+    unsigned char allInPubKeys[MAX_VIN + 1][MAX_DECOYS + 1][33];
+    unsigned char allKeyImages[MAX_VIN + 1][33];
+    unsigned char allInCommitments[MAX_VIN][MAX_DECOYS + 1][33];
+    unsigned char allOutCommitments[MAX_VOUT][33];
 
     int myBlindsIdx = 0;
     //additional member in the ring = Sum of All input public keys + sum of all input commitments - sum of all output commitments
@@ -3126,11 +3135,11 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     }
 
     int PI = myRealIndex;
-    unsigned char SIJ[wtxNew.vin.size() + 1][wtxNew.vin[0].decoys.size() + 1][32];
-    unsigned char LIJ[wtxNew.vin.size() + 1][wtxNew.vin[0].decoys.size() + 1][33];
-    unsigned char RIJ[wtxNew.vin.size() + 1][wtxNew.vin[0].decoys.size() + 1][33];
-    unsigned char ALPHA[wtxNew.vin.size() + 1][32];
-    unsigned char AllPrivKeys[wtxNew.vin.size() + 1][32];
+    unsigned char SIJ[MAX_VIN + 1][MAX_DECOYS + 1][32];
+    unsigned char LIJ[MAX_VIN + 1][MAX_DECOYS + 1][33];
+    unsigned char RIJ[MAX_VIN + 1][MAX_DECOYS + 1][33];
+    unsigned char ALPHA[MAX_VIN + 1][32];
+    unsigned char AllPrivKeys[MAX_VIN + 1][32];
 
     //generating LIJ and RIJ at PI: LIJ[j][PI], RIJ[j][PI], j=0..wtxNew.vin.size()
     for (size_t j = 0; j < wtxNew.vin.size(); j++) {
@@ -3223,8 +3232,8 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
         }
     }
 
-    secp256k1_pedersen_commitment allInCommitmentsPacked[wtxNew.vin.size()][wtxNew.vin[0].decoys.size() + 1];
-    secp256k1_pedersen_commitment allOutCommitmentsPacked[wtxNew.vout.size() + 1]; //+1 for tx fee
+    secp256k1_pedersen_commitment allInCommitmentsPacked[MAX_VIN][MAX_DECOYS + 1];
+    secp256k1_pedersen_commitment allOutCommitmentsPacked[MAX_VOUT + 1]; //+1 for tx fee
 
     for (size_t i = 0; i < wtxNew.vout.size(); i++) {
         memcpy(&(allOutCommitments[i][0]), &(wtxNew.vout[i].commitment[0]), 33);
@@ -3244,11 +3253,11 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
 
     //filling the additional pubkey elements for decoys: allInPubKeys[wtxNew.vin.size()][..]
     //allInPubKeys[wtxNew.vin.size()][j] = sum of allInPubKeys[..][j] + sum of allInCommitments[..][j] - sum of allOutCommitments
-    const secp256k1_pedersen_commitment *outCptr[wtxNew.vout.size() + 1];
+    const secp256k1_pedersen_commitment *outCptr[MAX_VOUT + 1];
     for(size_t i = 0; i < wtxNew.vout.size() + 1; i++) {
         outCptr[i] = &allOutCommitmentsPacked[i];
     }
-    secp256k1_pedersen_commitment inPubKeysToCommitments[wtxNew.vin.size()][wtxNew.vin[0].decoys.size() + 1];
+    secp256k1_pedersen_commitment inPubKeysToCommitments[MAX_VIN][MAX_DECOYS + 1];
     for(int i = 0; i < (int)wtxNew.vin.size(); i++) {
     	for (int j = 0; j < (int)wtxNew.vin[0].decoys.size() + 1; j++) {
     		secp256k1_pedersen_serialized_pubkey_to_commitment(allInPubKeys[i][j], 33, &inPubKeysToCommitments[i][j]);
@@ -3257,7 +3266,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
 
     for (int j = 0; j < (int)wtxNew.vin[0].decoys.size() + 1; j++) {
     	if (j != PI) {
-    	    const secp256k1_pedersen_commitment *inCptr[wtxNew.vin.size()*2];
+    	    const secp256k1_pedersen_commitment *inCptr[MAX_VIN * 2];
     	    for (int k = 0; k < (int)wtxNew.vin.size(); k++) {
     	    	if (!secp256k1_pedersen_commitment_parse(both, &allInCommitmentsPacked[k][j], allInCommitments[k][j])) {
     	    		strFailReason = _("Cannot parse the commitment for inputs");
@@ -3283,8 +3292,8 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     //unsigned char SIJ[wtxNew.vin.size() + 1][wtxNew.vin[0].decoys.size() + 1][32];
     //unsigned char LIJ[wtxNew.vin.size() + 1][wtxNew.vin[0].decoys.size() + 1][33];
     //unsigned char RIJ[wtxNew.vin.size() + 1][wtxNew.vin[0].decoys.size() + 1][33];
-    unsigned char CI[wtxNew.vin[0].decoys.size() + 1][32];
-    unsigned char tempForHash[2 * (wtxNew.vin.size() + 1) * 33];
+    unsigned char CI[MAX_DECOYS + 1][32];
+    unsigned char tempForHash[2 * (MAX_VIN + 1) * 33];
     unsigned char* tempForHashPtr = tempForHash;
     for (size_t i = 0; i < wtxNew.vin.size() + 1; i++) {
     	memcpy(tempForHashPtr, &LIJ[i][PI][0], 33);
@@ -3307,9 +3316,6 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     		unsigned char CP[33];
     		memcpy(CP, allInPubKeys[j][PI_interator], 33);
     		if (!secp256k1_ec_pubkey_tweak_mul(CP, 33, CI[PI_interator])) {
-    			std::cout << "CP = " << HexStr(CP, CP + 33) << std::endl;
-    			std::cout << "My index = " << myIndex << std::endl;
-    			std::cout << "Ring size = " << ringSize << std::endl;
     			strFailReason = _("Cannot compute LIJ for ring signature in secp256k1_ec_pubkey_tweak_mul");
     			return false;
     		}
