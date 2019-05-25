@@ -280,11 +280,12 @@ CAmount GetValueIn(CCoinsViewCache view, const CTransaction& tx)
 }
 
 bool IsKeyImageSpend1(const std::string& kiHex, int nHeight) {
-    int kd;
+    int kd = -1;
     if (!pblocktree->ReadKeyImage(kiHex, kd)) {
         //not spent yet because not found in database
         return false;
     }
+    LogPrintf("\n%s: kd = %d\n", __func__, kd);
     if (kd == -1) {
         return false;
     }
@@ -1478,33 +1479,6 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
                 return false;
             }
 
-            // do all inputs exist?
-            // Note that this does not check for the presence of actual outputs (see the next check for that),
-            // only helps filling in pfMissingInputs (to determine missing vs spent).
-            for (const CTxIn txin : tx.vin) {
-                //LogPrintf("\n%s:check have coins input\n", __func__);
-                if (!view.HaveCoins(txin.prevout.hash)) {
-                    CDiskTxPos postx;
-                    if (pblocktree && pblocktree->ReadTxIndex(txin.prevout.hash, postx)) {
-                        CAutoFile file(OpenBlockFile(postx, true), SER_DISK, CLIENT_VERSION);
-                        if (file.IsNull())
-                            return error("%s: OpenBlockFile failed", __func__);
-                    } else {
-                        if (pfMissingInputs)
-                            *pfMissingInputs = true;
-                        LogPrintf("%s: Error: txhash not found %s", __func__, txin.prevout.hash.GetHex());
-                        return false;
-                    }
-                }
-                //LogPrintf("\n%s:check valid coin\n", __func__);
-                //Check for invalid/fraudulent inputs
-                if (!ValidOutPoint(txin.prevout, chainActive.Height())) {
-                    return state.Invalid(
-                            error("%s : tried to spend invalid input %s in tx %s", __func__, txin.prevout.ToString(),
-                                  tx.GetHash().GetHex()), REJECT_INVALID, "bad-txns-invalid-inputs");
-                }
-            }
-
             // are the actual inputs available?
             //LogPrintf("\n%s:check inputs available\n", __func__);
             if (!CheckHaveInputs(view, tx)) {
@@ -1644,6 +1618,27 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
     //LogPrintf("\n%s:start syncing wallet\n", __func__);
     SyncWithWallets(tx, NULL);
     //LogPrintf("\n%s:synced with wallet\n", __func__);
+
+    if (pwalletMain) {
+    	LOCK(pwalletMain->cs_wallet);
+    	if (pwalletMain->mapWallet.count(tx.GetHash()) == 1) {
+    		for (int i = 0; i < tx.vin.size(); i++) {
+    			std::string outpoint = tx.vin[i].prevout.hash.GetHex() + std::to_string(tx.vin[i].prevout.n);
+    			if (pwalletMain->outpointToKeyImages[outpoint] == tx.vin[i].keyImage) {
+    				pwalletMain->inSpendQueueOutpoints[tx.vin[i].prevout] = true;
+    				continue;
+    			}
+
+    			for (int j = 0; j < tx.vin[i].decoys.size(); j++) {
+    				std::string outpoint = tx.vin[i].decoys[j].hash.GetHex() + std::to_string(tx.vin[i].decoys[j].n);
+    				if (pwalletMain->outpointToKeyImages[outpoint] == tx.vin[i].keyImage) {
+    					pwalletMain->inSpendQueueOutpoints[tx.vin[i].decoys[j]] = true;
+    					break;
+    				}
+    			}
+    		}
+    	}
+    }
 
     return true;
 }

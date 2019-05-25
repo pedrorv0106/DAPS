@@ -417,6 +417,7 @@ public:
 
     int64_t nTimeFirstKey;
 
+    mutable std::map<std::string, CKeyImage> outpointToKeyImages;
     std::map<std::string, bool> keyImagesSpends;
     std::map<std::string, std::string> keyImageMap;//mapping from: txhashHex-n to key image str, n = index
     std::list<std::string> pendingKeyImages;
@@ -793,6 +794,7 @@ private:
     bool computeSharedSec(const CTransaction& tx, const CTxOut& out, CPubKey& sharedSec) const;
     int walletIdxCache = 0;
     bool isMatchMyKeyImage(const CKeyImage& ki, const COutPoint& out);
+    void ScanWalletKeyImages();
 };
 
 
@@ -1178,6 +1180,10 @@ public:
         CAmount nCredit = 0;
         uint256 hashTx = GetHash();
         for (unsigned int i = 0; i < vout.size(); i++) {
+        	//dont count if output is in mempool
+        	COutPoint outpoint(hashTx, i);
+        	if (pwallet->inSpendQueueOutpoints.count(outpoint) == 1) continue;
+
             if (!pwallet->IsSpent(hashTx, i)) {
                 const CTxOut& txout = vout[i];
                 CAmount cre = pwallet->GetCredit(*this, txout, ISMINE_SPENDABLE);
