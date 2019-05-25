@@ -629,7 +629,6 @@ void CWallet::AddToSpends(const uint256& wtxid)
     CWalletTx& thisTx = mapWallet[wtxid];
     if (thisTx.IsCoinBase()) // Coinbases don't spend anything!
         return;
-    std::cout << "AddToSpends" << std::endl;
     BOOST_FOREACH (const CTxIn& txin, thisTx.vin) {
     	CKeyImage ki = txin.keyImage;
     	COutPoint prevout = findMyOutPoint(txin);
