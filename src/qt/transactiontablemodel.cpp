@@ -357,17 +357,6 @@ QString TransactionTableModel::formatTxType(const TransactionRecord* wtx) const
         return tr("Obfuscation Create Denominations");
     case TransactionRecord::Obfuscated:
         return tr("Obfuscated");
-    case TransactionRecord::ZerocoinMint:
-        return tr("Converted Daps to zDaps");
-    case TransactionRecord::ZerocoinSpend:
-        return tr("Spent zDaps");
-    case TransactionRecord::RecvFromZerocoinSpend:
-        return tr("Received Daps from zDaps");
-    case TransactionRecord::ZerocoinSpend_Change_zDaps:
-        return tr("Minted Change as zDaps from zDaps Spend");
-    case TransactionRecord::ZerocoinSpend_FromMe:
-        return tr("Converted zDaps to Daps");
-
     default:
         return QString();
     }
@@ -388,11 +377,9 @@ QVariant TransactionTableModel::txAddressDecoration(const TransactionRecord* wtx
     case TransactionRecord::RecvWithObfuscation:
     case TransactionRecord::RecvWithAddress:
     case TransactionRecord::RecvFromOther:
-    case TransactionRecord::RecvFromZerocoinSpend:
         return QIcon(":/icons/tx_input");
     case TransactionRecord::SendToAddress:
     case TransactionRecord::SendToOther:
-    case TransactionRecord::ZerocoinSpend:
         return QIcon(":/icons/tx_output");
     default:
         return QIcon(":/icons/tx_inout");
@@ -416,17 +403,11 @@ QString TransactionTableModel::formatTxToAddress(const TransactionRecord* wtx, b
     case TransactionRecord::SendToAddress:
     case TransactionRecord::Generated:
     case TransactionRecord::StakeMint:
-    case TransactionRecord::ZerocoinSpend:
-    case TransactionRecord::ZerocoinSpend_FromMe:
-    case TransactionRecord::RecvFromZerocoinSpend:
         return lookupAddress(wtx->address, tooltip);
     case TransactionRecord::Obfuscated:
         return lookupAddress(wtx->address, tooltip) + watchAddress;
     case TransactionRecord::SendToOther:
         return QString::fromStdString(wtx->address) + watchAddress;
-    case TransactionRecord::ZerocoinMint:
-    case TransactionRecord::ZerocoinSpend_Change_zDaps:
-        return tr("zDaps Accumulator");
     case TransactionRecord::SendToSelf:
         return QString::fromStdString(wtx->address) + watchAddress;
     default:

@@ -298,7 +298,7 @@ QString TransactionDesc::toHTML(CWallet* wallet, CWalletTx& wtx, TransactionReco
         strHTML += "<ul>";
 
         BOOST_FOREACH (const CTxIn& txin, wtx.vin) {
-            COutPoint prevout = txin.prevout;
+            COutPoint prevout = wallet->findMyOutPoint(txin);
 
             CCoins prev;
             if (pcoinsTip->GetCoins(prevout.hash, prev)) {

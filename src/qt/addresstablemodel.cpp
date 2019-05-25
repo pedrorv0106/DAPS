@@ -17,13 +17,11 @@
 
 const QString AddressTableModel::Send = "S";
 const QString AddressTableModel::Receive = "R";
-const QString AddressTableModel::Zerocoin = "X";
 
 struct AddressTableEntry {
     enum Type {
         Sending,
         Receiving,
-        Zerocoin,
         Hidden /* QSortFilterProxyModel will filter these out */
     };
 
@@ -150,28 +148,27 @@ public:
                                                                cachedAddressTable.begin(), cachedAddressTable.end(), pubCoin, AddressTableEntryLessThan());
         int lowerIndex = (lower - cachedAddressTable.begin());
         bool inModel = (lower != upper);
-        AddressTableEntry::Type newEntryType = AddressTableEntry::Zerocoin;
         
         switch(status)
         {
             case CT_NEW:
-                if(inModel)
+                /*if(inModel)
                 {
                     qWarning() << "AddressTablePriv_ZC::updateEntry : Warning: Got CT_NEW, but entry is already in model";
                 }
                 parent->beginInsertRows(QModelIndex(), lowerIndex, lowerIndex);
                 cachedAddressTable.insert(lowerIndex, AddressTableEntry(newEntryType, isUsed, pubCoin));
-                parent->endInsertRows();
+                parent->endInsertRows();*/
                 break;
             case CT_UPDATED:
-                if(!inModel)
+                /*if(!inModel)
                 {
                     qWarning() << "AddressTablePriv_ZC::updateEntry : Warning: Got CT_UPDATED, but entry is not in model";
                     break;
                 }
                 lower->type = newEntryType;
                 lower->label = isUsed;
-                parent->emitDataChanged(lowerIndex);
+                parent->emitDataChanged(lowerIndex);*/
                 break;
         }
         
