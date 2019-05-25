@@ -2681,6 +2681,38 @@ Value revealspendprivatekey(const Array& params, bool fHelp) {
     return CBitcoinSecret(spend).ToString();
 }
 
+Value showtxprivatekeys(const Array& params, bool fHelp) {
+    if (fHelp || params.size() != 1)
+        throw runtime_error(
+                "showtxprivatekeys <txhash>\n"
+                "\nShow transaction private keys for each UTXO of a transaction.\n"
+                "\nArguments:\n"
+                "\nResult:\n"
+                "\"Private spend key\"    (string) the private spend key\n"
+                "\nExamples:\n" +
+                HelpExampleCli("showtxprivatekeys", "") + HelpExampleCli("showtxprivatekeys", "\"\"") +
+                HelpExampleCli("showtxprivatekeys", "") + HelpExampleRpc("showtxprivatekeys", ""));
+
+    if (!pwalletMain) {
+        //privacy wallet is already created
+        throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
+                           "Error: There is no privacy wallet, please use createprivacywallet to create one.");
+    }
+
+    EnsureWalletIsUnlocked();
+    Object ret;
+    CWalletDB db(pwalletMain->strWalletFile);
+    for(int i = 0; i < 10; i++) {
+    	std::string key = params[0].get_str() + std::to_string(i);
+    	std::string secret;
+    	if (db.ReadTxPrivateKey(key, secret)) {
+    		ret.emplace_back(Pair(std::to_string(i), secret));
+    	} else break;
+    }
+    return ret;
+}
+
+
 Value rescanwallettransactions(const Array& params, bool fHelp) {
     if (fHelp || params.size() > 1)
         throw runtime_error(
