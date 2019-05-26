@@ -501,7 +501,7 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 		}
 
 		//compute C
-		unsigned char tempForHash[2 * (tx.vin.size() + 1) * 33];
+		unsigned char tempForHash[2 * (MAX_VIN + 1) * 33];
 		unsigned char* tempForHashPtr = tempForHash;
 		for (size_t i = 0; i < tx.vin.size() + 1; i++) {
 			memcpy(tempForHashPtr, &(LIJ[i][j][0]), 33);
@@ -509,7 +509,7 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 			memcpy(tempForHashPtr, &(RIJ[i][j][0]), 33);
 			tempForHashPtr += 33;
 		}
-		uint256 temppi1 = Hash(tempForHash, tempForHash + sizeof(tempForHash));
+		uint256 temppi1 = Hash(tempForHash, tempForHash + 2 * (tx.vin.size() + 1) * 33);
 		memcpy(C, temppi1.begin(), 32);
 	}
 

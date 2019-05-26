@@ -3303,7 +3303,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     }
 
 	if (PI_interator == (int)wtxNew.vin[0].decoys.size() + 1) PI_interator = 0;
-    uint256 temppi1 = Hash(tempForHash, tempForHash + sizeof(tempForHash));
+    uint256 temppi1 = Hash(tempForHash, tempForHash + 2 * (wtxNew.vin.size() + 1) * 33);
 	if (PI_interator == 0) {
 	    memcpy(CI[0], temppi1.begin(), 32);
 	} else {
@@ -3378,7 +3378,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     	    memcpy(tempForHashPtr, RIJ[i][prev], 33);
     	    tempForHashPtr += 33;
     	}
-    	uint256 ciHashTmp = Hash(tempForHash, tempForHash + sizeof(tempForHash));
+    	uint256 ciHashTmp = Hash(tempForHash, tempForHash + 2 * (wtxNew.vin.size() + 1) * 33);
     	memcpy(CI[ciIdx], ciHashTmp.begin(), 32);
     }
 
