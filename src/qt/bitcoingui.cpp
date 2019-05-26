@@ -947,27 +947,6 @@ void BitcoinGUI::setNumBlocks(int count)
     if (!clientModel)
         return;
 
-    // Prevent orphan statusbar messages (e.g. hover Quit in main menu, wait until chain-sync starts -> garbelled text)
-    // #REMOVE statusBar()->clearMessage();
-
-    //Acquire current block source
-    enum BlockSource blockSource = clientModel->getBlockSource();
-    // switch (blockSource) {
-    // case BLOCK_SOURCE_NETWORK:
-    //     progressBarLabel->setText(tr("Synchronizing with network..."));
-    //     break;
-    // case BLOCK_SOURCE_DISK:
-    //     progressBarLabel->setText(tr("Importing blocks from disk..."));
-    //     break;
-    // case BLOCK_SOURCE_REINDEX:
-    //     progressBarLabel->setText(tr("Reindexing blocks on disk..."));
-    //     break;
-    // case BLOCK_SOURCE_NONE:
-    //     // Case: not Importing, not Reindexing and no network connection
-    //     progressBarLabel->setText(tr("No block source available..."));
-    //     break;
-    // }
-
     QString tooltip;
 
     QDateTime lastBlockDate = clientModel->getLastBlockDate();

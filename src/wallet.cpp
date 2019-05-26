@@ -643,7 +643,6 @@ void CWallet::AddToSpends(const uint256& wtxid)
 bool CWallet::isMatchMyKeyImage(const CKeyImage& ki, const COutPoint& out)
 {
 	if (mapWallet.count(out.hash) == 0) return false;
-	CTxOut& o = mapWallet[out.hash].vout[out.n];
 	std::string outpoint = out.hash.GetHex() + std::to_string(out.n);
 	CKeyImage computed = outpointToKeyImages[outpoint];
 	bool ret = (computed == ki);

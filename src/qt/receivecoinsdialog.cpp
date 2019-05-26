@@ -63,7 +63,7 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
         QList<QString> stringsList;
         accountList.push_back("Master Account");
         addrList.push_back(pubAddress);
-        for(int i = 0; i < addrList.size(); i++) {
+        for(size_t i = 0; i < addrList.size(); i++) {
             stringsList.append(QString(accountList[i].c_str()) + " - " + QString(addrList[i].c_str()));
         }
 
@@ -109,9 +109,9 @@ void ReceiveCoinsDialog::loadAccount() {
     CWallet* wl = model->getCWallet();
     QList<QString> stringsList;
     wl->AllMyPublicAddresses(addrList, accountList);
-    for(int i = 0; i < addrList.size(); i++) {
+    for(size_t i = 0; i < addrList.size(); i++) {
         bool isDuplicate = false;
-        for (int i = 0; i < ui->reqAddress->count(); i++) {
+        for (size_t i = 0; i < ui->reqAddress->count(); i++) {
             if (ui->reqAddress->itemText(i).contains(QString(addrList[i].c_str()), Qt::CaseSensitive)) {
                 isDuplicate = true;
                 break;
@@ -165,7 +165,7 @@ void ReceiveCoinsDialog::on_receiveButton_clicked()
     CWallet* wl = model->getCWallet();
     wl->AllMyPublicAddresses(addrList, accountList);
     int selectedIdx = ui->reqAddress->currentIndex();
-    if (addrList.size()>selectedIdx){
+    if ((int)addrList.size() > selectedIdx){
         QString address(addrList[selectedIdx].c_str());
         QString label(accountList[selectedIdx].c_str());
         QString reqMes = "Request message";
