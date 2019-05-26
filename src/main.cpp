@@ -311,7 +311,7 @@ secp256k1_context2* GetContext() {
 
 secp256k1_scratch_space2* GetScratch() {
     static secp256k1_scratch_space2 *scratch;
-    if (!scratch) scratch = secp256k1_scratch_space_create(GetContext(), 1024 * 1024 * 2048);
+    if (!scratch) scratch = secp256k1_scratch_space_create(GetContext(), 1024 * 1024 * 1024);
     return scratch;
 }
 
@@ -330,10 +330,11 @@ void DestroyContext() {
 bool VerifyBulletProofAggregate(const CTransaction& tx)
 {
 	size_t len = tx.bulletproofs.size();
+	if (tx.vout.size() >= 5) return false;
 
 	if (len == 0) return false;
-
-	secp256k1_pedersen_commitment commitments[tx.vout.size()];
+	const size_t MAX_VOUT = 5;
+	secp256k1_pedersen_commitment commitments[MAX_VOUT];
 	size_t i = 0;
 	for (i = 0; i < tx.vout.size(); i++) {
 		if (!secp256k1_pedersen_commitment_parse(GetContext(), &commitments[i], &(tx.vout[i].commitment[0])))
@@ -428,7 +429,7 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 	}
 
 	for (size_t j = 0; j < tx.vin[0].decoys.size() + 1; j++) {
-		const secp256k1_pedersen_commitment *inCptr[tx.vin.size()*2];
+		const secp256k1_pedersen_commitment *inCptr[MAX_VIN * 2];
 		for (size_t k = 0; k < tx.vin.size(); k++) {
 			if (!secp256k1_pedersen_commitment_parse(both, &allInCommitmentsPacked[k][j], allInCommitments[k][j])) {
 				return false;

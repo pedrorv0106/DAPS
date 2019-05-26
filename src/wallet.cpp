@@ -3659,14 +3659,14 @@ bool CWallet::generateBulletProofAggregate(CTransaction& tx)
 {
 	unsigned char proof[2000];
 	size_t len;
-
+	const size_t MAX_VOUT = 5;
 	unsigned char nonce[32];
 	GetRandBytes(nonce, 32);
-	unsigned char blinds[tx.vout.size()][32];
+	unsigned char blinds[MAX_VOUT][32];
 	memset(blinds, 0, tx.vout.size() * 32);
 	uint64_t values[] = {300000000*COIN, 300000000*COIN, 3};
 	size_t i = 0;
-	const unsigned char *blind_ptr[tx.vout.size()];
+	const unsigned char *blind_ptr[MAX_VOUT];
 	for (i = 0; i < tx.vout.size(); i++) {
 		memcpy(&blinds[i][0], tx.vout[i].maskValue.inMemoryRawBind.begin(), 32);
 		blind_ptr[i] = blinds[i];
