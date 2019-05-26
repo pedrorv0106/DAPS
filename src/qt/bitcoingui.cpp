@@ -966,8 +966,8 @@ void BitcoinGUI::setNumBlocks(int count)
             // progressBar->setVisible(false);
             labelBlocksIcon->setPixmap(QIcon(":/icons/synced").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
         } else {
-            int nAttempt;
-            int progress = 0;
+            // int nAttempt;
+            // int progress = 0;
 
             labelBlocksIcon->setPixmap(QIcon(QString(
                                                  ":/movies/spinner-%1")
@@ -980,10 +980,10 @@ void BitcoinGUI::setNumBlocks(int count)
                 walletFrame->showSyncStatus(false);
 #endif // ENABLE_WALLET
 
-            nAttempt = masternodeSync.RequestedMasternodeAttempt < MASTERNODE_SYNC_THRESHOLD ?
-                           masternodeSync.RequestedMasternodeAttempt + 1 :
-                           MASTERNODE_SYNC_THRESHOLD;
-            progress = nAttempt + (masternodeSync.RequestedMasternodeAssets - 1) * MASTERNODE_SYNC_THRESHOLD;
+            // nAttempt = masternodeSync.RequestedMasternodeAttempt < MASTERNODE_SYNC_THRESHOLD ?
+            //                masternodeSync.RequestedMasternodeAttempt + 1 :
+            //                MASTERNODE_SYNC_THRESHOLD;
+            // progress = nAttempt + (masternodeSync.RequestedMasternodeAssets - 1) * MASTERNODE_SYNC_THRESHOLD;
             // progressBar->setMaximum(4 * MASTERNODE_SYNC_THRESHOLD);
             // progressBar->setFormat(tr("Synchronizing additional data: %p%"));
             // progressBar->setValue(progress);
@@ -1187,7 +1187,7 @@ bool BitcoinGUI::eventFilter(QObject *obj, QEvent *event)
     //     m_fMousePress = false;
     // }
 
-    // return false;
+    return false;
 }
 
 void BitcoinGUI::dropEvent(QDropEvent* event)

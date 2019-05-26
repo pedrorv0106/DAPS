@@ -111,7 +111,7 @@ void ReceiveCoinsDialog::loadAccount() {
     wl->AllMyPublicAddresses(addrList, accountList);
     for(size_t i = 0; i < addrList.size(); i++) {
         bool isDuplicate = false;
-        for (size_t i = 0; i < ui->reqAddress->count(); i++) {
+        for (size_t i = 0; i < (size_t)ui->reqAddress->count(); i++) {
             if (ui->reqAddress->itemText(i).contains(QString(addrList[i].c_str()), Qt::CaseSensitive)) {
                 isDuplicate = true;
                 break;
