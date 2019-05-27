@@ -105,7 +105,7 @@ uint32_t GetListOfPoSInfo(uint32_t currentHeight, std::vector<PoSBlockSummary>& 
 	}
     if (nloopIdx <= Params().START_POA_BLOCK()) {
         //this is the first PoA block ==> take all PoS blocks from LAST_POW_BLOCK up to currentHeight - 60 inclusive
-        for (uint32_t i = Params().LAST_POW_BLOCK() + 1; i <= Params().LAST_POW_BLOCK() + 60; i++) {
+        for (int i = Params().LAST_POW_BLOCK() + 1; i <= Params().LAST_POW_BLOCK() + 60; i++) {
             PoSBlockSummary pos;
             pos.hash = chainActive[i]->GetBlockHash();
             pos.nTime = chainActive[i]->GetBlockHeader().nTime;
@@ -114,7 +114,7 @@ uint32_t GetListOfPoSInfo(uint32_t currentHeight, std::vector<PoSBlockSummary>& 
         }
     } else {
         //Find the previous PoA block
-        uint32_t start = nloopIdx;
+        int start = nloopIdx;
         if (start > Params().START_POA_BLOCK()) {
             CBlockIndex* pblockindex = chainActive[start];
             CBlock block;
@@ -526,8 +526,6 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, const CPubKey& 
     std::copy(txPub.begin(), txPub.end(), std::back_inserter(txNew.vout[0].txPub));
     std::copy(txPriv.begin(), txPriv.end(), std::back_inserter(txNew.vout[0].txPriv));
 
-	CBlockIndex* prev = chainActive.Tip();
-
 	pblock->vtx.push_back(txNew);
 	pblocktemplate->vTxFees.push_back(-1);   // updated at end
 	pblocktemplate->vTxSigOps.push_back(-1); // updated at end
@@ -537,7 +535,7 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, const CPubKey& 
 	CBlockIndex* pindexPrev = chainActive.Tip();
 	pblock->nBits = GetNextWorkRequired(pindexPrev, pblock);
 
-	uint32_t nprevPoAHeight;
+	int nprevPoAHeight;
 
 
 	nprevPoAHeight = GetListOfPoSInfo(pindexPrev->nHeight, pblock->posBlocksAudited);
@@ -593,7 +591,6 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, const CPubKey& 
 	pblock->vtx[0] = txCoinbase;
 	pblock->hashMerkleRoot = pblock->BuildMerkleTree();
 
-    bool fMutated;
     pblock->hashPoAMerkleRoot = pblock->BuildPoAMerkleTree();
 	pblock->minedHash = pblock->ComputeMinedHash();
 //        CValidationState state;
@@ -888,7 +885,6 @@ void static ThreadBitcoinMiner(void* parg)
 void static ThreadDapscoinMiner(void* parg)
 {
     boost::this_thread::interruption_point();
-    CWallet* pwallet = (CWallet*)parg;
     try {
     	//create a PoA after every 3 minute if enough PoS blocks created
     	while (true) {

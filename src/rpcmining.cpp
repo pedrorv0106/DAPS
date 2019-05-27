@@ -31,7 +31,6 @@
 using namespace json_spirit;
 using namespace std;
 
-static bool PoABlockBeingMined = false;
 static uint256 PoAMerkleRoot;
 
 /**
@@ -239,7 +238,6 @@ Value generatepoa(const Array& params, bool fHelp)
 		nHeight = nHeightStart;
 		nHeightEnd = nHeightStart + nGenerate;
 	}
-	unsigned int nExtraNonce = 0;
 	Array blockHashes;
 
 	bool createPoABlock = false;
@@ -795,7 +793,7 @@ Value getpoablocktemplate(const Array& params, bool fHelp)
 
     //Information about PoS blocks to be audited
     Array posBlocksAudited;
-    for (int idx = 0; idx < pblock->posBlocksAudited.size(); idx++) {
+    for (size_t idx = 0; idx < pblock->posBlocksAudited.size(); idx++) {
     	Object entry;
     	PoSBlockSummary pos = pblock->posBlocksAudited.at(idx);
     	entry.push_back(Pair("data", EncodeHexPoSBlockSummary(pos)));
@@ -899,7 +897,7 @@ Value submitblock(const Array& params, bool fHelp)
     CBlock block;
     std::string datastr(params[0].get_str());
 
-    for (int i = 0; i < datastr.size(); i++) {
+    for (size_t i = 0; i < datastr.size(); i++) {
         if (('0' <= datastr[i] && datastr[i] <= '9') || ('a' <= datastr[i] && datastr[i] <= 'f') || ('A' <= datastr[i] && datastr[i] <= 'F')) {
 
         } else {

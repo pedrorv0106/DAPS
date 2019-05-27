@@ -440,7 +440,7 @@ void OverviewPage::updateRecentTransactions(){
         	if (tx->second.GetDepthInMainChain() > 0) {
         		int64_t txTime = tx->second.GetComputedTxTime();
         		int idx = -1;
-        		for (int i = 0; i < latestTxes.size(); i++) {
+        		for (int i = 0; i < (int)latestTxes.size(); i++) {
         			if (txTime >= latestTxes[i].GetComputedTxTime()) {
         				idx = i;
         				break;
@@ -454,7 +454,7 @@ void OverviewPage::updateRecentTransactions(){
         	}
         }
 
-        for (int i = 0; i < latestTxes.size(); i++) {
+        for (int i = 0; i < (int)latestTxes.size(); i++) {
         	txs.push_back(WalletUtil::getTx(pwalletMain, latestTxes[i]));
         	if (txs.size() >= 5) break;
         }

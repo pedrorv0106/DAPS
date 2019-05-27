@@ -947,27 +947,6 @@ void BitcoinGUI::setNumBlocks(int count)
     if (!clientModel)
         return;
 
-    // Prevent orphan statusbar messages (e.g. hover Quit in main menu, wait until chain-sync starts -> garbelled text)
-    // #REMOVE statusBar()->clearMessage();
-
-    //Acquire current block source
-    enum BlockSource blockSource = clientModel->getBlockSource();
-    // switch (blockSource) {
-    // case BLOCK_SOURCE_NETWORK:
-    //     progressBarLabel->setText(tr("Synchronizing with network..."));
-    //     break;
-    // case BLOCK_SOURCE_DISK:
-    //     progressBarLabel->setText(tr("Importing blocks from disk..."));
-    //     break;
-    // case BLOCK_SOURCE_REINDEX:
-    //     progressBarLabel->setText(tr("Reindexing blocks on disk..."));
-    //     break;
-    // case BLOCK_SOURCE_NONE:
-    //     // Case: not Importing, not Reindexing and no network connection
-    //     progressBarLabel->setText(tr("No block source available..."));
-    //     break;
-    // }
-
     QString tooltip;
 
     QDateTime lastBlockDate = clientModel->getLastBlockDate();
@@ -987,8 +966,8 @@ void BitcoinGUI::setNumBlocks(int count)
             // progressBar->setVisible(false);
             labelBlocksIcon->setPixmap(QIcon(":/icons/synced").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
         } else {
-            int nAttempt;
-            int progress = 0;
+            // int nAttempt;
+            // int progress = 0;
 
             labelBlocksIcon->setPixmap(QIcon(QString(
                                                  ":/movies/spinner-%1")
@@ -1001,10 +980,10 @@ void BitcoinGUI::setNumBlocks(int count)
                 walletFrame->showSyncStatus(false);
 #endif // ENABLE_WALLET
 
-            nAttempt = masternodeSync.RequestedMasternodeAttempt < MASTERNODE_SYNC_THRESHOLD ?
-                           masternodeSync.RequestedMasternodeAttempt + 1 :
-                           MASTERNODE_SYNC_THRESHOLD;
-            progress = nAttempt + (masternodeSync.RequestedMasternodeAssets - 1) * MASTERNODE_SYNC_THRESHOLD;
+            // nAttempt = masternodeSync.RequestedMasternodeAttempt < MASTERNODE_SYNC_THRESHOLD ?
+            //                masternodeSync.RequestedMasternodeAttempt + 1 :
+            //                MASTERNODE_SYNC_THRESHOLD;
+            // progress = nAttempt + (masternodeSync.RequestedMasternodeAssets - 1) * MASTERNODE_SYNC_THRESHOLD;
             // progressBar->setMaximum(4 * MASTERNODE_SYNC_THRESHOLD);
             // progressBar->setFormat(tr("Synchronizing additional data: %p%"));
             // progressBar->setValue(progress);
@@ -1208,7 +1187,7 @@ bool BitcoinGUI::eventFilter(QObject *obj, QEvent *event)
     //     m_fMousePress = false;
     // }
 
-    // return false;
+    return false;
 }
 
 void BitcoinGUI::dropEvent(QDropEvent* event)

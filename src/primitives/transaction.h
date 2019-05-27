@@ -150,7 +150,7 @@ typedef struct MaskValue {
         mask.SetNull();
         hashOfKey.SetNull();
     }
-};
+} MaskValue;
 
 /** An output of a transaction.  It contains the public key that the next input
  * must be able to sign with to claim it.
