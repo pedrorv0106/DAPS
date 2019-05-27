@@ -177,11 +177,11 @@ bool CheckPoAContainRecentHash(const CBlock& block, int blockHeight) {
     if (start <= Params().START_POA_BLOCK()) {
         //this is the first PoA block ==> check all PoS blocks from LAST_POW_BLOCK up to currentHeight - POA_BLOCK_PERIOD - 1 inclusive
         int index = 0;
-        for (int i = Params().LAST_POW_BLOCK() + 1; i <= Params().LAST_POW_BLOCK() + block.posBlocksAudited.size(); i++) {
+        for (size_t i = Params().LAST_POW_BLOCK() + 1; i <= Params().LAST_POW_BLOCK() + block.posBlocksAudited.size(); i++) {
             PoSBlockSummary pos = block.posBlocksAudited.at(index);
             if (pos.hash != chainActive[i]->GetBlockHash()
                     || pos.nTime != chainActive[i]->GetBlockTime()
-                    || pos.height != chainActive[i]->nHeight) {
+                    || pos.height != (uint32_t) chainActive[i]->nHeight) {
                 ret = false;
                 break;
             }
@@ -189,7 +189,6 @@ bool CheckPoAContainRecentHash(const CBlock& block, int blockHeight) {
         }
     } else {
         if (start >= Params().START_POA_BLOCK()) {
-            uint256 prevPoaHash = chainActive[start]->GetBlockHash();
             CBlock prevPoablock;
             CBlockIndex* pblockindex = chainActive[start];
             if (!ReadBlockFromDisk(prevPoablock, pblockindex))
@@ -199,13 +198,13 @@ bool CheckPoAContainRecentHash(const CBlock& block, int blockHeight) {
             uint32_t loopIndexCheckPoS = lastAuditedPoSHeight + 1;
             uint32_t idxOfPoSInfo = 0;
 
-            while (loopIndexCheckPoS <= currentHeight && idxOfPoSInfo < block.posBlocksAudited.size()) {
+            while (loopIndexCheckPoS <= (uint32_t) currentHeight && idxOfPoSInfo < block.posBlocksAudited.size()) {
                 if (!chainActive[loopIndexCheckPoS]->GetBlockHeader().IsPoABlockByVersion()
                         && chainActive[loopIndexCheckPoS]->nHeight > Params().LAST_POW_BLOCK()) {
                     PoSBlockSummary pos = block.posBlocksAudited[idxOfPoSInfo];
                     CBlockIndex* posAudited = chainActive[loopIndexCheckPoS];
                     if (pos.hash == *(posAudited->phashBlock)
-                        && pos.height == posAudited->nHeight
+                        && pos.height == (uint32_t)posAudited->nHeight
                         && pos.nTime == posAudited->GetBlockTime()) {
                         idxOfPoSInfo++;
                     } else {
@@ -228,7 +227,7 @@ bool CheckPoAContainRecentHash(const CBlock& block, int blockHeight) {
 }
 
 bool CheckNumberOfAuditedPoSBlocks(const CBlock& block) {
-    if (block.posBlocksAudited.size() < Params().MIN_NUM_POS_BLOCKS_AUDITED()) {
+    if (block.posBlocksAudited.size() < (size_t)Params().MIN_NUM_POS_BLOCKS_AUDITED()) {
         return false;
     }
     return true;
@@ -326,7 +325,7 @@ bool CheckPoABlockNotContainingPoABlockInfo(const CBlock& block, int blockHeight
     	}
     }
     uint32_t numOfPoSBlocks = block.posBlocksAudited.size();
-    for (int i = 0; i < numOfPoSBlocks; i++) {
+    for (uint32_t i = 0; i < numOfPoSBlocks; i++) {
         PoSBlockSummary pos = block.posBlocksAudited.at(i);
         uint256 hash = pos.hash;
         if (mapBlockIndex.count(hash) == 0) {
@@ -351,7 +350,7 @@ bool CheckPoAblockTime(const CBlock& block) {
 		if (mapBlockIndex.count(block.hashPrevPoABlock) != 0) {
 			CBlockIndex* pindex = mapBlockIndex[block.hashPrevPoABlock];
 			uint32_t prevPoATime = pindex->nTime;
-			if (block.nTime > prevPoATime && (block.nTime - pindex->nTime >= Params().POA_BLOCK_TIME())) {
+			if (block.nTime > prevPoATime && (block.nTime - pindex->nTime >= (uint32_t)Params().POA_BLOCK_TIME())) {
 				ret = true;
 			}
             LogPrint("debug", "%s: PoA Block time: %d, Previous: %d, Current: %d, Distance: %d\n", __func__,
@@ -377,9 +376,9 @@ bool CheckPoABlockNotAuditingOverlap(const CBlock& block) {
 			if (!ReadBlockFromDisk(prevPoablock, pPrevPoAIndex))
 				throw runtime_error("Can't read block from disk");
 			ret = true;
-			for (int i = 0; i < block.posBlocksAudited.size(); i++) {
+			for (size_t i = 0; i < block.posBlocksAudited.size(); i++) {
 				bool isAlreadyAudited = false;
-				for (int j = 0; j < prevPoablock.posBlocksAudited.size(); j++) {
+				for (size_t j = 0; j < prevPoablock.posBlocksAudited.size(); j++) {
 					if (prevPoablock.posBlocksAudited[j].hash == block.posBlocksAudited[i].hash
 						&& prevPoablock.posBlocksAudited[j].nTime == block.posBlocksAudited[i].nTime
 						&& prevPoablock.posBlocksAudited[j].height == block.posBlocksAudited[i].height) {

@@ -2561,7 +2561,7 @@ Value sendtostealthaddress(const Array& params, bool fHelp)
 
 std::string GetHex(const unsigned char* vch, int sz) {
     char psz[sz * 2 + 1];
-    for (unsigned int i = 0; i < sz; i++)
+    for (int i = 0; i < sz; i++)
         sprintf(psz + i * 2, "%02x", vch[sz - i - 1]);
     return std::string(psz, psz + sz * 2);
 }
@@ -2681,5 +2681,5 @@ Value rescanwallettransactions(const Array& params, bool fHelp) {
     if (!pwalletMain->RescanAfterUnlock(fromBeginning)) {
     	return "Wait for wallet to finish reimport/reindex";
     }
-    return "Started rescanning from block " + nHeight;
+    return "Started rescanning from block " + std::to_string(nHeight);
 }

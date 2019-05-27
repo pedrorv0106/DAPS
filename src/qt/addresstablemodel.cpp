@@ -142,12 +142,11 @@ public:
     void updateEntry(const QString &pubCoin, const QString &isUsed, int status)
     {
         // Find address / label in model
-        QList<AddressTableEntry>::iterator lower = qLowerBound(
-                                                               cachedAddressTable.begin(), cachedAddressTable.end(), pubCoin, AddressTableEntryLessThan());
-        QList<AddressTableEntry>::iterator upper = qUpperBound(
-                                                               cachedAddressTable.begin(), cachedAddressTable.end(), pubCoin, AddressTableEntryLessThan());
-        int lowerIndex = (lower - cachedAddressTable.begin());
-        bool inModel = (lower != upper);
+        // QList<AddressTableEntry>::iterator lower = qLowerBound(
+        //                                                        cachedAddressTable.begin(), cachedAddressTable.end(), pubCoin, AddressTableEntryLessThan());
+        // QList<AddressTableEntry>::iterator upper = qUpperBound(
+        //                                                        cachedAddressTable.begin(), cachedAddressTable.end(), pubCoin, AddressTableEntryLessThan());
+        // bool inModel = (lower != upper);
         
         switch(status)
         {

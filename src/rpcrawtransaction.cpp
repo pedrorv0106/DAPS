@@ -88,11 +88,10 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
             {
                 //decoys
                 Array decoys;
-                int total = txin.decoys.size() + 1;
                 std::vector<COutPoint> allDecoys = txin.decoys;
                 srand (time(NULL));
                 allDecoys.insert(allDecoys.begin(), txin.prevout);
-                for (int i = 0; i < allDecoys.size(); i++) {
+                for (size_t i = 0; i < allDecoys.size(); i++) {
                     Object decoy;
                     decoy.push_back(Pair("txid", allDecoys[i].hash.GetHex()));
                     decoy.push_back(Pair("vout", (int64_t)allDecoys[i].n));
@@ -157,15 +156,6 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
             	pBlind = blind.begin();
             }
             out.push_back(Pair("decoded_amount", ValueFromAmount(decodedAmount)));
-            std::cout << "Revealed amount = " << decodedAmount << std::endl;
-            std::cout << "Revealed mask = " << HexStr(pBlind, pBlind + 32) << std::endl;
-            std::cout << "Out commitment = " << HexStr(&(txout.commitment[0]), &(txout.commitment[0]) + 33) << std::endl;
-            secp256k1_pedersen_commitment commit;
-            secp256k1_context2 *both = GetContext();
-            secp256k1_pedersen_commit(both, &commit, pBlind, decodedAmount, &secp256k1_generator_const_h, &secp256k1_generator_const_g);
-            unsigned char serialized[33];
-            secp256k1_pedersen_commitment_serialize(both, serialized, &commit);
-            std::cout << "computed commitment = " << HexStr(serialized, serialized + 33) << std::endl;
         }
 #endif
         vout.push_back(out);

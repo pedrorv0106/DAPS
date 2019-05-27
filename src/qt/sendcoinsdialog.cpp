@@ -121,7 +121,7 @@ void SendCoinsDialog::on_sendButton_clicked(){
     }
 
     CWalletTx resultTx; 
-    bool success=NULL;
+    bool success = false;
     try {
         success = pwalletMain->SendToStealthAddress(
             recipient.address.toStdString(),
@@ -130,7 +130,7 @@ void SendCoinsDialog::on_sendButton_clicked(){
             false
         );
     } catch (const std::exception& err) {
-        auto errorbox = QMessageBox::warning(this, "Could not send", QString(err.what()));
+        QMessageBox::warning(this, "Could not send", QString(err.what()));
         return;
     }
 

@@ -106,7 +106,7 @@ public:
         nTargetSpacing = 1 * 60;  // DAPScoin: 1 minute
         nMaturity = 100;
         nMasternodeCountDrift = 20;
-        MAX_MONEY = 5000000000.0;
+        MAX_MONEY = 2000000000.0;
         nMaxMoneyOut = MAX_MONEY * COIN;
 
         /** Height or Time Based Activations **/

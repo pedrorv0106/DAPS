@@ -145,24 +145,6 @@ public:
     StringMap destdata;
 };
 
-
-typedef struct CTKey {
-    CPubKey dest;
-    uint256 mask;
-};
-
-typedef struct Keypair {
-    CKey privateKey;
-    CPubKey pubkey;
-    void generatePair() {
-        privateKey.MakeNewKey(true);
-        pubkey = privateKey.GetPubKey();
-    }
-    Keypair() {
-        generatePair();
-    }
-};
-
 /**
  * Account information.
  * Stored in wallet with key "acc"+string account name.
@@ -218,27 +200,6 @@ public:
         READWRITE(spendAccount);
         READWRITE(viewAccount);
     }
-};
-
-//Additional structures for bulletproof tx construction
-typedef struct tx_source_entry {
-    typedef std::pair<uint64_t, CTKey> output_entry;
-
-    std::vector<output_entry> outputs;  //index + key + optional ringct commitment
-    size_t real_output;                 //index in outputs vector of real output_entry
-    CPubKey real_out_tx_key; //incoming real tx public key
-    std::vector<CPubKey> real_out_additional_tx_keys; //incoming real tx additional public keys
-    size_t real_output_in_tx_index;     //index in transaction outputs vector
-    CAmount amount;                    //money
-    uint256 mask;                      //ringct amount mask
-};
-typedef struct tx_destination_entry
-{
-    CAmount amount;                    //money
-    CStealthAccount addr;        //destination address
-
-    tx_destination_entry() : amount(0) { }
-    tx_destination_entry(CAmount a, const CStealthAccount &ad) : amount(a), addr(ad) { }
 };
 
 /**
@@ -775,14 +736,6 @@ private:
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
     void createMasterKey() const;
-
-    bool construct_tx_with_tx_key(std::vector<tx_source_entry>& sources, std::vector<tx_destination_entry>& destinations, const boost::optional<CStealthAccount>& change_addr, const std::vector<uint8_t> &extra, CTransaction& tx, const CKey &tx_key, bool shuffle_outs = true);
-    bool construct_tx_and_get_tx_key(std::vector<tx_source_entry>& sources, 
-        std::vector<tx_destination_entry>& destinations, 
-        const boost::optional<CStealthAccount>& change_addr, 
-        const std::vector<uint8_t> &extra, 
-        CTransaction& tx, 
-        CKey& txPrivKey);
     bool generateBulletProofAggregate(CTransaction& tx);
     bool generateRingSignature(CTransaction& tx, int& myIndex, int ringSize);
     bool computeSharedSec(const CTransaction& tx, const CTxOut& out, CPubKey& sharedSec) const;

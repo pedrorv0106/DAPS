@@ -903,9 +903,6 @@ void BitcoinGUI::setNumBlocks(int count)
     if (!clientModel)
         return;
 
-    //Acquire current block source
-    enum BlockSource blockSource = clientModel->getBlockSource();
-
     QString tooltip;
 
     QDateTime lastBlockDate = clientModel->getLastBlockDate();
@@ -923,8 +920,8 @@ void BitcoinGUI::setNumBlocks(int count)
         if (masternodeSync.IsSynced()) {
             labelBlocksIcon->setPixmap(QIcon(":/icons/synced").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
         } else {
-            int nAttempt;
-            int progress = 0;
+            // int nAttempt;
+            // int progress = 0;
 
             labelBlocksIcon->setPixmap(QIcon(QString(
                                                  ":/movies/spinner-%1")
@@ -936,11 +933,6 @@ void BitcoinGUI::setNumBlocks(int count)
             if (walletFrame)
                 walletFrame->showSyncStatus(false);
 #endif // ENABLE_WALLET
-
-            nAttempt = masternodeSync.RequestedMasternodeAttempt < MASTERNODE_SYNC_THRESHOLD ?
-                           masternodeSync.RequestedMasternodeAttempt + 1 :
-                           MASTERNODE_SYNC_THRESHOLD;
-            progress = nAttempt + (masternodeSync.RequestedMasternodeAssets - 1) * MASTERNODE_SYNC_THRESHOLD;
         }
 
         strSyncStatus = QString(masternodeSync.GetSyncStatus().c_str());
@@ -1103,7 +1095,7 @@ void BitcoinGUI::dragEnterEvent(QDragEnterEvent* event)
 
 bool BitcoinGUI::eventFilter(QObject *obj, QEvent *event)
 {
-    
+    return false;
 }
 
 void BitcoinGUI::dropEvent(QDropEvent* event)

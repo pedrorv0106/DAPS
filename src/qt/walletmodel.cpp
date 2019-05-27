@@ -334,7 +334,9 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(WalletModelTransaction& tran
     CWalletTx wtxNew;
 
     if (wallet->SendToStealthAddress(stealthAddr, nValue, wtxNew,false))
-        SendCoinsReturn(OK);
+        return SendCoinsReturn(OK);
+
+    return SendCoinsReturn(TransactionCommitFailed);
 }
 
 OptionsModel* WalletModel::getOptionsModel()
@@ -651,7 +653,7 @@ bool WalletModel::isMine(CBitcoinAddress address)
 QStringList WalletModel::getStakingStatusError()
 {
     QStringList errors;
-    int timeRemaining = (1471482000 - chainActive.Tip()->nTime) / (60 * 60); //time remaining in hrs
+    // int timeRemaining = (1471482000 - chainActive.Tip()->nTime) / (60 * 60); //time remaining in hrs
     if (1471482000 > chainActive.Tip()->nTime)
         errors.push_back(QString(tr("Chain has not matured. Hours remaining: ")) + QString((1471482000 - chainActive.Tip()->nTime) / (60 * 60)));
     if (vNodes.empty())
@@ -674,6 +676,7 @@ void WalletModel::generateCoins(bool fGenerate, int nGenProcLimit)
 QAbstractTableModel* WalletModel::getTxTableModel()
 {
     if (!txTableModel) {
+        return NULL;
     } else
         return txTableModel;
 }

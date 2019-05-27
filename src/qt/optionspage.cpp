@@ -189,7 +189,7 @@ void OptionsPage::onOldPassChanged()
     ui->pushButtonPassword->repaint();
     if (!ui->lineEditNewPass->text().length())
         ui->lineEditNewPass->setStyleSheet("border-color: red");
-        ui->lineEditNewPass->repaint();
+    ui->lineEditNewPass->repaint();
 }
 
 bool OptionsPage::matchNewPasswords()
