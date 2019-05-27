@@ -46,7 +46,6 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
     connect(ui->lineEditNewPass, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPass()));
     connect(ui->lineEditNewPassRepeat, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPassRepeat()));
     connect(ui->lineEditOldPass, SIGNAL(textChanged(const QString &)), this, SLOT(onOldPassChanged()));
-    //connect(ui->pushButtonSave, SIGNAL(clicked()), this, SLOT(on_pushButtonSave_clicked()));
 
     QDoubleValidator *dblVal = new QDoubleValidator(0, Params().MAX_MONEY, 6, ui->lineEditWithhold);
     dblVal->setNotation(QDoubleValidator::StandardNotation);
@@ -59,8 +58,6 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
     bool stkStatus = pwalletMain->ReadStakingStatus();
     ui->toggleStaking->setState(nLastCoinStakeSearchInterval | stkStatus);
     connect(ui->toggleStaking, SIGNAL(stateChanged(ToggleButton*)), this, SLOT(on_EnableStaking(ToggleButton*)));
-
-    //connect(ui->pushButtonPassword, SIGNAL(clicked()), this, SLOT(on_pushButtonPassword_clicked()));
 }
 
 void OptionsPage::setModel(WalletModel* model)
@@ -98,14 +95,7 @@ OptionsPage::~OptionsPage()
 void OptionsPage::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
-
-    // m_SizeGrip.move  (width() - 17, height() - 17);
-    // m_SizeGrip.resize(          17,            17);
 }
-
-// void OptionsPage::bitcoinGUIInstallEvent(BitcoinGUI *gui) {
-//     m_SizeGrip.installEventFilter((QObject*)gui);
-// }
 
 void OptionsPage::on_pushButtonSave_clicked() {
     if (ui->lineEditWithhold->text().trimmed().isEmpty()) {
@@ -130,7 +120,6 @@ void OptionsPage::keyPressEvent(QKeyEvent* event)
 
 void OptionsPage::setMapper()
 {
-    //mapper->addMapping([component], OptionsModel::[setting]);
 }
 
 void OptionsPage::on_pushButtonPassword_clicked()
@@ -154,36 +143,12 @@ void OptionsPage::on_pushButtonPassword_clicked()
     	if (model->changePassphrase(oldPass, newPass)) {
     		QMessageBox::information(this, tr("Wallet encrypted"),
     				tr("Wallet passphrase was successfully changed."));
-    		//QDialog::accept(); // Success
     		success = true;
     	} else {
     		QMessageBox::critical(this, tr("Wallet encryption failed"),
     				tr("The passphrase entered for the wallet decryption was incorrect."));
     	}
     }
-
-    /*if ( (ui->lineEditNewPass->text() == ui->lineEditNewPassRepeat->text()) && (ui->lineEditNewPass->text().length()) )
-    {
-        if (!matchNewPasswords()) auto errorBox = QMessageBox::warning(this, tr("Password Error"),tr("New passwords do not match."));
-        if (!model->getEncryptionStatus()){
-            model->setWalletEncrypted(true, newPass);
-            success = true;
-        } else {
-            if (model->changePassphrase(oldPass,newPass)) {
-                ui->lineEditOldPass->setStyleSheet(GUIUtil::loadStyleSheet());
-                success = true;
-                auto errorBox = QMessageBox::information(this, "", tr("Password changed"));
-            } else {
-                ui->lineEditOldPass->setStyleSheet("border-color:red");
-                auto errorBox = QMessageBox::warning(this, tr("Password Error"),tr("Password rejected by wallet."));
-            }
-        }
-        ui->lineEditOldPass->repaint();
-    } else {
-        success = false;
-        validateNewPass();
-        auto errorBox = QMessageBox::warning(this, tr("Password Error"),tr("Password rejected by wallet."));
-    }*/
 
     if (success)
         ui->pushButtonPassword->setStyleSheet("border: 2px solid green");

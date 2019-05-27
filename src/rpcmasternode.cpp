@@ -96,10 +96,7 @@ Value obfuscation(const Array& params, bool fHelp)
 
     // Wallet comments
     CWalletTx wtx;
-    //    string strError = pwalletMain->SendMoneyToDestination(address.Get(), nAmount, wtx, ONLY_DENOMINATED);
     SendMoney(address.Get(), nAmount, wtx, ONLY_DENOMINATED);
-    //    if (strError != "")
-    //        throw JSONRPCError(RPC_WALLET_ERROR, strError);
 
     return wtx.GetHash().GetHex();
 }

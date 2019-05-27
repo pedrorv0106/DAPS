@@ -77,9 +77,6 @@ class COutput;
 class CReserveKey;
 class CScript;
 class CWalletTx;
-//using namespace tools;
-//using namespace config;
-//using namespace cryptonote;
 
 /** (client) version numbers for particular wallet features */
 enum WalletFeature {
@@ -234,13 +231,11 @@ typedef struct tx_source_entry {
     size_t real_output_in_tx_index;     //index in transaction outputs vector
     CAmount amount;                    //money
     uint256 mask;                      //ringct amount mask
-    //void push_output(uint64_t idx, const crypto::public_key &k, CAmount amount) { outputs.push_back(std::make_pair(idx, rct::ctkey({rct::pk2rct(k), rct::zeroCommit(amount)}))); }
 };
 typedef struct tx_destination_entry
 {
     CAmount amount;                    //money
     CStealthAccount addr;        //destination address
-    //bool is_subaddress;
 
     tx_destination_entry() : amount(0) { }
     tx_destination_entry(CAmount a, const CStealthAccount &ad) : amount(a), addr(ad) { }
@@ -636,8 +631,6 @@ public:
     bool IsChange(const CTxOut& txout) const;
     CAmount GetChange(const CTransaction& tx, const CTxOut& txout) const
     {
-        //if (!MoneyRange(txout.nValue))
-        //    throw std::runtime_error("CWallet::GetChange() : value out of range");
         return (IsChange(txout) ? getCTxOutValue(tx, txout) : 0);
     }
     bool IsMine(const CTransaction& tx) const

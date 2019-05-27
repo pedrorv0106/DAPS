@@ -161,10 +161,6 @@ CTxOut getPrevOut(const COutPoint& out)
 
 void getNextIn(const COutPoint& Out, uint256& Hash, unsigned int& n)
 {
-    // Hash = 0;
-    // n = 0;
-    // if (paddressmap)
-    //    paddressmap->ReadNextIn(Out, Hash, n);
 }
 
 const CBlockIndex* getexplorerBlockIndex(int64_t height)
@@ -242,8 +238,6 @@ std::string BlockToString(CBlockIndex* pBlock)
             _("Version"), itostr(block.nVersion),
             _("Hash"), "<pre>" + block.GetHash().GetHex() + "</pre>",
             _("Merkle Root"), "<pre>" + block.hashMerkleRoot.GetHex() + "</pre>",
-            // _("Hash Whole Block"), "<pre>" + block.hashWholeBlock.GetHex() + "</pre>"
-            // _("Miner Signature"), "<pre>" + block.MinerSignature.ToString() + "</pre>"
         };
 
     std::string BlockContent = makeHTMLTable(BlockContentCells, sizeof(BlockContentCells) / (2 * sizeof(std::string)), 2);
@@ -260,25 +254,6 @@ std::string BlockToString(CBlockIndex* pBlock)
     Content += ">&nbsp;►</a></h2>";
     Content += BlockContent;
     Content += "</br>";
-    /*
-    if (block.nHeight > getThirdHardforkBlock())
-    {
-        std::vector<std::string> votes[2];
-        for (int i = 0; i < 2; i++)
-        {
-            for (unsigned int j = 0; j < block.vvotes[i].size(); j++)
-            {
-                votes[i].push_back(block.vvotes[i][j].hash.ToString() + ':' + itostr(block.vvotes[i][j].n));
-            }
-        }
-        Content += "<h3>" + _("Votes +") + "</h3>";
-        Content += makeHTMLTable(&votes[1][0], votes[1].size(), 1);
-        Content += "</br>";
-        Content += "<h3>" + _("Votes -") + "</h3>";
-        Content += makeHTMLTable(&votes[0][0], votes[0].size(), 1);
-        Content += "</br>";
-    }
-    */
     Content += "<h2>" + _("Transactions") + "</h2>";
     Content += TxContent;
 
@@ -388,36 +363,6 @@ std::string AddressToString(const CBitcoinAddress& Address)
     std::string TxContent = table + makeHTMLTableRow(TxLabels, sizeof(TxLabels) / sizeof(std::string));
 
     std::set<COutPoint> PrevOuts;
-    /*
-    CScript AddressScript;
-    AddressScript.SetDestination(Address.Get());
-
-    CAmount Sum = 0;
-    bool fAddrIndex = false;
-
-    if (!fAddrIndex)
-        return ""; // it will take too long to find transactions by address
-    else
-    {
-        std::vector<CDiskTxPos> Txs;
-        paddressmap->GetTxs(Txs, AddressScript.GetID());
-        BOOST_FOREACH (const CDiskTxPos& pos, Txs)
-        {
-            CTransaction tx;
-            CBlock block;
-            uint256 bhash = block.GetHash();
-            GetTransaction(pos.nTxOffset, tx, bhash);
-            std::map<uint256, CBlockIndex*>::iterator mi = mapBlockIndex.find(block.GetHash());
-            if (mi == mapBlockIndex.end())
-                continue;
-            CBlockIndex* pindex = (*mi).second;
-            if (!pindex || !chainActive.Contains(pindex))
-                continue;
-            std::string Prepend = "<a href=\"" + itostr(pindex->nHeight) + "\">" + TimeToString(pindex->nTime) + "</a>";
-            TxContent += TxToRow(tx, AddressScript, Prepend, &Sum);
-        }
-    }
-    */
     TxContent += "</table>";
 
     std::string Content;
@@ -497,7 +442,6 @@ bool BlockExplorer::switchTo(const QString& query)
     // If the query is not an integer, assume it is a block hash
     uint256 hash = uint256S(query.toUtf8().constData());
 
-    // std::map<uint256, CBlockIndex*>::iterator iter = mapBlockIndex.find(hash);
     BlockMap::iterator iter = mapBlockIndex.find(hash);
     if (iter != mapBlockIndex.end()) {
         setBlock(iter->second);
@@ -552,7 +496,6 @@ void BlockExplorer::setContent(const std::string& Content)
 {
     QString CSS = "body {font-size:12px; color:#f8f6f6; bgcolor:#5B4C7C;}\n a, span { font-family: monospace; }\n span.addr {color:#5B4C7C; font-weight: bold;}\n table tr td {padding: 3px; border: 1px solid black; background-color: #5B4C7C;}\n td.d0 {font-weight: bold; color:#f8f6f6;}\n h2, h3 { white-space:nowrap; color:#5B4C7C;}\n a { color:#88f6f6; text-decoration:none; }\n a.nav {color:#5B4C7C;}\n";
     QString FullContent = "<html><head><style type=\"text/css\">" + CSS + "</style></head>" + "<body>" + Content.c_str() + "</body></html>";
-    // printf(FullContent.toUtf8());
 
     ui->content->setText(FullContent);
 }

@@ -26,8 +26,6 @@
 #include "json/json_spirit_value.h"
 #include "spork.h"
 #include <boost/assign/list_of.hpp>
-//#include "privacy/mnemonics/electrum-words.h"
-//#include "privacy/rpc/core_rpc_server_commands_defs.h"
 
 using namespace std;
 using namespace boost;
@@ -299,9 +297,6 @@ void SendMoney(const CTxDestination& address, CAmount nValue, CWalletTx& wtxNew,
     // Check amount
     if (nValue <= 0)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid amount");
-
-    /*if (nValue > pwalletMain->GetBalance())
-        throw JSONRPCError(RPC_WALLET_INSUFFICIENT_FUNDS, "Insufficient funds");*/
 
     string strError;
     if (pwalletMain->IsLocked()) {
@@ -2369,64 +2364,8 @@ Value createprivacywallet(const Array& params, bool fHelp)
         language = params[0].get_str();
     }
 
-    /*std::string wallet_file = filepath;
-    {
-        std::vector<std::string> languages;
-        crypto::ElectrumWords::get_language_list(languages);
-        std::vector<std::string>::iterator it;
-        std::string wallet_file;
-        char *ptr;
-
-        it = std::find(languages.begin(), languages.end(), language);
-        if (it == languages.end())
-        {
-            throw JSONRPCError(RPC_ERROR_CODE_UNKNOWN_ERROR,
-                               "Error: Unknown language.");
-        }
-    }*/
-    /*{
-        po::options_description desc("dummy");
-        const command_line::arg_descriptor<std::string, true> arg_password = {"password", "password"};
-        const char *argv[4];
-        int argc = 3;
-        argv[0] = "wallet-rpc";
-        argv[1] = "--password";
-        argv[2] = req.password.c_str();
-        argv[3] = NULL;
-        vm2 = *m_vm;
-        command_line::add_arg(desc, arg_password);
-        po::store(po::parse_command_line(argc, argv, desc), vm2);
-    }*/
-    /*std::unique_ptr<CWallet> wal = CWallet::make_new(pwalletMain->vm, true, nullptr).first;
-    if (!wal)
-    {
-        throw JSONRPCError(RPC_ERROR_CODE_UNKNOWN_ERROR,
-                           "Error: Failed to create privacy wallet.");
-    }
-    wal->set_seed_language(language);
-    cryptonote::COMMAND_RPC_GET_HEIGHT::request hreq;
-    cryptonote::COMMAND_RPC_GET_HEIGHT::response hres;
-    hres.height = 0;
-    //bool r = wal->invoke_http_json("/getheight", hreq, hres);
-    wal->set_refresh_from_block_height(hres.height);
-    crypto::secret_key dummy_key;
-    try {
-        wal->generate(wallet_file, password, dummy_key, false, false);
-    }
-    catch (const std::exception& e)
-    {
-        throw JSONRPCError(RPC_ERROR_CODE_UNKNOWN_ERROR,
-                           "Error: Failed to generate dummy key.");
-    }
-    if (!wal)
-    {
-        throw JSONRPCError(RPC_ERROR_CODE_UNKNOWN_ERROR,
-                           "Error: Failed to generate wallet.");
-    }
-
-    pwalletMain = wal.release();*/
     Object ret;
-    //ret.emplace_back(Pair("wallet file", wallet_file));
+
     return ret;
 }
 
@@ -2447,8 +2386,6 @@ Value createprivacyaccount(const Array& params, bool fHelp)
         throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
                            "Error: There is no privacy wallet, please use createprivacywallet to create one.");
     }
-
-    //EnsureWalletIsUnlocked();
 
     CWalletDB walletdb(pwalletMain->strWalletFile);
     Object ret;
@@ -2617,8 +2554,6 @@ Value sendtostealthaddress(const Array& params, bool fHelp)
         throw JSONRPCError(RPC_WALLET_ERROR,
                            "Cannot create transaction.");
     }
-
-    //std::cout << "tx hex:" << EncodeHexTx(wtx) << std::endl;
 
     return wtx.GetHash().GetHex();
 }

@@ -41,11 +41,6 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
     contextMenu->addAction(copyMessageAction);
     contextMenu->addAction(copyAmountAction);
 
-    // context menu signals
-    //connect(copyLabelAction, SIGNAL(triggered()), this, SLOT(copyLabel()));
-    //connect(copyMessageAction, SIGNAL(triggered()), this, SLOT(copyMessage()));
-    //connect(copyAmountAction, SIGNAL(triggered()), this, SLOT(copyAmount()));
-
     // Show privacy account address
     ui->lineEditAddress->setStyleSheet("border:none; background: transparent; text-align:center;");
     ui->pushButtonCP->setStyleSheet("background:transparent;");
@@ -132,10 +127,6 @@ ReceiveCoinsDialog::~ReceiveCoinsDialog()
 
 void ReceiveCoinsDialog::clear()
 {
-    //ui->reqAmount->clear();
-    // #REMOVE ui->reqLabel->setText("");
-    // #REMOVE ui->reqMessage->setText("");
-    // #REMOVE ui->reuseAddress->setChecked(false);
     updateDisplayUnit();
 }
 
@@ -151,9 +142,6 @@ void ReceiveCoinsDialog::accept()
 
 void ReceiveCoinsDialog::updateDisplayUnit()
 {
-    if (model && model->getOptionsModel()) {
-        //ui->reqAmount->setDisplayUnit(model->getOptionsModel()->getDisplayUnit());
-    }
 }
 
 void ReceiveCoinsDialog::on_receiveButton_clicked()
@@ -199,13 +187,7 @@ void ReceiveCoinsDialog::on_receiveButton_clicked()
 void ReceiveCoinsDialog::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
-    // m_SizeGrip.move  (width() - 17, height() - 17);
-    // m_SizeGrip.resize(          17,            17);
 }
-
-// void ReceiveCoinsDialog::bitcoinGUIInstallEvent(BitcoinGUI *gui) {
-//     m_SizeGrip.installEventFilter((QObject*)gui);
-// }
 
 void ReceiveCoinsDialog::keyPressEvent(QKeyEvent* event)
 {
