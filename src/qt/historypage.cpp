@@ -125,10 +125,41 @@ void HistoryPage::on_cellClicked(int row, int column)
         txdlg.setTxID(pwalletMain->addrToTxHashMap[stdAddress].c_str());
 
         txdlg.setTxAddress(stdAddress.c_str());
+        bool privkeyFound = false;
+        std::string txHash = pwalletMain->addrToTxHashMap[stdAddress];
+        if (IsHex(txHash)) {
+        	uint256 hash;
+        	hash.SetHex(txHash);
 
-        CKey view;
-        pwalletMain->myViewPrivateKey(view);
-        txdlg.setTxPrivKey(CBitcoinSecret(view).ToString().c_str());
+        	if (pwalletMain && pwalletMain->mapWallet.count(hash) == 1) {
+        		CWalletTx tx = pwalletMain->mapWallet[hash];
+        		for (size_t i = 0; i < tx.vout.size(); i++) {
+        			txnouttype type;
+        			vector<CTxDestination> addresses;
+        			int nRequired;
+
+        			if (ExtractDestinations(tx.vout[i].scriptPubKey, type, addresses, nRequired)) {
+        				std::string parseddAddress = CBitcoinAddress(addresses[0]).ToString();
+        				if (stdAddress == parseddAddress) {
+        					if (tx.IsCoinStake() && !tx.vout[i].txPriv.empty()) {
+        						CKey txPriv;
+        						txPriv.Set(tx.vout[i].txPriv.begin(), tx.vout[i].txPriv.end(), true);
+        						txdlg.setTxPrivKey(CBitcoinSecret(txPriv).ToString().c_str());
+    							privkeyFound = true;
+        					} else {
+        						std::string key = txHash + std::to_string(i);
+        						std::string secret;
+        						if (CWalletDB(pwalletMain->strWalletFile).ReadTxPrivateKey(key, secret)) {
+        							txdlg.setTxPrivKey(secret.c_str());
+        							privkeyFound = true;
+        						}
+        					}
+        				}
+        			}
+        		}
+        	}
+        }
+        if (!privkeyFound) txdlg.setTxPrivKey(std::string("Not available").c_str());
         
         txdlg.exec();
     }

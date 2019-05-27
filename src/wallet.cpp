@@ -5940,6 +5940,7 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
     	std::string key = hash.GetHex() + std::to_string(i);
     	CWalletDB(strWalletFile).WriteTxPrivateKey(key, CBitcoinSecret(txPrivKeys[i]).ToString());
     }
+    txPrivKeys.clear();
     return true;
 }
 
