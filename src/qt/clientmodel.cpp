@@ -116,7 +116,7 @@ int ClientModel::getChainHeight() const
     if (chainActive.Tip())
         return chainActive.Tip()->nHeight;
     else 
-        return NULL;
+        return 0;
 }
 
 double ClientModel::getVerificationProgress() const

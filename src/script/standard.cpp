@@ -34,12 +34,6 @@ const char *GetTxnOutputType(txnouttype t) {
             return "multisig";
         case TX_NULL_DATA:
             return "nulldata";
-            /**
-             * @author Top1st
-             * @type zerocoin
-             */
-        case TX_ZEROCOINMINT:
-            return "zerocoinmint";
     }
     return NULL;
 }
@@ -68,19 +62,6 @@ bool Solver(const CScript &scriptPubKey, txnouttype &typeRet, vector <vector<uns
     if (scriptPubKey.IsPayToScriptHash()) {
         typeRet = TX_SCRIPTHASH;
         vector<unsigned char> hashBytes(scriptPubKey.begin() + 2, scriptPubKey.begin() + 22);
-        vSolutionsRet.push_back(hashBytes);
-        return true;
-    }
-
-    /**
-    * @author Top1st
-    * @type zerocoin
-    */
-    // Zerocoin
-    if (scriptPubKey.IsZerocoinMint()) {
-        typeRet = TX_ZEROCOINMINT;
-        if (scriptPubKey.size() > 150) return false;
-        vector<unsigned char> hashBytes(scriptPubKey.begin() + 2, scriptPubKey.end());
         vSolutionsRet.push_back(hashBytes);
         return true;
     }
@@ -171,8 +152,6 @@ int ScriptSigArgsExpected(txnouttype t, const std::vector <std::vector<unsigned 
     switch (t) {
         case TX_NONSTANDARD:
         case TX_NULL_DATA:
-        case TX_ZEROCOINMINT:
-            return -1;
         case TX_PUBKEY:
             return 1;
         case TX_PUBKEYHASH:

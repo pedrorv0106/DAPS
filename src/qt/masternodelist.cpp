@@ -55,11 +55,6 @@ MasternodeList::MasternodeList(QWidget* parent) : QDialog(parent),
     // Fill MN list
     fFilterUpdated = true;
     nTimeFilterUpdated = GetTime();
-
-    bool stkStatus = pwalletMain->ReadStakingStatus();
-    ui->toggleStaking->setState(nLastCoinStakeSearchInterval | stkStatus);
-    connect(ui->toggleStaking, SIGNAL(stateChanged(ToggleButton*)), this, SLOT(on_EnableStaking(ToggleButton*)));
-    ui->toggleStaking->setVisible(false);
 }
 
 MasternodeList::~MasternodeList()
@@ -190,7 +185,6 @@ void MasternodeList::updateMyMasternodeInfo(QString strAlias, QString strAddr, C
 
     QTableWidgetItem* aliasItem = new QTableWidgetItem(strAlias);
     QTableWidgetItem* addrItem = new QTableWidgetItem(pmn ? QString::fromStdString(pmn->addr.ToString()) : strAddr);
-    QTableWidgetItem* protocolItem = new QTableWidgetItem(QString::number(pmn ? pmn->protocolVersion : -1));
     QTableWidgetItem* statusItem = new QTableWidgetItem(QString::fromStdString(pmn ? pmn->GetStatus() : "MISSING"));
     GUIUtil::DHMSTableWidgetItem* activeSecondsItem = new GUIUtil::DHMSTableWidgetItem(pmn ? (pmn->lastPing.sigTime - pmn->sigTime) : 0);
     QTableWidgetItem* lastSeenItem = new QTableWidgetItem(QString::fromStdString(DateTimeStrFormat("%Y-%m-%d %H:%M", pmn ? pmn->lastPing.sigTime : 0)));
@@ -332,27 +326,4 @@ void MasternodeList::on_tableWidgetMyMasternodes_itemSelectionChanged()
 void MasternodeList::on_UpdateButton_clicked()
 {
     updateMyNodeList(true);
-}
-
-void MasternodeList::on_EnableStaking(ToggleButton* widget)
-{
-    if (widget->getState()){
-        QStringList errors = walletModel->getStakingStatusError();
-        if (!errors.length()) {
-            emit walletModel->stakingStatusChanged(true);
-            pwalletMain->WriteStakingStatus(true);
-            walletModel->generateCoins(true, 1);
-        } else {
-            GUIUtil::prompt(QString("<br><br>")+errors.join(QString("<br><br>"))+QString("<br><br>"));
-            widget->setState(false);
-            nLastCoinStakeSearchInterval = 0;
-            emit walletModel->stakingStatusChanged(false);
-            pwalletMain->WriteStakingStatus(false);
-        }
-    } else {
-        nLastCoinStakeSearchInterval = 0;
-        walletModel->generateCoins(false, 0);
-        emit walletModel->stakingStatusChanged(false);
-        pwalletMain->WriteStakingStatus(false);
-    }
 }

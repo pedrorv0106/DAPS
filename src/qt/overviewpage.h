@@ -72,14 +72,11 @@ private:
     CAmount currentBalance;
     CAmount currentUnconfirmedBalance;
     CAmount currentImmatureBalance;
-    CAmount currentZerocoinBalance;
-    CAmount currentUnconfirmedZerocoinBalance;
-    CAmount currentimmatureZerocoinBalance;
     CAmount currentWatchOnlyBalance;
     CAmount currentWatchUnconfBalance;
     CAmount currentWatchImmatureBalance;
     int nDisplayUnit;
-    void getPercentage(CAmount nTotalBalance, CAmount nZerocoinBalance, QString& sDAPSPercentage, QString& szDAPSPercentage);
+    void getPercentage(CAmount nTotalBalance, QString& sDAPSPercentage);
 
     TxViewDelegate* txdelegate;
     TransactionFilterProxy* filter;

@@ -293,7 +293,6 @@ bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
     CPubKey mnPaymentPubTx = mnPaymentPrivTx.GetPubKey();
 
     //spork
-    LogPrintf("\n%s: Initial payee=%s\n", __func__, payee.ToString());
     masternodePayments.GetBlockPayee(pindexPrev->nHeight + 1, payeeAddr);
     if (payeeAddr.size() == 0) {
         //no masternode detected
@@ -320,10 +319,8 @@ bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
     	if (!CWallet::DecodeStealthAddress(mnsa, pubViewKey, pubSpendKey, hasPaymentID, paymentID)) {
     		throw runtime_error("Stealth address mal-formatted");
     	}
-    	LogPrintf("\n%s: computing stealth des for masternode\n", __func__);
-    	if (!CWallet::ComputeStealthDestination(mnPaymentPrivTx, pubViewKey, pubSpendKey, des));
-    	payee = GetScriptForDestination(des);
-    	LogPrintf("\n%s: new payee %s\n", __func__, payee.ToString());
+    	if (!CWallet::ComputeStealthDestination(mnPaymentPrivTx, pubViewKey, pubSpendKey, des))
+    		payee = GetScriptForDestination(des);
     } else {
     	LogPrintf("\n%s: Failed to detect block to pay\n", __func__);
     	LogPrint("masternode","CreateNewBlock: Failed to detect masternode to pay\n");
@@ -346,18 +343,14 @@ bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
             /**
              * Topdev update
              */
-	        LogPrintf("\n%s: increase txNew.vout\n", __func__);
             txNew.vout.resize(i + 1);
-            LogPrintf("\n%s: copying new payee\n", __func__);
             txNew.vout[i].scriptPubKey = payee;
-            LogPrintf("\n%s: setting masternode payment\n", __func__);
             txNew.vout[i].nValue = masternodePayment;
+            txNew.vout[i].masternodeStealthAddress = payeeAddr;
             std::copy(mnPaymentPrivTx.begin(), mnPaymentPrivTx.end(), std::back_inserter(txNew.vout[i].txPriv));
             std::copy(mnPaymentPubTx.begin(), mnPaymentPubTx.end(), std::back_inserter(txNew.vout[i].txPub));
             //subtract mn payment from the stake reward
-            LogPrintf("\n%s: decrease staking node payment\n", __func__);
             txNew.vout[i - 1].nValue -= masternodePayment;
-		    LogPrintf("\n%s: done masternode payment\n", __func__);
 //            txNew.vout.resize(i + 2);
 //            txNew.vout[i].scriptPubKey = payee;
 //            txNew.vout[i].nValue = masternodePayment;
@@ -575,8 +568,6 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransaction& txNew)
 
     std::string strPayeesPossible = "";
 
-    CAmount nReward = GetBlockValue(nBlockHeight);
-
     if (IsSporkActive(SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT)) {
         // Get a stable number of masternodes by ignoring newly activated (< 8000 sec old) masternodes
         nMasternode_Drift_Count = mnodeman.stable_size() + Params().MasternodeCountDrift();
@@ -587,8 +578,6 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransaction& txNew)
         //for mnPayment >= required, so it only makes sense to check the max node count allowed.
         nMasternode_Drift_Count = mnodeman.size() + Params().MasternodeCountDrift();
     }
-
-    CAmount requiredMasternodePayment = GetMasternodePayment(nBlockHeight, nReward, nMasternode_Drift_Count);
 
     //require at least 6 signatures
     BOOST_FOREACH (CMasternodePayee& payee, vecPayments)

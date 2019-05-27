@@ -19,9 +19,6 @@
   <property name="acceptDrops">
    <bool>false</bool>
   </property>
-  <property name="styleSheet">
-   <string notr="true">QDialog{border-image: url(':/images/background') 0 0 0 0 stretch stretch;}</string>
-  </property>
   <property name="sizeGripEnabled">
    <bool>false</bool>
   </property>
@@ -35,7 +32,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>Dark/Light Theme:</string>
+      <string>Theme Selection:</string>
      </property>
     </widget>
    </item>
@@ -53,16 +50,16 @@
      <property name="layoutDirection">
       <enum>Qt::RightToLeft</enum>
      </property>
-     <property name="OptionA" stdset="0">
-      <string>Dark Mode</string>
+     <property name="OptionA">
+      <string>Dark</string>
      </property>
-     <property name="OptionB" stdset="0">
-      <string>Light Mode</string>
+     <property name="OptionB">
+      <string>Light</string>
      </property>
-     <property name="fixedSize" stdset="0">
+     <property name="fixedSize">
       <size>
-       <width>150</width>
-       <height>30</height>
+       <width>100</width>
+       <height>55</height>
       </size>
      </property>
     </widget>
@@ -76,7 +73,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>Staking Enabled/Disabled:</string>
+      <string>Staking Status:</string>
      </property>
     </widget>
    </item>
@@ -89,20 +86,20 @@
 	    </sizepolicy>
 	   </property>
      <property name="toolTip">
-      <string>Enable or disable staking</string>
+      <string>Turn staking on or off</string>
      </property>
        <property name="layoutDirection">
         <enum>Qt::RightToLeft</enum>
        </property>
-       <property name="OptionA" stdset="0">
-        <string>Staking Enabled</string>
+       <property name="OptionA">
+        <string>On</string>
        </property>
-       <property name="OptionB" stdset="0">
-        <string>Staking Disabled</string>
+       <property name="OptionB">
+        <string>Off</string>
        </property>
-       <property name="fixedSize" stdset="0">
+       <property name="fixedSize">
         <size>
-         <width>240</width>
+         <width>100</width>
          <height>55</height>
         </size>
        </property>
@@ -288,16 +285,16 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="OptionA" stdset="0">
+     <property name="OptionA">
       <string>On</string>
      </property>
-     <property name="OptionB" stdset="0">
+     <property name="OptionB">
       <string>Off</string>
      </property>
-     <property name="fixedSize" stdset="0">
+     <property name="fixedSize">
       <size>
        <width>100</width>
-       <height>30</height>
+       <height>55</height>
       </size>
      </property>
     </widget>

@@ -88,7 +88,7 @@ void TxEntry::expand(bool isExpanding)
                             ":icons/collapse" :
                             ":icons/expand");
     ui->pushButtonExpand->setIcon(QIcon(newImage));
-    this->setMinimumHeight(isExpanding ? 180 : 0);
+    this->setMinimumHeight(isExpanding ? 250 : 0);
     ui->labelTxAmount->setAlignment(isExpanding ?
                                         (Qt::AlignLeft | Qt::AlignVCenter) :
                                         (Qt::AlignLeft | Qt::AlignVCenter));

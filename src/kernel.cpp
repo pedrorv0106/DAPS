@@ -292,8 +292,6 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlockHeader blockFrom, cons
 {
     //assign new variables to make it easier to read
     //check encryptionKey hash
-    uint256 hashOfKey = Hash(encryptionKey, encryptionKey + 33);
-
     CAmount nValueIn;// = txPrev.vout[prevout.n].nValue;
     uint256 val = txPrev.vout[prevout.n].maskValue.amount;
     uint256 mask = txPrev.vout[prevout.n].maskValue.mask;
@@ -390,7 +388,6 @@ bool CheckProofOfStake(const CBlock block, uint256& hashProofOfStake)
         return error("CheckProofOfStake() : INFO: read txPrev failed");
     //verify signature and script
     if (!VerifyScript(txin.scriptSig, txPrev.vout[txin.prevout.n].scriptPubKey, STANDARD_SCRIPT_VERIFY_FLAGS, TransactionSignatureChecker(&tx, 0))) {
-    	LogPrintf("\n%s: not successfully verified scriptSig=%s, fromPubKey=%s, txTo=%s\n", __func__, txin.scriptSig.ToString(), txPrev.vout[txin.prevout.n].scriptPubKey.ToString(), tx.GetHash().GetHex());
     	return error("CheckProofOfStake() : VerifySignature failed on coinstake %s", tx.GetHash().ToString().c_str());
     }
     CBlockIndex* pindex = NULL;

@@ -24,7 +24,6 @@
 #include "wallet.h"
 #endif
 #include "masternode-payments.h"
-#include "accumulators.h"
 #include "spork.h"
 
 #include <boost/thread.hpp>
@@ -106,7 +105,7 @@ uint32_t GetListOfPoSInfo(uint32_t currentHeight, std::vector<PoSBlockSummary>& 
 	}
     if (nloopIdx <= Params().START_POA_BLOCK()) {
         //this is the first PoA block ==> take all PoS blocks from LAST_POW_BLOCK up to currentHeight - 60 inclusive
-        for (uint32_t i = Params().LAST_POW_BLOCK() + 1; i <= Params().LAST_POW_BLOCK() + 60; i++) {
+        for (int i = Params().LAST_POW_BLOCK() + 1; i <= Params().LAST_POW_BLOCK() + 60; i++) {
             PoSBlockSummary pos;
             pos.hash = chainActive[i]->GetBlockHash();
             pos.nTime = chainActive[i]->GetBlockHeader().nTime;
@@ -115,7 +114,7 @@ uint32_t GetListOfPoSInfo(uint32_t currentHeight, std::vector<PoSBlockSummary>& 
         }
     } else {
         //Find the previous PoA block
-        uint32_t start = nloopIdx;
+        int start = nloopIdx;
         if (start > Params().START_POA_BLOCK()) {
             CBlockIndex* pblockindex = chainActive[start];
             CBlock block;
@@ -164,12 +163,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
     if (Params().MineBlocksOnDemand())
         pblock->nVersion = GetArg("-blockversion", pblock->nVersion);
 
-    // Make sure to create the correct block version after zerocoin is enabled
-    bool fZerocoinActive = GetAdjustedTime() >= Params().Zerocoin_StartTime();
-    if (fZerocoinActive)
-        pblock->nVersion = 4;
-    else
-        pblock->nVersion = 3;
+    pblock->nVersion = 3;
 
     // Create coinbase tx
     CMutableTransaction txNew;
@@ -259,21 +253,24 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
             if (tx.IsCoinBase() || tx.IsCoinStake() || !IsFinalTx(tx, nHeight)){
                 continue;
             }
+            bool fKeyImageCheck = true;
+            // Check key images not duplicated with what in db
+            for (const CTxIn& txin: tx.vin) {
+            	const CKeyImage& keyImage = txin.keyImage;
+            	if (IsKeyImageSpend1(keyImage.GetHex(), chainActive.Tip()->nHeight + 1)) {
+            		fKeyImageCheck = false;
+            		break;
+            	}
+            }
 
-            if (GetAdjustedTime() > GetSporkValue(SPORK_16_ZEROCOIN_MAINTENANCE_MODE) && tx.ContainsZerocoins())
-                continue;
-
+            if (!fKeyImageCheck) {
+            	continue;
+            }
             COrphan* porphan = NULL;
             double dPriority = 0;
             CAmount nTotalIn = 0;
             bool fMissingInputs = false;
             for (const CTxIn& txin : tx.vin) {
-                //zerocoinspend has special vin
-                if (tx.IsZerocoinSpend()) {
-                    nTotalIn = tx.GetZerocoinSpent();
-                    break;
-                }
-
                 // Read prev transaction
                 if (!view.HaveCoins(txin.prevout.hash)) {
                     // This should never happen; all transactions in the memory
@@ -307,13 +304,13 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
                     break;
                 }
 
-                const CCoins* coins = view.AccessCoins(txin.prevout.hash);
-                assert(coins);
+                //const CCoins* coins = view.AccessCoins(txin.prevout.hash);
+                //assert(coins);
 
                 //CAmount nValueIn = coins->vout[txin.prevout.n].nValue;
                 //nTotalIn += nValueIn;
 
-                int nConf = nHeight - coins->nHeight;
+                //int nConf = nHeight - coins->nHeight;
 
                 //dPriority += (double)nValueIn * nConf;
             }
@@ -371,7 +368,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
             double dPriorityDelta = 0;
             CAmount nFeeDelta = 0;
             mempool.ApplyDeltas(hash, dPriorityDelta, nFeeDelta);
-            if (!tx.IsZerocoinSpend() && fSortedByFee && (dPriorityDelta <= 0) && (nFeeDelta <= 0) && (feeRate < ::minRelayTxFee) && (nBlockSize + nTxSize >= nBlockMinSize))
+            if (fSortedByFee && (dPriorityDelta <= 0) && (nFeeDelta <= 0) && (feeRate < ::minRelayTxFee) && (nBlockSize + nTxSize >= nBlockMinSize))
                 continue;
 
             // Prioritise by fee once past the priority size or we run out of high-priority
@@ -383,34 +380,8 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
                 std::make_heap(vecPriority.begin(), vecPriority.end(), comparer);
             }
 
-            if (!view.HaveInputs(tx))
+            if (!CheckHaveInputs(view, tx))
                 continue;
-
-            // double check that there are no double spent zDaps spends in this block or tx
-            if (tx.IsZerocoinSpend()) {
-                int nHeightTx = 0;
-                if (IsTransactionInChain(tx.GetHash(), nHeightTx))
-                    continue;
-
-                bool fDoubleSerial = false;
-                for (const CTxIn txIn : tx.vin) {
-                    if (txIn.scriptSig.IsZerocoinSpend()) {
-                        libzerocoin::CoinSpend spend = TxInToZerocoinSpend(txIn);
-                        if (!spend.HasValidSerial(Params().Zerocoin_Params()))
-                            fDoubleSerial = true;
-                        if (count(vBlockSerials.begin(), vBlockSerials.end(), spend.getCoinSerialNumber()))
-                            fDoubleSerial = true;
-                        if (count(vTxSerials.begin(), vTxSerials.end(), spend.getCoinSerialNumber()))
-                            fDoubleSerial = true;
-                        if (fDoubleSerial)
-                            break;
-                        vTxSerials.emplace_back(spend.getCoinSerialNumber());
-                    }
-                }
-                //This zDaps serial has already been included in the block, do not add this tx.
-                if (fDoubleSerial)
-                    continue;
-            }
 
             CAmount nTxFees = tx.nTxFee;
 
@@ -516,9 +487,6 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
         pblock->nBits = GetNextWorkRequired(pindexPrev, pblock);
         pblock->nNonce = 0;
         uint256 nCheckpoint = 0;
-        if(fZerocoinActive && !CalculateAccumulatorCheckpoint(nHeight, nCheckpoint)){
-            LogPrintf("%s: failed to get accumulator checkpoint\n", __func__);
-        }
         pblock->nAccumulatorCheckpoint = nCheckpoint;
         pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(pblock->vtx[0]);
 
@@ -558,8 +526,6 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, const CPubKey& 
     std::copy(txPub.begin(), txPub.end(), std::back_inserter(txNew.vout[0].txPub));
     std::copy(txPriv.begin(), txPriv.end(), std::back_inserter(txNew.vout[0].txPriv));
 
-	CBlockIndex* prev = chainActive.Tip();
-
 	pblock->vtx.push_back(txNew);
 	pblocktemplate->vTxFees.push_back(-1);   // updated at end
 	pblocktemplate->vTxSigOps.push_back(-1); // updated at end
@@ -569,7 +535,7 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, const CPubKey& 
 	CBlockIndex* pindexPrev = chainActive.Tip();
 	pblock->nBits = GetNextWorkRequired(pindexPrev, pblock);
 
-	uint32_t nprevPoAHeight;
+	int nprevPoAHeight;
 
 
 	nprevPoAHeight = GetListOfPoSInfo(pindexPrev->nHeight, pblock->posBlocksAudited);
@@ -625,7 +591,6 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, const CPubKey& 
 	pblock->vtx[0] = txCoinbase;
 	pblock->hashMerkleRoot = pblock->BuildMerkleTree();
 
-    bool fMutated;
     pblock->hashPoAMerkleRoot = pblock->BuildPoAMerkleTree();
 	pblock->minedHash = pblock->ComputeMinedHash();
 //        CValidationState state;
@@ -920,7 +885,6 @@ void static ThreadBitcoinMiner(void* parg)
 void static ThreadDapscoinMiner(void* parg)
 {
     boost::this_thread::interruption_point();
-    CWallet* pwallet = (CWallet*)parg;
     try {
     	//create a PoA after every 3 minute if enough PoS blocks created
     	while (true) {

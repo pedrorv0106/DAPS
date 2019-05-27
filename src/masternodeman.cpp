@@ -949,7 +949,6 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
                         pmn->addr = addr;
                         //fake ping
                         pmn->lastPing = CMasternodePing(vin);
-                        LogPrintf("\n%s: Updating masternode stealth address\n", __func__);
                         pmn->vin.masternodeStealthAddress = vin.masternodeStealthAddress;
                     }
                     pmn->nLastDsee = sigTime;
