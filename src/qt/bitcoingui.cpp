@@ -112,7 +112,6 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle* networkStyle, QWidget* parent) : QMai
                                                                             m_previousPos(0,0),
                                                                             m_fMousePress(0)
 {
-    // this->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
     /* Open CSS when configured */
     this->setStyleSheet(GUIUtil::loadStyleSheet());
 
@@ -178,9 +177,6 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle* networkStyle, QWidget* parent) : QMai
 
     // Create system tray icon and notification
     createTrayIcon(networkStyle);
-
-    // Create status bar
-    //statusBar();
 
     // Status bar notification icons
     QFrame* frameBlocks = new QFrame();
@@ -285,7 +281,6 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     tabGroup->addAction(overviewAction);
 
     sendCoinsAction = new QAction(QIcon(":/icons/send"), tr("&   Send"), this);
-    // #REMOVE sendCoinsAction->setStatusTip(tr("Send coins to a DAPScoin address"));
     sendCoinsAction->setToolTip(QString());
     sendCoinsAction->setCheckable(true);
 #ifdef Q_OS_MAC
@@ -296,7 +291,6 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     tabGroup->addAction(sendCoinsAction);
 
     receiveCoinsAction = new QAction(QIcon(":/icons/receiving_addresses"), tr("&   Receive"), this);
-    // #REMOVE receiveCoinsAction->setStatusTip(tr("Request payments (generates QR codes and dapscoin: URIs)"));
     receiveCoinsAction->setToolTip(QString());
     receiveCoinsAction->setCheckable(true);
 #ifdef Q_OS_MAC
@@ -307,7 +301,6 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     tabGroup->addAction(receiveCoinsAction);
 
     historyAction = new QAction(QIcon(":/icons/history"), tr("&   History"), this);
-    // #REMOVE historyAction->setStatusTip(tr("Browse transaction history"));
     historyAction->setToolTip(QString());
     historyAction->setCheckable(true);
 #ifdef Q_OS_MAC
@@ -316,17 +309,6 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     historyAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_4));
 #endif
     tabGroup->addAction(historyAction);
-
-//    privacyAction = new QAction(QIcon(":/icons/privacy"), tr("&Privacy"), this);
-//    privacyAction->setStatusTip(tr("Privacy Actions for zDAPS"));
-//    privacyAction->setToolTip(privacyAction->statusTip());
-//    privacyAction->setCheckable(true);
-#ifdef Q_OS_MAC
-//    privacyAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_5));
-#else
-//    privacyAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
-#endif
-    //    tabGroup->addAction(privacyAction);
 
 #ifdef ENABLE_WALLET
 
@@ -354,8 +336,6 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     connect(sendCoinsAction, SIGNAL(triggered()), this, SLOT(gotoSendCoinsPage()));
     connect(receiveCoinsAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(receiveCoinsAction, SIGNAL(triggered()), this, SLOT(gotoReceiveCoinsPage()));
-    //    connect(privacyAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    //    connect(privacyAction, SIGNAL(triggered()), this, SLOT(gotoPrivacyPage()));
     connect(historyAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(historyAction, SIGNAL(triggered()), this, SLOT(gotoHistoryPage()));
 #endif // ENABLE_WALLET
@@ -513,7 +493,6 @@ void BitcoinGUI::createMenuBar()
         settings->addAction(multiSendAction);
         settings->addSeparator();
     }
-    //settings->addAction(optionsAction);
 
     if (walletFrame) {
         walletFrame->addAction(openRPCConsoleAction);
@@ -565,7 +544,6 @@ void BitcoinGUI::createToolBars()
         bottomToolbar->addAction(optionsAction);
         bottomToolbar->addAction(stakingAction);
         bottomToolbar->addAction(networkAction);
-        //bottomToolbar->setFixedHeight(36);
         bottomToolbar->setObjectName("bottomToolbar");
 
         QHBoxLayout* layout = new QHBoxLayout(this);
@@ -579,12 +557,6 @@ void BitcoinGUI::createToolBars()
         dapsico->setPixmap(QIcon(":icons/bitcoin").pixmap(130, 107));
         dapsico->setObjectName("dapsico");
 
-        // QPushButton* exitButton = new QPushButton;
-        // exitButton->setIcon(QIcon(":icons/quit").pixmap(40,40));
-        // exitButton->setStyleSheet("width: 10px; height: 10px; background:transparent;");
-        // connect(exitButton, SIGNAL(clicked()), this, SLOT(exitApp()));
-
-        // navLayout->addWidget(exitButton);
         navLayout->addWidget(dapsico);
         navLayout->addWidget(toolbar);
         navLayout->addWidget(bottomToolbar);
@@ -622,10 +594,6 @@ void BitcoinGUI::setClientModel(ClientModel* clientModel)
         // Receive and report messages from client model
         connect(clientModel, SIGNAL(message(QString, QString, unsigned int)), this, SLOT(message(QString, QString, unsigned int)));
 
-        // Show progress dialog
-        //Cam: comment out because showProgress slot is not found
-        //connect(clientModel, SIGNAL(showProgress(QString, int)), this, SLOT(showProgress(QString, int)));
-
         rpcConsole->setClientModel(clientModel);
 #ifdef ENABLE_WALLET
         if (walletFrame) {
@@ -647,7 +615,6 @@ void BitcoinGUI::showProgress(const QString &title, int nProgress)
 {
     if (nProgress == 0) {
         progressDialog = new QProgressDialog(title, QString(), 0, 100);
-        //QProgressDialog::PolishProgressDialog(progressDialog);
         progressDialog->setWindowModality(Qt::ApplicationModal);
         progressDialog->setMinimumDuration(0);
         progressDialog->setAutoClose(false);
@@ -692,7 +659,6 @@ void BitcoinGUI::setWalletActionsEnabled(bool enabled)
     overviewAction->setEnabled(enabled);
     sendCoinsAction->setEnabled(enabled);
     receiveCoinsAction->setEnabled(enabled);
-    //    privacyAction->setEnabled(enabled);
     historyAction->setEnabled(enabled);
     QSettings settings;
     if (settings.value("fShowMasternodesTab").toBool()) {
@@ -749,13 +715,11 @@ void BitcoinGUI::createTrayIconMenu()
     trayIconMenu->addSeparator();
     trayIconMenu->addAction(sendCoinsAction);
     trayIconMenu->addAction(receiveCoinsAction);
-    //    trayIconMenu->addAction(privacyAction);
     trayIconMenu->addSeparator();
     trayIconMenu->addAction(signMessageAction);
     trayIconMenu->addAction(verifyMessageAction);
     trayIconMenu->addAction(bip38ToolAction);
     trayIconMenu->addSeparator();
-    //trayIconMenu->addAction(optionsAction);
     trayIconMenu->addSeparator();
     trayIconMenu->addAction(openInfoAction);
     trayIconMenu->addAction(openRPCConsoleAction);
@@ -851,12 +815,6 @@ void BitcoinGUI::gotoOptionsPage()
     if (walletFrame) walletFrame->gotoOptionsPage();
 }
 
-//void BitcoinGUI::gotoPrivacyPage()
-//{
-//    privacyAction->setChecked(true);
-//    if (walletFrame) walletFrame->gotoPrivacyPage();
-//}
-
 void BitcoinGUI::gotoSendCoinsPage(QString addr)
 {
     sendCoinsAction->setChecked(true);
@@ -932,9 +890,7 @@ void BitcoinGUI::setNumConnections(int count)
         icon = ":/icons/connect_4";
         break;
     }
-    //QIcon connectionItem = QIcon(icon).pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE);
-    //labelConnectionsIcon->setIcon(connectionItem);
-    //labelConnectionsIcon->setToolTip(tr("%n active connection(s) to DAPScoin network", "", count));
+    
     networkAction->setText(tr("%n connections", "", count));
     if (count < 1)
         networkAction->setIcon(QIcon(":icons/staking_disabled"));
@@ -962,8 +918,6 @@ void BitcoinGUI::setNumBlocks(int count)
         tooltip = tr("Up to date") + QString(".<br>") + tooltip;
 
         if (masternodeSync.IsSynced()) {
-            // progressBarLabel->setVisible(false);
-            // progressBar->setVisible(false);
             labelBlocksIcon->setPixmap(QIcon(":/icons/synced").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
         } else {
             // int nAttempt;
@@ -979,18 +933,9 @@ void BitcoinGUI::setNumBlocks(int count)
             if (walletFrame)
                 walletFrame->showSyncStatus(false);
 #endif // ENABLE_WALLET
-
-            // nAttempt = masternodeSync.RequestedMasternodeAttempt < MASTERNODE_SYNC_THRESHOLD ?
-            //                masternodeSync.RequestedMasternodeAttempt + 1 :
-            //                MASTERNODE_SYNC_THRESHOLD;
-            // progress = nAttempt + (masternodeSync.RequestedMasternodeAssets - 1) * MASTERNODE_SYNC_THRESHOLD;
-            // progressBar->setMaximum(4 * MASTERNODE_SYNC_THRESHOLD);
-            // progressBar->setFormat(tr("Synchronizing additional data: %p%"));
-            // progressBar->setValue(progress);
         }
 
         strSyncStatus = QString(masternodeSync.GetSyncStatus().c_str());
-        // progressBarLabel->setText(strSyncStatus);
         tooltip = strSyncStatus + QString("<br>") + tooltip;
     } else {
         // Represent time from last generated block in human readable text
@@ -1010,12 +955,6 @@ void BitcoinGUI::setNumBlocks(int count)
             int remainder = secs % YEAR_IN_SECONDS;
             timeBehindText = tr("%1 and %2").arg(tr("%n year(s)", "", years)).arg(tr("%n week(s)", "", remainder / WEEK_IN_SECONDS));
         }
-
-        // progressBarLabel->setVisible(true);
-        // progressBar->setFormat(tr("%1 behind. Scanning block %2").arg(timeBehindText).arg(count));
-        // progressBar->setMaximum(1000000000);
-        // progressBar->setValue(clientModel->getVerificationProgress() * 1000000000.0 + 0.5);
-        // progressBar->setVisible(false);
 
         tooltip = tr("Catching up...") + QString("<br>") + tooltip;
         if (count != prevBlocks) {
@@ -1037,13 +976,6 @@ void BitcoinGUI::setNumBlocks(int count)
         tooltip += QString("<br>");
         tooltip += tr("Transactions after this will not yet be visible.");
     }
-
-    // Don't word-wrap this (fixed-width) tooltip
-    // #REMOVE tooltip = QString("<nobr>") + tooltip + QString("</nobr>");
-
-    // #REMOVE labelBlocksIcon->setToolTip(tooltip);
-    // #REMOVE progressBarLabel->setToolTip(tooltip);
-    // #REMOVE progressBar->setToolTip(tooltip);
 }
 
 void BitcoinGUI::message(const QString& title, const QString& message, unsigned int style, bool* ret)
@@ -1163,30 +1095,6 @@ void BitcoinGUI::dragEnterEvent(QDragEnterEvent* event)
 
 bool BitcoinGUI::eventFilter(QObject *obj, QEvent *event)
 {
-    // if (event->type() == QEvent::MouseButtonPress)
-    // {
-    //     if (strncmp(obj->metaObject()->className(), "QSizeGrip", 9) == 0)
-    //         return false;
-
-    //     m_fMousePress = true;
-    //     m_previousPos = QCursor::pos();
-    // }
-    // else if ((event->type() == QEvent::MouseMove) && m_fMousePress)
-    // {
-    //     QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-
-    //     if(mouseEvent->buttons() == Qt::LeftButton)
-    //     {
-    //         QPoint offset = m_previousPos - QCursor::pos();
-    //         m_previousPos = QCursor::pos();
-    //         move(pos() - offset);
-    //     }
-    // }
-    // else if (event->type() == QEvent::MouseButtonRelease)
-    // {
-    //     m_fMousePress = false;
-    // }
-
     return false;
 }
 
@@ -1312,8 +1220,6 @@ void BitcoinGUI::detectShutdown()
 static bool ThreadSafeMessageBox(BitcoinGUI* gui, const std::string& message, const std::string& caption, unsigned int style)
 {
     bool modal = (style & CClientUIInterface::MODAL);
-    // The SECURE flag has no effect in the Qt GUI.
-    // bool secure = (style & CClientUIInterface::SECURE);
     style &= ~CClientUIInterface::SECURE;
     bool ret = false;
     // In case of modal message, use blocking connection to wait for user to click a button

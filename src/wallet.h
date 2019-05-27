@@ -77,9 +77,6 @@ class COutput;
 class CReserveKey;
 class CScript;
 class CWalletTx;
-//using namespace tools;
-//using namespace config;
-//using namespace cryptonote;
 
 /** (client) version numbers for particular wallet features */
 enum WalletFeature {
@@ -595,8 +592,6 @@ public:
     bool IsChange(const CTxOut& txout) const;
     CAmount GetChange(const CTransaction& tx, const CTxOut& txout) const
     {
-        //if (!MoneyRange(txout.nValue))
-        //    throw std::runtime_error("CWallet::GetChange() : value out of range");
         return (IsChange(txout) ? getCTxOutValue(tx, txout) : 0);
     }
     bool IsMine(const CTransaction& tx) const

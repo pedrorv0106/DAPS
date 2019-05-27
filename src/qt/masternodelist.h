@@ -46,7 +46,6 @@ public:
     void setWalletModel(WalletModel* walletModel);
     void StartAlias(std::string strAlias);
     void StartAll(std::string strCommand = "start-all");
-    // void bitcoinGUIInstallEvent(BitcoinGUI *gui);
 
 private:
     QMenu* contextMenu;
@@ -67,7 +66,6 @@ private:
     WalletModel* walletModel;
     CCriticalSection cs_mnlistupdate;
     QString strCurrentFilter;
-    // QSizeGrip m_SizeGrip;
     virtual void resizeEvent(QResizeEvent* event);
 
 private Q_SLOTS:

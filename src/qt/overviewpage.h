@@ -17,7 +17,6 @@ class ClientModel;
 class TransactionFilterProxy;
 class TxViewDelegate;
 class WalletModel;
-// class BitcoinGUI;
 
 namespace Ui
 {
@@ -41,8 +40,6 @@ public:
     void setWalletModel(WalletModel* walletModel);
     void showBlockSync(bool fShow);
     void showBalanceSync(bool fShow);
-    // void bitcoinGUIInstallEvent(BitcoinGUI *gui);
-    
 
     QTimer* animTicker;
     QElapsedTimer* animClock;
@@ -82,14 +79,12 @@ private:
     TransactionFilterProxy* filter;
 
     QWidget* blockSyncCircle;
-    // QSizeGrip m_SizeGrip;
     QWidget* blockAnimSyncCircle;
     bool isSyncingBlocks=true;
     QWidget* balanceSyncCircle;
     QWidget* balanceAnimSyncCircle;
     bool isSyncingBalance=true;
 
-    // virtual void resizeEvent(QResizeEvent* event);
     void initSyncCircle(float percentOfParent);
     void moveSyncCircle(QWidget* anchor, QWidget* animated, int deltaRadius, float degreesPerSecond, float angleOffset=0);
     QRect getCircleGeometry(QWidget* parent, float ratioToParent);

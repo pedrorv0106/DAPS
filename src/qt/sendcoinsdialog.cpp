@@ -79,18 +79,6 @@ void SendCoinsDialog::setModel(WalletModel* model)
     }
 }
 
-// void SendCoinsDialog::resizeEvent(QResizeEvent* event)
-// {
-//     QWidget::resizeEvent(event);
-
-//     m_SizeGrip.move  (width() - 17, height() - 17);
-//     m_SizeGrip.resize(          17,            17);
-// }
-
-// void SendCoinsDialog::bitcoinGUIInstallEvent(BitcoinGUI *gui) {
-//     m_SizeGrip.installEventFilter((QObject*)gui);
-// }
-
 void SendCoinsDialog::setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, 
                               const CAmount& zerocoinBalance, const CAmount& unconfirmedZerocoinBalance, const CAmount& immatureZerocoinBalance,
                               const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance)
@@ -133,8 +121,6 @@ void SendCoinsDialog::on_sendButton_clicked(){
     }
 
     CWalletTx resultTx; 
-    //CAmount* amount = new CAmount();
-    //BitcoinUnits::parse(0, QString::number(recipient.amount), amount);
     bool success = false;
     try {
         success = pwalletMain->SendToStealthAddress(
@@ -164,8 +150,6 @@ SendCoinsEntry* SendCoinsDialog::addEntry()
     SendCoinsEntry* entry = new SendCoinsEntry(this);
     entry->setModel(model);
     ui->entries->addWidget(entry);
-    //connect(entry, SIGNAL(removeEntry(SendCoinsEntry*)), this, SLOT(removeEntry(SendCoinsEntry*)));
-    //connect(entry, SIGNAL(payAmountChanged()), this, SLOT(coinControlUpdateLabels()));
 
     ui->scrollAreaWidgetContents->resize(ui->scrollAreaWidgetContents->sizeHint());
     qApp->processEvents();
@@ -178,8 +162,6 @@ SendCoinsEntry* SendCoinsDialog::addEntry()
 void SendCoinsDialog::updateRingSize()
 {
     QSettings settings;
-    // settings.setValue("nRingSize", ui->horizontalSliderRingSize->value());
-    // ui->labelRingSizeValue->setText(settings.value("nRingSize").toString());
 }
 
 

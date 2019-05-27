@@ -181,7 +181,6 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, nSpendableDisplayed, false, BitcoinUnits::separatorAlways));
     ui->labelUnconfirmed->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, unconfirmedBalance, false, BitcoinUnits::separatorAlways));
     ui->labelBalance_2->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance, false, BitcoinUnits::separatorAlways));
-    //ui->labelBalanceImmature->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, immatureBalance, false, BitcoinUnits::separatorAlways) + " Immature");
 
     QFont font = ui->labelBalance_2->font();
     font.setPointSize(15);
@@ -195,7 +194,6 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     if (pwalletMain) {
         nLockedBalance = pwalletMain->GetLockedCoins();
     }
-//    ui->labelLockedBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, nLockedBalance, false, BitcoinUnits::separatorAlways));
 
     CAmount nTotalBalance = balance + unconfirmedBalance;
     CAmount nUnlockedBalance = nTotalBalance - nLockedBalance;
@@ -219,26 +217,12 @@ void OverviewPage::setClientModel(ClientModel* model)
     }
 }
 
-// void OverviewPage::resizeEvent(QResizeEvent* event)
-// {
-//     QWidget::resizeEvent(event);
-
-//     m_SizeGrip.move  (width() - 17, height() - 17);
-//     m_SizeGrip.resize(          17,            17);
-// }
-
-// void OverviewPage::bitcoinGUIInstallEvent(BitcoinGUI *gui) {
-//     m_SizeGrip.installEventFilter((QObject*)gui);
-// }
-
 void OverviewPage::setSpendableBalance(bool isStaking) {
-    //std::cout << "changing status:" << isStaking << std::endl;
     CAmount nSpendableDisplayed = this->walletModel->getSpendableBalance();
     if (isStaking) {
         //if staking enabled
         nSpendableDisplayed = nSpendableDisplayed > nReserveBalance ? nReserveBalance:nSpendableDisplayed;
     }
-    //std::cout << "nSpendableDisplayed:" << nSpendableDisplayed << std::endl;
     ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, nSpendableDisplayed, false, BitcoinUnits::separatorAlways));
 }
 
@@ -287,8 +271,6 @@ void OverviewPage::updateDisplayUnit()
 
         // Update txdelegate->unit with the current unit
         txdelegate->unit = nDisplayUnit;
-
-        // REMOVE ui->listTransactions->update();
     }
 }
 
@@ -315,14 +297,12 @@ void OverviewPage::showBlockSync(bool fShow)
     isSyncingBlocks = fShow;
 
     ui->labelBlockCurrent->setText(QString::number(clientModel->getNumBlocks()));
-    // if (!fShow)
     ui->labelBlockCurrent->setAlignment(fShow? (Qt::AlignRight|Qt::AlignVCenter):(Qt::AlignHCenter|Qt::AlignTop));
 }
 
 void OverviewPage::showBlockCurrentHeight()
 {
 	ui->labelBlockCurrent->setText(QString::number(chainActive.Height()));
-	// if (!fShow)
 }
 
 void OverviewPage::initSyncCircle(float ratioToParent)
@@ -415,7 +395,6 @@ int OverviewPage::tryNetworkBlockCount(){
         }
     }catch(int err_code)
     {
-         //QDebug()<<endl<<"Error: "+QString::number(err_code)<<endl;
     }
     return -1;
 }

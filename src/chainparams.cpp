@@ -293,9 +293,6 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
-//        vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "dapscoin-testnet.seed.fuzzbawls.pw"));
-//        vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "dapscoin-testnet.seed2.fuzzbawls.pw"));
-//        vSeeds.push_back(CDNSSeedData("s3v3nh4cks.ddns.net", "s3v3nh4cks.ddns.net"));
         vSeeds.push_back(CDNSSeedData("192.168.2.202", "192.168.2.202"));
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 139); // Testnet dapscoin addresses start with 'x' or 'y'

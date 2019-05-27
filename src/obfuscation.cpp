@@ -285,7 +285,6 @@ void CObfuscationPool::ProcessMessageObfuscation(CNode* pfrom, std::string& strC
 
         if (!pSubmittedToMasternode) return;
         if ((CNetAddr)pSubmittedToMasternode->addr != (CNetAddr)pfrom->addr) {
-            //LogPrintf("dssu - message doesn't match current Masternode - %s != %s\n", pSubmittedToMasternode->addr.ToString(), pfrom->addr.ToString());
             return;
         }
 
@@ -334,7 +333,6 @@ void CObfuscationPool::ProcessMessageObfuscation(CNode* pfrom, std::string& strC
 
         if (!pSubmittedToMasternode) return;
         if ((CNetAddr)pSubmittedToMasternode->addr != (CNetAddr)pfrom->addr) {
-            //LogPrintf("dsc - message doesn't match current Masternode - %s != %s\n", pSubmittedToMasternode->addr.ToString(), pfrom->addr.ToString());
             return;
         }
 
@@ -358,7 +356,6 @@ void CObfuscationPool::ProcessMessageObfuscation(CNode* pfrom, std::string& strC
 
         if (!pSubmittedToMasternode) return;
         if ((CNetAddr)pSubmittedToMasternode->addr != (CNetAddr)pfrom->addr) {
-            //LogPrintf("dsc - message doesn't match current Masternode - %s != %s\n", pSubmittedToMasternode->addr.ToString(), pfrom->addr.ToString());
             return;
         }
 
@@ -517,7 +514,6 @@ std::string CObfuscationPool::GetStatus()
 void CObfuscationPool::Check()
 {
     if (fMasterNode) LogPrint("obfuscation", "CObfuscationPool::Check() - entries count %lu\n", entries.size());
-    //printf("CObfuscationPool::Check() %d - %d - %d\n", state, anonTx.CountEntries(), GetTimeMillis()-lastTimeChanged);
 
     if (fMasterNode) {
         LogPrint("obfuscation", "CObfuscationPool::Check() - entries count %lu\n", entries.size());
@@ -1131,10 +1127,6 @@ void CObfuscationPool::SendObfuscationDenominate(std::vector<CTxIn>& vin, std::v
     BOOST_FOREACH (CTxIn in, vin)
         lockedCoins.push_back(in);
 
-    //BOOST_FOREACH(CTxOut o, vout)
-    //    LogPrintf(" vout - %s\n", o.ToString());
-
-
     // we should already be connected to a Masternode
     if (!sessionFoundMasternode) {
         LogPrintf("CObfuscationPool::SendObfuscationDenominate() - No Masternode has been selected yet.\n");
@@ -1574,13 +1566,6 @@ bool CObfuscationPool::IsCompatibleWithEntries(std::vector<CTxOut>& vout)
 
     BOOST_FOREACH (const CObfuScationEntry v, entries) {
         LogPrintf(" IsCompatibleWithEntries %d %d\n", GetDenominations(vout), GetDenominations(v.vout));
-        /*
-        BOOST_FOREACH(CTxOut o1, vout)
-            LogPrintf(" vout 1 - %s\n", o1.ToString());
-
-        BOOST_FOREACH(CTxOut o2, v.vout)
-            LogPrintf(" vout 2 - %s\n", o2.ToString());
-*/
         if (GetDenominations(vout) != GetDenominations(v.vout)) return false;
     }
 
@@ -2025,7 +2010,6 @@ void ThreadCheckObfuScationPool()
 
     while (true) {
         MilliSleep(1000);
-        //LogPrintf("ThreadCheckObfuScationPool::check timeout\n");
 
         // try to sync from all available nodes, one step at a time
         masternodeSync.Process();
@@ -2043,8 +2027,6 @@ void ThreadCheckObfuScationPool()
                 masternodePayments.CleanPaymentList();
                 CleanTransactionLocksList();
             }
-
-            //if(c % MASTERNODES_DUMP_SECONDS == 0) DumpMasternodes();
 
             obfuScationPool.CheckTimeout();
             obfuScationPool.CheckForCompleteQueue();

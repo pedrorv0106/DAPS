@@ -71,7 +71,6 @@ CAmount WalletModel::getBalance(const CCoinControl* coinControl) const
     if (coinControl) {
 
         {   
-            //LOCK(wallet->cs_wallet);
             CAmount nBalance = 0;
             std::vector<COutput> vCoins;
             wallet->AvailableCoins(vCoins, true, coinControl);
@@ -306,21 +305,8 @@ WalletModel::SendCoinsReturn WalletModel::prepareTransaction(WalletModelTransact
         CWalletTx* newTx = transaction.getTransaction();
         CReserveKey* keyChange = transaction.getPossibleKeyChange();
 
-
-        // if (recipients[0].useSwiftTX && total > GetSporkValue(SPORK_5_MAX_VALUE) * COIN) {
-        //     emit message(tr("Send Coins"), tr("SwiftX doesn't support sending values that high yet. Transactions are currently limited to %1 DAPS.").arg(GetSporkValue(SPORK_5_MAX_VALUE)),
-        //         CClientUIInterface::MSG_ERROR);
-        //     return TransactionCreationFailed;
-        // }
-
         bool fCreated = wallet->CreateTransaction(vecSend, *newTx, *keyChange, nFeeRequired, strFailReason, coinControl, recipients[0].inputType, recipients[0].useSwiftTX);
         transaction.setTransactionFee(nFeeRequired);
-
-        // if (recipients[0].useSwiftTX && newTx->GetValueOut() > GetSporkValue(SPORK_5_MAX_VALUE) * COIN) {
-        //     emit message(tr("Send Coins"), tr("SwiftX doesn't support sending values that high yet. Transactions are currently limited to %1 DAPS.").arg(GetSporkValue(SPORK_5_MAX_VALUE)),
-        //         CClientUIInterface::MSG_ERROR);
-        //     return TransactionCreationFailed;
-        // }
 
         if (!fCreated) {
             if ((total + nFeeRequired) > nBalance) {
@@ -465,9 +451,7 @@ static void NotifyTransactionChanged(WalletModel* walletmodel, CWallet* wallet, 
     QString strHash = QString::fromStdString(hash.GetHex());
 
     qDebug() << "NotifyTransactionChanged : " + strHash + " status= " + QString::number(status);
-    QMetaObject::invokeMethod(walletmodel, "updateTransaction", Qt::QueuedConnection /*,
-                              Q_ARG(QString, strHash),
-                              Q_ARG(int, status)*/
+    QMetaObject::invokeMethod(walletmodel, "updateTransaction", Qt::QueuedConnection
     );
 }
 
@@ -532,7 +516,6 @@ WalletModel::UnlockContext WalletModel::requestUnlock(bool relock)
     bool valid = getEncryptionStatus() != Locked;
 
     return UnlockContext(valid, relock);
-    //    return UnlockContext(this, valid, was_locked && !isAnonymizeOnlyUnlocked());
 }
 
 WalletModel::UnlockContext::UnlockContext(bool valid, bool relock) : valid(valid), relock(relock)
@@ -541,11 +524,6 @@ WalletModel::UnlockContext::UnlockContext(bool valid, bool relock) : valid(valid
 
 WalletModel::UnlockContext::~UnlockContext()
 {
-    /*
-    if (valid && relock) {
-        wallet->setWalletLocked(true);
-    }
-*/
 }
 
 CWallet* WalletModel::getCWallet()
@@ -698,8 +676,6 @@ void WalletModel::generateCoins(bool fGenerate, int nGenProcLimit)
 QAbstractTableModel* WalletModel::getTxTableModel()
 {
     if (!txTableModel) {
-        //txTableModel=new MyModel();
-        //txTableModel->
         return NULL;
     } else
         return txTableModel;
@@ -787,17 +763,13 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
             txData["address"] = QString(TxRecord.address.c_str());
             wallet->addrToTxHashMap[TxRecord.address] = txHash;
         }
-        //
-        // CAmount amount = TxRecord.credit + TxRecord.debit;
+
         txData["amount"] = BitcoinUnits::format(0, totalamount); //absolute value of total amount
-        //
         txData["id"] = QString(TxRecord.hash.GetHex().c_str());
         // parse transaction type
         switch (TxRecord.type) {
         case 1:
             txData["type"] = QString("Mined");
-            //totalamount = 0;
-            //wallet->IsTransactionForMe(tx);
             txData["amount"] = BitcoinUnits::format(0, totalamount - totalIn); //absolute value of total amount
             return txData;
             break;

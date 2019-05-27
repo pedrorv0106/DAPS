@@ -52,16 +52,10 @@ void TxEntry::resizeEvent(QResizeEvent* event)
 void TxEntry::setData(int64_t Date, QString Address, QString Amount, QString ID, QString Type)
 {
 	QDateTime dateTime = QDateTime::fromTime_t((qint32)Date);
-    //QDateTime dateTime = QDateTime::fromString(Date, "M/dd/yy hh:mm").addYears(100);
-
+    
     ui->labelTxAmount->setText(Amount);
     ui->labelDate->setText(dateTime.date().toString("MMMM dd yyyy") + QString("\n") + dateTime.toString("hh:mm:ss"));
     ui->labelDate->setAlignment(Qt::AlignRight | Qt::AlignTop);
-    /*ui->tableWidgetDate->horizontalHeaderItem(0)->setTextAlignment(Qt::AlignRight | Qt::AlignBottom);
-    ui->tableWidgetDate->insertRow(0);
-    ui->tableWidgetDate->setItem(0, 0, new QTableWidgetItem(dateTime.time().toString("hh:mm")));
-    ui->tableWidgetDate->item(0, 0)->setTextAlignment(Qt::AlignRight | Qt::AlignTop);
-    ui->tableWidgetDate->setVisible(true);*/
     ui->tableWidgetDetails->insertRow(0);
     ui->tableWidgetDetails->setItem(0, 0, new QTableWidgetItem(ID));
     ui->tableWidgetDetails->setItem(0, 1, new QTableWidgetItem(Address));
@@ -83,7 +77,6 @@ void TxEntry::on_pushButtonExpand_clicked()
 void TxEntry::expand(bool isExpanding)
 {
     ui->tableWidgetDetails->setVisible(isExpanding);
-    //ui->tableWidgetDate->setVisible(!isExpanding);
     QString newImage = (isExpanding ?
                             ":icons/collapse" :
                             ":icons/expand");

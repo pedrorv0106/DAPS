@@ -171,14 +171,7 @@ void HistoryPage::resizeEvent(QResizeEvent* event)
     ui->tableView->setColumnWidth(2, this->width() * .65);
     ui->tableView->resizeColumnToContents(QHeaderView::ResizeToContents);
     ui->tableView->resizeColumnsToContents();
-
-    // m_SizeGrip.move  (width() - 17, height() - 17);
-    // m_SizeGrip.resize(          17,            17);
 }
-
-// void HistoryPage::bitcoinGUIInstallEvent(BitcoinGUI *gui) {
-//     m_SizeGrip.installEventFilter((QObject*)gui);
-// }
 
 void HistoryPage::keyPressEvent(QKeyEvent* event)
 {
@@ -272,10 +265,6 @@ void HistoryPage::syncTime(QDateTimeEdit* calendar, QTimeEdit* clock)
 }
 
 void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e, QString f){
-    //updateTableData(pwalletMain);
-    //ui->tableView->setRowCount(0);
-    //auto txs = WalletUtil::getTXs(wallet);
-    //for (int row = 0; row < (short)txs.size(); row++) {
     ui->tableView->setSortingEnabled(false);
     int row = ui->tableView->rowCount();
     ui->tableView->insertRow(row);
@@ -316,7 +305,6 @@ void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e, QSt
             col++;
             ui->tableView->update();
         }
-    //}
     ui->tableView->setSortingEnabled(true);
     ui->tableView->setVisible(ui->tableView->rowCount());
     ui->tableView->update();

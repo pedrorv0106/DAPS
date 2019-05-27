@@ -151,23 +151,8 @@ public:
         switch(status)
         {
             case CT_NEW:
-                /*if(inModel)
-                {
-                    qWarning() << "AddressTablePriv_ZC::updateEntry : Warning: Got CT_NEW, but entry is already in model";
-                }
-                parent->beginInsertRows(QModelIndex(), lowerIndex, lowerIndex);
-                cachedAddressTable.insert(lowerIndex, AddressTableEntry(newEntryType, isUsed, pubCoin));
-                parent->endInsertRows();*/
                 break;
             case CT_UPDATED:
-                /*if(!inModel)
-                {
-                    qWarning() << "AddressTablePriv_ZC::updateEntry : Warning: Got CT_UPDATED, but entry is not in model";
-                    break;
-                }
-                lower->type = newEntryType;
-                lower->label = isUsed;
-                parent->emitDataChanged(lowerIndex);*/
                 break;
         }
         

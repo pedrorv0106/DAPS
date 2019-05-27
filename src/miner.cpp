@@ -181,7 +181,6 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
     pblock->vtx.push_back(txNew);
     pblocktemplate->vTxFees.push_back(-1);   // updated at end
     pblocktemplate->vTxSigOps.push_back(-1); // updated at end
-    //LogPrintf("CreateNewBlock: generated %s\n", FormatMoney(pblock->vtx[0].vout[0].nValue));
 
     // ppcoin: if coinstake available add coinstake tx
     static int64_t nLastCoinStakeSearchTime = GetAdjustedTime(); // only initialized at startup
@@ -293,7 +292,6 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
                     }
                     mapDependers[txin.prevout.hash].push_back(porphan);
                     porphan->setDependsOn.insert(txin.prevout.hash);
-                    //nTotalIn += mempool.mapTx[txin.prevout.hash].GetTx().vout[txin.prevout.n].nValue;
                     continue;
                 }
 
@@ -303,16 +301,6 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
                     fMissingInputs = true;
                     break;
                 }
-
-                //const CCoins* coins = view.AccessCoins(txin.prevout.hash);
-                //assert(coins);
-
-                //CAmount nValueIn = coins->vout[txin.prevout.n].nValue;
-                //nTotalIn += nValueIn;
-
-                //int nConf = nHeight - coins->nHeight;
-
-                //dPriority += (double)nValueIn * nConf;
             }
             if (fMissingInputs) continue;
 
@@ -489,13 +477,6 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
         uint256 nCheckpoint = 0;
         pblock->nAccumulatorCheckpoint = nCheckpoint;
         pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(pblock->vtx[0]);
-
-//        CValidationState state;
-//        if (!TestBlockValidity(state, *pblock, pindexPrev, false, false)) {
-//            LogPrintf("CreateNewBlock() : TestBlockValidity failed\n");
-//            mempool.clear();
-//            return NULL;
-//        }
     }
 
     return pblocktemplate.release();
@@ -551,7 +532,6 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, const CPubKey& 
 	pblock->vtx[0].vout[0].nValue = nReward;
 
     pblock->vtx[0].txType = TX_TYPE_REVEAL_AMOUNT;
-    //LogPrintf("%: Coinbase value without fee, value = %d, fee = %d", __func__, pblock->vtx[0].vout[0].nValue, nFees);
 
     CPubKey sharedSec;
     sharedSec.Set(txPub.begin(), txPub.end());
@@ -577,7 +557,6 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, const CPubKey& 
 	}
 
 	//ATTENTION: This is used for setting always the easiest difficulty for PoA miners
-	//pblock->nBits = 0x008000;
 	pblock->nBits = GetNextWorkRequired(pindexPrev, pblock);
 	pblock->nNonce = 0;
 
@@ -593,12 +572,6 @@ CBlockTemplate* CreateNewPoABlock(const CScript& scriptPubKeyIn, const CPubKey& 
 
     pblock->hashPoAMerkleRoot = pblock->BuildPoAMerkleTree();
 	pblock->minedHash = pblock->ComputeMinedHash();
-//        CValidationState state;
-//        if (!TestBlockValidity(state, *pblock, pindexPrev, false, false)) {
-//            LogPrintf("CreateNewBlock() : TestBlockValidity failed\n");
-//            mempool.clear();
-//            return NULL;
-//        }
 
 	return pblocktemplate.release();
 }
@@ -654,7 +627,6 @@ CBlockTemplate* CreateNewPoABlockWithKey(CReserveKey& reservekey, CWallet* pwall
 bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
 {
     LogPrintf("%s\n", pblock->ToString());
-    //LogPrintf("generated %s\n", FormatMoney(pblock->vtx[0].vout[0].nValue));
 
     // Found a solution
     {
@@ -731,15 +703,6 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake, MineType mineType)
                 nLastCoinStakeSearchInterval = 0;
                 break;
             }
-
-            /*if (mapHashedBlocks.count(chainActive.Tip()->nHeight)) //search our map of hashed blocks, see if bestblock has been hashed yet
-            {
-                if (GetTime() - mapHashedBlocks[chainActive.Tip()->nHeight] < max(pwallet->nHashInterval, (unsigned int)1)) // wait half of the nHashDrift with max wait of 3 minutes
-                {
-                    MilliSleep(5000);
-                    continue;
-                }
-            }*/
             MilliSleep(10000);
 
         }
@@ -796,8 +759,6 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake, MineType mineType)
                 if (hash <= hashTarget) {
                     // Found a solution
                     SetThreadPriority(THREAD_PRIORITY_NORMAL);
-                    //LogPrintf("BitcoinMiner:\n");
-                    //LogPrintf("proof-of-work found  \n  hash: %s  \ntarget: %s\n", hash.GetHex(), hashTarget.GetHex());
                     ProcessBlockFound(pblock, *pwallet, reservekey);
                     SetThreadPriority(THREAD_PRIORITY_LOWEST);
 

@@ -208,7 +208,6 @@ namespace {
 
 void RegisterValidationInterface(CValidationInterface *pwalletIn) {
     g_signals.SyncTransaction.connect(boost::bind(&CValidationInterface::SyncTransaction, pwalletIn, _1, _2));
-    // XX42 g_signals.EraseTransaction.connect(boost::bind(&CValidationInterface::EraseFromWallet, pwalletIn, _1));
     g_signals.UpdatedTransaction.connect(boost::bind(&CValidationInterface::UpdatedTransaction, pwalletIn, _1));
     g_signals.SetBestChain.connect(boost::bind(&CValidationInterface::SetBestChain, pwalletIn, _1));
     g_signals.Inventory.connect(boost::bind(&CValidationInterface::Inventory, pwalletIn, _1));
@@ -222,7 +221,6 @@ void UnregisterValidationInterface(CValidationInterface *pwalletIn) {
     g_signals.Inventory.disconnect(boost::bind(&CValidationInterface::Inventory, pwalletIn, _1));
     g_signals.SetBestChain.disconnect(boost::bind(&CValidationInterface::SetBestChain, pwalletIn, _1));
     g_signals.UpdatedTransaction.disconnect(boost::bind(&CValidationInterface::UpdatedTransaction, pwalletIn, _1));
-// XX42    g_signals.EraseTransaction.disconnect(boost::bind(&CValidationInterface::EraseFromWallet, pwalletIn, _1));
     g_signals.SyncTransaction.disconnect(boost::bind(&CValidationInterface::SyncTransaction, pwalletIn, _1, _2));
 }
 
@@ -232,7 +230,6 @@ void UnregisterAllValidationInterfaces() {
     g_signals.Inventory.disconnect_all_slots();
     g_signals.SetBestChain.disconnect_all_slots();
     g_signals.UpdatedTransaction.disconnect_all_slots();
-// XX42    g_signals.EraseTransaction.disconnect_all_slots();
     g_signals.SyncTransaction.disconnect_all_slots();
 }
 
@@ -273,9 +270,7 @@ CAmount GetValueIn(CCoinsViewCache view, const CTransaction& tx)
             }
         }
     }
-    //for (unsigned int i = 0; i < tx.vin.size(); i++)
-    //nResult += GetOutputFor(tx.vin[i]).nValue;
-
+    
     return nResult;
 }
 
@@ -1450,40 +1445,14 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
     }
     // ----------- swiftTX transaction scanning -----------
 
-    /*BOOST_FOREACH(
-    const CTxIn &in, tx.vin) {
-        if (mapLockedInputs.count(in.prevout)) {
-            if (mapLockedInputs[in.prevout] != tx.GetHash()) {
-                return state.DoS(0,
-                                 error("AcceptToMemoryPool : conflicts with existing transaction lock: %s", reason),
-                                 REJECT_INVALID, "tx-lock-conflict");
-            }
-        }
-    }*/
-
-    // Check for conflicts with in-memory transactions
-    {
-        /*LOCK(pool.cs); // protect pool.mapNextTx
-        for (unsigned int i = 0; i < tx.vin.size(); i++) {
-            COutPoint outpoint = tx.vin[i].prevout;
-            if (pool.mapNextTx.count(outpoint)) {
-                // Disable replacement feature for now
-                LogPrintf("%s: Error: conflict with in-mempool transaction", __func__);
-                return false;
-            }
-        }*/
-    }
-
     {
         CCoinsView dummy;
         CCoinsViewCache view(&dummy);
         CAmount nValueIn = 0;
         {
             LOCK(pool.cs);
-            //LogPrintf("\n%s:setting pool\n", __func__);
             CCoinsViewMemPool viewMemPool(pcoinsTip, pool);
             view.SetBackend(viewMemPool);
-		    //LogPrintf("\n%s:check have coins\n", __func__);
             // do we already have it?
             if (view.HaveCoins(hash)) {
                 LogPrintf("%s: Error: Hash exists in the mempool", __func__);
@@ -1491,7 +1460,6 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
             }
 
             // are the actual inputs available?
-            //LogPrintf("\n%s:check inputs available\n", __func__);
             if (!CheckHaveInputs(view, tx)) {
                 //check input spents
 
@@ -1512,7 +1480,6 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
             	}
             }
 
-            //LogPrintf("\n%s:checked have inputs\n", __func__);
             // Check key images not duplicated with what in db
             for (const CTxIn& txin: tx.vin) {
                 const CKeyImage& keyImage = txin.keyImage;
@@ -1521,23 +1488,18 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
                                          REJECT_DUPLICATE, "bad-txns-inputs-spent");
                 }
             }
-            //LogPrintf("\n%s:checked key images\n", __func__);
 
             // Bring the best block into scope
             view.GetBestBlock();
-            //LogPrintf("\n%s: get best block\n", __func__);
             nValueIn = GetValueIn(view, tx);
-            //LogPrintf("\n%s:get value in\n", __func__);
 
             // we have all inputs cached now, so switch back to dummy, so we don't need to keep lock on mempool
             view.SetBackend(dummy);
-            //LogPrintf("\n%s:set back-end\n", __func__);
         }
 
         // Check for non-standard pay-to-script-hash in inputs
         if (Params().RequireStandard() && !AreInputsStandard(tx, view))
             return error("AcceptToMemoryPool: : nonstandard transaction input");
-        //LogPrintf("\n%s:Check requireStandard\n", __func__);
         // Check that the transaction doesn't have an excessive number of
         // sigops, making it impossible to mine. Since the coinbase transaction
         // itself can contain sigops MAX_TX_SIGOPS is less than
@@ -1596,18 +1558,12 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
             }
         }
 
-        //if (fRejectInsaneFee && nFees > ::minRelayTxFee.GetFee(nSize) * 10000)
-        //    return error("AcceptToMemoryPool: : insane fees %s, %d > %d",
-        //                 hash.ToString(),
-        //                 nFees, ::minRelayTxFee.GetFee(nSize) * 10000);
-
         // Check against previous transactions
         // This is done last to help prevent CPU exhaustion denial-of-service attacks.
-        //LogPrintf("\n%s:check inputs\n", __func__);
+        
         if (!CheckInputs(tx, state, view, true, STANDARD_SCRIPT_VERIFY_FLAGS, true)) {
             return error("AcceptToMemoryPool: : ConnectInputs failed %s", hash.ToString());
         }
-        //LogPrintf("\n%s:fisnish check inputs\n", __func__);
         // Check again against just the consensus-critical mandatory script
         // verification flags, in case of bugs in the standard flags that cause
         // transactions to pass as valid when they're actually invalid. For
@@ -1622,13 +1578,10 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
                     "AcceptToMemoryPool: : BUG! PLEASE REPORT THIS! ConnectInputs failed against MANDATORY but not STANDARD flags %s",
                     hash.ToString());
         }
-        //LogPrintf("\n%s:fisnish re-check inputs\n", __func__);
         // Store transaction in memory
         pool.addUnchecked(hash, entry);
     }
-    //LogPrintf("\n%s:start syncing wallet\n", __func__);
     SyncWithWallets(tx, NULL);
-    //LogPrintf("\n%s:synced with wallet\n", __func__);
 
     if (pwalletMain) {
     	LOCK(pwalletMain->cs_wallet);
@@ -1670,11 +1623,6 @@ bool AcceptableInputs(CTxMemPool &pool, CValidationState &state, const CTransact
 
     // Rather not work on nonstandard transactions (unless -testnet/-regtest)
     string reason;
-    // for any real tx this will be checked on AcceptToMemoryPool anyway
-    //    if (Params().RequireStandard() && !IsStandardTx(tx, reason))
-    //        return state.DoS(0,
-    //                         error("AcceptableInputs : nonstandard transaction: %s", reason),
-    //                         REJECT_NONSTANDARD, reason);
 
     // is it already in the memory pool?
     uint256 hash = tx.GetHash();
@@ -1752,11 +1700,6 @@ bool AcceptableInputs(CTxMemPool &pool, CValidationState &state, const CTransact
             // we have all inputs cached now, so switch back to dummy, so we don't need to keep lock on mempool
             view.SetBackend(dummy);
         }
-
-        // Check for non-standard pay-to-script-hash in inputs
-        // for any real tx this will be checked on AcceptToMemoryPool anyway
-        //        if (Params().RequireStandard() && !AreInputsStandard(tx, view))
-        //            return error("AcceptableInputs: : nonstandard transaction input");
 
         // Check that the transaction doesn't have an excessive number of
         // sigops, making it impossible to mine. Since the coinbase transaction
@@ -1842,16 +1785,7 @@ bool AcceptableInputs(CTxMemPool &pool, CValidationState &state, const CTransact
         // invalid blocks, however allowing such transactions into the mempool
         // can be exploited as a DoS attack.
         // for any real tx this will be checked on AcceptToMemoryPool anyway
-        //        if (!CheckInputs(tx, state, view, false, MANDATORY_SCRIPT_VERIFY_FLAGS, true))
-        //        {
-        //            return error("AcceptableInputs: : BUG! PLEASE REPORT THIS! ConnectInputs failed against MANDATORY but not STANDARD flags %s", hash.ToString());
-        //        }
-
-        // Store transaction in memory
-        // pool.addUnchecked(hash, entry);
     }
-
-    // SyncWithWallets(tx, NULL);
 
     return true;
 }
@@ -2004,19 +1938,11 @@ double ConvertBitsToDouble(unsigned int nBits) {
 int64_t GetBlockValue(int nHeight) {
     int64_t nSubsidy = 0;
 
-    /*if (nHeight == 0) {
-        nSubsidy = 200000000 * COIN; //6M for the first block
-    } else {*/
-        //if (Params().NetworkID() == CBaseChainParams::MAIN) {
-        	if (nHeight < Params().nLastPOWBlock) {
-        		nSubsidy = 300000000 * COIN;
-        	} else {
-                nSubsidy = 950 * COIN;
-            }
-        //} else {
-            //nSubsidy = 950 * COIN;
-        //}
-    //}
+	if (nHeight < Params().nLastPOWBlock) {
+		nSubsidy = 300000000 * COIN;
+	} else {
+        nSubsidy = 950 * COIN;
+    }
 
     return nSubsidy;
 }
@@ -2387,13 +2313,6 @@ bool CheckInputs(const CTransaction &tx, CValidationState &state, const CCoinsVi
                                   nSpendHeight - coins->nHeight, coins->IsCoinStake()),
                             REJECT_INVALID, "bad-txns-premature-spend-of-coinbase");
             }
-
-            // Check for negative or overflow input values
-            //Dont check value range because nValue is not the right amount
-            /*nValueIn += coins->vout[prevout.n].nValue;
-            if (!MoneyRange(coins->vout[prevout.n].nValue) || !MoneyRange(nValueIn))
-                return state.DoS(100, error("CheckInputs() : txin values out of range"),
-                                 REJECT_INVALID, "bad-txns-inputvalues-outofrange");*/
         }
 
         // The first loop above does all the inexpensive checks.
@@ -2695,15 +2614,6 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
                                                         uint256("0x00000000000a4d0a398161ffc163c503763b1f4360639393e0e4c8e300e0caec")) ||
                            (pindex->nHeight == 91880 && pindex->GetBlockHash() ==
                                                         uint256("0x00000000000743f190a18c5577a3c2d2a1f610ae9601ac046a38084ccb7cd721")));
-    if (!block.IsPoABlockByVersion() && fEnforceBIP30) {
-        /*BOOST_FOREACH(
-        const CTransaction &tx, block.vtx) {
-            const CCoins *coins = view.AccessCoins(tx.GetHash());
-            if (coins && !coins->IsPruned())
-                return state.DoS(100, error("ConnectBlock() : tried to overwrite transaction"),
-                                 REJECT_INVALID, "bad-txns-BIP30");
-        }*/
-    }
 
     // BIP16 didn't become active until Apr 1 2012
     int64_t nBIP16SwitchTime = 1333238400;
@@ -2788,7 +2698,6 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
             }
 
             if (!tx.IsCoinStake())
-                //nFees += view.GetValueIn(tx) - tx.GetValueOut();
                 nFees += tx.nTxFee;
             CAmount valTemp = GetValueIn(view, tx);
             nValueIn += valTemp;
@@ -2796,7 +2705,6 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
             std::vector <CScriptCheck> vChecks;
             if (!CheckInputs(tx, state, view, fScriptChecks, flags, false, nScriptCheckThreads ? &vChecks : NULL))
                 return false;
-            //LogPrintf("%s: done checking inputs %s", __func__);
             control.Add(vChecks);
         }
         nValueOut += tx.GetValueOut();
@@ -3784,12 +3692,7 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
                              REJECT_INVALID, "bad-cb-multiple");
 
     if (block.IsProofOfStake()) {
-    	//Checking block time >= 40s
-    	/*CBlockIndex* previous = chainActive.Tip();
-    	if (!(block.nTime > previous->nTime && (block.nTime - previous->nTime >= 40))) {
-    	    ret = true;
-    	}*/
-
+    	
         // Coinbase output should be empty if proof-of-stake block
         if (block.vtx[0].vout.size() != 1 || !block.vtx[0].vout[0].IsEmpty())
             return state.DoS(100, error("CheckBlock() : coinbase output not empty for proof-of-stake block"));
@@ -3833,19 +3736,6 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
      * @todo Audit checkblock
      */
     if (block.IsProofOfAudit()) {
-        // Coinbase output should be empty if proof-of-audit block
-    	//Attension: This condition is now not true because PoA blocks contain only a coinbase transaction
-
-    	//if (block.vtx[0].vout.size() != 1 || !block.vtx[0].vout[0].IsEmpty())
-        //    return state.DoS(100, error("CheckBlock() : coinbase output not empty for proof-of-audit block"));
-
-        // Second transaction must be coinstake, the rest must not be
-        //if (block.vtx.empty() || !block.vtx[1].IsCoinStake())
-        //    return state.DoS(100, error("CheckBlock() : second tx is not coinaudit"));
-        //for (unsigned int i = 2; i < block.vtx.size(); i++)
-        //    if (block.vtx[i].IsCoinStake())
-        //        return state.DoS(100, error("CheckBlock() : more than one coinaudit"));
-
         //Check PoA consensus rules
         if (!CheckPoAContainRecentHash(block)) {
         	return state.DoS(100, error("CheckBlock() : PoA block should contain only non-audited recent PoS blocks"));
@@ -4159,7 +4049,6 @@ bool AcceptBlock(CBlock &block, CValidationState &state, CBlockIndex **ppindex, 
 
     if (pindex->nStatus & BLOCK_HAVE_DATA) {
         // TODO: deal better with duplicate blocks.
-        // return state.DoS(20, error("AcceptBlock() : already have block %d %s", pindex->nHeight, pindex->GetBlockHash().ToString()), REJECT_DUPLICATE, "duplicate");
         return true;
     }
 
@@ -5987,10 +5876,6 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
         vRecv >> block;
         uint256 hashBlock = block.GetHash();
         CInv inv(MSG_BLOCK, hashBlock);
-        //if (chainActive.Height() <= 900 && showed <= 1000) {
-            //showed++;
-            //LogPrintf("\n%s: block=%s, height = %d\n", __func__, block.GetHash().GetHex(), chainActive.Height());
-        //}        
         LogPrint("net", "received block %s peer=%d, height=%d\n", inv.hash.ToString(), pfrom->id, chainActive.Height());
 
         //sometimes we will be sent their most recent block and its not the one we want, in that case tell where we are
@@ -6254,13 +6139,6 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
 //       it was the one which was commented out
 int ActiveProtocol() {
 
-    // SPORK_14 was used for 70910. Leave it 'ON' so they don't see > 70910 nodes. They won't react to SPORK_15
-    // messages because it's not in their code
-
-/*    if (IsSporkActive(SPORK_14_NEW_PROTOCOL_ENFORCEMENT))
-            return MIN_PEER_PROTO_VERSION_AFTER_ENFORCEMENT;
-*/
-
     // SPORK_15 is used for 70911. Nodes < 70911 don't see it and still get their protocol version via SPORK_14 and their
     // own ModifierUpgradeBlock()
 
@@ -6269,12 +6147,8 @@ int ActiveProtocol() {
     return MIN_PEER_PROTO_VERSION_BEFORE_ENFORCEMENT;
 }
 
-// requires LOCK(cs_vRecvMsg)
 bool ProcessMessages(CNode *pfrom) {
-    //if (fDebug)
-    //    LogPrintf("ProcessMessages(%u messages)\n", pfrom->vRecvMsg.size());
 
-    //
     // Message format
     //  (4) message start
     //  (12) command
@@ -6300,11 +6174,6 @@ bool ProcessMessages(CNode *pfrom) {
             break;
         // get next message
         CNetMessage &msg = *it;
-
-        //if (fDebug)
-        //    LogPrintf("ProcessMessages(message %u msgsz, %u bytes, complete:%s)\n",
-        //            msg.hdr.nMessageSize, msg.vRecv.size(),
-        //            msg.complete() ? "Y" : "N");
 
         // end, if an incomplete message is found
         if (!msg.complete())
@@ -6493,9 +6362,7 @@ bool SendMessages(CNode *pto, bool fSendTrickle) {
                                      GetAdjustedTime() - 6 * 60 * 60) { // NOTE: was "close to today" and 24h in Bitcoin
                 state.fSyncStarted = true;
                 nSyncStarted++;
-                //CBlockIndex *pindexStart = pindexBestHeader->pprev ? pindexBestHeader->pprev : pindexBestHeader;
-                //LogPrint("net", "initial getheaders (%d) to peer=%d (startheight:%d)\n", pindexStart->nHeight, pto->id, pto->nStartingHeight);
-                //pto->PushMessage("getheaders", chainActive.GetLocator(pindexStart), uint256(0));
+
                 pto->PushMessage("getblocks", chainActive.GetLocator(chainActive.Tip()), uint256(0));
             }
         }
@@ -6503,7 +6370,7 @@ bool SendMessages(CNode *pto, bool fSendTrickle) {
         // Resend wallet transactions that haven't gotten in a block yet
         // Except during reindex, importing and IBD, when old wallet
         // transactions become unconfirmed and spams other nodes.
-        if (!fReindex /*&& !fImporting && !IsInitialBlockDownload()*/) {
+        if (!fReindex) {
             g_signals.Broadcast();
         }
 
