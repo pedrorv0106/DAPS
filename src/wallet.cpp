@@ -3658,25 +3658,24 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
 bool CWallet::generateBulletProofAggregate(CTransaction& tx)
 {
 	unsigned char proof[2000];
-	size_t len;
+	size_t len = 2000;
 	const size_t MAX_VOUT = 5;
 	unsigned char nonce[32];
 	GetRandBytes(nonce, 32);
 	unsigned char blinds[MAX_VOUT][32];
 	memset(blinds, 0, tx.vout.size() * 32);
-	uint64_t values[] = {300000000*COIN, 300000000*COIN, 3};
+	uint64_t values[MAX_VOUT];
 	size_t i = 0;
 	const unsigned char *blind_ptr[MAX_VOUT];
+	if (tx.vout.size() > MAX_VOUT) return false;
 	for (i = 0; i < tx.vout.size(); i++) {
 		memcpy(&blinds[i][0], tx.vout[i].maskValue.inMemoryRawBind.begin(), 32);
 		blind_ptr[i] = blinds[i];
 		values[i] = tx.vout[i].nValue;
 	}
 	int ret = secp256k1_bulletproof_rangeproof_prove(GetContext(), GetScratch(), GetGenerator(), proof, &len, values, NULL, blind_ptr, tx.vout.size(), &secp256k1_generator_const_h, 64, nonce, NULL, 0);
-	//free(values);
-	if (ret == 0) return false;
 	std::copy(proof, proof + len, std::back_inserter(tx.bulletproofs));
-	return true;
+	return ret;
 }
 
 bool CWallet::generateRingSignature(CTransaction& tx, int& myIndex, int ringSize)
