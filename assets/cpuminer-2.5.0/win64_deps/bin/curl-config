@@ -21,7 +21,7 @@
 #
 ###########################################################################
 
-prefix=/root/DAPS/assets/win64_deps
+prefix=/root/DAPS/cpuminer-2.5.0/assets/win64_deps
 exec_prefix=${prefix}
 includedir=${prefix}/include
 cppflag_curl_staticlib=-DCURL_STATICLIB
@@ -164,7 +164,7 @@ while test $# -gt 0; do
         ;;
 
     --configure)
-        echo " '--with-winssl' '--enable-static' '--prefix=/root/DAPS/assets/win64_deps' '--host=x86_64-w64-mingw32' '--disable-shared' 'host_alias=x86_64-w64-mingw32'"
+        echo " '--with-winssl' '--enable-static' '--prefix=/root/DAPS/cpuminer-2.5.0/assets/win64_deps' '--host=x86_64-w64-mingw32' '--disable-shared' 'host_alias=x86_64-w64-mingw32'"
         ;;
 
     *)
