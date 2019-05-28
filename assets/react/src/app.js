@@ -92,7 +92,7 @@ class BlockExplorer extends Component {
 
   async getDataForRoute(forceUpdate = false) {
     //individual block and tx routes
-    if (this.state.type == 'Tx' || this.state.type == 'Block') {
+    if (this.state.type == 'Tx' || this.state.type == 'Block' || this.state.type == 'Genesis') {
       if (
         !this.state.collecting
         && (
@@ -102,7 +102,12 @@ class BlockExplorer extends Component {
         )
       ) {
         this.setState({ collecting: true })
-        let newData = {}; try { newData = await Actions[`get${this.state.type}Detail`](this.state.param) } catch (err) { }
+        let newData = {}; 
+        if (this.state.type == 'Genesis')
+          try { newData = await Actions[`getGenesisBlockDetail`]('00000f47a2a92fb30d9c64800512caeea26ec3b298229bff98951ab1da316022') } catch (err) { }
+        else
+          try { newData = await Actions[`get${this.state.type}Detail`](this.state.param) } catch (err) { }
+
         if (Object.keys(newData).length > 2) {
           Object.assign(newData, { id: this.state.param, prim: this.state.type.toLowerCase() })
           this.state.lib.set(this.state.param, newData)
@@ -179,6 +184,8 @@ class BlockExplorer extends Component {
       search = this.props.location.search || '',
       type = this.props.match.params[1].replace(/[^\w]/g, '').toLowerCase();
     type = type.charAt(0).toUpperCase() + type.slice(1);
+    if (type == 'Genesis')
+      param = 'genesis';
     let path = Object.values(this.props.match.params).join('') + search
     let pageindex = search.match(/page=[\d]*/g) || ''; pageindex = pageindex.length ? pageindex[0].replace('page=', '') : 0
     this.getDataForRoute(forceRefresh)
@@ -232,6 +239,7 @@ class BlockExplorer extends Component {
 
               <Route exact path={route + "tx/:id"} component={() => <TxDetail data={this.state.lib.get(this.state.param)} back={this.state.lastpath} />} />
               <Route exact path={route + "block/:hash"} component={() => <BlockDetail data={this.state.lib.get(this.state.param)} back={this.state.lastpath} />} />
+              <Route exact path={route + "genesis/"} component={() => <BlockDetail data={this.state.lib.get(this.state.param)} back={this.state.lastpath} />} />
             </Switch>
 
           </div>
