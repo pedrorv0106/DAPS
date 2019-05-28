@@ -36,7 +36,12 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         ./configure --with-winssl --enable-static --prefix=/ --host=x86_64-w64-mingw32 --disable-shared && \
         make && \
         make install && \
-        ./build.sh && \
+        cd ../pthreads-w32-2-9-1-release/ && \
+        cp config.h pthreads_win32_config.h && \
+        make -f GNUmakefile CROSS="x86_64-w64-mingw32-" clean GC-static && \
+        cp libpthreadGC2.a ${DEPS}/lib/libpthread.a && \
+        cp pthread.h semaphore.h sched.h ${DEPS}/include &&
+        cd .. && ./build.sh && \
         cp minerd.exe /BUILD/bin/dapscoin-poa-minerd.exe; \
 #
     elif [ "$BUILD_TARGET" = "windowsx86" ]; \
