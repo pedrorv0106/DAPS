@@ -128,7 +128,7 @@ const Actions = {
                     ]
                 },
                 "txList": {
-                    "headers": ["TRANSACTION HASH", "SIZE", "FEE PER KB"],
+                    "headers": ["TRANSACTION HASH", "SIZE", "FEE"],
                     ...await Promise.all(receivedBlock.tx.map(async (txid, i) => {
                         let receivedTx = {}; try { receivedTx = (await (await fetch(hostUrl + `dapsapi/tx/?txid=${txid}&report=0`)).json()).data[0] } catch (err) { console.error(err) }
                         return [

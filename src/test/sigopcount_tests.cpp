@@ -16,12 +16,12 @@
 using namespace std;
 
 // Helpers:
-static std::vector<unsigned char>
+/*static std::vector<unsigned char>
 Serialize(const CScript& s)
 {
     std::vector<unsigned char> sSerialized(s);
     return sSerialized;
-}
+}*/
 
 #ifdef DISABLE_PASSED_TEST
 BOOST_AUTO_TEST_SUITE(sigopcount_tests)

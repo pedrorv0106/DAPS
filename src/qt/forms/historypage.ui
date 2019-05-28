@@ -22,9 +22,6 @@
     <height>0</height>
    </size>
   </property>
-  <property name="styleSheet">
-   <string notr="true">QDialog{border-image: url(':/images/background') 0 0 0 0 stretch stretch;}</string>
-  </property>
   <property name="sizeGripEnabled">
    <bool>false</bool>
   </property>
@@ -173,8 +170,17 @@
        <property name="cornerButtonEnabled">
         <bool>false</bool>
        </property>
+       <attribute name="horizontalHeaderVisible">
+        <bool>true</bool>
+       </attribute>
        <attribute name="horizontalHeaderCascadingSectionResizes">
         <bool>false</bool>
+       </attribute>
+       <attribute name="horizontalHeaderDefaultSectionSize">
+        <number>150</number>
+       </attribute>
+       <attribute name="horizontalHeaderMinimumSectionSize">
+        <number>150</number>
        </attribute>
        <attribute name="verticalHeaderVisible">
         <bool>false</bool>
@@ -197,6 +203,11 @@
        <column>
         <property name="text">
          <string>Amount (DAPS)</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Confirmations</string>
         </property>
        </column>
       </widget>

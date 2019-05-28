@@ -21,7 +21,7 @@
 #include <QUrl>
 #endif
 
-#define USE_QRCODE
+// #define USE_QRCODE
 
 #if defined(HAVE_CONFIG_H)
 #include "config/dapscoin-config.h" /* for USE_QRCODE */

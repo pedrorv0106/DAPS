@@ -41,18 +41,13 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
     contextMenu->addAction(copyMessageAction);
     contextMenu->addAction(copyAmountAction);
 
-    // context menu signals
-    //connect(copyLabelAction, SIGNAL(triggered()), this, SLOT(copyLabel()));
-    //connect(copyMessageAction, SIGNAL(triggered()), this, SLOT(copyMessage()));
-    //connect(copyAmountAction, SIGNAL(triggered()), this, SLOT(copyAmount()));
-
     // Show privacy account address
     ui->lineEditAddress->setStyleSheet("border:none; background: transparent; text-align:center;");
     ui->pushButtonCP->setStyleSheet("background:transparent;");
     ui->pushButtonCP->setIcon(QIcon(":/icons/editcopy"));
     connect(ui->pushButtonCP, SIGNAL(clicked()), this, SLOT(copyAddress()));
     CPubKey temp;
-    if (pwalletMain && !pwalletMain->IsCrypted()) {
+    if (pwalletMain && !pwalletMain->IsLocked()) {
         pwalletMain->GetKeyFromPool(temp);
         pwalletMain->CreatePrivacyAccount();
         std::string pubAddress;
@@ -63,7 +58,7 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
         QList<QString> stringsList;
         accountList.push_back("Master Account");
         addrList.push_back(pubAddress);
-        for(int i = 0; i < addrList.size(); i++) {
+        for(size_t i = 0; i < addrList.size(); i++) {
             stringsList.append(QString(accountList[i].c_str()) + " - " + QString(addrList[i].c_str()));
         }
 
@@ -109,9 +104,9 @@ void ReceiveCoinsDialog::loadAccount() {
     CWallet* wl = model->getCWallet();
     QList<QString> stringsList;
     wl->AllMyPublicAddresses(addrList, accountList);
-    for(int i = 0; i < addrList.size(); i++) {
+    for(size_t i = 0; i < addrList.size(); i++) {
         bool isDuplicate = false;
-        for (int i = 0; i < ui->reqAddress->count(); i++) {
+        for (size_t i = 0; i < (size_t)ui->reqAddress->count(); i++) {
             if (ui->reqAddress->itemText(i).contains(QString(addrList[i].c_str()), Qt::CaseSensitive)) {
                 isDuplicate = true;
                 break;
@@ -132,10 +127,6 @@ ReceiveCoinsDialog::~ReceiveCoinsDialog()
 
 void ReceiveCoinsDialog::clear()
 {
-    //ui->reqAmount->clear();
-    // #REMOVE ui->reqLabel->setText("");
-    // #REMOVE ui->reqMessage->setText("");
-    // #REMOVE ui->reuseAddress->setChecked(false);
     updateDisplayUnit();
 }
 
@@ -151,9 +142,6 @@ void ReceiveCoinsDialog::accept()
 
 void ReceiveCoinsDialog::updateDisplayUnit()
 {
-    if (model && model->getOptionsModel()) {
-        //ui->reqAmount->setDisplayUnit(model->getOptionsModel()->getDisplayUnit());
-    }
 }
 
 void ReceiveCoinsDialog::on_receiveButton_clicked()
@@ -165,7 +153,7 @@ void ReceiveCoinsDialog::on_receiveButton_clicked()
     CWallet* wl = model->getCWallet();
     wl->AllMyPublicAddresses(addrList, accountList);
     int selectedIdx = ui->reqAddress->currentIndex();
-    if (addrList.size()>selectedIdx){
+    if ((int)addrList.size() > selectedIdx){
         QString address(addrList[selectedIdx].c_str());
         QString label(accountList[selectedIdx].c_str());
         QString reqMes = "Request message";
@@ -199,13 +187,7 @@ void ReceiveCoinsDialog::on_receiveButton_clicked()
 void ReceiveCoinsDialog::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
-    // m_SizeGrip.move  (width() - 17, height() - 17);
-    // m_SizeGrip.resize(          17,            17);
 }
-
-// void ReceiveCoinsDialog::bitcoinGUIInstallEvent(BitcoinGUI *gui) {
-//     m_SizeGrip.installEventFilter((QObject*)gui);
-// }
 
 void ReceiveCoinsDialog::keyPressEvent(QKeyEvent* event)
 {
