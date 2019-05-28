@@ -232,13 +232,6 @@ void AdvertizeLocal(CNode *pnode) {
     }
 }
 
-/*void SetReachable(enum Network net, bool fFlag) {
-    LOCK(cs_mapLocalHost);
-    vfReachable[net] = fFlag;
-    if (net == NET_IPV6 && fFlag)
-        vfReachable[NET_IPV4] = true;
-}*/
-
 // learn a new local address
 bool AddLocal(const CService &addr, int nScore) {
     if (!addr.IsRoutable())
@@ -260,7 +253,6 @@ bool AddLocal(const CService &addr, int nScore) {
             info.nScore = nScore + (fAlready ? 1 : 0);
             info.nPort = addr.GetPort();
         }
-        //SetReachable(addr.GetNetwork());
     }
 
     return true;
@@ -321,7 +313,6 @@ bool IsReachable(enum Network net) {
 /** check whether a given address is in a network we can probably connect to */
 bool IsReachable(const CNetAddr &addr) {
     enum Network net = addr.GetNetwork();
-    //return IsReachable(net);
     return !vfLimited[net];
 }
 
@@ -530,7 +521,7 @@ void CNode::Ban(const CSubNet &subNet, const BanReason &banReason, int64_t banti
     CBanEntry banEntry(GetTime());
     banEntry.banReason = banReason;
     if (bantimeoffset <= 0) {
-        bantimeoffset = GetArg("-bantime", 1);//60 * 60 * 24); // Default 24-hour ban
+        bantimeoffset = GetArg("-bantime", 60 * 60 * 24); // Default 24-hour ban
         sinceUnixEpoch = false;
     }
     banEntry.nBanUntil = (sinceUnixEpoch ? 0 : GetTime()) + bantimeoffset;

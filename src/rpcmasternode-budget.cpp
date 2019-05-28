@@ -203,11 +203,6 @@ Value preparebudget(const Array& params, bool fHelp)
         throw runtime_error("Proposal is not valid - " + budgetProposalBroadcast.GetHash().ToString() + " - " + strError);
 
     bool useIX = false; //true;
-    // if (params.size() > 7) {
-    //     if(params[7].get_str() != "false" && params[7].get_str() != "true")
-    //         return "Invalid use_ix, must be true or false";
-    //     useIX = params[7].get_str() == "true" ? true : false;
-    // }
 
     CWalletTx wtx;
     if (!pwalletMain->GetBudgetSystemCollateralTX(wtx, budgetProposalBroadcast.GetHash(), useIX)) {
@@ -300,10 +295,6 @@ Value submitbudget(const Array& params, bool fHelp)
     if (!masternodeSync.IsBlockchainSynced()) {
         throw runtime_error("Must wait for client to sync with masternode network. Try again in a minute or so.");
     }
-
-    // if(!budgetProposalBroadcast.IsValid(strError)){
-    //     return "Proposal is not valid - " + budgetProposalBroadcast.GetHash().ToString() + " - " + strError;
-    // }
 
     budget.mapSeenMasternodeBudgetProposals.insert(make_pair(budgetProposalBroadcast.GetHash(), budgetProposalBroadcast));
     budgetProposalBroadcast.Relay();
