@@ -30,6 +30,8 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         cd assets/cpuminer-2.5.0 && \ 
         wget -N https://curl.haxx.se/download/curl-7.40.0.tar.gz && tar xzf curl-7.40.0.tar.gz && \
         wget -N https://sourceware.org/pub/pthreads-win32/pthreads-w32-2-9-1-release.tar.gz && tar xzf pthreads-w32-2-9-1-release.tar.gz && \
+        DEPS="/root/DAPS/assets/cpuminer-2.5.0/win64_deps" && \
+        DESTDIR=${DEPS} && \
         ./build.sh && \
         cp minerd.exe /BUILD/bin/dapscoin-poa-minerd.exe; \
 #
