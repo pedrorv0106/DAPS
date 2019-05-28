@@ -38,6 +38,19 @@ steps:
     build_arguments:
       - SRC_TAG=${{CF_BRANCH_TAG_NORMALIZED}}
     stage: Linux
+  BuildingDepenenciesLinuxArm64:
+    title: Building Dependencies for Linux ARM 64-bit
+    type: build
+    image_name: build_deps_linuxarm64
+    working_directory: ./
+    dockerfile: boot/cf/deps.Dockerfile
+    no_cache: true
+    no_cf_cache: true
+    build_arguments:
+      - SRC_TAG=${{CF_BRANCH_TAG_NORMALIZED}}
+      - BUILD_TARGET=linuxarm64
+      - SRC_NAME=build_os_libs_18
+    stage: Linux
   BuildingDepenenciesWinx86:
     title: Building Dependencies for Windows 32-bit
     type: build
