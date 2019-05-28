@@ -68,6 +68,13 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         make -j2 && \
         make install DESTDIR=/BUILD/; \
 #
+    elif [ "$BUILD_TARGET" = "linuxarm32" ]; \
+       then echo "Compiling for Linux ARM 32-bit (arm-linux-gnueabihf)" && \
+        ./autogen.sh && \
+        CONFIG_SITE=$PWD/depends/arm-linux-gnueabihf/share/config.site ./configure --prefix=/ && \
+        make -j2 && \
+        make install DESTDIR=/BUILD/; \
+#
     elif [ "$BUILD_TARGET" = "mac" ]; \
        then echo "Compiling for MacOS (x86_64-apple-darwin11)..." && \
         ./autogen.sh --with-gui=yes && \
