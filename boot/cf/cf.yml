@@ -161,6 +161,44 @@ steps:
       - gsutil cp -r /codefresh/volume/out/bin/* gs://daps-builds/${{CF_BRANCH_TAG_NORMALIZED}}/
       - rm -rf /codefresh/volume/out/*
     stage: Store
+  BuildingDAPSLinuxArm64:
+    title: Building DAPS for Linux ARM 64-bit
+    type: build
+    image_name: build_src_linuxarm64
+    working_directory: ./
+    dockerfile: boot/cf/compile.Dockerfile
+    no_cache: true
+    no_cf_cache: true
+    stage: Compile
+    fail-fast: false
+    build_arguments:
+      - SRC_TAG=${{CF_BRANCH_TAG_NORMALIZED}}
+      - BUILD_TARGET=linuxarm64
+      - SRC_NAME=build_deps_linuxarm64
+  SaveBinLinuxArm64:
+    title: Saving Executables for Linux ARM 64-bit
+    image: r.cfcr.io/hysmagus/build_src_linuxarm64:${{CF_BRANCH_TAG_NORMALIZED}}
+    working_directory: ./
+    commands: 
+      - mkdir -p /codefresh/volume/out/bin/
+      - cp -r /daps/bin/* /codefresh/volume/out/bin/
+      - rm -rf /codefresh/volume/DAPS/.git
+      - find /codefresh/ -type f | xargs du -sh
+    no_cache: true
+    no_cf_cache: true
+    stage: Store
+  UploadToCloudStorageLinuxArm64:
+    title: Upload Binaries and Executables
+    image: google/cloud-sdk:latest
+    stage: Store
+    working_directory: ./
+    environment:
+      - auth=${{GCS_AUTH}}
+    commands: 
+      - echo $auth>auth.json
+      - gcloud auth activate-service-account --key-file auth.json
+      - gsutil cp -r /codefresh/volume/out/bin/* gs://daps-builds/${{CF_BRANCH_TAG_NORMALIZED}}/
+      - rm -rf /codefresh/volume/out/*
   RunQtTests:
     title: Running QT Tests
     image:  r.cfcr.io/hysmagus/build_src:${{CF_BRANCH_TAG_NORMALIZED}}
