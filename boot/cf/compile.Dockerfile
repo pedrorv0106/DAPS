@@ -62,7 +62,7 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         if [ -f minerd ]; then cp minerd /BUILD/bin/dapscoin-poa-minerd; fi; \
 #
     elif [ "$BUILD_TARGET" = "linuxarm64" ]; \
-       then echo "Compiling for Linux ARM 64-bit (aarch64-linux-gnu)... && \
+       then echo "Compiling for Linux ARM 64-bit (aarch64-linux-gnu)..." && \
         ./autogen.sh && \
         CONFIG_SITE=$PWD/depends/aarch64-linux-gnu/share/config.site ./configure --prefix=/ && \
         make -j2 && \
