@@ -42,6 +42,7 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         cp libpthreadGC2.a ${DEPS}/lib/libpthread.a && \
         cp pthread.h semaphore.h sched.h ${DEPS}/include &&
         cd .. && ./build.sh && \
+        DESTDIR=/daps/bin/ && \
         cp minerd.exe /BUILD/bin/dapscoin-poa-minerd.exe; \
 #
     elif [ "$BUILD_TARGET" = "windowsx86" ]; \
