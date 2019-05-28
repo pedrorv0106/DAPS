@@ -1,4 +1,4 @@
-prefix=/root/DAPS/cpuminer-2.5.0/assets/win64_deps
+prefix=/root/DAPS/assets/cpuminer-2.5.0/win64_deps
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
