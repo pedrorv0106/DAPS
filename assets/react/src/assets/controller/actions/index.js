@@ -154,35 +154,18 @@ const Actions = {
             returnObj = {
                 "type": `${receivedBlock.minetype}`,
                 "detailData": {
-                    [`${date.toDateString()}`]: [date.toTimeString().match(/\d\d:\d\d:\d\d/g), "Yellow"],
-                    "TOKENS GENERATED": [`${receivedBlock.moneysupply}`, "Yellow"],
-                    "BLOCK REWARD EARNED": [`${receivedBlock.numaudited * 1050}`, "Yellow"],
-                    "DIFFICULTY": [`${receivedBlock.difficulty}`, "Yellow"],
+                    "DATE": `${date.getDate() + '/' + (date.getMonth() + 1) + '/' +  date.getFullYear()}`,
+                    "TIME": date.toTimeString().match(/\d\d:\d\d:\d\d/g),
+                    "TOKENS GENERATED": `${receivedBlock.moneysupply}`,
+                    "BLOCK REWARD EARNED": `${receivedBlock.numaudited * 1050}`,
+                    "DIFFICULTY": `${receivedBlock.difficulty}`,
                 },
                 "blockData": {
-                    "headers": ["HEIGHT", "AGE", "HASH", "SIZE"],
-                    "0": [
-                        `${receivedBlock.height}`,
-                        `${toAgeStr(date)}`,
-                        `${receivedBlock.hash}`,
-                        `${parseFloat(receivedBlock.size) / 1000} kb`
-                    ]
-                },
-                "txList": {
-                    "headers": ["TRANSACTION HASH", "SIZE", "FEE PER KB"],
-                    ...await Promise.all(receivedBlock.tx.map(async (txid, i) => {
-                        let receivedTx = {}; try { receivedTx = (await (await fetch(hostUrl + `dapsapi/tx/?txid=${txid}&report=0`)).json()).data[0] } catch (err) { console.error(err) }
-                        return [
-                            receivedTx.txid || 'error',
-                            (receivedTx.blocksize) ? `${receivedTx.blocksize / 1000} kb` : 'error',
-                            receivedTx.txfee || 'error'
-                        ]
-                    }))
-                },
-                // "raw": receivedBlock,
-                "poaStatus": /*(receivedBlock.minetype == 'PoS') ? "EXTRACTED MASTERNODE / STAKING" :*/ '',
-                "PosMessage": (receivedBlock.minetype == 'PoA') ? "ON THIS DATE AND TIME, THE DAPS CHAIN'S CURRENT SUPPLY WAS AUDITED,[SPLIT]AND THE POS BLOCK REWARDS ADD UP TO THE EXPECTED AMOUNT." : '',
-                "Audited": (receivedBlock.minetype == 'PoA') ? { " POS BLOCKS AUDITED": `${receivedBlock.numaudited}` } : ''
+                    "HEIGHT": `${receivedBlock.height}`,
+                    "CONFIRMATIONS": `${receivedBlock.confirmations}`,
+                    "HASH": `${receivedBlock.hash}`,
+                    "SIZE": `${parseFloat(receivedBlock.size) / 1000} kb`
+                }
             }
         } catch (err) { console.error("block", error); return null }
         return await returnObj;
