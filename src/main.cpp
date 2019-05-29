@@ -3714,7 +3714,7 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
         }
 
         const CTxOut& foundationOut = coinstake.vout[numUTXO - 1];
-        if (foundationOut.nValue != 50)
+        if (foundationOut.nValue != 50 * COIN)
         	return state.DoS(100, error("CheckBlock() : Incorrect amount PoS rewards for foundation"));
 
         if (!VerifyDerivedAddress(foundationOut, FOUNDATION_WALLET))
