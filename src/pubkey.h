@@ -195,8 +195,6 @@ public:
         for (unsigned int i = 0; i < sz; i++)
             sprintf(psz + i * 2, "%02x", vch[sz - i - 1]);
         return std::string(psz, psz + sz * 2);
-        //std::string my_std_string(reinterpret_cast<const char*>(vch), 65);
-        //return my_std_string;
     }
 };
 

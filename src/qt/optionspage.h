@@ -21,7 +21,6 @@
 
 class OptionsModel;
 class WalletModel;
-class BitcoinGUI;
 
 namespace Ui
 {
@@ -45,7 +44,7 @@ public:
     void setModel(WalletModel* model);
     void setMapper();
     bool matchNewPasswords();
-    void bitcoinGUIInstallEvent(BitcoinGUI *gui);
+	QString getStakingStatusError();
 
 public slots:
 	void on_EnableStaking(ToggleButton*);
@@ -60,7 +59,6 @@ private:
     OptionsModel* options;
     QDataWidgetMapper* mapper;
     QSettings settings;
-    QSizeGrip m_SizeGrip;
     QMenu* contextMenu;
     virtual void resizeEvent(QResizeEvent* event);
     CAmount getValidatedAmount();
@@ -69,8 +67,6 @@ private slots:
     void validateNewPass();
     void validateNewPassRepeat();
     void onOldPassChanged();
-//    void on_pushButtonDarkMode_clicked();
-//    void on_pushButtonLightMode_clicked();
     void on_pushButtonPassword_clicked();
     void on_pushButtonBackup_clicked();
     void changeTheme(ToggleButton* widget);

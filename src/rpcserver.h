@@ -218,6 +218,8 @@ extern json_spirit::Value createprivacywallet(const json_spirit::Array& params, 
 extern json_spirit::Value createprivacyaccount(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value revealviewprivatekey(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value revealspendprivatekey(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value showtxprivatekeys(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value rescanwallettransactions(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value decodestealthaddress(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value sendtostealthaddress(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value createprivacysubaddress(const json_spirit::Array& params, bool fHelp);

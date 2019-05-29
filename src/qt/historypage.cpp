@@ -14,6 +14,7 @@
 #include "optionsmodel.h"
 #include "transactionrecord.h"
 #include "walletmodel.h"
+#include "revealtxdialog.h"
 
 #include <algorithm>
 
@@ -41,7 +42,7 @@ bool TxCompare (std::map<QString, QString> i, std::map<QString, QString> j) {
 
 HistoryPage::HistoryPage(QWidget* parent) : QDialog(parent),
                                             ui(new Ui::HistoryPage),
-                                            m_SizeGrip(this),
+                                            // m_SizeGrip(this),
                                             model(0)
 
 {
@@ -111,12 +112,56 @@ void HistoryPage::on_cellClicked(int row, int column)
     QString address = cell->data(0).toString();
     std::string stdAddress = address.trimmed().toStdString();
     if (pwalletMain->addrToTxHashMap.count(stdAddress) == 1) {
-        QMessageBox txHashShow;
-        txHashShow.setText("Transaction Hash.");
-        txHashShow.setInformativeText(pwalletMain->addrToTxHashMap[stdAddress].c_str());
-        txHashShow.setStyleSheet(GUIUtil::loadStyleSheet());
-        txHashShow.setStyleSheet("QMessageBox {messagebox-text-interaction-flags: 5;}");
-        txHashShow.exec();
+        // QMessageBox txHashShow;
+        // txHashShow.setText("Transaction Hash.");
+        // txHashShow.setInformativeText(pwalletMain->addrToTxHashMap[stdAddress].c_str());
+        // txHashShow.setStyleSheet(GUIUtil::loadStyleSheet());
+        // txHashShow.setStyleSheet("QMessageBox {messagebox-text-interaction-flags: 5;}");
+        // txHashShow.exec();
+
+        RevealTxDialog txdlg;
+        txdlg.setStyleSheet(GUIUtil::loadStyleSheet());
+
+        txdlg.setTxID(pwalletMain->addrToTxHashMap[stdAddress].c_str());
+
+        txdlg.setTxAddress(stdAddress.c_str());
+        bool privkeyFound = false;
+        std::string txHash = pwalletMain->addrToTxHashMap[stdAddress];
+        if (IsHex(txHash)) {
+        	uint256 hash;
+        	hash.SetHex(txHash);
+
+        	if (pwalletMain && pwalletMain->mapWallet.count(hash) == 1) {
+        		CWalletTx tx = pwalletMain->mapWallet[hash];
+        		for (size_t i = 0; i < tx.vout.size(); i++) {
+        			txnouttype type;
+        			vector<CTxDestination> addresses;
+        			int nRequired;
+
+        			if (ExtractDestinations(tx.vout[i].scriptPubKey, type, addresses, nRequired)) {
+        				std::string parseddAddress = CBitcoinAddress(addresses[0]).ToString();
+        				if (stdAddress == parseddAddress) {
+        					if (tx.IsCoinStake() && !tx.vout[i].txPriv.empty()) {
+        						CKey txPriv;
+        						txPriv.Set(tx.vout[i].txPriv.begin(), tx.vout[i].txPriv.end(), true);
+        						txdlg.setTxPrivKey(CBitcoinSecret(txPriv).ToString().c_str());
+    							privkeyFound = true;
+        					} else {
+        						std::string key = txHash + std::to_string(i);
+        						std::string secret;
+        						if (CWalletDB(pwalletMain->strWalletFile).ReadTxPrivateKey(key, secret)) {
+        							txdlg.setTxPrivKey(secret.c_str());
+        							privkeyFound = true;
+        						}
+        					}
+        				}
+        			}
+        		}
+        	}
+        }
+        if (!privkeyFound) txdlg.setTxPrivKey(std::string("Not available").c_str());
+        
+        txdlg.exec();
     }
 }
 
@@ -126,13 +171,6 @@ void HistoryPage::resizeEvent(QResizeEvent* event)
     ui->tableView->setColumnWidth(2, this->width() * .65);
     ui->tableView->resizeColumnToContents(QHeaderView::ResizeToContents);
     ui->tableView->resizeColumnsToContents();
-
-    m_SizeGrip.move  (width() - 17, height() - 17);
-    m_SizeGrip.resize(          17,            17);
-}
-
-void HistoryPage::bitcoinGUIInstallEvent(BitcoinGUI *gui) {
-    m_SizeGrip.installEventFilter((QObject*)gui);
 }
 
 void HistoryPage::keyPressEvent(QKeyEvent* event)
@@ -153,7 +191,7 @@ void HistoryPage::updateTableData(CWallet* wallet)
     for (int row = 0; row < (short)txs.size(); row++) {
         ui->tableView->insertRow(row);
         int col = 0;
-        for (QString dataName : {"date", "type", "address", "amount"}) {
+        for (QString dataName : {"date", "type", "address", "amount", "confirmations"}) {
             QString data = txs[row].at(dataName);
             QString date = data;
             QTableWidgetItem* cell = new QTableWidgetItem();
@@ -226,11 +264,7 @@ void HistoryPage::syncTime(QDateTimeEdit* calendar, QTimeEdit* clock)
     calendar->setTime(clock->time());
 }
 
-void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e){
-    //updateTableData(pwalletMain);
-    //ui->tableView->setRowCount(0);
-    //auto txs = WalletUtil::getTXs(wallet);
-    //for (int row = 0; row < (short)txs.size(); row++) {
+void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e, QString f){
     ui->tableView->setSortingEnabled(false);
     int row = ui->tableView->rowCount();
     ui->tableView->insertRow(row);
@@ -244,7 +278,7 @@ void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e){
     if (!e.trimmed().startsWith(QString("("))) {
     	addr = e.trimmed();
     }
-    for (QString dataName : {"date", "type", "address", "amount"}) {
+    for (QString dataName : {"date", "type", "address", "amount", "confirmations"}) {
         QTableWidgetItem* cell = new QTableWidgetItem();
         switch (col) {
 
@@ -260,6 +294,9 @@ void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e){
             case 3: /*amount*/
                 cell->setData(0, BitcoinUnits::format(0, c));
                 break;
+            case 4: /*confirmations*/
+                cell->setData(0, f);
+                break;
                 /*default:
                     cell->setData(0, data);
                     break;*/
@@ -268,7 +305,6 @@ void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e){
             col++;
             ui->tableView->update();
         }
-    //}
     ui->tableView->setSortingEnabled(true);
     ui->tableView->setVisible(ui->tableView->rowCount());
     ui->tableView->update();

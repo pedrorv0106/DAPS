@@ -22,7 +22,6 @@
 #include <QSizeGrip>
 
 class WalletModel;
-class BitcoinGUI;
 
 namespace Ui
 {
@@ -41,13 +40,12 @@ class HistoryPage : public QDialog
 
 public:
     explicit HistoryPage(QWidget* parent = 0);
-    void bitcoinGUIInstallEvent(BitcoinGUI *gui);
     ~HistoryPage();
 
 public slots:
     void updateFilter();
     void syncTime(QDateTimeEdit* calendar, QTimeEdit* clock);
-    void txalert(QString, int, CAmount, QString, QString);
+    void txalert(QString, int, CAmount, QString, QString, QString);
 
 
 protected:
@@ -60,7 +58,6 @@ private:
     QAbstractTableModel* tableModel;
 
     QTimeEdit* timeEditTo;
-    QSizeGrip m_SizeGrip;
     QTimeEdit* timeEditFrom;
 
     QString allAddressString="All";

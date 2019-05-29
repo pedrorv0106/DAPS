@@ -90,8 +90,6 @@ void CObfuScationRelay::Relay()
     while (nRank1 == nRank2)
         nRank2 = (rand() % nCount) + 1;
 
-    //printf("rank 1 - rank2 %d %d \n", nRank1, nRank2);
-
     //relay this message through 2 separate nodes for redundancy
     RelayThroughNode(nRank1);
     RelayThroughNode(nRank2);
@@ -102,15 +100,11 @@ void CObfuScationRelay::RelayThroughNode(int nRank)
     CMasternode* pmn = mnodeman.GetMasternodeByRank(nRank, nBlockHeight, ActiveProtocol());
 
     if (pmn != NULL) {
-        //printf("RelayThroughNode %s\n", pmn->addr.ToString().c_str());
         CNode* pnode = ConnectNode((CAddress)pmn->addr, NULL, false);
         if (pnode) {
-            //printf("Connected\n");
             pnode->PushMessage("dsr", (*this));
             pnode->Release();
             return;
         }
-    } else {
-        //printf("RelayThroughNode NULL\n");
     }
 }

@@ -486,8 +486,6 @@ void BitcoinApplication::initializeResult(int retval)
 #ifdef ENABLE_WALLET
         // Now that initialization/startup is done, process any command-line
         // DAPScoin: URIs or payment requests:
-        // #Remove connect(paymentServer, SIGNAL(receivedPaymentRequest(SendCoinsRecipient)),
-        //     window, SLOT(handlePaymentRequest(SendCoinsRecipient)));
         connect(window, SIGNAL(receivedURI(QString)),
             paymentServer, SLOT(handleURIOrFile(QString)));
         connect(paymentServer, SIGNAL(message(QString, QString, unsigned int)),

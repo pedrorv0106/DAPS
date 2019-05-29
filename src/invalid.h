@@ -7,7 +7,6 @@
 
 #endif //DAPScoin_INVALID_H
 
-#include <libzerocoin/bignum.h>
 #include <univalue/include/univalue.h>
 #include <primitives/transaction.h>
 
