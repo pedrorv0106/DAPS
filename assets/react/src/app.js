@@ -7,6 +7,7 @@ import Actions from 'Actions'
 
 // import DetailPage from 'Pages/detailpage'
 import BlockDetail from 'Pages/blockdetail'
+import Genesis from 'Pages/genesis'
 import TxDetail from 'Pages/txdetail'
 import ListPage from 'Pages/listpage'
 import OverviewPage from 'Pages/overviewpage'
@@ -104,7 +105,7 @@ class BlockExplorer extends Component {
         this.setState({ collecting: true })
         let newData = {}; 
         if (this.state.type == 'Genesis')
-          try { newData = await Actions[`getGenesisBlockDetail`]('00000f47a2a92fb30d9c64800512caeea26ec3b298229bff98951ab1da316022') } catch (err) { }
+          try { newData = await Actions[`getGenesisBlockDetail`]('000000e5df28c2bc6c5f0646f6ac3891c167210ef05dee46e3684fa74b1d7245') } catch (err) { }
         else
           try { newData = await Actions[`get${this.state.type}Detail`](this.state.param) } catch (err) { }
 
@@ -239,7 +240,7 @@ class BlockExplorer extends Component {
 
               <Route exact path={route + "tx/:id"} component={() => <TxDetail data={this.state.lib.get(this.state.param)} back={this.state.lastpath} />} />
               <Route exact path={route + "block/:hash"} component={() => <BlockDetail data={this.state.lib.get(this.state.param)} back={this.state.lastpath} />} />
-              <Route exact path={route + "genesis/"} component={() => <BlockDetail data={this.state.lib.get(this.state.param)} back={this.state.lastpath} />} />
+              <Route exact path={route + "genesis/"} component={() => <Genesis data={this.state.lib.get(this.state.param)} back={this.state.lastpath} />} />
             </Switch>
 
           </div>
