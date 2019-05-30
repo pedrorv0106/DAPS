@@ -45,8 +45,8 @@ class TxDetail extends Component {
             {detailData.map((dataItem, i) => <DataCircle data={{ header: dataItem[0], item: dataItem[1] }} style={{alignSelf:'center'}}/>) }
             {(data['isStealth']) ? <form id="revealForm" className={`RevealForm ${Style.Form}`}>
                 <h3>??? DAPS</h3><br />
-                <input id="address" type="text" placeholderText="DAPS Address" /><br />
-                <input id="viewkey" type="password" placeholderText="Private Viewkey" /><br />
+                <input id="address" type="text" placeholder="DAPS Address" /><br />
+                <input id="viewkey" type="password" placeholder="Private Viewkey" /><br />
                 <input type="submit" value="Reveal" onClick={(e)=>{
                     e.preventDefault()
                     // console.log(e)
