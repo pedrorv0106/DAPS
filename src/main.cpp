@@ -2087,7 +2087,7 @@ bool VerifyDerivedAddress(const CTxOut& out, std::string stealth) {
 	if (foundationTxPub != origin) return false;
 	CWallet::ComputeStealthDestination(foundationTxPriv, pubView, pubSpend, foundationalGenPub);
 	CScript foundationalScript = GetScriptForDestination(foundationalGenPub);
-	return foundationalScript != out.scriptPubKey;
+	return foundationalScript == out.scriptPubKey;
 }
 
 void CheckForkWarningConditions() {
