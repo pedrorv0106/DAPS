@@ -81,14 +81,7 @@ void MasternodeList::showContextMenu(const QPoint& point)
 void MasternodeList::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
-
-    // m_SizeGrip.move  (width() - 17, height() - 17);
-    // m_SizeGrip.resize(          17,            17);
 }
-
-// void MasternodeList::bitcoinGUIInstallEvent(BitcoinGUI* gui) {
-//     m_SizeGrip.installEventFilter((QObject*)gui);
-// }
 
 void MasternodeList::StartAlias(std::string strAlias)
 {
@@ -149,7 +142,6 @@ void MasternodeList::StartAll(std::string strCommand)
             strFailedHtml += "\nFailed to start " + mne.getAlias() + ". Error: " + strError;
         }
     }
-    //pwalletMain->Lock();
 
     std::string returnObj;
     returnObj = strprintf("Successfully started %d masternodes, failed to start %d, total %d", nCountSuccessful, nCountFailed, nCountFailed + nCountSuccessful);
@@ -185,7 +177,6 @@ void MasternodeList::updateMyMasternodeInfo(QString strAlias, QString strAddr, C
 
     QTableWidgetItem* aliasItem = new QTableWidgetItem(strAlias);
     QTableWidgetItem* addrItem = new QTableWidgetItem(pmn ? QString::fromStdString(pmn->addr.ToString()) : strAddr);
-    QTableWidgetItem* protocolItem = new QTableWidgetItem(QString::number(pmn ? pmn->protocolVersion : -1));
     QTableWidgetItem* statusItem = new QTableWidgetItem(QString::fromStdString(pmn ? pmn->GetStatus() : "MISSING"));
     GUIUtil::DHMSTableWidgetItem* activeSecondsItem = new GUIUtil::DHMSTableWidgetItem(pmn ? (pmn->lastPing.sigTime - pmn->sigTime) : 0);
     QTableWidgetItem* lastSeenItem = new QTableWidgetItem(QString::fromStdString(DateTimeStrFormat("%Y-%m-%d %H:%M", pmn ? pmn->lastPing.sigTime : 0)));
@@ -197,7 +188,6 @@ void MasternodeList::updateMyMasternodeInfo(QString strAlias, QString strAddr, C
     ui->tableWidgetMyMasternodes->setItem(nNewRow, 3, activeSecondsItem);
     ui->tableWidgetMyMasternodes->setItem(nNewRow, 4, lastSeenItem);
     ui->tableWidgetMyMasternodes->setItem(nNewRow, 5, pubkeyItem);
-    //ui->tableWidgetMyMasternodes->setItem(nNewRow, 6, pubkeyItem);
 }
 
 void MasternodeList::updateMyNodeList(bool fForce)
@@ -207,7 +197,6 @@ void MasternodeList::updateMyNodeList(bool fForce)
     // automatically update my masternode list only once in MY_MASTERNODELIST_UPDATE_SECONDS seconds,
     // this update still can be triggered manually at any time via button click
     int64_t nSecondsTillUpdate = nTimeMyListUpdated + MY_MASTERNODELIST_UPDATE_SECONDS - GetTime();
-    // #REMOVE ui->secondsLabel->setText(QString::number(nSecondsTillUpdate));
 
     if (nSecondsTillUpdate > 0 && !fForce) return;
     nTimeMyListUpdated = GetTime();
@@ -223,9 +212,6 @@ void MasternodeList::updateMyNodeList(bool fForce)
         updateMyMasternodeInfo(QString::fromStdString(mne.getAlias()), QString::fromStdString(mne.getIp()), pmn);
     }
     ui->tableWidgetMyMasternodes->setSortingEnabled(true);
-
-    // reset "timer"
-    // #REMOVE ui->secondsLabel->setText("0");
 }
 
 void MasternodeList::on_startButton_clicked()

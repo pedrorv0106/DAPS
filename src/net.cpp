@@ -232,13 +232,6 @@ void AdvertizeLocal(CNode *pnode) {
     }
 }
 
-/*void SetReachable(enum Network net, bool fFlag) {
-    LOCK(cs_mapLocalHost);
-    vfReachable[net] = fFlag;
-    if (net == NET_IPV6 && fFlag)
-        vfReachable[NET_IPV4] = true;
-}*/
-
 // learn a new local address
 bool AddLocal(const CService &addr, int nScore) {
     if (!addr.IsRoutable())
@@ -260,7 +253,6 @@ bool AddLocal(const CService &addr, int nScore) {
             info.nScore = nScore + (fAlready ? 1 : 0);
             info.nPort = addr.GetPort();
         }
-        //SetReachable(addr.GetNetwork());
     }
 
     return true;
@@ -321,7 +313,6 @@ bool IsReachable(enum Network net) {
 /** check whether a given address is in a network we can probably connect to */
 bool IsReachable(const CNetAddr &addr) {
     enum Network net = addr.GetNetwork();
-    //return IsReachable(net);
     return !vfLimited[net];
 }
 

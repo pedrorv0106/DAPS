@@ -128,7 +128,6 @@ dapsapi.get('*', async (req, res, next) => {
               else
                 skipQuery.sortid = {'$lt' : String(results[0].sortid)};
             }
-            console.log('sortid = ', results[0].sortid);
             aggregate.match(skipQuery).sort(sort);
             options = { limit : 20, allowDiskUse: true };
             result = await collections[reqcollection].aggregatePaginate(aggregate, options, (err, results, pageCount, cnt) => {

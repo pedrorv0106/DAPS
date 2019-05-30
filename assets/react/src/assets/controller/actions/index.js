@@ -146,6 +146,30 @@ const Actions = {
         } catch (err) { console.error("block", error); return null }
         return await returnObj;
     },
+    "getGenesisBlockDetail": async (blockhash) => {
+        let returnObj = {}
+        try {
+            const receivedBlock = (await (await fetch(hostUrl + `dapsapi/block/?hash=${blockhash}&report=0`)).json()).data[0]
+            const date = new Date(receivedBlock.time * 1000);
+            returnObj = {
+                "type": `${receivedBlock.minetype}`,
+                "detailData": {
+                    "DATE": `${date.getDate() + '/' + (date.getMonth() + 1) + '/' +  date.getFullYear()}`,
+                    "TIME": date.toTimeString().match(/\d\d:\d\d:\d\d/g),
+                    "TOKENS GENERATED": `${receivedBlock.moneysupply}`,
+                    "BLOCK REWARD EARNED": `${receivedBlock.numaudited * 1050}`,
+                    "DIFFICULTY": `${receivedBlock.difficulty}`,
+                },
+                "blockData": {
+                    "HEIGHT": `${receivedBlock.height}`,
+                    "CONFIRMATIONS": `${receivedBlock.confirmations}`,
+                    "HASH": `${receivedBlock.hash}`,
+                    "SIZE": `${parseFloat(receivedBlock.size) / 1000} kb`
+                }
+            }
+        } catch (err) { console.error("block", error); return null }
+        return await returnObj;
+    },
 
 
     "getTxDetail": async (id) => {

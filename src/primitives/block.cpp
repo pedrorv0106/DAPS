@@ -149,6 +149,7 @@ uint256 CBlock::BuildMerkleTree(bool* fMutated) const
         }
         j += nSize;
     }
+
     if (fMutated) {
         *fMutated = mutated;
     }

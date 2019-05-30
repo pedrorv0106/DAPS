@@ -32,7 +32,8 @@ public:
         Date = 2,
         Type = 3,
         ToAddress = 4,
-        Amount = 5
+        Amount = 5,
+        Confirmations = 6
     };
 
     /** Roles to get specific information from a transaction row.
@@ -89,6 +90,7 @@ private:
     QString formatTxStatus(const TransactionRecord* wtx) const;
     QString formatTxDate(const TransactionRecord* wtx) const;
     QString formatTxType(const TransactionRecord* wtx) const;
+    QString formatTxConfirmations(const TransactionRecord* wtx) const;
     QString formatTxToAddress(const TransactionRecord* wtx, bool tooltip) const;
     QString formatTxAmount(const TransactionRecord* wtx, bool showUnconfirmed = true, BitcoinUnits::SeparatorStyle separators = BitcoinUnits::separatorStandard) const;
     QString formatTooltip(const TransactionRecord* rec) const;

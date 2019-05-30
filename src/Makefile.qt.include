@@ -50,15 +50,15 @@ QT_FORMS_UI = \
   qt/forms/overviewpage.ui \
   qt/forms/receivecoinsdialog.ui \
   qt/forms/receiverequestdialog.ui \
+  qt/forms/revealtxdialog.ui \
   qt/forms/rpcconsole.ui \
   qt/forms/sendcoinsdialog.ui \
   qt/forms/sendcoinsentry.ui \
   qt/forms/signverifymessagedialog.ui \
   qt/forms/togglebutton.ui \
   qt/forms/transactiondescdialog.ui \
-  qt/forms/txentry.ui \
-  qt/forms/zdapscontroldialog.ui
-
+  qt/forms/txentry.ui 
+  
 QT_MOC_CPP = \
   qt/moc_addressbookpage.cpp \
   qt/moc_addresstablemodel.cpp \
@@ -96,6 +96,7 @@ QT_MOC_CPP = \
   qt/moc_qvaluecombobox.cpp \
   qt/moc_receivecoinsdialog.cpp \
   qt/moc_receiverequestdialog.cpp \
+  qt/moc_revealtxdialog.cpp \
   qt/moc_recentrequeststablemodel.cpp \
   qt/moc_rpcconsole.cpp \
   qt/moc_sendcoinsdialog.cpp \
@@ -113,8 +114,7 @@ QT_MOC_CPP = \
   qt/moc_utilitydialog.cpp \
   qt/moc_walletframe.cpp \
   qt/moc_walletmodel.cpp \
-  qt/moc_walletview.cpp \
-  qt/moc_zdapscontroldialog.cpp
+  qt/moc_walletview.cpp 
 
 BITCOIN_MM = \
   qt/macdockiconhandler.mm \
@@ -177,6 +177,7 @@ BITCOIN_QT_H = \
   qt/qvaluecombobox.h \
   qt/receivecoinsdialog.h \
   qt/receiverequestdialog.h \
+  qt/revealtxdialog.h \
   qt/recentrequeststablemodel.h \
   qt/rpcconsole.h \
   qt/sendcoinsdialog.h \
@@ -197,8 +198,7 @@ BITCOIN_QT_H = \
   qt/walletmodel.h \
   qt/walletmodeltransaction.h \
   qt/walletview.h \
-  qt/winshutdownmonitor.h \
-  qt/zdapscontroldialog.h
+  qt/winshutdownmonitor.h 
 
 RES_ICONS = \
   qt/res/icons/add.png \
@@ -315,6 +315,7 @@ BITCOIN_QT_CPP += \
   qt/paymentserver.cpp \
   qt/receivecoinsdialog.cpp \
   qt/receiverequestdialog.cpp \
+  qt/revealtxdialog.cpp \
   qt/recentrequeststablemodel.cpp \
   qt/sendcoinsdialog.cpp \
   qt/sendcoinsentry.cpp \
@@ -330,8 +331,7 @@ BITCOIN_QT_CPP += \
   qt/walletframe.cpp \
   qt/walletmodel.cpp \
   qt/walletmodeltransaction.cpp \
-  qt/walletview.cpp \
-  qt/zdapscontroldialog.cpp
+  qt/walletview.cpp 
 
 endif
 
@@ -408,7 +408,8 @@ endif
 if ENABLE_ZMQ
 qt_dapscoin_qt_LDADD += $(LIBBITCOIN_ZMQ) $(ZMQ_LIBS)
 endif
-qt_dapscoin_qt_LDADD += $(LIBBITCOIN_CLI) $(LIBBITCOIN_COMMON) $(LIBBITCOIN_UTIL) $(LIBBITCOIN_CRYPTO) $(LIBBITCOIN_UNIVALUE) $(LIBBITCOIN_ZEROCOIN) $(LIBLEVELDB) $(LIBLEVELDB_SSE42) $(LIBMEMENV) \
+
+qt_dapscoin_qt_LDADD += $(LIBBITCOIN_CLI) $(LIBBITCOIN_COMMON) $(LIBBITCOIN_UTIL) $(LIBBITCOIN_CRYPTO) $(LIBBITCOIN_UNIVALUE) $(LIBLEVELDB) $(LIBLEVELDB_SSE42) $(LIBMEMENV) \
   $(BOOST_LIBS) $(QT_LIBS) $(QT_DBUS_LIBS) $(QR_LIBS) $(PROTOBUF_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(LIBSECP256K1) \
   $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) -lqrencode
 qt_dapscoin_qt_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(QT_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
