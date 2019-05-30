@@ -30,7 +30,10 @@ const update_block = async (block, log = false) => {
 updateDb = async (numToUpdate = 0, log = true) => {
     try { 
         let blockcount = await (await fetch(hostUrl + 'api/getblockcount')).json();
-        let firstBlock = await Block.count({}) + 1;
+        let firstBlock = await Block.count({});
+        if (firstBlock > 0)
+            firstBlock = firstBlock + 1;
+
         let lastBlock = firstBlock + numToUpdate;
         if (lastBlock > blockcount - 2)
             lastBlock = blockcount - 2;
@@ -74,6 +77,9 @@ updateBlock = async (blockheight, log = true) => {
                         sortid: block.height
                     })
                     let update = await update_block(block)
+                    if (blockheight == 0)
+                        return;
+                    
                     if (update.tx) update.tx.forEach((txid, index) => {
                         request({ uri: `${hostUrl}api/getrawtransaction?txid=${txid}&decrypt=1`, json: true }, async (err, res, tx) => {
                             if (err) { if (log) console.error(err.message); success = false; }
@@ -83,7 +89,7 @@ updateBlock = async (blockheight, log = true) => {
                                     blockindex: block.height,
                                     blocktype: block.type,
                                     blocksize: block.size,
-                                    ringsize: tx.vin[0].ringsize || 0,
+                                    ringsize: tx.vin && tx.vin.length && tx.vin[0].ringsize || 0,
                                     sortid: String(len) + String(block.height) + "_" + String(index)
                                 })
                                 let updatetx = await update_tx(tx)
