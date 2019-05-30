@@ -2416,7 +2416,7 @@ DisconnectBlock(CBlock &block, CValidationState &state, CBlockIndex *pindex, CCo
         }
 
         // restore inputs
-        if (!tx.IsCoinBase() && tx.IsCoinBase()) { // not coinbases because they dont have traditional inputs
+        if (!tx.IsCoinBase() && tx.IsCoinStake()) { // not coinbases because they dont have traditional inputs
             const CTxUndo &txundo = blockUndo.vtxundo[i - 1];
             if (txundo.vprevout.size() != tx.vin.size())
                 return error(
