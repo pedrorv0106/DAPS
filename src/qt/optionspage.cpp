@@ -15,6 +15,8 @@
 #include "receiverequestdialog.h"
 #include "recentrequeststablemodel.h"
 #include "walletmodel.h"
+#include "2faqrdialog.h"
+#include "2fadialog.h"
 
 #include <QAction>
 #include <QCursor>
@@ -58,6 +60,9 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
     bool stkStatus = pwalletMain->ReadStakingStatus();
     ui->toggleStaking->setState(nLastCoinStakeSearchInterval | stkStatus);
     connect(ui->toggleStaking, SIGNAL(stateChanged(ToggleButton*)), this, SLOT(on_EnableStaking(ToggleButton*)));
+
+    ui->toggle2FA->setState(false);
+    connect(ui->toggle2FA, SIGNAL(stateChanged(ToggleButton*)), this, SLOT(on_Enable2FA(ToggleButton*)));
 }
 
 void OptionsPage::setModel(WalletModel* model)
@@ -241,6 +246,21 @@ void OptionsPage::on_EnableStaking(ToggleButton* widget)
         pwalletMain->walletStakingInProgress = false;
         pwalletMain->WriteStakingStatus(false);
     }
+}
+
+void OptionsPage::on_Enable2FA(ToggleButton* widget)
+{
+    widget->setState(true);
+    
+    // TwoFAQRDialog qrdlg;
+    // qrdlg.setStyleSheet(GUIUtil::loadStyleSheet());
+    
+    // qrdlg.exec();
+
+    TwoFADialog codedlg;
+    codedlg.setStyleSheet(GUIUtil::loadStyleSheet());
+    
+    codedlg.exec();
 }
 
 void OptionsPage::changeTheme(ToggleButton* widget)
