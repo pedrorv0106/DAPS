@@ -87,6 +87,7 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         strip src/dapscoin-tx && \
         strip src/qt/dapscoin-qt && \
         make install DESTDIR=/BUILD/ && \
+        apt-get install libcurl4-openssl-dev -y && \
         if [ -f assets/cpuminer-2.5.0/build_linux.sh ]; then cd assets/cpuminer-2.5.0; fi && \
         if [ -f build_linux.sh ]; then ./build_linux.sh; fi && \
         if [ -f minerd ]; then cp minerd /BUILD/bin/dapscoin-poa-minerd; fi; \
