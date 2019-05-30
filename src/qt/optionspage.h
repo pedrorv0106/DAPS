@@ -48,6 +48,7 @@ public:
 
 public slots:
 	void on_EnableStaking(ToggleButton*);
+    void on_Enable2FA(ToggleButton*);
 
 protected:
     virtual void keyPressEvent(QKeyEvent* event);
