@@ -4275,7 +4275,7 @@ void CWallet::ScanWalletKeyImages() {
 	    		outpointToKeyImages[outpoint] = ki;
 	    	}
 	    }
-
+	    AddToWallet(hash);
 	}
 }
 
