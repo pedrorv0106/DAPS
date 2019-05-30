@@ -78,7 +78,6 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
 #
     elif [ "$BUILD_TARGET" = "linux" ]; \
        then echo "Compiling for Linux (x86_64-pc-linux-gnu)..." && \
-        su && \
         apt-get remove libzmq3-dev -y && \
         ./autogen.sh && \
         ./configure && \
