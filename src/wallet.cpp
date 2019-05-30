@@ -5810,7 +5810,6 @@ bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmou
             amount = out.nValue;
             CPubKey sharedSec;
             computeSharedSec(tx, out, sharedSec);
-            std::cout << "SharedSec = " << sharedSec.GetHex() << std::endl;
             uint256 val = out.maskValue.amount;
             uint256 mask = out.maskValue.mask;
             CKey decodedMask;
