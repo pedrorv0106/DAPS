@@ -1023,6 +1023,7 @@ CAmount CWallet::GetDebit(const CTxIn& txin, const isminefilter& filter) const
 {
     {
         LOCK(cs_wallet);
+        if (txin.prevout.IsNull()) return 0;
         COutPoint prevout = findMyOutPoint(txin);
         map<uint256, CWalletTx>::const_iterator mi = mapWallet.find(prevout.hash);
         if (mi != mapWallet.end()) {
