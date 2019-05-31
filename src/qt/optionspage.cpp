@@ -61,7 +61,13 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
     ui->toggleStaking->setState(nLastCoinStakeSearchInterval | stkStatus);
     connect(ui->toggleStaking, SIGNAL(stateChanged(ToggleButton*)), this, SLOT(on_EnableStaking(ToggleButton*)));
 
-    ui->toggle2FA->setState(false);
+    bool twoFAStatus = settings.value("2FA")=="enabled";
+    if (twoFAStatus)
+        disable2FA();
+    else
+        enable2FA();
+
+    ui->toggle2FA->setState(!twoFAStatus);
     connect(ui->toggle2FA, SIGNAL(stateChanged(ToggleButton*)), this, SLOT(on_Enable2FA(ToggleButton*)));
 }
 
@@ -250,7 +256,15 @@ void OptionsPage::on_EnableStaking(ToggleButton* widget)
 
 void OptionsPage::on_Enable2FA(ToggleButton* widget)
 {
-    widget->setState(true);
+    if (widget->getState()) {
+        settings.setValue("2FA", "enabled");
+        enable2FA();
+    } else {
+        settings.setValue("2FA", "disabled");
+        disable2FA();
+    }
+    return;
+
     
     // TwoFAQRDialog qrdlg;
     // qrdlg.setStyleSheet(GUIUtil::loadStyleSheet());
@@ -268,5 +282,42 @@ void OptionsPage::changeTheme(ToggleButton* widget)
     if (widget->getState())
         settings.setValue("theme", "dark");
     else settings.setValue("theme", "light");
-    GUIUtil::refreshStyleSheet();
+    // GUIUtil::refreshStyleSheet();
+}
+
+void OptionsPage::disable2FA() {
+    ui->btn_day->setEnabled(false);
+    ui->btn_week->setEnabled(false);
+    ui->btn_month->setEnabled(false);
+
+    ui->code_1->setText("");
+    ui->code_1->setEnabled(false);
+
+    ui->code_2->setText("");
+    ui->code_2->setEnabled(false);
+
+    ui->code_3->setText("");
+    ui->code_3->setEnabled(false);
+
+    ui->code_4->setText("");
+    ui->code_4->setEnabled(false);
+
+    ui->code_5->setText("");
+    ui->code_5->setEnabled(false);
+
+    ui->code_6->setText("");
+    ui->code_6->setEnabled(false);
+}
+
+void OptionsPage::enable2FA() {
+    ui->btn_day->setEnabled(true);
+    ui->btn_week->setEnabled(true);
+    ui->btn_month->setEnabled(true);
+
+    ui->code_1->setEnabled(true);
+    ui->code_2->setEnabled(true);
+    ui->code_3->setEnabled(true);
+    ui->code_4->setEnabled(true);
+    ui->code_5->setEnabled(true);
+    ui->code_6->setEnabled(true);
 }

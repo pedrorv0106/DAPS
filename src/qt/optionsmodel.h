@@ -38,6 +38,7 @@ public:
         ThirdPartyTxUrls,    // QString
         Digits,              // QString
         Theme,               // QString
+        TwoFA,               // QString
         Language,            // QString
         CoinControlFeatures, // bool
         ThreadsScriptVerif,  // int

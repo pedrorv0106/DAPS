@@ -48,7 +48,6 @@ public:
 
 public slots:
 	void on_EnableStaking(ToggleButton*);
-    void on_Enable2FA(ToggleButton*);
 
 protected:
     virtual void keyPressEvent(QKeyEvent* event);
@@ -63,6 +62,8 @@ private:
     QMenu* contextMenu;
     virtual void resizeEvent(QResizeEvent* event);
     CAmount getValidatedAmount();
+    void disable2FA();
+    void enable2FA();
 
 private slots:
     void validateNewPass();
@@ -71,6 +72,7 @@ private slots:
     void on_pushButtonPassword_clicked();
     void on_pushButtonBackup_clicked();
     void changeTheme(ToggleButton* widget);
+    void on_Enable2FA(ToggleButton* widget);
     void on_pushButtonSave_clicked();
 };
 
