@@ -133,6 +133,8 @@ void OptionsModel::Init()
         settings.setValue("digits", "2");
     if (!settings.contains("theme"))
         settings.setValue("theme", "dark");
+    if (!settings.contains("2FA"))
+        settings.setValue("2FA", "disabled");
     if (!settings.contains("fCSSexternal"))
         settings.setValue("fCSSexternal", false);
     if (!settings.contains("language"))
@@ -211,6 +213,8 @@ QVariant OptionsModel::data(const QModelIndex& index, int role) const
             return settings.value("digits");
         case Theme:
             return settings.value("theme");
+        case TwoFA:
+            return settings.value("2FA");
         case Language:
             return settings.value("language");
         case CoinControlFeatures:
@@ -315,6 +319,12 @@ bool OptionsModel::setData(const QModelIndex& index, const QVariant& value, int 
         case Theme:
             if (settings.value("theme") != value) {
                 settings.setValue("theme", value);
+                setRestartRequired(true);
+            }
+            break;
+        case TwoFA:
+            if (settings.value("2FA") != value) {
+                settings.setValue("2FA", value);
                 setRestartRequired(true);
             }
             break;
