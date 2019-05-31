@@ -16,6 +16,7 @@ public:
     ~TwoFADialog();
 
 private slots:
+    void on_acceptCode();
 
 private:
     Ui::TwoFADialog *ui;

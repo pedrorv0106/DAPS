@@ -263,18 +263,20 @@ void OptionsPage::on_Enable2FA(ToggleButton* widget)
         settings.setValue("2FA", "disabled");
         disable2FA();
     }
-    return;
 
     
-    // TwoFAQRDialog qrdlg;
-    // qrdlg.setStyleSheet(GUIUtil::loadStyleSheet());
-    
-    // qrdlg.exec();
+    TwoFAQRDialog qrdlg;
+    qrdlg.setStyleSheet(GUIUtil::loadStyleSheet());
+    connect(&qrdlg, SIGNAL(finished (int)), this, SLOT(dialogIsFinished(int)));
+    qrdlg.exec();
+}
 
-    TwoFADialog codedlg;
-    codedlg.setStyleSheet(GUIUtil::loadStyleSheet());
-    
-    codedlg.exec();
+void OptionsPage::dialogIsFinished(int result) {
+   if(result == QDialog::Accepted){
+        TwoFADialog codedlg;
+        codedlg.setStyleSheet(GUIUtil::loadStyleSheet());
+        codedlg.exec();
+   }
 }
 
 void OptionsPage::changeTheme(ToggleButton* widget)

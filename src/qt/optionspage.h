@@ -74,6 +74,7 @@ private slots:
     void changeTheme(ToggleButton* widget);
     void on_Enable2FA(ToggleButton* widget);
     void on_pushButtonSave_clicked();
+    void dialogIsFinished(int result);
 };
 
 #endif // BITCOIN_QT_OPTIONSPAGE_H

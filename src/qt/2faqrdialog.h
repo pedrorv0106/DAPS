@@ -14,8 +14,12 @@ class TwoFAQRDialog : public QDialog
 public:
     explicit TwoFAQRDialog(QWidget *parent = 0);
     ~TwoFAQRDialog();
+private:
+    void update();
 
 private slots:
+    void on_btnCopyURI_clicked();
+
 
 private:
     Ui::TwoFAQRDialog *ui;

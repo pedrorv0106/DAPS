@@ -325,6 +325,36 @@ ToggleButton > QPushButton:enabled:checked {
   background-color: #f7f7f7; 
 }
 
+#code_1,
+#code_2,
+#code_3,
+#code_4,
+#code_5,
+#code_6 {
+  border-bottom-width: 1px; 
+  border-bottom-style: solid; 
+  border-radius: 0px;
+  border-color: black;
+}
+
+#txtcode_1,
+#txtcode_2,
+#txtcode_3,
+#txtcode_4,
+#txtcode_5,
+#txtcode_6 {
+  border-width: 0 0 1px 0; 
+  border-style: solid; 
+  border-radius: 0px;
+  border-color: black;
+
+  padding: 0px;
+  background: transparent;
+  background-color: transparent;
+  alternate-background-color: transparent;
+  margin: 0px;
+}
+
 QDialog .QTabWidget QTabBar::tab {
   background-color:#FFFFFF;
   color:#000000;

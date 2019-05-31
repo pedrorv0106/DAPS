@@ -99,7 +99,62 @@
       <number>40</number>
      </property>
      <item>
-      <widget class="QTextEdit" name="code_1">
+      <widget class="QTextEdit" name="txtcode_1">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>40</height>
+        </size>
+       </property>
+       <property name="baseSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="inputMethodHints">
+        <set>Qt::ImhDigitsOnly</set>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Plain</enum>
+       </property>
+       <property name="verticalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
+       <property name="horizontalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
+       <property name="tabChangesFocus">
+        <bool>true</bool>
+       </property>
+       <property name="acceptRichText">
+        <bool>false</bool>
+       </property>
+       <property name="placeholderText">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTextEdit" name="txtcode_2">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="minimumSize">
         <size>
          <width>0</width>
@@ -127,13 +182,22 @@
        <property name="horizontalScrollBarPolicy">
         <enum>Qt::ScrollBarAlwaysOff</enum>
        </property>
+       <property name="tabChangesFocus">
+        <bool>true</bool>
+       </property>
        <property name="acceptRichText">
         <bool>false</bool>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QTextEdit" name="code_2">
+      <widget class="QTextEdit" name="txtcode_3">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="minimumSize">
         <size>
          <width>0</width>
@@ -161,13 +225,22 @@
        <property name="horizontalScrollBarPolicy">
         <enum>Qt::ScrollBarAlwaysOff</enum>
        </property>
+       <property name="tabChangesFocus">
+        <bool>true</bool>
+       </property>
        <property name="acceptRichText">
         <bool>false</bool>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QTextEdit" name="code_3">
+      <widget class="QTextEdit" name="txtcode_4">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="minimumSize">
         <size>
          <width>0</width>
@@ -195,13 +268,22 @@
        <property name="horizontalScrollBarPolicy">
         <enum>Qt::ScrollBarAlwaysOff</enum>
        </property>
+       <property name="tabChangesFocus">
+        <bool>true</bool>
+       </property>
        <property name="acceptRichText">
         <bool>false</bool>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QTextEdit" name="code_4">
+      <widget class="QTextEdit" name="txtcode_5">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="minimumSize">
         <size>
          <width>0</width>
@@ -229,39 +311,8 @@
        <property name="horizontalScrollBarPolicy">
         <enum>Qt::ScrollBarAlwaysOff</enum>
        </property>
-       <property name="acceptRichText">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QTextEdit" name="code_5">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>40</height>
-        </size>
-       </property>
-       <property name="baseSize">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="inputMethodHints">
-        <set>Qt::ImhDigitsOnly</set>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
-       </property>
-       <property name="frameShadow">
-        <enum>QFrame::Plain</enum>
-       </property>
-       <property name="verticalScrollBarPolicy">
-        <enum>Qt::ScrollBarAlwaysOff</enum>
-       </property>
-       <property name="horizontalScrollBarPolicy">
-        <enum>Qt::ScrollBarAlwaysOff</enum>
+       <property name="tabChangesFocus">
+        <bool>true</bool>
        </property>
        <property name="acceptRichText">
         <bool>false</bool>
@@ -269,7 +320,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QTextEdit" name="code_6">
+      <widget class="QTextEdit" name="txtcode_6">
        <property name="enabled">
         <bool>true</bool>
        </property>
@@ -305,6 +356,9 @@
        </property>
        <property name="horizontalScrollBarPolicy">
         <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
+       <property name="tabChangesFocus">
+        <bool>true</bool>
        </property>
        <property name="acceptRichText">
         <bool>false</bool>
