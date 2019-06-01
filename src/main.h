@@ -277,7 +277,7 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState& state, const CTransa
 
 bool AcceptableInputs(CTxMemPool& pool, CValidationState& state, const CTransaction& tx, bool fLimitFree, bool* pfMissingInputs, bool fRejectInsaneFee = false, bool isDSTX = false);
 
-bool IsKeyImageSpend1(const std::string& kiHex);
+bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash);
 
 bool IsKeyImageSpend2(const std::string&, const uint256& bh);
 

@@ -256,7 +256,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
             // Check key images not duplicated with what in db
             for (const CTxIn& txin: tx.vin) {
             	const CKeyImage& keyImage = txin.keyImage;
-            	if (IsKeyImageSpend1(keyImage.GetHex())) {
+            	if (IsKeyImageSpend1(keyImage.GetHex(), uint256())) {
             		fKeyImageCheck = false;
             		break;
             	}
