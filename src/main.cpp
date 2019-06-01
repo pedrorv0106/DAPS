@@ -281,15 +281,18 @@ bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
         //not spent yet because not found in database
         return false;
     }
-    LogPrintf("\n%s: Checking key image spent = %s\n", __func__, kiHex);
     if (bh.IsNull()) {
         return false;
     }
 
+    if (!bh.IsNull() && againsHash.IsNull()) return true;//receive from mempool
+
     CBlockIndex* bhIdx = mapBlockIndex[bh];
     CBlockIndex* against = mapBlockIndex[againsHash];
 
-    if (((bhIdx != NULL && against != NULL && bhIdx->nHeight < against->nHeight)) && IsKeyImageSpend2(kiHex, bh)) {
+    LogPrintf("\n%s: Checking key image spent = %s, bh = %s, agains = %s\n", __func__, kiHex, bh.GetHex(), againsHash.GetHex());
+
+    if (((bhIdx != NULL && against != NULL && bhIdx->nHeight != against->nHeight && chainActive[against->nHeight]->GetBlockHash() == againsHash)) && IsKeyImageSpend2(kiHex, bh)) {
         if (pwalletMain) {
             if (pwalletMain->keyImagesSpends.count(kiHex) == 1) {
                 pwalletMain->keyImagesSpends[kiHex] = 1;
