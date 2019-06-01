@@ -537,7 +537,7 @@ bool CWallet::IsSpent(const uint256& hash, unsigned int n)
 
     std::string outString = outpoint.hash.GetHex() + std::to_string(outpoint.n);
     CKeyImage ki = outpointToKeyImages[outString];
-    if (IsKeyImageSpend1(ki.GetHex(), uint256())) {
+    if (IsKeyImageSpend1(ki.GetHex(), mapWallet[hash].hashBlock)) {
     	return true;
     }
 
