@@ -286,9 +286,6 @@ bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
         return false;
     }
 
-    if (bh != againsHash && againsHash.IsNull()) return false;
-    if (bh == againsHash) return false;
-
     CBlockIndex* bhIdx = mapBlockIndex[bh];
     CBlockIndex* against = mapBlockIndex[againsHash];
 
