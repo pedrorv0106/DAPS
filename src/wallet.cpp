@@ -994,6 +994,8 @@ COutPoint CWallet::findMyOutPoint(const CTxIn& txin) const
 			if (generate_key_image_helper(prev.vout[txin.prevout.n].scriptPubKey, ki)) {
 				if (ki == txin.keyImage) {
 					outpoint = txin.prevout;
+					prevout = txin.prevout.hash.GetHex() + std::to_string(txin.prevout.n);
+					outpointToKeyImages[prevout] = ki;
 					return outpoint;
 				}
 			}
@@ -1010,6 +1012,8 @@ COutPoint CWallet::findMyOutPoint(const CTxIn& txin) const
 				if (generate_key_image_helper(prev.vout[txin.decoys[i].n].scriptPubKey, ki)) {
 					if (ki == txin.keyImage) {
 						outpoint = txin.decoys[i];
+						std::string out = txin.decoys[i].hash.GetHex() + std::to_string(txin.decoys[i].n);
+						outpointToKeyImages[out] = ki;
 						return outpoint;
 					}
 				}
@@ -4266,9 +4270,9 @@ void CWallet::ScanWalletKeyImages() {
 	for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
 	    const CWalletTx wtxIn = (*it).second;
 	    uint256 hash = wtxIn.GetHash();
+    	IsTransactionForMe(wtxIn);
 	    for(size_t i = 0; i < wtxIn.vout.size(); i++) {
 	    	CKey key;
-	    	IsTransactionForMe(wtxIn);
 	    	if (IsMine(wtxIn.vout[i])) {
 	    		std::string outpoint = hash.GetHex() + std::to_string(i);
 	    		CKeyImage ki;

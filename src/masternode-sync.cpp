@@ -45,10 +45,8 @@ bool CMasternodeSync::IsBlockchainSynced()
     	for (CNode* node : vNodes)
     		if (node->nStartingHeight>highestCount)
     			highestCount = node->nStartingHeight;
-    	if (highestCount > 550){
-    		if (highestCount <= chainActive.Height()) {
-    			fBlockchainSynced = true;
-    		}
+    	if (highestCount <= chainActive.Height()) {
+    		fBlockchainSynced = true;
     	}
     }
 
