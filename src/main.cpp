@@ -274,7 +274,8 @@ CAmount GetValueIn(CCoinsViewCache view, const CTransaction& tx)
     return nResult;
 }
 
-bool IsKeyImageSpend1(const std::string& kiHex) {
+bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
+	if (fReindex || fImporting) return false;
     uint256 bh;
     if (!pblocktree->ReadKeyImage(kiHex, bh)) {
         //not spent yet because not found in database
@@ -284,7 +285,14 @@ bool IsKeyImageSpend1(const std::string& kiHex) {
     if (bh.IsNull()) {
         return false;
     }
-    if (IsKeyImageSpend2(kiHex, bh)) {
+
+    if (bh != againsHash && againsHash.IsNull()) return false;
+    if (bh == againsHash) return false;
+
+    CBlockIndex* bhIdx = mapBlockIndex[bh];
+    CBlockIndex* against = mapBlockIndex[againsHash];
+
+    if (((bhIdx != NULL && against != NULL && bhIdx->nHeight < against->nHeight)) && IsKeyImageSpend2(kiHex, bh)) {
         if (pwalletMain) {
             if (pwalletMain->keyImagesSpends.count(kiHex) == 1) {
                 pwalletMain->keyImagesSpends[kiHex] = 1;
@@ -1479,7 +1487,7 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
             // Check key images not duplicated with what in db
             for (const CTxIn& txin: tx.vin) {
                 const CKeyImage& keyImage = txin.keyImage;
-                if (IsKeyImageSpend1(keyImage.GetHex())) {
+                if (IsKeyImageSpend1(keyImage.GetHex(), uint256())) {
                     return state.Invalid(error("AcceptToMemoryPool : key image already spent"),
                                          REJECT_DUPLICATE, "bad-txns-inputs-spent");
                 }
@@ -2660,15 +2668,15 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
         	}
 
             // Check that the inputs are not marked as invalid/fraudulent
+            uint256 bh = pindex->GetBlockHash();
             for (CTxIn in : tx.vin) {
                 const CKeyImage& keyImage = in.keyImage;
                 std::string kh = keyImage.GetHex();
-                if (IsKeyImageSpend1(kh)) {
+                if (IsKeyImageSpend1(kh, bh)) {
                 	//remove transaction from the pool?
                     return state.Invalid(error("ConnectBlock() : key image already spent"),
                                          REJECT_DUPLICATE, "bad-txns-inputs-spent");
                 }
-                uint256 bh = pindex->GetBlockHash();
                 pblocktree->WriteKeyImage(keyImage.GetHex(), bh);
                 if (pwalletMain != NULL) {
                     if (pwalletMain->GetDebit(in, ISMINE_ALL)) {
