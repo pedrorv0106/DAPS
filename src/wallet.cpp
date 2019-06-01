@@ -537,7 +537,7 @@ bool CWallet::IsSpent(const uint256& hash, unsigned int n)
 
     std::string outString = outpoint.hash.GetHex() + std::to_string(outpoint.n);
     CKeyImage ki = outpointToKeyImages[outString];
-    if (IsKeyImageSpend1(ki.GetHex(), chainActive.Height())) {
+    if (IsKeyImageSpend1(ki.GetHex())) {
     	return true;
     }
 
@@ -791,8 +791,23 @@ bool CWallet::AddToWallet(const CWalletTx& wtxIn, bool fFromLoadWallet)
     CBlockIndex* p = mapBlockIndex[hashBlock];
     if (p) {
         for (CTxIn in: wtxIn.vin) {
-            pblocktree->WriteKeyImage(in.keyImage.GetHex(), p->nHeight);
+            pblocktree->WriteKeyImage(in.keyImage.GetHex(), hashBlock);
         }
+    }
+
+    CWalletDB db(strWalletFile);
+
+    for (size_t i = 0; i < wtxIn.vout.size(); i++) {
+    	std::string outpoint = hash.GetHex() + std::to_string(i);
+    	if (outpointToKeyImages.count(outpoint) == 1) continue;
+
+    	if (IsMine(wtxIn.vout[i])) {
+    		CKeyImage ki;
+    		if (generate_key_image_helper(wtxIn.vout[i].scriptPubKey, ki)) {
+    			outpointToKeyImages[outpoint] = ki;
+    			db.WriteKeyImage(outpoint, ki);
+    		}
+    	}
     }
 
     if (fFromLoadWallet) {
@@ -4267,7 +4282,7 @@ string CWallet::PrepareObfuscationDenominate(int minRounds, int maxRounds)
 }
 
 void CWallet::ScanWalletKeyImages() {
-	for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
+	/*for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
 	    const CWalletTx wtxIn = (*it).second;
 	    uint256 hash = wtxIn.GetHash();
     	IsTransactionForMe(wtxIn);
@@ -4281,7 +4296,7 @@ void CWallet::ScanWalletKeyImages() {
 	    	}
 	    }
 	    AddToSpends(hash);
-	}
+	}*/
 }
 
 DBErrors CWallet::LoadWallet(bool& fFirstRunRet)

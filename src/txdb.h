@@ -67,8 +67,8 @@ public:
     bool ReadInt(const std::string& name, int& nValue);
     bool LoadBlockIndexGuts();
 
-    bool ReadKeyImage(const string& keyImage, int& height);
+    bool ReadKeyImage(const string& keyImage, uint256& bh);
 
-    bool WriteKeyImage(const string& keyImage, int height);
+    bool WriteKeyImage(const string& keyImage, const uint256& height);
 };
 #endif // BITCOIN_TXDB_H
