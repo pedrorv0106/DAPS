@@ -535,11 +535,11 @@ bool CWallet::IsSpent(const uint256& hash, unsigned int n)
     const COutPoint outpoint(hash, n);
     std::string keyImageHex;
 
-    std::string outString = outpoint.hash.GetHex() + std::to_string(outpoint.n);
+    /*std::string outString = outpoint.hash.GetHex() + std::to_string(outpoint.n);
     CKeyImage ki = outpointToKeyImages[outString];
-    if (IsKeyImageSpend1(ki.GetHex(), chainActive.Height())) {
+    if (IsKeyImageSpend1(ki.GetHex(), mapWallet[hash].hashBlock)) {
     	return true;
-    }
+    }*/
 
     pair<TxSpends::const_iterator, TxSpends::const_iterator> range;
     range = mapTxSpends.equal_range(outpoint);
@@ -791,8 +791,28 @@ bool CWallet::AddToWallet(const CWalletTx& wtxIn, bool fFromLoadWallet)
     CBlockIndex* p = mapBlockIndex[hashBlock];
     if (p) {
         for (CTxIn in: wtxIn.vin) {
-            pblocktree->WriteKeyImage(in.keyImage.GetHex(), p->nHeight);
+            pblocktree->WriteKeyImage(in.keyImage.GetHex(), hashBlock);
         }
+    }
+
+    CWalletDB db(strWalletFile);
+    for (size_t i = 0; i < wtxIn.vout.size(); i++) {
+    	std::string outpoint = hash.GetHex() + std::to_string(i);
+    	if (outpointToKeyImages.count(outpoint) == 1 && outpointToKeyImages[outpoint].IsValid()) continue;
+		CKeyImage ki;
+		//reading key image
+    	if (db.ReadKeyImage(outpoint, ki)) {
+    		if (ki.IsFullyValid()) {
+    			outpointToKeyImages[outpoint] = ki;
+    			continue;
+    		}
+    	}
+    	if (IsMine(wtxIn.vout[i])) {
+    		if (generate_key_image_helper(wtxIn.vout[i].scriptPubKey, ki)) {
+    			outpointToKeyImages[outpoint] = ki;
+    			db.WriteKeyImage(outpoint, ki);
+    		}
+    	}
     }
 
     if (fFromLoadWallet) {
@@ -994,6 +1014,8 @@ COutPoint CWallet::findMyOutPoint(const CTxIn& txin) const
 			if (generate_key_image_helper(prev.vout[txin.prevout.n].scriptPubKey, ki)) {
 				if (ki == txin.keyImage) {
 					outpoint = txin.prevout;
+					prevout = txin.prevout.hash.GetHex() + std::to_string(txin.prevout.n);
+					outpointToKeyImages[prevout] = ki;
 					return outpoint;
 				}
 			}
@@ -1010,6 +1032,8 @@ COutPoint CWallet::findMyOutPoint(const CTxIn& txin) const
 				if (generate_key_image_helper(prev.vout[txin.decoys[i].n].scriptPubKey, ki)) {
 					if (ki == txin.keyImage) {
 						outpoint = txin.decoys[i];
+						std::string out = txin.decoys[i].hash.GetHex() + std::to_string(txin.decoys[i].n);
+						outpointToKeyImages[out] = ki;
 						return outpoint;
 					}
 				}
@@ -1023,6 +1047,7 @@ CAmount CWallet::GetDebit(const CTxIn& txin, const isminefilter& filter) const
 {
     {
         LOCK(cs_wallet);
+        if (txin.prevout.IsNull()) return 0;
         COutPoint prevout = findMyOutPoint(txin);
         map<uint256, CWalletTx>::const_iterator mi = mapWallet.find(prevout.hash);
         if (mi != mapWallet.end()) {
@@ -4262,20 +4287,30 @@ string CWallet::PrepareObfuscationDenominate(int minRounds, int maxRounds)
 }
 
 void CWallet::ScanWalletKeyImages() {
+	if (IsLocked()) return;
+	CWalletDB db(strWalletFile);
 	for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
-	    const CWalletTx wtxIn = (*it).second;
-	    uint256 hash = wtxIn.GetHash();
-	    for(size_t i = 0; i < wtxIn.vout.size(); i++) {
-	    	CKey key;
-	    	IsTransactionForMe(wtxIn);
-	    	if (IsMine(wtxIn.vout[i])) {
-	    		std::string outpoint = hash.GetHex() + std::to_string(i);
-	    		CKeyImage ki;
-	    		generate_key_image_helper(wtxIn.vout[i].scriptPubKey, ki);
-	    		outpointToKeyImages[outpoint] = ki;
-	    	}
-	    }
-	    AddToSpends(hash);
+		const CWalletTx wtxIn = it->second;
+		uint256 hash = wtxIn.GetHash();
+		/*for (size_t i = 0; i < wtxIn.vout.size(); i++) {
+			std::string outpoint = hash.GetHex() + std::to_string(i);
+			if (outpointToKeyImages.count(outpoint) == 1 && outpointToKeyImages[outpoint].IsValid()) continue;
+			CKeyImage ki;
+			if (db.ReadKeyImage(outpoint, ki)) {
+				if (ki.IsValid()) {
+					outpointToKeyImages[outpoint] = ki;
+					continue;
+				}
+			}
+
+			if (IsMine(wtxIn.vout[i])) {
+				if (generate_key_image_helper(wtxIn.vout[i].scriptPubKey, ki)) {
+					outpointToKeyImages[outpoint] = ki;
+					db.WriteKeyImage(outpoint, ki);
+				}
+			}
+		}*/
+		AddToSpends(hash);
 	}
 }
 
