@@ -1100,7 +1100,7 @@ bool CWalletDB::WriteKeyImage(const std::string& outpointKey, const CKeyImage& k
 }
 bool CWalletDB::ReadKeyImage(const std::string& outpointKey, CKeyImage& k)
 {
-	return Write(std::make_pair(std::string("outpointkeyimage"), outpointKey), k);
+	return Read(std::make_pair(std::string("outpointkeyimage"), outpointKey), k);
 }
 
 
