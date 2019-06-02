@@ -292,13 +292,17 @@ bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
 
     LogPrintf("\n%s: Checking key image spent = %s, bh = %s, agains = %s\n", __func__, kiHex, bh.GetHex(), againsHash.GetHex());
 
-    if (((bhIdx != NULL && against != NULL && bhIdx->nHeight != against->nHeight && chainActive[against->nHeight]->GetBlockHash() == againsHash)) && IsKeyImageSpend2(kiHex, bh)) {
-        if (pwalletMain) {
-            if (pwalletMain->keyImagesSpends.count(kiHex) == 1) {
-                pwalletMain->keyImagesSpends[kiHex] = 1;
-            };
+    if (bhIdx != NULL && against != NULL) {
+        if (bhIdx->nHeight != against->nHeight && chainActive.Height() >= against->nHeight) {
+        	if ((chainActive[against->nHeight]->GetBlockHash() == againsHash) && IsKeyImageSpend2(kiHex, bh)) {
+        		if (pwalletMain) {
+        			if (pwalletMain->keyImagesSpends.count(kiHex) == 1) {
+        				pwalletMain->keyImagesSpends[kiHex] = 1;
+        			};
+        		}
+                return true;
+        	}
         }
-        return true;
     }
     if (pwalletMain) {
         pwalletMain->keyImagesSpends[kiHex] = false;
