@@ -38,7 +38,6 @@ public:
         ThirdPartyTxUrls,    // QString
         Digits,              // QString
         Theme,               // QString
-        TwoFA,               // QString
         Language,            // QString
         CoinControlFeatures, // bool
         ThreadsScriptVerif,  // int
@@ -50,6 +49,10 @@ public:
         ShowMasternodesTab,  // bool
         Listen,              // bool
         OptionIDRowCount,
+        TwoFA,               // QString
+        TwoFACode,           // QString
+        TwoFAPeriod,         // QString
+        TwoFALastTime,       // QString
     };
 
     void Init();
