@@ -109,19 +109,20 @@ void TwoFADialog::on_acceptCode()
 
     QString codeSetting = settings.value("2FACode").toString();
     if (codeSetting == "") {
-        CPubKey temp;
         QString result = "";
-        std::string pubAddress;
-        if (pwalletMain && !pwalletMain->IsLocked()) {
-            pwalletMain->GetKeyFromPool(temp);
-            pwalletMain->CreatePrivacyAccount();
-            pwalletMain->ComputeStealthPublicAddress("masteraccount", pubAddress);
-            
-            QString data;
-            data.sprintf("%s", pubAddress.c_str());
-            result = QGoogleAuth::generatePin(data.toUtf8());
+        CWalletDB walletdb(pwalletMain->strWalletFile);
+        CAccount account;
+        walletdb.ReadAccount("", account);
+        CBitcoinAddress address(account.vchPubKey.GetID());
+        std::string addr = "";
+        for (char c : address.ToString()) {
+            if (!std::isdigit(c)) addr += c;
         }
-
+                    
+        QString data;
+        data.sprintf("%s", addr.c_str());
+        result = QGoogleAuth::generatePin(data.toUtf8());
+        
         if (result != code)
             return;
 
