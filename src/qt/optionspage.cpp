@@ -270,7 +270,8 @@ void OptionsPage::on_Enable2FA(ToggleButton* widget)
     } else {
         settings.setValue("2FA", "disabled");
         settings.setValue("2FACode", "");
-        settings.setValue("2FAPeriod", "1");
+        settings.setValue("2FAPeriod", 1);
+        settings.setValue("2FALastTime", 0);
         disable2FA();
     }
 }
@@ -356,12 +357,12 @@ void OptionsPage::enable2FA() {
         ui->code_6->setText(value);
     }
      
-    QString period = settings.value("2FAPeriod").toString();
-    if (period == "1")
+    int period = settings.value("2FAPeriod").toInt();
+    if (period == 1)
         ui->btn_day->setStyleSheet("border-color: red;");
-    else if (period == "7")
+    else if (period == 7)
         ui->btn_week->setStyleSheet("border-color: red;");
-    else if (period == "31")
+    else if (period == 31)
         ui->btn_month->setStyleSheet("border-color: red;");
 }
 
