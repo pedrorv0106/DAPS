@@ -2,6 +2,7 @@
 #define TWOFADIALOG_H
 
 #include <QDialog>
+#include <QSettings>
 
 namespace Ui {
 class TwoFADialog;
@@ -20,6 +21,7 @@ private slots:
 
 private:
     Ui::TwoFADialog *ui;
+    QSettings settings;
 };
 
 #endif // TWOFADIALOG_H

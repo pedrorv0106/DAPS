@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+class WalletModel;
+
 namespace Ui {
 class TwoFAQRDialog;
 }
@@ -14,6 +16,9 @@ class TwoFAQRDialog : public QDialog
 public:
     explicit TwoFAQRDialog(QWidget *parent = 0);
     ~TwoFAQRDialog();
+
+    void setModel(WalletModel* model);
+
 private:
     void update();
 
@@ -23,6 +28,7 @@ private slots:
 
 private:
     Ui::TwoFAQRDialog *ui;
+    WalletModel* model;
 };
 
 #endif // TWOFAQRDIALOG_H
