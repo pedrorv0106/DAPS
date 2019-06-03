@@ -259,7 +259,8 @@ Value getaccount(const Array& params, bool fHelp)
     map<CTxDestination, CAddressBookData>::iterator mi = pwalletMain->mapAddressBook.find(address.Get());
     if (mi != pwalletMain->mapAddressBook.end() && !(*mi).second.name.empty())
         strAccount = (*mi).second.name;
-    return strAccount;
+    
+    return "";
 }
 
 
