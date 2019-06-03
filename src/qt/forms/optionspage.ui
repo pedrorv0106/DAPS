@@ -346,7 +346,7 @@
      <item>
       <widget class="QLabel" name="code_1">
        <property name="text">
-        <string>5</string>
+        <string></string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -356,7 +356,7 @@
      <item>
       <widget class="QLabel" name="code_2">
        <property name="text">
-        <string>2</string>
+        <string></string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -366,7 +366,7 @@
      <item>
       <widget class="QLabel" name="code_3">
        <property name="text">
-        <string>8</string>
+        <string></string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -376,7 +376,7 @@
      <item>
       <widget class="QLabel" name="code_4">
        <property name="text">
-        <string>0</string>
+        <string></string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -386,7 +386,7 @@
      <item>
       <widget class="QLabel" name="code_5">
        <property name="text">
-        <string>3</string>
+        <string></string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -396,7 +396,7 @@
      <item>
       <widget class="QLabel" name="code_6">
        <property name="text">
-        <string>7</string>
+        <string></string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>

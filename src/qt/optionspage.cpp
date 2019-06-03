@@ -63,12 +63,16 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
 
     bool twoFAStatus = settings.value("2FA")=="enabled";
     if (twoFAStatus)
-        disable2FA();
-    else
         enable2FA();
+    else
+        disable2FA();
 
-    ui->toggle2FA->setState(!twoFAStatus);
+    ui->toggle2FA->setState(twoFAStatus);
     connect(ui->toggle2FA, SIGNAL(stateChanged(ToggleButton*)), this, SLOT(on_Enable2FA(ToggleButton*)));
+
+    connect(ui->btn_day, SIGNAL(clicked()), this, SLOT(on_day()));
+    connect(ui->btn_week, SIGNAL(clicked()), this, SLOT(on_week()));
+    connect(ui->btn_month, SIGNAL(clicked()), this, SLOT(on_month()));
 }
 
 void OptionsPage::setModel(WalletModel* model)
@@ -257,26 +261,40 @@ void OptionsPage::on_EnableStaking(ToggleButton* widget)
 void OptionsPage::on_Enable2FA(ToggleButton* widget)
 {
     if (widget->getState()) {
-        settings.setValue("2FA", "enabled");
-        enable2FA();
+        TwoFAQRDialog qrdlg;
+        qrdlg.setModel(this->model);
+        qrdlg.setStyleSheet(GUIUtil::loadStyleSheet());
+        connect(&qrdlg, SIGNAL(finished (int)), this, SLOT(qrDialogIsFinished(int)));
+        qrdlg.exec();
     } else {
         settings.setValue("2FA", "disabled");
+        settings.setValue("2FACode", "");
+        settings.setValue("2FAPeriod", "1");
         disable2FA();
     }
+}
 
-    
-    TwoFAQRDialog qrdlg;
-    qrdlg.setStyleSheet(GUIUtil::loadStyleSheet());
-    connect(&qrdlg, SIGNAL(finished (int)), this, SLOT(dialogIsFinished(int)));
-    qrdlg.exec();
+void OptionsPage::qrDialogIsFinished(int result) {
+    if(result == QDialog::Accepted){
+        TwoFADialog codedlg;
+        codedlg.setStyleSheet(GUIUtil::loadStyleSheet());
+        connect(&codedlg, SIGNAL(finished (int)), this, SLOT(dialogIsFinished(int)));
+        codedlg.exec();
+    }
+
+    if (result == QDialog::Rejected)
+        ui->toggle2FA->setState(false);
+
 }
 
 void OptionsPage::dialogIsFinished(int result) {
    if(result == QDialog::Accepted){
-        TwoFADialog codedlg;
-        codedlg.setStyleSheet(GUIUtil::loadStyleSheet());
-        codedlg.exec();
+        settings.setValue("2FA", "enabled");
+        enable2FA();
    }
+
+   if (result == QDialog::Rejected)
+        ui->toggle2FA->setState(false);
 }
 
 void OptionsPage::changeTheme(ToggleButton* widget)
@@ -293,22 +311,19 @@ void OptionsPage::disable2FA() {
     ui->btn_month->setEnabled(false);
 
     ui->code_1->setText("");
-    ui->code_1->setEnabled(false);
-
     ui->code_2->setText("");
-    ui->code_2->setEnabled(false);
-
     ui->code_3->setText("");
-    ui->code_3->setEnabled(false);
-
     ui->code_4->setText("");
-    ui->code_4->setEnabled(false);
-
     ui->code_5->setText("");
-    ui->code_5->setEnabled(false);
-
     ui->code_6->setText("");
-    ui->code_6->setEnabled(false);
+
+    ui->label_3->setEnabled(false);
+    ui->label_4->setEnabled(false);
+    ui->label->setEnabled(false);
+
+    ui->btn_day->setStyleSheet("border-color: none;");
+    ui->btn_week->setStyleSheet("border-color: none;");
+    ui->btn_month->setStyleSheet("border-color: none;");
 }
 
 void OptionsPage::enable2FA() {
@@ -316,22 +331,27 @@ void OptionsPage::enable2FA() {
     ui->btn_week->setEnabled(true);
     ui->btn_month->setEnabled(true);
 
-    ui->code_1->setEnabled(true);
-    ui->code_2->setEnabled(true);
-    ui->code_3->setEnabled(true);
-    ui->code_4->setEnabled(true);
-    ui->code_5->setEnabled(true);
-    ui->code_6->setEnabled(true);
+    ui->label_3->setEnabled(true);
+    ui->label_4->setEnabled(true);
+    ui->label->setEnabled(true);
 
     QString code = settings.value("2FACode").toString();
     if (code != "") {
-        const char* chrlist = code.toUtf8().constData();
-        ui->code_1->setText(QString(chrlist[0]));
-        ui->code_2->setText(QString(chrlist[1]));
-        ui->code_3->setText(QString(chrlist[2]));
-        ui->code_4->setText(QString(chrlist[3]));
-        ui->code_5->setText(QString(chrlist[4]));
-        ui->code_6->setText(QString(chrlist[5]));
+        char chrlist[6];
+        memcpy(chrlist, code.toUtf8().data(), 6);
+        QString value;
+        value.sprintf("%c", chrlist[0]);
+        ui->code_1->setText(value);
+        value.sprintf("%c", chrlist[1]);
+        ui->code_2->setText(value);
+        value.sprintf("%c", chrlist[2]);
+        ui->code_3->setText(value);
+        value.sprintf("%c", chrlist[3]);
+        ui->code_4->setText(value);
+        value.sprintf("%c", chrlist[4]);
+        ui->code_5->setText(value);
+        value.sprintf("%c", chrlist[5]);
+        ui->code_6->setText(value);
     }
      
     QString period = settings.value("2FAPeriod").toString();
@@ -341,4 +361,25 @@ void OptionsPage::enable2FA() {
         ui->btn_week->setStyleSheet("border-color: red;");
     else if (period == "31")
         ui->btn_month->setStyleSheet("border-color: red;");
+}
+
+void OptionsPage::on_day() {
+    settings.setValue("2FAPeriod", "1");
+    ui->btn_day->setStyleSheet("border-color: red;");
+    ui->btn_week->setStyleSheet("border-color: white;");
+    ui->btn_month->setStyleSheet("border-color: white;");
+}
+
+void OptionsPage::on_week() {
+    settings.setValue("2FAPeriod", "7");
+    ui->btn_day->setStyleSheet("border-color: white;");
+    ui->btn_week->setStyleSheet("border-color: red;");
+    ui->btn_month->setStyleSheet("border-color: white;");
+}
+
+void OptionsPage::on_month() {
+    settings.setValue("2FAPeriod", "31");
+    ui->btn_day->setStyleSheet("border-color: white;");
+    ui->btn_week->setStyleSheet("border-color: white;");
+    ui->btn_month->setStyleSheet("border-color: red;");
 }

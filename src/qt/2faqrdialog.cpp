@@ -44,9 +44,23 @@ TwoFAQRDialog::~TwoFAQRDialog()
     delete ui;
 }
 
+void TwoFAQRDialog::setModel(WalletModel* model)
+{
+    this->model = model;
+}
+
 void TwoFAQRDialog::update()
 {
-    QString uri = "otpauth://totp/dapscoin:john@example.com?secret=PUBLICKEY&issuer=dapscoin&algorithm=SHA1&digits=6&period=30";
+	CPubKey temp;
+	std::string pubAddress;
+    if (pwalletMain && !pwalletMain->IsLocked()) {
+        pwalletMain->GetKeyFromPool(temp);
+        pwalletMain->CreatePrivacyAccount();
+        pwalletMain->ComputeStealthPublicAddress("masteraccount", pubAddress);
+    }
+
+    QString uri;
+    uri.sprintf("otpauth://totp/dapscoin:anonymous?secret=%s&issuer=dapscoin&algorithm=SHA1&digits=6&period=30", pubAddress.c_str());
     ui->lblURI->setText(uri);
 
 #ifdef USE_QRCODE
