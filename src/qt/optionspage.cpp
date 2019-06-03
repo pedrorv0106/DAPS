@@ -322,4 +322,23 @@ void OptionsPage::enable2FA() {
     ui->code_4->setEnabled(true);
     ui->code_5->setEnabled(true);
     ui->code_6->setEnabled(true);
+
+    QString code = settings.value("2FACode").toString();
+    if (code != "") {
+        const char* chrlist = code.toUtf8().constData();
+        ui->code_1->setText(QString(chrlist[0]));
+        ui->code_2->setText(QString(chrlist[1]));
+        ui->code_3->setText(QString(chrlist[2]));
+        ui->code_4->setText(QString(chrlist[3]));
+        ui->code_5->setText(QString(chrlist[4]));
+        ui->code_6->setText(QString(chrlist[5]));
+    }
+     
+    QString period = settings.value("2FAPeriod").toString();
+    if (period == "1")
+        ui->btn_day->setStyleSheet("border-color: red;");
+    else if (period == "7")
+        ui->btn_week->setStyleSheet("border-color: red;");
+    else if (period == "31")
+        ui->btn_month->setStyleSheet("border-color: red;");
 }
