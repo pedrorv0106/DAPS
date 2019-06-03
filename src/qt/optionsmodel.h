@@ -51,8 +51,8 @@ public:
         OptionIDRowCount,
         TwoFA,               // QString
         TwoFACode,           // QString
-        TwoFAPeriod,         // QString
-        TwoFALastTime,       // QString
+        TwoFAPeriod,         // int
+        TwoFALastTime,       // int
     };
 
     void Init();
