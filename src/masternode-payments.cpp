@@ -311,7 +311,7 @@ bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
     	if (!CWallet::DecodeStealthAddress(mnsa, pubViewKey, pubSpendKey, hasPaymentID, paymentID)) {
     		throw runtime_error("Stealth address mal-formatted");
     	}
-    	if (!CWallet::ComputeStealthDestination(mnPaymentPrivTx, pubViewKey, pubSpendKey, des))
+    	if (CWallet::ComputeStealthDestination(mnPaymentPrivTx, pubViewKey, pubSpendKey, des))
     		payee = GetScriptForDestination(des);
     } else {
     	LogPrintf("\n%s: Failed to detect block to pay\n", __func__);
