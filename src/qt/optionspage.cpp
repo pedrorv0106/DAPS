@@ -262,6 +262,7 @@ void OptionsPage::on_Enable2FA(ToggleButton* widget)
 {
     if (widget->getState()) {
         TwoFAQRDialog qrdlg;
+        qrdlg.setWindowTitle("2FA QRCode");
         qrdlg.setModel(this->model);
         qrdlg.setStyleSheet(GUIUtil::loadStyleSheet());
         connect(&qrdlg, SIGNAL(finished (int)), this, SLOT(qrDialogIsFinished(int)));
@@ -277,6 +278,7 @@ void OptionsPage::on_Enable2FA(ToggleButton* widget)
 void OptionsPage::qrDialogIsFinished(int result) {
     if(result == QDialog::Accepted){
         TwoFADialog codedlg;
+        codedlg.setWindowTitle("2FACode verification");
         codedlg.setStyleSheet(GUIUtil::loadStyleSheet());
         connect(&codedlg, SIGNAL(finished (int)), this, SLOT(dialogIsFinished(int)));
         codedlg.exec();
