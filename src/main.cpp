@@ -509,7 +509,7 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 		}
 
 		//compute C
-		unsigned char tempForHash[2 * (MAX_VIN + 1) * 33];
+		unsigned char tempForHash[2 * (MAX_VIN + 1) * 33 + 32];
 		unsigned char* tempForHashPtr = tempForHash;
 		for (size_t i = 0; i < tx.vin.size() + 1; i++) {
 			memcpy(tempForHashPtr, &(LIJ[i][j][0]), 33);
@@ -517,7 +517,10 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 			memcpy(tempForHashPtr, &(RIJ[i][j][0]), 33);
 			tempForHashPtr += 33;
 		}
-		uint256 temppi1 = Hash(tempForHash, tempForHash + 2 * (tx.vin.size() + 1) * 33);
+		uint256 ctsHash = GetTxSignatureHash(tx);
+		memcpy(tempForHashPtr, ctsHash.begin(), 32);
+
+		uint256 temppi1 = Hash(tempForHash, tempForHash + 2 * (tx.vin.size() + 1) * 33 + 32);
 		memcpy(C, temppi1.begin(), 32);
 	}
 
@@ -543,6 +546,13 @@ bool IsKeyImageSpend2(const std::string& kiHex, const uint256& bh) {
 	}
 	return false;
 }
+
+uint256 GetTxSignatureHash(const CTransaction& tx)
+{
+	CTransactionSignature cts(tx);
+	return cts.GetHash();
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 //

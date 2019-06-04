@@ -3073,7 +3073,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     //unsigned char LIJ[wtxNew.vin.size() + 1][wtxNew.vin[0].decoys.size() + 1][33];
     //unsigned char RIJ[wtxNew.vin.size() + 1][wtxNew.vin[0].decoys.size() + 1][33];
     unsigned char CI[MAX_DECOYS + 1][32];
-    unsigned char tempForHash[2 * (MAX_VIN + 1) * 33];
+    unsigned char tempForHash[2 * (MAX_VIN + 1) * 33 + 32];
     unsigned char* tempForHashPtr = tempForHash;
     for (size_t i = 0; i < wtxNew.vin.size() + 1; i++) {
     	memcpy(tempForHashPtr, &LIJ[i][PI][0], 33);
@@ -3081,9 +3081,11 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     	memcpy(tempForHashPtr, &RIJ[i][PI][0], 33);
     	tempForHashPtr += 33;
     }
+    uint256 ctsHash = GetTxSignatureHash(wtxNew);
+	memcpy(tempForHashPtr, ctsHash.begin(), 32);
 
 	if (PI_interator == (int)wtxNew.vin[0].decoys.size() + 1) PI_interator = 0;
-    uint256 temppi1 = Hash(tempForHash, tempForHash + 2 * (wtxNew.vin.size() + 1) * 33);
+    uint256 temppi1 = Hash(tempForHash, tempForHash + 2 * (wtxNew.vin.size() + 1) * 33 + 32);
 	if (PI_interator == 0) {
 	    memcpy(CI[0], temppi1.begin(), 32);
 	} else {
@@ -3158,7 +3160,8 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     	    memcpy(tempForHashPtr, RIJ[i][prev], 33);
     	    tempForHashPtr += 33;
     	}
-    	uint256 ciHashTmp = Hash(tempForHash, tempForHash + 2 * (wtxNew.vin.size() + 1) * 33);
+    	memcpy(tempForHashPtr, ctsHash.begin(), 32);
+    	uint256 ciHashTmp = Hash(tempForHash, tempForHash + 2 * (wtxNew.vin.size() + 1) * 33 + 32);
     	memcpy(CI[ciIdx], ciHashTmp.begin(), 32);
     }
 
@@ -3207,14 +3210,14 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
             }
         }
 
-        if (wtxNew.IsMNCollateralTx()) {
+        /*if (wtxNew.IsMNCollateralTx()) {
             CKey view, spend;
             myViewPrivateKey(view);
             mySpendPrivateKey(spend);
             std::string addr;
             EncodeStealthPublicAddress(view.GetPubKey(), spend.GetPubKey(), addr);
             std::copy(addr.begin(), addr.end(), std::back_inserter(wtxNew.masternodeStealthAddress));
-        }
+        }*/
     }
 
     return true;

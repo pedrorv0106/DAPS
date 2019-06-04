@@ -486,4 +486,66 @@ struct CMutableTransaction
 
 };
 
+struct CTransactionSignature
+{
+	int32_t nVersion;
+	std::vector<CTxIn> vin;
+	std::vector<CTxOut> vout;
+	uint32_t nLockTime;
+	//For stealth transactions
+	CKey txPrivM;
+	char hasPaymentID;
+	uint64_t paymentID;
+	uint32_t txType;
+
+	CAmount nTxFee;
+
+	CTransactionSignature(const CTransaction& tx) {
+		*const_cast<int*>(&nVersion) = tx.nVersion;
+		*const_cast<std::vector<CTxIn>*>(&vin) = tx.vin;
+		*const_cast<std::vector<CTxOut>*>(&vout) = tx.vout;
+		*const_cast<unsigned int*>(&nLockTime) = tx.nLockTime;
+		*const_cast<uint64_t*>(&paymentID) = tx.paymentID;
+		*const_cast<uint32_t*>(&txType) = tx.txType;
+		nTxFee = tx.nTxFee;
+
+		if (txType != TX_TYPE_REVEAL_AMOUNT && txType != TX_TYPE_REVEAL_BOTH) {
+			//set transaction output amounts as 0
+			for (size_t i = 0; i < vout.size(); i++) {
+				vout[i].nValue = 0;
+			}
+		} else {
+			//reveal only tx type with 1 million daps
+			for (size_t i = 0; i < vout.size(); i++) {
+				if (vout[i].nValue != 1000000 * COIN) {
+					vout[i].nValue = 0;
+				}
+			}
+		}
+
+	}
+
+	ADD_SERIALIZE_METHODS;
+
+	template <typename Stream, typename Operation>
+	inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
+		READWRITE(this->nVersion);
+		nVersion = this->nVersion;
+		READWRITE(vin);
+		READWRITE(vout);
+		READWRITE(nLockTime);
+		READWRITE(hasPaymentID);
+		if (hasPaymentID != 0) {
+			READWRITE(paymentID);
+		}
+		READWRITE(txType);
+
+		READWRITE(nTxFee);
+	}
+
+	uint256 GetHash() {
+		return SerializeHash(*this);
+	}
+};
+
 #endif // BITCOIN_PRIMITIVES_TRANSACTION_H
