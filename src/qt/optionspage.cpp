@@ -294,6 +294,9 @@ void OptionsPage::dialogIsFinished(int result) {
    if(result == QDialog::Accepted){
         settings.setValue("2FA", "enabled");
         enable2FA();
+
+        QMessageBox::information(this, tr("SUCCESS!"),
+        tr("Two-factor authentication has been successfully enabled."));
    }
 
    if (result == QDialog::Rejected)

@@ -22,7 +22,7 @@
 #include "ui_interface.h"
 #include "utilmoneystr.h"
 #include "wallet.h"
-#include "2fadialog.h"
+#include "2faconfirmdialog.h"
 
 #include <regex>
 #include <QMessageBox>
@@ -137,7 +137,7 @@ void SendCoinsDialog::on_sendButton_clicked(){
     if (diffTime <= period * 24 * 60 * 60)
         sendTx();
     else {
-        TwoFADialog codedlg;
+        TwoFAConfirmDialog codedlg;
         codedlg.setWindowTitle("2FACode verification");
         codedlg.setStyleSheet(GUIUtil::loadStyleSheet());
         connect(&codedlg, SIGNAL(finished (int)), this, SLOT(dialogIsFinished(int)));
