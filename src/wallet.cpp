@@ -3477,10 +3477,10 @@ bool CWallet::MakeShnorrSignature(CTransaction& wtxNew)
 		txinList.push_back(0);
 	else {
 		for (size_t i = 0; i < wtxNew.vin.size(); i++) {
-			COutPoint prevout = wtxNew.vin[0].prevout;
+			COutPoint prevout = wtxNew.vin[i].prevout;
 			const CTransaction& prev = mapWallet[prevout.hash];
 			CTxOut out = prev.vout[prevout.n];
-			if (!wtxNew.vin[0].decoys.empty()) return false;
+			if (!wtxNew.vin[i].decoys.empty()) return false;
 			if (out.nValue == 1000000 * COIN) {
 				txinList.push_back(i);
 			}
@@ -3493,14 +3493,6 @@ bool CWallet::MakeShnorrSignature(CTransaction& wtxNew)
 	std::vector<uint256> s_vector;
 	uint256 ctsHash = GetTxSignatureHash(wtxNew);
 	for (size_t i = 0; i < txinList.size(); i++) {
-		CKey r;
-		r.MakeNewKey(true);
-		CPubKey R = r.GetPubKey();
-		unsigned char buff[33 + 32];
-		memcpy(buff, R.begin(), 33);
-		memcpy(buff + 33, ctsHash.begin(), 32);
-		uint256 e = Hash(buff, buff + 65);
-		//compute s = r + e * pk (private key)
 		COutPoint prevout = wtxNew.vin[txinList[i]].prevout;
 		const CTransaction& prev = mapWallet[prevout.hash];
 		CTxOut out = prev.vout[prevout.n];
@@ -3508,6 +3500,18 @@ bool CWallet::MakeShnorrSignature(CTransaction& wtxNew)
 		if (!findCorrespondingPrivateKey(out, pk)) {
 			return false;
 		}
+		CPubKey P = pk.GetPubKey();
+
+		unsigned char R[33];
+		CKey r;
+		r.MakeNewKey(true);
+		PointHashingSuccessively(P, r.begin(), R);
+		unsigned char buff[33 + 32];
+		memcpy(buff, R, 33);
+		memcpy(buff + 33, ctsHash.begin(), 32);
+		uint256 e = Hash(buff, buff + 65);
+		//compute s = r + e * pk (private key)
+
 		unsigned char ex[32];
 		memcpy(ex, e.begin(), 32);
 		if (!secp256k1_ec_privkey_tweak_mul(ex, pk.begin())) return false;
@@ -3517,7 +3521,7 @@ bool CWallet::MakeShnorrSignature(CTransaction& wtxNew)
 		uint256 s(sTemp);
 		s_vector.push_back(s);
 		//copy R to masternodeStealthAddress
-		std::copy(R.begin(), R.end(), std::back_inserter(wtxNew.vin[txinList[i]].masternodeStealthAddress));
+		std::copy(R, R + 33, std::back_inserter(wtxNew.vin[txinList[i]].masternodeStealthAddress));
 	}
 	wtxNew.S.push_back(s_vector);
 	return true;
