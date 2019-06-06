@@ -394,8 +394,8 @@ public:
         return nWalletMaxVersion >= wf;
     }
 
-    bool generate_key_image_helper(const CPubKey& pub, CKeyImage& img) const;
-    bool generate_key_image_helper(const CScript& scriptKey, CKeyImage& img) const;
+    bool generateKeyImage(const CPubKey& pub, CKeyImage& img) const;
+    bool generateKeyImage(const CScript& scriptKey, CKeyImage& img) const;
 
     void AvailableCoins(std::vector<COutput>& vCoins, bool fOnlyConfirmed = true, const CCoinControl* coinControl = NULL, bool fIncludeZeroValue = false, AvailableCoinsType nCoinType = ALL_COINS, bool fUseIX = false);
     std::map<CBitcoinAddress, std::vector<COutput> > AvailableCoinsByAddress(bool fConfirmed = true, CAmount maxCoinValue = 0);
@@ -732,12 +732,14 @@ public:
     static bool CreateCommitmentWithZeroBlind(const CAmount val, unsigned char* pBlind, std::vector<unsigned char>& commitment);
     bool WriteStakingStatus(bool status);
     bool ReadStakingStatus();
+    bool MakeShnorrSignature(CTransaction&);
 private:
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
     void createMasterKey() const;
     bool generateBulletProofAggregate(CTransaction& tx);
-    bool generateRingSignature(CTransaction& tx, int& myIndex, int ringSize);
+    bool selectDecoysAndRealIndex(CTransaction& tx, int& myIndex, int ringSize);
+    bool makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFailReason);
     bool computeSharedSec(const CTransaction& tx, const CTxOut& out, CPubKey& sharedSec) const;
     int walletIdxCache = 0;
     bool isMatchMyKeyImage(const CKeyImage& ki, const COutPoint& out);
