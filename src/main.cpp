@@ -1100,7 +1100,14 @@ bool AreInputsStandard(const CTransaction &tx, const CCoinsViewCache &mapInputs)
         return true; // coinbase has no inputs
 
     for (unsigned int i = 0; i < tx.vin.size(); i++) {
-        const CTxOut &prev = mapInputs.GetOutputFor(tx.vin[i]);
+        CTransaction txPrev;
+        uint256 hashBlockPrev;
+        if (!GetTransaction(tx.vin[i].prevout.hash, txPrev, hashBlockPrev)) {
+        	LogPrintf("GetCoinAge: failed to find vin transaction \n");
+        	continue; // previous transaction not in main chain
+        }
+
+        const CTxOut& prev = txPrev.vout[tx.vin[i].prevout.n];
 
         vector <vector<unsigned char>> vSolutions;
         txnouttype whichType;
@@ -1298,6 +1305,85 @@ bool IsSerialInBlockchain(const CBigNum &bnSerial, int &nHeightTx) {
     return inChain;
 }
 
+bool VerifyKeyImage2(const CTxIn& txin)
+{
+	return false;
+}
+
+bool VerifyKeyImages(const CTransaction& tx, const CTxIn& txin)
+{
+
+	//check if a transaction is staking or spending collateral
+	//this assumes that the transaction is already checked for either a staking transaction or transactions spending only UTXOs of 1M DAPS
+	if (txin.decoys.size() > 0) return true; //already checked by ring signature
+	if (tx.IsCoinAudit() || tx.IsCoinBase()) return true;
+	if (tx.IsCoinStake() && tx.vin[0] != txin) return true;
+
+	if (txin.prevout.IsNull()) return true;
+
+	COutPoint prevout = txin.prevout;
+	CTransaction prev;
+	uint256 bh;
+	if (!GetTransaction(prevout.hash, prev, bh, true)) {
+		return false;
+	}
+
+	std::vector<uint256> S_Vector = tx.S[0];
+	uint256 s;
+	if (tx.IsCoinStake())
+		s = S_Vector[0];
+	else {
+		auto it = std::find(tx.vin.begin(), tx.vin.end(), txin);
+		if (it == tx.vin.end())
+		{
+			// name not in vector
+			return false;
+		} else {
+			auto index = std::distance(tx.vin.begin(), it);
+			s = S_Vector[index];
+		}
+	}
+
+	unsigned char S[33];
+	CPubKey P;
+	ExtractPubKey(prev.vout[prevout.n].scriptPubKey, P);
+	PointHashingSuccessively(P, s.begin(), S);
+	CPubKey R(txin.masternodeStealthAddress);
+
+	uint256 ctsHash = GetTxSignatureHash(tx);
+
+	//compute H(R)I = eI
+	unsigned char buff[33 + 32];
+	memcpy(buff, R.begin(), 33);
+	memcpy(buff + 33, ctsHash.begin(), 32);
+	uint256 e = Hash(buff, buff + 65);
+	unsigned char eI[33];
+	memcpy(eI, txin.keyImage.begin(), 33);
+	if (!secp256k1_ec_pubkey_tweak_mul(eI, 33, e.begin())) return false;
+
+	secp256k1_pedersen_commitment R_commitment;
+	secp256k1_pedersen_serialized_pubkey_to_commitment(R.begin(), 33, &R_commitment);
+
+	//convert CI*I into commitment
+	secp256k1_pedersen_commitment eI_commitment;
+	secp256k1_pedersen_serialized_pubkey_to_commitment(eI, 33, &eI_commitment);
+
+	const secp256k1_pedersen_commitment *twoElements[2];
+	twoElements[0] = &R_commitment;
+	twoElements[1] = &eI_commitment;
+	secp256k1_pedersen_commitment sum;
+	if (!secp256k1_pedersen_commitment_sum_pos(GetContext(), twoElements, 2, &sum))
+		throw runtime_error("failed to compute secp256k1_pedersen_commitment_sum_pos");
+	size_t tempLength;
+	unsigned char recomputed[33];
+	if (!secp256k1_pedersen_commitment_to_serialized_pubkey(&sum, recomputed, &tempLength))
+		throw runtime_error("failed to serialize pedersen commitment");
+
+	for (int i = 0; i < 33; i++)
+		if (S[i] != recomputed[i]) return false;
+	return true;
+}
+
 bool CheckTransaction(const CTransaction &tx, bool fzcActive, bool fRejectBadUTXO, CValidationState &state) {
     // Basic checks that don't depend on any context
     if (tx.vin.empty())
@@ -1413,19 +1499,35 @@ bool CheckHaveInputs(const CCoinsViewCache& view, const CTransaction& tx)
 			alldecoys.push_back(tx.vin[i].prevout);
 			size_t decoysSize = alldecoys.size();
 			for (size_t j = 0; j < alldecoys.size(); j++) {
-				const CCoins* coins = view.AccessCoins(alldecoys[j].hash);
+				CTransaction prev;
+				uint256 bh;
+				if (!GetTransaction(alldecoys[j].hash, prev, bh, true)) {
+					return false;
+				}
+				//UTXO with 1M DAPS can only be consumed in a transaction with that single UTXO
+				if (decoysSize > 1 && prev.vout[alldecoys[j].n].nValue == 1000000 * COIN) {
+					return false;
+				}
 
-				if (!coins || !coins->IsAvailable(alldecoys[j].n)) {
-					CTransaction prev;
-					uint256 bh;
-					if (!GetTransaction(alldecoys[j].hash, prev, bh, true)) {
-						return false;
-					}
-					//UTXO with 1M DAPS can only be consumed in a transaction with that single UTXO
-					if (decoysSize > 1 && prev.vout[alldecoys[j].n].nValue == 1000000 * COIN) {
+				if (prev.vout[alldecoys[j].n].nValue == 1000000 * COIN) {
+					if (!VerifyKeyImages(tx, tx.vin[i])) {
+						LogPrintf("\nFailed to verify correctness of key image of collateralization spend\n");
 						return false;
 					}
 				}
+			}
+			if (!tx.IsCoinStake()) {
+				if (tx.vin[i].decoys.size() != tx.vin[0].decoys.size()) {
+					LogPrintf("\nTransaction does not have the same ring size for inputs\n");
+					return false;
+				}
+			}
+		}
+
+		if (tx.IsCoinStake()) {
+			if (!VerifyKeyImages(tx, tx.vin[0])) {
+				LogPrintf("\nFailed to verify correctness of key image of staking transaction\n");
+				return false;
 			}
 		}
 	}
