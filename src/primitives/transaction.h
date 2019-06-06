@@ -92,7 +92,7 @@ public:
     std::vector<unsigned char> encryptionKey;   //33bytes
     CKeyImage keyImage;   //have the same number element as vin
     std::vector<COutPoint> decoys;
-    std::vector<unsigned char> masternodeStealthAddress;
+    std::vector<unsigned char> masternodeStealthAddress;	//this is used for storing R in Shnorr signature in staking transaction
 
     CTxIn()
     {
@@ -370,7 +370,7 @@ public:
     bool IsCoinStake() const
     {
         // ppcoin: the coin stake transaction is marked with the first output empty
-        return (vin.size() > 0 && (!vin[0].prevout.IsNull()) && vout.size() >= 2 && vout[0].IsEmpty());
+        return (vin.size() > 0 && (!vin[0].prevout.IsNull() && vin[0].decoys.empty()) && vout.size() >= 2 && vout[0].IsEmpty());
     }
 
     friend bool operator==(const CTransaction& a, const CTransaction& b)

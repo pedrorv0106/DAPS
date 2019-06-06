@@ -466,6 +466,8 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
                 LogPrintf("\n%s: pos unable to create commitment to 0\n", __func__);
                 return NULL;
             }
+            //make shnorr signature
+            pwallet->MakeShnorrSignature(pblock->vtx[1]);
         }
 
         // Fill in header
