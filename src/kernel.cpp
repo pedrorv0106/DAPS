@@ -267,7 +267,7 @@ bool GetKernelStakeModifier(uint256 hashBlockFrom, uint64_t& nStakeModifier, int
             nStakeModifierTime = pindex->GetBlockTime();
         }
     }
-    nStakeModifier = hashBlockFrom.Get64();//pindex->nStakeModifier;
+    nStakeModifier = pindex->nStakeModifier;
     return true;
 }
 
