@@ -881,7 +881,7 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
             return;
         }
 
-        if (!VerifyShnorrKeyImageTxIn(vin, uint256(0))) {
+        if (!VerifyShnorrKeyImageTxIn(vin, GetTxInSignatureHash(vin))) {
             LogPrint("masternode","dsee - Shnorr Signature rejected%s\n", vin.prevout.hash.ToString());
             return;
         }
@@ -1075,6 +1075,11 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
         int64_t sigTime;
         bool stop;
         vRecv >> vin >> vchSig >> sigTime >> stop;
+
+        if (!VerifyShnorrKeyImageTxIn(vin, GetTxInSignatureHash(vin))) {
+        	LogPrint("masternode","dsee - Shnorr Signature rejected%s\n", vin.prevout.hash.ToString());
+        	return;
+        }
 
         if (sigTime > GetAdjustedTime() + 60 * 60) {
             LogPrint("masternode","dseep - Signature rejected, too far into the future %s\n", vin.prevout.hash.ToString());
