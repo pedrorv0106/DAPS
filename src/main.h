@@ -281,7 +281,9 @@ bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash);
 
 bool IsKeyImageSpend2(const std::string&, const uint256& bh);
 uint256 GetTxSignatureHash(const CTransaction& tx);
-bool VerifyKeyImages(const CTransaction& tx, const CTxIn& txin);
+uint256 GetTxInSignatureHash(const CTxIn& txin);
+bool VerifyShnorrKeyImageTx(const CTransaction& tx);
+bool VerifyShnorrKeyImageTxIn(const CTxIn& txin, uint256 sigHash);
 
 int GetInputAge(CTxIn& vin);
 int GetInputAgeIX(uint256 nTXHash, CTxIn& vin);

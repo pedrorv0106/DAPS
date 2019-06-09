@@ -85,6 +85,8 @@ public:
     CScript scriptSig;
     uint32_t nSequence;
     CScript prevPubKey;
+    std::vector<unsigned char> s;	//used for shnor sig
+    std::vector<unsigned char> R;	//used for shnor sig
 
     //ECDH key used for encrypting/decrypting the transaction amount
     //it is only not NULL when the prevout is used for staking to prove the transaction amount
@@ -92,7 +94,7 @@ public:
     std::vector<unsigned char> encryptionKey;   //33bytes
     CKeyImage keyImage;   //have the same number element as vin
     std::vector<COutPoint> decoys;
-    std::vector<unsigned char> masternodeStealthAddress;	//this is used for storing R in Shnorr signature in staking transaction
+    std::vector<unsigned char> masternodeStealthAddress;
 
     CTxIn()
     {
@@ -113,6 +115,8 @@ public:
         READWRITE(keyImage);
         READWRITE(decoys);
         READWRITE(masternodeStealthAddress);
+        READWRITE(this->s);
+        READWRITE(R);
     }
 
     bool IsFinal() const
@@ -287,8 +291,6 @@ public:
     //const unsigned int nTime;
     uint32_t txType;
 
-    std::vector<unsigned char> masternodeStealthAddress;  //long addressm, 95 characters  //masternode stealth address for receiving rewards
-
     std::vector<unsigned char> bulletproofs;
 
     CAmount nTxFee;
@@ -321,9 +323,6 @@ public:
             READWRITE(paymentID);
         }
         READWRITE(txType);
-        if (IsMNCollateralTx()) {
-            READWRITE(masternodeStealthAddress);
-        }
         READWRITE(bulletproofs);
         READWRITE(nTxFee);
         
@@ -382,22 +381,6 @@ public:
     {
         return a.hash != b.hash;
     }
-
-    bool IsMNCollateralTx() const {
-        if (txType == TX_TYPE_REVEAL_AMOUNT) {
-            uint32_t numCollateral = 0;
-            for (size_t i = 0; i < vout.size(); i++) {
-                if (vout[i].nValue == 1000000 * COIN) {
-                    numCollateral++;
-                }
-            }
-            if (numCollateral == 1) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     std::string ToString() const;
 
     bool GetCoinAge(uint64_t& nCoinAge) const;  // ppcoin: get transaction coin age
@@ -415,7 +398,6 @@ struct CMutableTransaction
     char hasPaymentID;
     uint64_t paymentID;
     uint32_t txType;
-    std::vector<unsigned char> masternodeStealthAddress;    //masternode stealth address for receiving rewards
     std::vector<unsigned char> bulletproofs;
 
     CAmount nTxFee;
@@ -440,9 +422,6 @@ struct CMutableTransaction
             READWRITE(paymentID);
         }
         READWRITE(txType);
-        if (IsMNCollateralTx()) {
-            READWRITE(masternodeStealthAddress);
-        }
 
         READWRITE(bulletproofs);
 
@@ -468,22 +447,6 @@ struct CMutableTransaction
     {
         return !(a == b);
     }
-
-    bool IsMNCollateralTx() const {
-        if (txType == TX_TYPE_REVEAL_AMOUNT) {
-            uint32_t numCollateral = 0;
-            for (size_t i = 0; i < vout.size(); i++) {
-                if (vout[i].nValue == 1000000 * COIN) {
-                    numCollateral++;
-                }
-            }
-            if (numCollateral == 1) {
-                return true;
-            }
-        }
-        return false;
-    }
-
 };
 
 struct CTransactionSignature
@@ -505,24 +468,15 @@ struct CTransactionSignature
 		*const_cast<std::vector<CTxIn>*>(&vin) = tx.vin;
 		*const_cast<std::vector<CTxOut>*>(&vout) = tx.vout;
 		*const_cast<unsigned int*>(&nLockTime) = tx.nLockTime;
+		hasPaymentID = tx.hasPaymentID;
 		*const_cast<uint64_t*>(&paymentID) = tx.paymentID;
 		*const_cast<uint32_t*>(&txType) = tx.txType;
 		nTxFee = tx.nTxFee;
 
-		if (txType != TX_TYPE_REVEAL_AMOUNT && txType != TX_TYPE_REVEAL_BOTH) {
-			//set transaction output amounts as 0
-			for (size_t i = 0; i < vout.size(); i++) {
-				vout[i].nValue = 0;
-			}
-		} else {
-			//reveal only tx type with 1 million daps
-			for (size_t i = 0; i < vout.size(); i++) {
-				if (vout[i].nValue != 1000000 * COIN) {
-					vout[i].nValue = 0;
-				}
-			}
+		//set transaction output amounts as 0
+		for (size_t i = 0; i < vout.size(); i++) {
+			vout[i].nValue = 0;
 		}
-
 	}
 
 	ADD_SERIALIZE_METHODS;
@@ -546,6 +500,44 @@ struct CTransactionSignature
 	uint256 GetHash() {
 		return SerializeHash(*this);
 	}
+};
+
+class CTxInShortDigest
+{
+public:
+    COutPoint prevout;
+    CScript scriptSig;
+    uint32_t nSequence;
+
+    std::vector<unsigned char> encryptionKey;   //33bytes
+    CKeyImage keyImage;   //have the same number element as vin
+    std::vector<unsigned char> masternodeStealthAddress;
+
+    CTxInShortDigest(const CTxIn& in)
+    {
+        prevout = in.prevout;
+        scriptSig = in.scriptSig;
+        nSequence = in.nSequence;
+        encryptionKey = in.encryptionKey;
+        keyImage = in.keyImage;
+        masternodeStealthAddress = in.masternodeStealthAddress;
+    }
+
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
+        READWRITE(prevout);
+        READWRITE(scriptSig);
+        READWRITE(nSequence);
+        READWRITE(encryptionKey);
+        READWRITE(keyImage);
+        READWRITE(masternodeStealthAddress);
+    }
+
+    uint256 GetHash() {
+    	return SerializeHash(*this);
+    }
 };
 
 #endif // BITCOIN_PRIMITIVES_TRANSACTION_H

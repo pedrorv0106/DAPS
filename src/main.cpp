@@ -553,6 +553,12 @@ uint256 GetTxSignatureHash(const CTransaction& tx)
 	return cts.GetHash();
 }
 
+uint256 GetTxInSignatureHash(const CTxIn& txin)
+{
+	CTxInShortDigest cts(txin);
+	return cts.GetHash();
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -1176,13 +1182,7 @@ unsigned int GetP2SHSigOpCount(const CTransaction &tx, const CCoinsViewCache &in
     if (tx.IsCoinBase())
         return 0;
 
-    unsigned int nSigOps = 0;
-    for (unsigned int i = 0; i < tx.vin.size(); i++) {
-        const CTxOut &prevout = inputs.GetOutputFor(tx.vin[i]);
-        if (prevout.scriptPubKey.IsPayToScriptHash())
-            nSigOps += prevout.scriptPubKey.GetSigOpCount(tx.vin[i].scriptSig);
-    }
-    return nSigOps;
+    return 0;
 }
 
 int GetInputAge(CTxIn &vin) {
@@ -1305,52 +1305,20 @@ bool IsSerialInBlockchain(const CBigNum &bnSerial, int &nHeightTx) {
     return inChain;
 }
 
-bool VerifyKeyImage2(const CTxIn& txin)
+bool VerifyShnorrKeyImageTxIn(const CTxIn& txin, uint256 ctsHash)
 {
-	return false;
-}
-
-bool VerifyKeyImages(const CTransaction& tx, const CTxIn& txin)
-{
-
-	//check if a transaction is staking or spending collateral
-	//this assumes that the transaction is already checked for either a staking transaction or transactions spending only UTXOs of 1M DAPS
-	if (txin.decoys.size() > 0) return true; //already checked by ring signature
-	if (tx.IsCoinAudit() || tx.IsCoinBase()) return true;
-	if (tx.IsCoinStake() && tx.vin[0] != txin) return true;
-
-	if (txin.prevout.IsNull()) return true;
-
 	COutPoint prevout = txin.prevout;
 	CTransaction prev;
 	uint256 bh;
 	if (!GetTransaction(prevout.hash, prev, bh, true)) {
 		return false;
 	}
-
-	std::vector<uint256> S_Vector = tx.S[0];
-	uint256 s;
-	if (tx.IsCoinStake())
-		s = S_Vector[0];
-	else {
-		auto it = std::find(tx.vin.begin(), tx.vin.end(), txin);
-		if (it == tx.vin.end())
-		{
-			// name not in vector
-			return false;
-		} else {
-			auto index = std::distance(tx.vin.begin(), it);
-			s = S_Vector[index];
-		}
-	}
-
+	uint256 s(txin.s);
 	unsigned char S[33];
 	CPubKey P;
 	ExtractPubKey(prev.vout[prevout.n].scriptPubKey, P);
 	PointHashingSuccessively(P, s.begin(), S);
-	CPubKey R(txin.masternodeStealthAddress);
-
-	uint256 ctsHash = GetTxSignatureHash(tx);
+	CPubKey R(txin.R.begin(), txin.R.end());
 
 	//compute H(R)I = eI
 	unsigned char buff[33 + 32];
@@ -1382,6 +1350,16 @@ bool VerifyKeyImages(const CTransaction& tx, const CTxIn& txin)
 	for (int i = 0; i < 33; i++)
 		if (S[i] != recomputed[i]) return false;
 	return true;
+}
+
+bool VerifyShnorrKeyImageTx(const CTransaction& tx)
+{
+
+	//check if a transaction is staking or spending collateral
+	//this assumes that the transaction is already checked for either a staking transaction or transactions spending only UTXOs of 1M DAPS
+	if (!tx.IsCoinStake()) return true;
+	uint256 cts = GetTxInSignatureHash(tx.vin[0]);
+	return VerifyShnorrKeyImageTxIn(tx.vin[0], cts);
 }
 
 bool CheckTransaction(const CTransaction &tx, bool fzcActive, bool fRejectBadUTXO, CValidationState &state) {
@@ -1491,29 +1469,37 @@ CAmount GetMinRelayFee(const CTransaction &tx, unsigned int nBytes, bool fAllowF
 
 bool CheckHaveInputs(const CCoinsViewCache& view, const CTransaction& tx)
 {
+	CBlockIndex *pindexPrev = mapBlockIndex.find(view.GetBestBlock())->second;
+	int nSpendHeight = pindexPrev->nHeight + 1;
 	if (!tx.IsCoinBase()) {
 		for (unsigned int i = 0; i < tx.vin.size(); i++) {
 			//check output and decoys
 			std::vector<COutPoint> alldecoys = tx.vin[i].decoys;
 
 			alldecoys.push_back(tx.vin[i].prevout);
-			size_t decoysSize = alldecoys.size();
 			for (size_t j = 0; j < alldecoys.size(); j++) {
 				CTransaction prev;
 				uint256 bh;
 				if (!GetTransaction(alldecoys[j].hash, prev, bh, true)) {
 					return false;
 				}
+
+				//Cam: 07/06/2019 Remove this condition as colateral will be cheated as a normal tx
 				//UTXO with 1M DAPS can only be consumed in a transaction with that single UTXO
-				if (decoysSize > 1 && prev.vout[alldecoys[j].n].nValue == 1000000 * COIN) {
+				/*if (decoysSize > 1 && prev.vout[alldecoys[j].n].nValue == 1000000 * COIN) {
 					return false;
 				}
 
 				if (prev.vout[alldecoys[j].n].nValue == 1000000 * COIN) {
-					if (!VerifyKeyImages(tx, tx.vin[i])) {
+					if (!VerifyKeyImages(tx)) {
 						LogPrintf("\nFailed to verify correctness of key image of collateralization spend\n");
 						return false;
 					}
+				}*/
+
+				if (mapBlockIndex.count(bh) < 1) return false;
+				if (prev.IsCoinStake() || prev.IsCoinAudit() || prev.IsCoinBase()) {
+					if (nSpendHeight - mapBlockIndex[bh]->nHeight < Params().COINBASE_MATURITY()) return false;
 				}
 			}
 			if (!tx.IsCoinStake()) {
@@ -1525,7 +1511,7 @@ bool CheckHaveInputs(const CCoinsViewCache& view, const CTransaction& tx)
 		}
 
 		if (tx.IsCoinStake()) {
-			if (!VerifyKeyImages(tx, tx.vin[0])) {
+			if (!VerifyShnorrKeyImageTx(tx)) {
 				LogPrintf("\nFailed to verify correctness of key image of staking transaction\n");
 				return false;
 			}
@@ -2420,19 +2406,26 @@ bool CheckInputs(const CTransaction &tx, CValidationState &state, const CCoinsVi
         // This is also true for mempool checks.
         CBlockIndex *pindexPrev = mapBlockIndex.find(inputs.GetBestBlock())->second;
         int nSpendHeight = pindexPrev->nHeight + 1;
-        for (unsigned int i = 0; i < tx.vin.size(); i++) {
-            const COutPoint &prevout = tx.vin[i].prevout;
-            const CCoins *coins = inputs.AccessCoins(prevout.hash);
-            assert(coins);
+        if (tx.IsCoinStake()) {
+			for (unsigned int i = 0; i < tx.vin.size(); i++) {
+				const COutPoint &prevout = tx.vin[i].prevout;
+				const CCoins *coins = inputs.AccessCoins(prevout.hash);
+				if (coins == NULL) {
+					return state.Invalid(
+							error("CheckInputs() : tried to spend coinbase at depth %d, coinstake=%d",
+									nSpendHeight - coins->nHeight, coins->IsCoinStake()),
+									REJECT_INVALID, "bad-txns-premature-spend-of-coinbase");
+				}
 
-            // If prev is coinbase, check that it's matured
-            if (coins->IsCoinBase() || coins->IsCoinStake()) {
-                if (nSpendHeight - coins->nHeight < Params().COINBASE_MATURITY())
-                    return state.Invalid(
-                            error("CheckInputs() : tried to spend coinbase at depth %d, coinstake=%d",
-                                  nSpendHeight - coins->nHeight, coins->IsCoinStake()),
-                            REJECT_INVALID, "bad-txns-premature-spend-of-coinbase");
-            }
+				// If prev is coinbase, check that it's matured
+				if (coins->IsCoinBase() || coins->IsCoinStake()) {
+					if (nSpendHeight - coins->nHeight < Params().COINBASE_MATURITY())
+						return state.Invalid(
+								error("CheckInputs() : tried to spend coinbase at depth %d, coinstake=%d",
+									  nSpendHeight - coins->nHeight, coins->IsCoinStake()),
+								REJECT_INVALID, "bad-txns-premature-spend-of-coinbase");
+				}
+			}
         }
 
         // The first loop above does all the inexpensive checks.
