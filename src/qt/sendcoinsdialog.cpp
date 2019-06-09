@@ -22,12 +22,14 @@
 #include "ui_interface.h"
 #include "utilmoneystr.h"
 #include "wallet.h"
+#include "2faconfirmdialog.h"
 
 #include <regex>
 #include <QMessageBox>
 #include <QScrollBar>
 #include <QSettings>
 #include <QTextDocument>
+#include <QDateTime>
 #include <QDebug>
 
 
@@ -120,12 +122,36 @@ void SendCoinsDialog::on_sendButton_clicked(){
         }
     }
 
+    send_address = recipient.address;
+    send_amount = recipient.amount;
+    bool status = settings.value("2FA").toString() == "enabled";
+    if (!status) {
+        sendTx();
+        return;
+    }
+    
+    uint lastTime = settings.value("2FALastTime").toInt();
+    uint period = settings.value("2FAPeriod").toInt();
+    QDateTime current = QDateTime::currentDateTime();
+    uint diffTime = current.toTime_t() - lastTime;
+    if (diffTime <= period * 24 * 60 * 60)
+        sendTx();
+    else {
+        TwoFAConfirmDialog codedlg;
+        codedlg.setWindowTitle("2FACode verification");
+        codedlg.setStyleSheet(GUIUtil::loadStyleSheet());
+        connect(&codedlg, SIGNAL(finished (int)), this, SLOT(dialogIsFinished(int)));
+        codedlg.exec();
+    }
+}
+
+void SendCoinsDialog::sendTx() {
     CWalletTx resultTx; 
     bool success = false;
     try {
         success = pwalletMain->SendToStealthAddress(
-            recipient.address.toStdString(),
-            recipient.amount,
+            send_address.toStdString(),
+            send_amount,
             resultTx,
             false
         );
@@ -143,6 +169,12 @@ void SendCoinsDialog::on_sendButton_clicked(){
         txcomplete.exec();
         WalletUtil::getTx(pwalletMain, resultTx.GetHash());
     }
+}
+
+void SendCoinsDialog::dialogIsFinished(int result) {
+   if(result == QDialog::Accepted){
+        sendTx();
+   }
 }
 
 SendCoinsEntry* SendCoinsDialog::addEntry()

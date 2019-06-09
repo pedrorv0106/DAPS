@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1050</width>
-    <height>472</height>
+    <height>641</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -22,7 +22,7 @@
   <property name="sizeGripEnabled">
    <bool>false</bool>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0">
    <item alignment="Qt::AlignRight">
     <widget class="QLabel" name="labelTheme">
      <property name="sizePolicy">
@@ -78,32 +78,32 @@
     </widget>
    </item>
    <item>
-     <widget class="ToggleButton" name="toggleStaking" native="false">
-	   <property name="sizePolicy">
-	    <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-	      <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-	    </sizepolicy>
-	   </property>
+    <widget class="ToggleButton" name="toggleStaking" native="false">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="toolTip">
       <string>Turn staking on or off</string>
      </property>
-       <property name="layoutDirection">
-        <enum>Qt::RightToLeft</enum>
-       </property>
-       <property name="OptionA">
-        <string>On</string>
-       </property>
-       <property name="OptionB">
-        <string>Off</string>
-       </property>
-       <property name="fixedSize">
-        <size>
-         <width>100</width>
-         <height>55</height>
-        </size>
-       </property>
-     </widget>
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
+     </property>
+     <property name="OptionA">
+      <string>On</string>
+     </property>
+     <property name="OptionB">
+      <string>Off</string>
+     </property>
+     <property name="fixedSize">
+      <size>
+       <width>100</width>
+       <height>55</height>
+      </size>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QLabel" name="labelPassword">
@@ -276,9 +276,6 @@
    </item>
    <item>
     <widget class="ToggleButton" name="toggle2FA" native="true">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
        <horstretch>0</horstretch>
@@ -300,6 +297,122 @@
     </widget>
    </item>
    <item>
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Remember my authentication code for</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="spacing">
+      <number>100</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QPushButton" name="btn_day">
+       <property name="text">
+        <string>1 Day</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_week">
+       <property name="text">
+        <string>1 Week</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_month">
+       <property name="text">
+        <string>1 Month</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Current Authentication Code</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,1,1,1,1,1,20">
+     <item>
+      <widget class="QLabel" name="code_1">
+       <property name="text">
+        <string></string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="code_2">
+       <property name="text">
+        <string></string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="code_3">
+       <property name="text">
+        <string></string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="code_4">
+       <property name="text">
+        <string></string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="code_5">
+       <property name="text">
+        <string></string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="code_6">
+       <property name="text">
+        <string></string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
     <widget class="QPushButton" name="pushButtonBackup">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -307,11 +420,11 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="layoutDirection">
-      <enum>Qt::RightToLeft</enum>
-     </property>
      <property name="toolTip">
       <string>Backup wallet to BackupWallet.dat in current directory</string>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
      </property>
      <property name="text">
       <string>Backup Wallet</string>
