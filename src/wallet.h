@@ -733,6 +733,8 @@ public:
     bool WriteStakingStatus(bool status);
     bool ReadStakingStatus();
     bool MakeShnorrSignature(CTransaction&);
+    bool MakeShnorrSignatureTxIn(CTxIn& txin, uint256);
+    bool computeSharedSec(const CTransaction& tx, const CTxOut& out, CPubKey& sharedSec) const;
 private:
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
@@ -740,7 +742,6 @@ private:
     bool generateBulletProofAggregate(CTransaction& tx);
     bool selectDecoysAndRealIndex(CTransaction& tx, int& myIndex, int ringSize);
     bool makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFailReason);
-    bool computeSharedSec(const CTransaction& tx, const CTxOut& out, CPubKey& sharedSec) const;
     int walletIdxCache = 0;
     bool isMatchMyKeyImage(const CKeyImage& ki, const COutPoint& out);
     void ScanWalletKeyImages();

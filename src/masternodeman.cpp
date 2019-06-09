@@ -880,6 +880,39 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
             Misbehaving(pfrom->GetId(), 1);
             return;
         }
+
+        if (!VerifyShnorrKeyImageTxIn(vin, uint256(0))) {
+            LogPrint("masternode","dsee - Shnorr Signature rejected%s\n", vin.prevout.hash.ToString());
+            return;
+        }
+
+        //verify the value if 1M DAPS
+        COutPoint prevout = vin.prevout;
+        CTransaction prev;
+        uint256 bh;
+        if (!GetTransaction(prevout.hash, prev, bh, true)) {
+            LogPrint("masternode","dsee - failed to read transaction hash %s\n", vin.prevout.hash.ToString());
+        	return;
+        }
+
+        CTxOut out = prev.vout[prevout.n];
+        CPubKey sharedSec(vin.encryptionKey.begin(), vin.encryptionKey.end());
+        CKey mask;
+        CAmount amount;
+        ECDHInfo::Decode(out.maskValue.mask.begin(), out.maskValue.amount.begin(), sharedSec, mask, amount);
+
+        std::vector<unsigned char> commitment;
+        CWallet::CreateCommitment(mask.begin(), amount, commitment);
+        if (commitment != out.commitment) {
+        	LogPrint("masternode","dsee - decoded masternode collateralization not match %s\n", vin.prevout.hash.ToString());
+        	return;
+        }
+
+        if (amount != 1000000 * COIN) {
+        	LogPrint("masternode","dsee - masternode collateralization not equal to 1M %s\n", vin.prevout.hash.ToString());
+        	return;
+        }
+
         std::string vchPubKey(pubkey.begin(), pubkey.end());
         std::string vchPubKey2(pubkey2.begin(), pubkey2.end());
 
@@ -985,11 +1018,6 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
         //  - this is checked later by .check() in many places and by ThreadCheckObfuScationPool()
 
         CValidationState state;
-        CMutableTransaction tx = CMutableTransaction();
-        //LogPrint("\n%s: obfuscation pool collateral pubkey:%s\n", __func__, obfuScationPool.collateralPubKey.ToString());
-        CTxOut vout = CTxOut(9999.99 * COIN, obfuScationPool.collateralPubKey);
-        tx.vin.push_back(vin);
-        tx.vout.push_back(vout);
 
         bool fAcceptable = !IsKeyImageSpend1(vin.keyImage.GetHex(), uint256(0));
 
@@ -1030,7 +1058,7 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
 
             int nDoS = 0;
             if (state.IsInvalid(nDoS)) {
-                LogPrint("masternode","dsee - %s from %i %s was not accepted into the memory pool\n", tx.GetHash().ToString().c_str(),
+                LogPrint("masternode","dsee - %i %s was not accepted into the memory pool\n",
                     pfrom->GetId(), pfrom->cleanSubVer.c_str());
                 if (nDoS > 0)
                     Misbehaving(pfrom->GetId(), nDoS);

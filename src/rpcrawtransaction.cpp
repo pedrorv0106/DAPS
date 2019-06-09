@@ -74,9 +74,6 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
     if (tx.hasPaymentID) {
         entry.push_back(Pair("paymentid", tx.paymentID));
     }
-    if (tx.masternodeStealthAddress.size() > 0) {
-        entry.push_back(Pair("masternodestealth", std::string((char*)(&tx.masternodeStealthAddress[0]))));
-    }
     entry.push_back(Pair("txType", (int64_t)tx.txType));
 
     Array vin;
@@ -148,9 +145,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
             memset(zeroBlind, 0, 32);
             const unsigned char* pBlind;
             pwalletMain->RevealTxOutAmount(tx, txout, decodedAmount, blind);
-            if (tx.IsMNCollateralTx()) {
-            	pBlind = blind.begin();
-            } else if (txout.nValue >0) {
+            if (txout.nValue >0) {
             	pBlind = zeroBlind;
             } else {
             	pBlind = blind.begin();

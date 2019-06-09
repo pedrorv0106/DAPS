@@ -1776,7 +1776,7 @@ bool CWallet::AvailableCoins(const uint256 wtxid, const CWalletTx* pcoin, vector
             return false;
         // We should not consider coins which aren't at least in our mempool
         // It's possible for these to be conflicted via ancestors which we may never be able to detect
-        if (nDepth == 0 && !pcoin->InMempool())
+        if (nDepth <= 0)
             return false;
         for (unsigned int i = 0; i < pcoin->vout.size(); i++) {
             if (pcoin->vout[i].IsEmpty()) {
@@ -2599,12 +2599,6 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     CMutableTransaction txNew;
     txNew.hasPaymentID = wtxNew.hasPaymentID;
     txNew.paymentID = wtxNew.paymentID;
-
-    if (vecSend[0].second == 1000000 * COIN) {
-        wtxNew.txType = TX_TYPE_REVEAL_AMOUNT;
-        txNew.txType = TX_TYPE_REVEAL_AMOUNT;
-    }
-
     {
         LOCK2(cs_main, cs_wallet);
         {
@@ -2631,13 +2625,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                             return false;
                         }
                         CPubKey sharedSec;
-                        if (txNew.txType == TX_TYPE_REVEAL_AMOUNT) {
-                            //In this case, use the transaction pubkey to encode the transactiona amount
-                            //so that every fullnode can verify the exact transaction amount within the transaction
-                            sharedSec.Set(txout.txPub.begin(), txout.txPub.end());
-                        } else {
-                            ECDHInfo::ComputeSharedSec(txPrivDes, recipientViewKey, sharedSec);
-                        }
+                        ECDHInfo::ComputeSharedSec(txPrivDes, recipientViewKey, sharedSec);
                         EncodeTxOutAmount(txout, txout.nValue, sharedSec.begin());
                         txNew.vout.push_back(txout);
                         nBytes += ::GetSerializeSize(*(CTxOut*)&txout, SER_NETWORK, PROTOCOL_VERSION);
@@ -2667,13 +2655,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                             std::copy(txPub.begin(), txPub.end(), std::back_inserter(out.txPub));
                             //Encode amount and mask using symmetric encryption with key as the diffie hellman shared key
                             CPubKey sharedSec;
-                            if (txNew.txType == TX_TYPE_REVEAL_AMOUNT) {
-                                //In this case, use the transaction pubkey to encode the transactiona amount
-                                //so that every fullnode can verify the exact transaction amount within the transaction
-                                sharedSec.Set(out.txPub.begin(), out.txPub.end());
-                            } else {
-                                ECDHInfo::ComputeSharedSec(txPrivDes, recipientViewKey, sharedSec);
-                            }
+                            ECDHInfo::ComputeSharedSec(txPrivDes, recipientViewKey, sharedSec);
                             EncodeTxOutAmount(out, out.nValue, sharedSec.begin());
                             txNew.vout.push_back(out);
                             nBytes += ::GetSerializeSize(*(CTxOut*)&out, SER_NETWORK, PROTOCOL_VERSION);
@@ -2747,7 +2729,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                     CAmount nFeeNeeded = max(nFeePay, GetMinimumFee(nBytes, nTxConfirmTarget, mempool));
                     newTxOut.nValue -= nFeeNeeded;
                     txNew.nTxFee = nFeeNeeded;
-                    LogPrintf("\n%s: nFeeNeeded=%d\n", __func__, newTxOut.nValue);
+                    LogPrintf("\n%s: nFeeNeeded=%d\n", __func__, txNew.nTxFee);
                                         // Never create
                     CPubKey shared;
                     computeSharedSec(txNew, newTxOut, shared);
@@ -2801,7 +2783,6 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
             }
         }
     }
-
     if (!makeRingCT(wtxNew, ringSize, strFailReason)) {
     	strFailReason = _("Failed to generate RingCT");
     	return false;
@@ -2814,27 +2795,9 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
 
     //check whether this is a reveal amount transaction
     //only create transaction with reveal amount if it is a masternode collateral transaction
-    if (wtxNew.txType != TX_TYPE_REVEAL_AMOUNT && wtxNew.txType != TX_TYPE_REVEAL_BOTH) {
-        //set transaction output amounts as 0
-        for (size_t i = 0; i < wtxNew.vout.size(); i++) {
-            wtxNew.vout[i].nValue = 0;
-        }
-    } else {
-        //reveal only tx type with 1 million daps
-        for (size_t i = 0; i < wtxNew.vout.size(); i++) {
-            if (wtxNew.vout[i].nValue != 1000000 * COIN) {
-                wtxNew.vout[i].nValue = 0;
-            }
-        }
-
-        /*if (wtxNew.IsMNCollateralTx()) {
-            CKey view, spend;
-            myViewPrivateKey(view);
-            mySpendPrivateKey(spend);
-            std::string addr;
-            EncodeStealthPublicAddress(view.GetPubKey(), spend.GetPubKey(), addr);
-            std::copy(addr.begin(), addr.end(), std::back_inserter(wtxNew.masternodeStealthAddress));
-        }*/
+    //set transaction output amounts as 0
+    for (size_t i = 0; i < wtxNew.vout.size(); i++) {
+    	wtxNew.vout[i].nValue = 0;
     }
 
     return true;
@@ -3472,58 +3435,42 @@ bool CWallet::MakeShnorrSignature(CTransaction& wtxNew)
 {
 	if (wtxNew.IsCoinAudit() || wtxNew.IsCoinBase()) return true;
 	//this only generates shnorr signature if either wtxNew is a staking transaction or wtxNew only spends collateralized
-	std::vector<int> txinList; //list of tx in that should generate shnorr
-	if (wtxNew.IsCoinStake())
-		txinList.push_back(0);
-	else {
-		for (size_t i = 0; i < wtxNew.vin.size(); i++) {
-			COutPoint prevout = wtxNew.vin[i].prevout;
-			const CTransaction& prev = mapWallet[prevout.hash];
-			CTxOut out = prev.vout[prevout.n];
-			if (!wtxNew.vin[i].decoys.empty()) return false;
-			if (out.nValue == 1000000 * COIN) {
-				txinList.push_back(i);
-			}
-		}
-	}
-
-	if (txinList.empty()) return false;
+	if (!wtxNew.IsCoinStake()) return true;
 
 	//generate shnorr per input
-	std::vector<uint256> s_vector;
-	uint256 ctsHash = GetTxSignatureHash(wtxNew);
-	for (size_t i = 0; i < txinList.size(); i++) {
-		COutPoint prevout = wtxNew.vin[txinList[i]].prevout;
-		const CTransaction& prev = mapWallet[prevout.hash];
-		CTxOut out = prev.vout[prevout.n];
-		CKey pk;
-		if (!findCorrespondingPrivateKey(out, pk)) {
-			return false;
-		}
-		CPubKey P = pk.GetPubKey();
+	uint256 ctsHash = GetTxInSignatureHash(wtxNew.vin[0]);
 
-		unsigned char R[33];
-		CKey r;
-		r.MakeNewKey(true);
-		PointHashingSuccessively(P, r.begin(), R);
-		unsigned char buff[33 + 32];
-		memcpy(buff, R, 33);
-		memcpy(buff + 33, ctsHash.begin(), 32);
-		uint256 e = Hash(buff, buff + 65);
-		//compute s = r + e * pk (private key)
+	return MakeShnorrSignatureTxIn(wtxNew.vin[0], ctsHash);
+}
 
-		unsigned char ex[32];
-		memcpy(ex, e.begin(), 32);
-		if (!secp256k1_ec_privkey_tweak_mul(ex, pk.begin())) return false;
-		if (!secp256k1_ec_privkey_tweak_add(ex, r.begin())) return false;
-		std::vector<unsigned char> sTemp;
-		std::copy(ex, ex + 32, std::back_inserter(sTemp));
-		uint256 s(sTemp);
-		s_vector.push_back(s);
-		//copy R to masternodeStealthAddress
-		std::copy(R, R + 33, std::back_inserter(wtxNew.vin[txinList[i]].masternodeStealthAddress));
+bool CWallet::MakeShnorrSignatureTxIn(CTxIn& txin, uint256 cts)
+{
+	COutPoint prevout = txin.prevout;
+	const CTransaction& prev = mapWallet[prevout.hash];
+	CTxOut out = prev.vout[prevout.n];
+	CKey pk;
+	if (!findCorrespondingPrivateKey(out, pk)) {
+		return false;
 	}
-	wtxNew.S.push_back(s_vector);
+	CPubKey P = pk.GetPubKey();
+
+	unsigned char R[33];
+	CKey r;
+	r.MakeNewKey(true);
+	PointHashingSuccessively(P, r.begin(), R);
+	unsigned char buff[33 + 32];
+	memcpy(buff, R, 33);
+	memcpy(buff + 33, cts.begin(), 32);
+	uint256 e = Hash(buff, buff + 65);
+	//compute s = r + e * pk (private key)
+
+	unsigned char ex[32];
+	memcpy(ex, e.begin(), 32);
+	if (!secp256k1_ec_privkey_tweak_mul(ex, pk.begin())) return false;
+	if (!secp256k1_ec_privkey_tweak_add(ex, r.begin())) return false;
+	std::copy(ex, ex + 32, std::back_inserter(txin.s));
+	//copy R to masternodeStealthAddress
+	std::copy(R, R + 33, std::back_inserter(txin.R));
 	return true;
 }
 
@@ -5910,21 +5857,6 @@ bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmou
         //Coinbase transaction output is not hidden, not need to decrypt
         amount = out.nValue;
         return true;
-    }
-    if (tx.IsMNCollateralTx()) {
-        if (out.nValue > 0) {
-            amount = out.nValue;
-            CPubKey sharedSec;
-            computeSharedSec(tx, out, sharedSec);
-            uint256 val = out.maskValue.amount;
-            uint256 mask = out.maskValue.mask;
-            CKey decodedMask;
-            ECDHInfo::Decode(mask.begin(), val.begin(), sharedSec, decodedMask, amount);
-            amountMap[out.scriptPubKey] = amount;
-            blindMap[out.scriptPubKey] = decodedMask;
-            blind.Set(blindMap[out.scriptPubKey].begin(), blindMap[out.scriptPubKey].end(), true);
-            return true;
-        }
     }
 
     if (tx.IsCoinStake()) {
