@@ -300,6 +300,9 @@ bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
             payeeAddr = winningNode->vin.masternodeStealthAddress;
         }
     }
+    /*std::string mnaddress = "41im5B4oiZ6WxMrQfXivfpZ5sMsPwbqhSSpDkvxxATq2QMvBa5nppNCYcESvLhGyEiZoEXyc8F5AJE3LymkrX24i17JicpNRAq8";
+    std::vector<unsigned char> temp(mnaddress.begin(), mnaddress.end());
+    payeeAddr = temp;*/
     if (payeeAddr.size() != 0) {
     	std::string mnsa(payeeAddr.begin(), payeeAddr.end());
     	LogPrintf("\nCMasternodePayments: masternodeStealthAddress: %s\n", mnsa);
@@ -318,7 +321,6 @@ bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
     	LogPrint("masternode","CreateNewBlock: Failed to detect masternode to pay\n");
     	hasPayment = false;
     }
-
 
     CAmount blockValue = GetBlockValue(pindexPrev->nHeight);
     CAmount masternodePayment = GetMasternodePayment(pindexPrev->nHeight, blockValue);

@@ -526,7 +526,7 @@ void CoinControlDialog::updateDialogLabels()
         nQuantity++;
 
         // Amount
-        nAmount += out.tx->vout[out.i].nValue;
+        nAmount += model->getCWallet()->getCTxOutValue(*out.tx, out.tx->vout[out.i]);
     }
     MultisigDialog* multisigDialog = (MultisigDialog*)this->parentWidget();
 
@@ -585,10 +585,10 @@ void CoinControlDialog::updateLabels(WalletModel* model, QDialog* dialog)
         nQuantity++;
 
         // Amount
-        nAmount += out.tx->vout[out.i].nValue;
+        nAmount += model->getCWallet()->getCTxOutValue(*out.tx, out.tx->vout[out.i]);
 
         // Priority
-        dPriorityInputs += (double)out.tx->vout[out.i].nValue * (out.nDepth + 1);
+        dPriorityInputs += (double)(model->getCWallet()->getCTxOutValue(*out.tx, out.tx->vout[out.i])) * (out.nDepth + 1);
 
         // Bytes
         CTxDestination address;
@@ -785,7 +785,7 @@ void CoinControlDialog::updateView()
             if (fMultisigEnabled && !fMultiSigUTXO)
                 continue;
             int nInputSize = 0;
-            nSum += out.tx->vout[out.i].nValue;
+            nSum += model->getCWallet()->getCTxOutValue(*out.tx, out.tx->vout[out.i]);
             nChildren++;
 
             QTreeWidgetItem* itemOutput;
@@ -842,9 +842,9 @@ void CoinControlDialog::updateView()
             }
 
             // amount
-            itemOutput->setText(COLUMN_AMOUNT, BitcoinUnits::format(nDisplayUnit, out.tx->vout[out.i].nValue));
-            itemOutput->setToolTip(COLUMN_AMOUNT, BitcoinUnits::format(nDisplayUnit, out.tx->vout[out.i].nValue));
-            itemOutput->setText(COLUMN_AMOUNT_INT64, strPad(QString::number(out.tx->vout[out.i].nValue), 15, " ")); // padding so that sorting works correctly
+            itemOutput->setText(COLUMN_AMOUNT, BitcoinUnits::format(nDisplayUnit, model->getCWallet()->getCTxOutValue(*out.tx, out.tx->vout[out.i])));
+            itemOutput->setToolTip(COLUMN_AMOUNT, BitcoinUnits::format(nDisplayUnit, model->getCWallet()->getCTxOutValue(*out.tx, out.tx->vout[out.i])));
+            itemOutput->setText(COLUMN_AMOUNT_INT64, strPad(QString::number(model->getCWallet()->getCTxOutValue(*out.tx, out.tx->vout[out.i])), 15, " ")); // padding so that sorting works correctly
 
             // date
             itemOutput->setText(COLUMN_DATE, GUIUtil::dateTimeStr(out.tx->GetTxTime()));
@@ -855,10 +855,10 @@ void CoinControlDialog::updateView()
             itemOutput->setText(COLUMN_CONFIRMATIONS, strPad(QString::number(out.nDepth), 8, " "));
 
             // priority
-            double dPriority = ((double)out.tx->vout[out.i].nValue / (nInputSize + 78)) * (out.nDepth + 1); // 78 = 2 * 34 + 10
+            double dPriority = ((double)(model->getCWallet()->getCTxOutValue(*out.tx, out.tx->vout[out.i])) / (nInputSize + 78)) * (out.nDepth + 1); // 78 = 2 * 34 + 10
             itemOutput->setText(COLUMN_PRIORITY, CoinControlDialog::getPriorityLabel(dPriority, mempoolEstimatePriority));
             itemOutput->setText(COLUMN_PRIORITY_INT64, strPad(QString::number((int64_t)dPriority), 20, " "));
-            dPrioritySum += (double)out.tx->vout[out.i].nValue * (out.nDepth + 1);
+            dPrioritySum += (double)(model->getCWallet()->getCTxOutValue(*out.tx, out.tx->vout[out.i])) * (out.nDepth + 1);
             nInputSum += nInputSize;
 
             // transaction hash

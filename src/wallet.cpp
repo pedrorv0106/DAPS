@@ -1091,14 +1091,14 @@ int CWallet::GetRealInputObfuscationRounds(CTxIn in, int rounds) const
             return -4;
         }
 
-        if (pwalletMain->IsCollateralAmount(wtx->vout[nout].nValue)) {
+        if (pwalletMain->IsCollateralAmount(pwalletMain->getCTxOutValue(*wtx, wtx->vout[nout]))) {
             mDenomWtxes[hash].vout[nout].nRounds = -3;
             LogPrint("obfuscation", "GetInputObfuscationRounds UPDATED   %s %3d %3d\n", hash.ToString(), nout, mDenomWtxes[hash].vout[nout].nRounds);
             return mDenomWtxes[hash].vout[nout].nRounds;
         }
 
         //make sure the final output is non-denominate
-        if (!IsDenominatedAmount(wtx->vout[nout].nValue)) //NOT DENOM
+        if (!IsDenominatedAmount(pwalletMain->getCTxOutValue(*wtx, wtx->vout[nout]))) //NOT DENOM
         {
             mDenomWtxes[hash].vout[nout].nRounds = -2;
             LogPrint("obfuscation", "GetInputObfuscationRounds UPDATED   %s %3d %3d\n", hash.ToString(), nout, mDenomWtxes[hash].vout[nout].nRounds);
@@ -1107,7 +1107,7 @@ int CWallet::GetRealInputObfuscationRounds(CTxIn in, int rounds) const
 
         bool fAllDenoms = true;
         BOOST_FOREACH (CTxOut out, wtx->vout) {
-            fAllDenoms = fAllDenoms && IsDenominatedAmount(out.nValue);
+            fAllDenoms = fAllDenoms && IsDenominatedAmount(pwalletMain->getCTxOutValue(*wtx, out));
         }
         // this one is denominated but there is another non-denominated output found in the same tx
         if (!fAllDenoms) {
@@ -1903,8 +1903,8 @@ bool less_then_denom(const COutput& out1, const COutput& out2)
     bool found2 = false;
     BOOST_FOREACH (CAmount d, obfuScationDenominations) // loop through predefined denoms
     {
-        if (pcoin1->vout[out1.i].nValue == d) found1 = true;
-        if (pcoin2->vout[out2.i].nValue == d) found2 = true;
+        if (pwalletMain->getCTxOutValue(*pcoin1, pcoin1->vout[out1.i]) == d) found1 = true;
+        if (pwalletMain->getCTxOutValue(*pcoin2, pcoin2->vout[out2.i]) == d) found2 = true;
     }
     return (!found1 && found2);
 }
@@ -2319,8 +2319,8 @@ bool CWallet::SelectCoinsDark(CAmount nValueMin, CAmount nValueMax, std::vector<
         if (outValue < CENT) continue;
         //do not allow collaterals to be selected
 
-        if (IsCollateralAmount(out.tx->vout[out.i].nValue)) continue;
-        if (fMasterNode && out.tx->vout[out.i].nValue == 1000000 * COIN) continue; //masternode input
+        if (IsCollateralAmount(getCTxOutValue(*out.tx, out.tx->vout[out.i]))) continue;
+        if (fMasterNode && getCTxOutValue(*out.tx, out.tx->vout[out.i]) == 1000000 * COIN) continue; //masternode input
 
         if (nValueRet + outValue <= nValueMax) {
             CTxIn vin = CTxIn(out.tx->GetHash(), out.i);
@@ -3822,7 +3822,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
 					CTxOut outStaking(0, scriptPubKeyOutStaking);
 					std::copy(txPubStaking.begin(), txPubStaking.end(), std::back_inserter(outStaking.txPub));
 					txNew.vout.push_back(outStaking);
-
+				    //the staking process for the moment only accept one UTXO as staking coin
 					if (fDebug && GetBoolArg("-printcoinstake", false))
 						LogPrintf("CreateCoinStake : added kernel type=%d\n", whichType);
 					fKernelFound = true;
@@ -3888,14 +3888,12 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
                 CreateCommitment(zeroBlind, txNew.vout[i].nValue, txNew.vout[i].commitment);
             }
 
-            // Sign
+            // ECDSA sign
             int nIn = 0;
             BOOST_FOREACH (const CWalletTx* pcoin, vwtxPrev) {
             	if (!SignSignature(*this, *pcoin, txNew, nIn++))
             		return error("CreateCoinStake : failed to sign coinstake");
             }
-            //add generated private key to keystore
-            IsTransactionForMe(txNew);
             // Successfully generated coinstake
             nLastStakeSetUpdate = 0; //this will trigger stake set to repopulate next round
             return true;

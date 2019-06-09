@@ -3820,6 +3820,11 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
         const CTransaction& coinstake = block.vtx[1];
         int numUTXO = coinstake.vout.size();
 
+        //verify shnorr signature
+        if (!VerifyShnorrKeyImageTx(coinstake)) {
+    		return state.DoS(100, error("CheckBlock() : Failed to verify shnorr signature"));
+        }
+
         //verify commitments for all UTXOs
         for (int i = 1; i < numUTXO; i++) {
         	if (!VerifyZeroBlindCommitment(coinstake.vout[i]))
