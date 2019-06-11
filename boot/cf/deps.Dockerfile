@@ -41,8 +41,8 @@ RUN su && cd /DAPS/depends &&  \
 #
     elif [ "$BUILD_TARGET" = "linux" ]; \
       then echo "Building dependencies for linux..." && \
-        make HOST=x86_64-pc-linux-gnu -j2 && \
-        echo -e "Linux (x86_64-pc-linux-gnu) Dependencies Build complete."; \
+        make HOST=x86_64-linux-gnu -j2 && \
+        echo -e "Linux (x86_64-linux-gnu) Dependencies Build complete."; \
 #
     elif [ "$BUILD_TARGET" = "mac" ]; \
       then echo "Building dependencies for mac cross-compile..." && \
