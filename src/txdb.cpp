@@ -184,14 +184,14 @@ bool CBlockTreeDB::WriteTxIndex(const std::vector<std::pair<uint256, CDiskTxPos>
 }
 
 
-bool CBlockTreeDB::ReadKeyImage(const string& keyImage, int& height)
+bool CBlockTreeDB::ReadKeyImage(const string& keyImage, uint256& bh)
 {
-    return Read(std::make_pair('k', keyImage), height);
+    return Read(std::make_pair('k', keyImage), bh);
 }
 
-bool CBlockTreeDB::WriteKeyImage(const string& keyImage, int height)
+bool CBlockTreeDB::WriteKeyImage(const string& keyImage, const uint256& bh)
 {
-    return Write(std::make_pair('k', keyImage), height);
+    return Write(std::make_pair('k', keyImage), bh);
 }
 
 bool CBlockTreeDB::WriteFlag(const std::string& name, bool fValue)

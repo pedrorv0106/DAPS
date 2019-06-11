@@ -40,9 +40,9 @@ RUN su && cd /DAPS/depends &&  \
         echo -e "Windows x86 (i686-w64-mingw32) Dependencies Build complete."; \
 #
     elif [ "$BUILD_TARGET" = "linux" ]; \
-      then echo "Building dependencies for Linux (x86_64-pc-linux-gnu)..." && \
-        make HOST=x86_64-pc-linux-gnu -j2 && \
-        echo -e "Linux (x86_64-pc-linux-gnu) Dependencies Build complete."; \
+      then echo "Building dependencies for Linux (x86_64-linux-gnu)..." && \
+        make HOST=x86_64-linux-gnu -j2 && \
+        echo -e "Linux (x86_64-linux-gnu) Dependencies Build complete."; \
 #
 	elif [ "$BUILD_TARGET" = "linuxarm64" ]; \
       then echo "Building dependencies for Linux ARM 64-bit (aarch64-linux-gnu)..." && \

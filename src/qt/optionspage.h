@@ -62,6 +62,8 @@ private:
     QMenu* contextMenu;
     virtual void resizeEvent(QResizeEvent* event);
     CAmount getValidatedAmount();
+    void disable2FA();
+    void enable2FA();
 
 private slots:
     void validateNewPass();
@@ -70,7 +72,13 @@ private slots:
     void on_pushButtonPassword_clicked();
     void on_pushButtonBackup_clicked();
     void changeTheme(ToggleButton* widget);
+    void on_Enable2FA(ToggleButton* widget);
     void on_pushButtonSave_clicked();
+    void qrDialogIsFinished(int result);
+    void dialogIsFinished(int result);
+    void on_day();
+    void on_week();
+    void on_month();
 };
 
 #endif // BITCOIN_QT_OPTIONSPAGE_H
