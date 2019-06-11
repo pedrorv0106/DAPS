@@ -2629,6 +2629,10 @@ bool RecalculateDAPSSupply(int nHeightStart) {
         			GetTransaction(tx.vin[i].prevout.hash, txPrev, hashBlock, true);
         			const CTxOut& out = txPrev.vout[tx.vin[i].prevout.n];
         			if (out.nValue >0) {
+        				//UTXO created by coinbase/coin audit/coinstake transaction
+        				if (!VerifyZeroBlindCommitment(out)) {
+        					throw runtime_error("Commitment for coinstake not correct: failed to verify blind commitment");
+        				}
         				nValueIn += out.nValue;
         			} else {
         				uint256 val = out.maskValue.amount;
