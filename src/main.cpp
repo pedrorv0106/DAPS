@@ -274,23 +274,35 @@ CAmount GetValueIn(CCoinsViewCache view, const CTransaction& tx)
     return nResult;
 }
 
-bool IsKeyImageSpend1(const std::string& kiHex, int nHeight) {
-    int kd = -1;
-    if (!pblocktree->ReadKeyImage(kiHex, kd)) {
+bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
+	if (fReindex || fImporting) return false;
+    uint256 bh;
+    if (!pblocktree->ReadKeyImage(kiHex, bh)) {
         //not spent yet because not found in database
         return false;
     }
-    LogPrintf("\n%s: kd = %d\n", __func__, kd);
-    if (kd == -1) {
+    if (bh.IsNull()) {
         return false;
     }
-    if (IsKeyImageSpend2(kiHex, kd, nHeight)) {
-        if (pwalletMain) {
-            if (pwalletMain->keyImagesSpends.count(kiHex) == 1) {
-                pwalletMain->keyImagesSpends[kiHex] = 1;
-            };
+
+    if (!bh.IsNull() && againsHash.IsNull()) return true;//receive from mempool
+
+    CBlockIndex* bhIdx = mapBlockIndex[bh];
+    CBlockIndex* against = mapBlockIndex[againsHash];
+
+    LogPrintf("\n%s: Checking key image spent = %s, bh = %s, agains = %s\n", __func__, kiHex, bh.GetHex(), againsHash.GetHex());
+
+    if (bhIdx != NULL && against != NULL) {
+        if (bhIdx->nHeight != against->nHeight && chainActive.Height() >= against->nHeight) {
+        	if ((chainActive[against->nHeight]->GetBlockHash() == againsHash) && IsKeyImageSpend2(kiHex, bh)) {
+        		if (pwalletMain) {
+        			if (pwalletMain->keyImagesSpends.count(kiHex) == 1) {
+        				pwalletMain->keyImagesSpends[kiHex] = 1;
+        			};
+        		}
+                return true;
+        	}
         }
-        return true;
     }
     if (pwalletMain) {
         pwalletMain->keyImagesSpends[kiHex] = false;
@@ -497,7 +509,7 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 		}
 
 		//compute C
-		unsigned char tempForHash[2 * (MAX_VIN + 1) * 33];
+		unsigned char tempForHash[2 * (MAX_VIN + 1) * 33 + 32];
 		unsigned char* tempForHashPtr = tempForHash;
 		for (size_t i = 0; i < tx.vin.size() + 1; i++) {
 			memcpy(tempForHashPtr, &(LIJ[i][j][0]), 33);
@@ -505,36 +517,48 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 			memcpy(tempForHashPtr, &(RIJ[i][j][0]), 33);
 			tempForHashPtr += 33;
 		}
-		uint256 temppi1 = Hash(tempForHash, tempForHash + 2 * (tx.vin.size() + 1) * 33);
+		uint256 ctsHash = GetTxSignatureHash(tx);
+		memcpy(tempForHashPtr, ctsHash.begin(), 32);
+
+		uint256 temppi1 = Hash(tempForHash, tempForHash + 2 * (tx.vin.size() + 1) * 33 + 32);
 		memcpy(C, temppi1.begin(), 32);
 	}
 
 	return HexStr(tx.c.begin(), tx.c.end()) == HexStr(C, C + 32);
 }
 
-bool IsKeyImageSpend2(const std::string& kiHex, int kd, int nHeight) {
-    if (kd < nHeight) {
-        CBlock block;
-        CBlockIndex* pblockindex = chainActive[kd];
+bool IsKeyImageSpend2(const std::string& kiHex, const uint256& bh) {
+	CBlock block;
+	CBlockIndex* pblockindex = mapBlockIndex[bh];
 
-        if (ReadBlockFromDisk(block, pblockindex)) {
-            for (size_t i = 0; i < block.vtx.size(); i++) {
-                for (size_t j = 0; j < block.vtx[i].vin.size(); j++) {
-                    if (block.vtx[i].vin[j].keyImage.GetHex() == kiHex) {
-                        LogPrintf("%s: keyimage spent in nHeight=%d", __func__, kd);
-                        if (pwalletMain) {
-                            pwalletMain->keyImagesSpends[kiHex] = true;
-                        }
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    return false;
+	if (pblockindex && ReadBlockFromDisk(block, pblockindex)) {
+		for (size_t i = 0; i < block.vtx.size(); i++) {
+			for (size_t j = 0; j < block.vtx[i].vin.size(); j++) {
+				if (block.vtx[i].vin[j].keyImage.GetHex() == kiHex) {
+					LogPrintf("%s: keyimage %s spent in block hash %s", __func__, kiHex, bh.GetHex());
+					if (pwalletMain) {
+						pwalletMain->keyImagesSpends[kiHex] = true;
+					}
+					return true;
+				}
+			}
+		}
+	}
+	return false;
 }
+
+uint256 GetTxSignatureHash(const CTransaction& tx)
+{
+	CTransactionSignature cts(tx);
+	return cts.GetHash();
+}
+
+uint256 GetTxInSignatureHash(const CTxIn& txin)
+{
+	CTxInShortDigest cts(txin);
+	return cts.GetHash();
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -1082,7 +1106,14 @@ bool AreInputsStandard(const CTransaction &tx, const CCoinsViewCache &mapInputs)
         return true; // coinbase has no inputs
 
     for (unsigned int i = 0; i < tx.vin.size(); i++) {
-        const CTxOut &prev = mapInputs.GetOutputFor(tx.vin[i]);
+        CTransaction txPrev;
+        uint256 hashBlockPrev;
+        if (!GetTransaction(tx.vin[i].prevout.hash, txPrev, hashBlockPrev)) {
+        	LogPrintf("GetCoinAge: failed to find vin transaction \n");
+        	continue; // previous transaction not in main chain
+        }
+
+        const CTxOut& prev = txPrev.vout[tx.vin[i].prevout.n];
 
         vector <vector<unsigned char>> vSolutions;
         txnouttype whichType;
@@ -1151,13 +1182,7 @@ unsigned int GetP2SHSigOpCount(const CTransaction &tx, const CCoinsViewCache &in
     if (tx.IsCoinBase())
         return 0;
 
-    unsigned int nSigOps = 0;
-    for (unsigned int i = 0; i < tx.vin.size(); i++) {
-        const CTxOut &prevout = inputs.GetOutputFor(tx.vin[i]);
-        if (prevout.scriptPubKey.IsPayToScriptHash())
-            nSigOps += prevout.scriptPubKey.GetSigOpCount(tx.vin[i].scriptSig);
-    }
-    return nSigOps;
+    return 0;
 }
 
 int GetInputAge(CTxIn &vin) {
@@ -1280,6 +1305,63 @@ bool IsSerialInBlockchain(const CBigNum &bnSerial, int &nHeightTx) {
     return inChain;
 }
 
+bool VerifyShnorrKeyImageTxIn(const CTxIn& txin, uint256 ctsHash)
+{
+	COutPoint prevout = txin.prevout;
+	CTransaction prev;
+	uint256 bh;
+	if (!GetTransaction(prevout.hash, prev, bh, true)) {
+		return false;
+	}
+	uint256 s(txin.s);
+	unsigned char S[33];
+	CPubKey P;
+	ExtractPubKey(prev.vout[prevout.n].scriptPubKey, P);
+	PointHashingSuccessively(P, s.begin(), S);
+	CPubKey R(txin.R.begin(), txin.R.end());
+
+	//compute H(R)I = eI
+	unsigned char buff[33 + 32];
+	memcpy(buff, R.begin(), 33);
+	memcpy(buff + 33, ctsHash.begin(), 32);
+	uint256 e = Hash(buff, buff + 65);
+	unsigned char eI[33];
+	memcpy(eI, txin.keyImage.begin(), 33);
+	if (!secp256k1_ec_pubkey_tweak_mul(eI, 33, e.begin())) return false;
+
+	secp256k1_pedersen_commitment R_commitment;
+	secp256k1_pedersen_serialized_pubkey_to_commitment(R.begin(), 33, &R_commitment);
+
+	//convert CI*I into commitment
+	secp256k1_pedersen_commitment eI_commitment;
+	secp256k1_pedersen_serialized_pubkey_to_commitment(eI, 33, &eI_commitment);
+
+	const secp256k1_pedersen_commitment *twoElements[2];
+	twoElements[0] = &R_commitment;
+	twoElements[1] = &eI_commitment;
+	secp256k1_pedersen_commitment sum;
+	if (!secp256k1_pedersen_commitment_sum_pos(GetContext(), twoElements, 2, &sum))
+		throw runtime_error("failed to compute secp256k1_pedersen_commitment_sum_pos");
+	size_t tempLength;
+	unsigned char recomputed[33];
+	if (!secp256k1_pedersen_commitment_to_serialized_pubkey(&sum, recomputed, &tempLength))
+		throw runtime_error("failed to serialize pedersen commitment");
+
+	for (int i = 0; i < 33; i++)
+		if (S[i] != recomputed[i]) return false;
+	return true;
+}
+
+bool VerifyShnorrKeyImageTx(const CTransaction& tx)
+{
+
+	//check if a transaction is staking or spending collateral
+	//this assumes that the transaction is already checked for either a staking transaction or transactions spending only UTXOs of 1M DAPS
+	if (!tx.IsCoinStake()) return true;
+	uint256 cts = GetTxInSignatureHash(tx.vin[0]);
+	return VerifyShnorrKeyImageTxIn(tx.vin[0], cts);
+}
+
 bool CheckTransaction(const CTransaction &tx, bool fzcActive, bool fRejectBadUTXO, CValidationState &state) {
     // Basic checks that don't depend on any context
     if (tx.vin.empty())
@@ -1387,27 +1469,51 @@ CAmount GetMinRelayFee(const CTransaction &tx, unsigned int nBytes, bool fAllowF
 
 bool CheckHaveInputs(const CCoinsViewCache& view, const CTransaction& tx)
 {
+	CBlockIndex *pindexPrev = mapBlockIndex.find(view.GetBestBlock())->second;
+	int nSpendHeight = pindexPrev->nHeight + 1;
 	if (!tx.IsCoinBase()) {
 		for (unsigned int i = 0; i < tx.vin.size(); i++) {
 			//check output and decoys
 			std::vector<COutPoint> alldecoys = tx.vin[i].decoys;
 
 			alldecoys.push_back(tx.vin[i].prevout);
-			size_t decoysSize = alldecoys.size();
 			for (size_t j = 0; j < alldecoys.size(); j++) {
-				const CCoins* coins = view.AccessCoins(alldecoys[j].hash);
-
-				if (!coins || !coins->IsAvailable(alldecoys[j].n)) {
-					CTransaction prev;
-					uint256 bh;
-					if (!GetTransaction(alldecoys[j].hash, prev, bh, true)) {
-						return false;
-					}
-					//UTXO with 1M DAPS can only be consumed in a transaction with that single UTXO
-					if (decoysSize > 1 && prev.vout[alldecoys[j].n].nValue == 1000000 * COIN) {
-						return false;
-					}
+				CTransaction prev;
+				uint256 bh;
+				if (!GetTransaction(alldecoys[j].hash, prev, bh, true)) {
+					return false;
 				}
+
+				//Cam: 07/06/2019 Remove this condition as colateral will be cheated as a normal tx
+				//UTXO with 1M DAPS can only be consumed in a transaction with that single UTXO
+				/*if (decoysSize > 1 && prev.vout[alldecoys[j].n].nValue == 1000000 * COIN) {
+					return false;
+				}
+
+				if (prev.vout[alldecoys[j].n].nValue == 1000000 * COIN) {
+					if (!VerifyKeyImages(tx)) {
+						LogPrintf("\nFailed to verify correctness of key image of collateralization spend\n");
+						return false;
+					}
+				}*/
+
+				if (mapBlockIndex.count(bh) < 1) return false;
+				if (prev.IsCoinStake() || prev.IsCoinAudit() || prev.IsCoinBase()) {
+					if (nSpendHeight - mapBlockIndex[bh]->nHeight < Params().COINBASE_MATURITY()) return false;
+				}
+			}
+			if (!tx.IsCoinStake()) {
+				if (tx.vin[i].decoys.size() != tx.vin[0].decoys.size()) {
+					LogPrintf("\nTransaction does not have the same ring size for inputs\n");
+					return false;
+				}
+			}
+		}
+
+		if (tx.IsCoinStake()) {
+			if (!VerifyShnorrKeyImageTx(tx)) {
+				LogPrintf("\nFailed to verify correctness of key image of staking transaction\n");
+				return false;
 			}
 		}
 	}
@@ -1483,7 +1589,7 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
             // Check key images not duplicated with what in db
             for (const CTxIn& txin: tx.vin) {
                 const CKeyImage& keyImage = txin.keyImage;
-                if (IsKeyImageSpend1(keyImage.GetHex(), chainActive.Tip()->nHeight)) {
+                if (IsKeyImageSpend1(keyImage.GetHex(), uint256())) {
                     return state.Invalid(error("AcceptToMemoryPool : key image already spent"),
                                          REJECT_DUPLICATE, "bad-txns-inputs-spent");
                 }
@@ -2087,7 +2193,7 @@ bool VerifyDerivedAddress(const CTxOut& out, std::string stealth) {
 	if (foundationTxPub != origin) return false;
 	CWallet::ComputeStealthDestination(foundationTxPriv, pubView, pubSpend, foundationalGenPub);
 	CScript foundationalScript = GetScriptForDestination(foundationalGenPub);
-	return foundationalScript != out.scriptPubKey;
+	return foundationalScript == out.scriptPubKey;
 }
 
 void CheckForkWarningConditions() {
@@ -2300,19 +2406,26 @@ bool CheckInputs(const CTransaction &tx, CValidationState &state, const CCoinsVi
         // This is also true for mempool checks.
         CBlockIndex *pindexPrev = mapBlockIndex.find(inputs.GetBestBlock())->second;
         int nSpendHeight = pindexPrev->nHeight + 1;
-        for (unsigned int i = 0; i < tx.vin.size(); i++) {
-            const COutPoint &prevout = tx.vin[i].prevout;
-            const CCoins *coins = inputs.AccessCoins(prevout.hash);
-            assert(coins);
+        if (tx.IsCoinStake()) {
+			for (unsigned int i = 0; i < tx.vin.size(); i++) {
+				const COutPoint &prevout = tx.vin[i].prevout;
+				const CCoins *coins = inputs.AccessCoins(prevout.hash);
+				if (coins == NULL) {
+					return state.Invalid(
+							error("CheckInputs() : tried to spend coinbase at depth %d, coinstake=%d",
+									nSpendHeight - coins->nHeight, coins->IsCoinStake()),
+									REJECT_INVALID, "bad-txns-premature-spend-of-coinbase");
+				}
 
-            // If prev is coinbase, check that it's matured
-            if (coins->IsCoinBase() || coins->IsCoinStake()) {
-                if (nSpendHeight - coins->nHeight < Params().COINBASE_MATURITY())
-                    return state.Invalid(
-                            error("CheckInputs() : tried to spend coinbase at depth %d, coinstake=%d",
-                                  nSpendHeight - coins->nHeight, coins->IsCoinStake()),
-                            REJECT_INVALID, "bad-txns-premature-spend-of-coinbase");
-            }
+				// If prev is coinbase, check that it's matured
+				if (coins->IsCoinBase() || coins->IsCoinStake()) {
+					if (nSpendHeight - coins->nHeight < Params().COINBASE_MATURITY())
+						return state.Invalid(
+								error("CheckInputs() : tried to spend coinbase at depth %d, coinstake=%d",
+									  nSpendHeight - coins->nHeight, coins->IsCoinStake()),
+								REJECT_INVALID, "bad-txns-premature-spend-of-coinbase");
+				}
+			}
         }
 
         // The first loop above does all the inexpensive checks.
@@ -2416,7 +2529,7 @@ DisconnectBlock(CBlock &block, CValidationState &state, CBlockIndex *pindex, CCo
         }
 
         // restore inputs
-        if (!tx.IsCoinBase() && tx.IsCoinBase()) { // not coinbases because they dont have traditional inputs
+        if (!tx.IsCoinBase() && tx.IsCoinStake()) { // not coinbases because they dont have traditional inputs
             const CTxUndo &txundo = blockUndo.vtxundo[i - 1];
             if (txundo.vprevout.size() != tx.vin.size())
                 return error(
@@ -2664,16 +2777,16 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
         	}
 
             // Check that the inputs are not marked as invalid/fraudulent
+            uint256 bh = pindex->GetBlockHash();
             for (CTxIn in : tx.vin) {
                 const CKeyImage& keyImage = in.keyImage;
                 std::string kh = keyImage.GetHex();
-                if (IsKeyImageSpend1(kh, pindex->nHeight)) {
+                if (IsKeyImageSpend1(kh, bh)) {
                 	//remove transaction from the pool?
                     return state.Invalid(error("ConnectBlock() : key image already spent"),
                                          REJECT_DUPLICATE, "bad-txns-inputs-spent");
                 }
-                int kd = pindex->nHeight;
-                pblocktree->WriteKeyImage(keyImage.GetHex(), kd);
+                pblocktree->WriteKeyImage(keyImage.GetHex(), bh);
                 if (pwalletMain != NULL) {
                     if (pwalletMain->GetDebit(in, ISMINE_ALL)) {
                         pwalletMain->keyImagesSpends[keyImage.GetHex()] = true;
@@ -3706,6 +3819,11 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
         //check foundation wallet address is receiving 50 DAPS
         const CTransaction& coinstake = block.vtx[1];
         int numUTXO = coinstake.vout.size();
+
+        //verify shnorr signature
+        if (!VerifyShnorrKeyImageTx(coinstake)) {
+    		return state.DoS(100, error("CheckBlock() : Failed to verify shnorr signature"));
+        }
 
         //verify commitments for all UTXOs
         for (int i = 1; i < numUTXO; i++) {

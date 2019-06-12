@@ -155,7 +155,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
                     const CTxOut& txout = wtx.vout[nOut];
                     sub.idx = parts.size();
 
-                    if (wallet->IsCollateralAmount(txout.nValue)) sub.type = TransactionRecord::ObfuscationMakeCollaterals;
+                    if (wallet->IsCollateralAmount(wallet->getCTxOutValue(wtx, txout))) sub.type = TransactionRecord::ObfuscationMakeCollaterals;
                     if (nDebit - wtx.GetValueOut() == OBFUSCATION_COLLATERAL) sub.type = TransactionRecord::ObfuscationCollateralPayment;
                 }
                 CTxDestination address;
@@ -205,7 +205,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
                     sub.type = TransactionRecord::Obfuscated;
                 }
 
-                CAmount nValue = txout.nValue;
+                CAmount nValue = wallet->getCTxOutValue(wtx, txout);
                 /* Add fee to first output */
                 if (nTxFee > 0) {
                     nValue += nTxFee;

@@ -256,7 +256,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
             // Check key images not duplicated with what in db
             for (const CTxIn& txin: tx.vin) {
             	const CKeyImage& keyImage = txin.keyImage;
-            	if (IsKeyImageSpend1(keyImage.GetHex(), chainActive.Tip()->nHeight + 1)) {
+            	if (IsKeyImageSpend1(keyImage.GetHex(), uint256())) {
             		fKeyImageCheck = false;
             		break;
             	}
@@ -466,6 +466,19 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
                 LogPrintf("\n%s: pos unable to create commitment to 0\n", __func__);
                 return NULL;
             }
+
+            //Shnorr sign
+            if (!pwalletMain->MakeShnorrSignature(pblock->vtx[1])) {
+            	LogPrintf("\n%s : failed to make Shnorr signature\n", __func__);
+            	return NULL;
+            }
+
+            //Test verify shnorr signature
+            if (!VerifyShnorrKeyImageTx(pblock->vtx[1])) {
+                LogPrintf("\n%s: Failed to verify shnorr key image\n", __func__);
+            	return NULL;
+            }
+            pwalletMain->IsTransactionForMe(pblock->vtx[1]);
         }
 
         // Fill in header
@@ -687,7 +700,7 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake, MineType mineType)
                 continue;
             }
 
-            while (chainActive.Tip()->nTime < 1471482000 || vNodes.empty() || pwallet->IsLocked() || !fMintableCoins /*|| nReserveBalance >= pwallet->GetBalance() */|| !masternodeSync.IsSynced()) {
+            while (chainActive.Tip()->nTime < 1471482000 || vNodes.empty() || pwallet->IsLocked() || !fMintableCoins || nReserveBalance >= pwallet->GetBalance() || !masternodeSync.IsSynced()) {
                 nLastCoinStakeSearchInterval = 0;
                 MilliSleep(5000);
                 fMintableCoins = pwallet->MintableCoins();

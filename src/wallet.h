@@ -394,8 +394,8 @@ public:
         return nWalletMaxVersion >= wf;
     }
 
-    bool generate_key_image_helper(const CPubKey& pub, CKeyImage& img) const;
-    bool generate_key_image_helper(const CScript& scriptKey, CKeyImage& img) const;
+    bool generateKeyImage(const CPubKey& pub, CKeyImage& img) const;
+    bool generateKeyImage(const CScript& scriptKey, CKeyImage& img) const;
 
     void AvailableCoins(std::vector<COutput>& vCoins, bool fOnlyConfirmed = true, const CCoinControl* coinControl = NULL, bool fIncludeZeroValue = false, AvailableCoinsType nCoinType = ALL_COINS, bool fUseIX = false);
     std::map<CBitcoinAddress, std::vector<COutput> > AvailableCoinsByAddress(bool fConfirmed = true, CAmount maxCoinValue = 0);
@@ -611,8 +611,8 @@ public:
         CAmount nDebit = 0;
         BOOST_FOREACH (const CTxIn& txin, tx.vin) {
             nDebit += GetDebit(txin, filter);
-            if (!MoneyRange(nDebit))
-                throw std::runtime_error("CWallet::GetDebit() : value out of range");
+            /*if (!MoneyRange(nDebit))
+                throw std::runtime_error("CWallet::GetDebit() : value out of range");*/
         }
         return nDebit;
     }
@@ -732,13 +732,16 @@ public:
     static bool CreateCommitmentWithZeroBlind(const CAmount val, unsigned char* pBlind, std::vector<unsigned char>& commitment);
     bool WriteStakingStatus(bool status);
     bool ReadStakingStatus();
+    bool MakeShnorrSignature(CTransaction&);
+    bool MakeShnorrSignatureTxIn(CTxIn& txin, uint256);
+    bool computeSharedSec(const CTransaction& tx, const CTxOut& out, CPubKey& sharedSec) const;
 private:
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
     void createMasterKey() const;
     bool generateBulletProofAggregate(CTransaction& tx);
-    bool generateRingSignature(CTransaction& tx, int& myIndex, int ringSize);
-    bool computeSharedSec(const CTransaction& tx, const CTxOut& out, CPubKey& sharedSec) const;
+    bool selectDecoysAndRealIndex(CTransaction& tx, int& myIndex, int ringSize);
+    bool makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFailReason);
     int walletIdxCache = 0;
     bool isMatchMyKeyImage(const CKeyImage& ki, const COutPoint& out);
     void ScanWalletKeyImages();
@@ -1167,7 +1170,7 @@ public:
             const CTxIn vin = CTxIn(hashTx, i);
 
             if (pwallet->IsSpent(hashTx, i) || pwallet->IsLockedCoin(hashTx, i)) continue;
-            if (fMasterNode && vout[i].nValue == 1000000 * COIN) continue; // do not count MN-like outputs
+            if (fMasterNode && pwallet->getCTxOutValue(*this, vout[i]) == 1000000 * COIN) continue; // do not count MN-like outputs
         }
 
         nAnonymizableCreditCached = nCredit;
@@ -1215,7 +1218,7 @@ public:
             const CTxOut& txout = vout[i];
 
             if (pwallet->IsSpent(hashTx, i) || pwallet->IsLockedCoin(hashTx, i)) continue;
-            if (fMasterNode && vout[i].nValue == 1000000 * COIN) continue; // do not count MN-like outputs
+            if (fMasterNode && pwallet->getCTxOutValue(*this, vout[i]) == 1000000 * COIN) continue; // do not count MN-like outputs
 
             nCredit += pwallet->GetCredit(*this, txout, ISMINE_SPENDABLE);
             if (!MoneyRange(nCredit))
@@ -1249,7 +1252,7 @@ public:
             }
 
             // Add masternode collaterals which are handled likc locked coins
-            if (fMasterNode && vout[i].nValue == 1000000 * COIN) {
+            if (fMasterNode && pwallet->getCTxOutValue(*this, vout[i]) == 1000000 * COIN) {
                 nCredit += pwallet->GetCredit(*this, txout, ISMINE_SPENDABLE);
             }
 

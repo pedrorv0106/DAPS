@@ -10,6 +10,7 @@
 #include <QDialog>
 #include <QString>
 #include <QSizeGrip>
+#include <QSettings>
 
 static const int MAX_SEND_POPUP_ENTRIES = 10;
 
@@ -47,8 +48,15 @@ private:
     ClientModel* clientModel;
     WalletModel* model;
     bool fNewRecipientAllowed;
+    QString send_address;
+    QSettings settings;
+    CAmount send_amount;
 
+private:
+    void sendTx();
+    
 private slots:
+    void dialogIsFinished(int result);
     void on_sendButton_clicked();
     void updateRingSize();
     void setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, 

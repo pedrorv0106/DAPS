@@ -37,20 +37,9 @@ bool CMasternodeSync::IsBlockchainSynced()
     // if the last call to this function was more than 60 minutes ago (client was in sleep mode) reset the sync process
     if (GetTime() - lastProcess > 60 * 60) {
         Reset();
+        fBlockchainSynced = false;
     }
     lastProcess = GetTime();
-
-    if (!fBlockchainSynced && vNodes.size() >= 1){
-    	int highestCount = 0;
-    	for (CNode* node : vNodes)
-    		if (node->nStartingHeight>highestCount)
-    			highestCount = node->nStartingHeight;
-    	if (highestCount > 550){
-    		if (highestCount <= chainActive.Height()) {
-    			fBlockchainSynced = true;
-    		}
-    	}
-    }
 
     if (fBlockchainSynced) return true;
 
