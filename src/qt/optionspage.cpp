@@ -308,7 +308,7 @@ void OptionsPage::changeTheme(ToggleButton* widget)
     if (widget->getState())
         settings.setValue("theme", "dark");
     else settings.setValue("theme", "light");
-    // GUIUtil::refreshStyleSheet();
+    GUIUtil::refreshStyleSheet();
 }
 
 void OptionsPage::disable2FA() {
