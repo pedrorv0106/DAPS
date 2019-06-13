@@ -2041,13 +2041,44 @@ double ConvertBitsToDouble(unsigned int nBits) {
     return dDiff;
 }
 
+CAmount PoSBlockReward() {
+	return 900 * COIN;
+}
+
+CAmount TeamRewards(int nHeight)
+{
+	if (!chainActive[nHeight]->IsProofOfAudit()) return 0;
+	CBlockIndex* lastPoABlock = chainActive[nHeight];
+	if (lastPoABlock->hashPrevPoABlock.IsNull()) {
+		//pay daps team after the first PoA block
+		return (nHeight - Params().LAST_POW_BLOCK() - 1 + 1 /*+1 for the being created PoS block*/) * 50 * COIN;
+	}
+
+	//loop back to find the PoA block right after which the daps team is paid
+	uint256 lastPoAHash = lastPoABlock->hashPrevPoABlock;
+	CAmount ret = 0;
+	int numPoABlocks = 1;
+	while (!lastPoAHash.IsNull()) {
+		if (numPoABlocks != 0 && numPoABlocks % Params().TEAM_REWARD_FREQUENCY == 0) break;
+		CBlockIndex* p = mapBlockIndex[p];
+		lastPoAHash = p->hashPrevPoABlock;
+		numPoABlocks++;
+	}
+
+	if (!lastPoAHash.IsNull() && numPoABlocks != 0 && numPoABlocks % 24 == 0) {
+		ret = (nHeight - (mapBlockIndex[p]->nHeight + 1) - numPoABlocks + 1 /*+1 for the being created PoS block*/) * 50 * COIN;
+	}
+	return ret;
+}
+
 int64_t GetBlockValue(int nHeight) {
     int64_t nSubsidy = 0;
 
 	if (nHeight < Params().nLastPOWBlock) {
 		nSubsidy = 300000000 * COIN;
 	} else {
-        nSubsidy = 950 * COIN;
+        nSubsidy = PoSBlockReward();
+        nSubsidy += TeamRewards(nHeight);
     }
 
     return nSubsidy;
@@ -2130,7 +2161,7 @@ CAmount GetSeeSaw(const CAmount& blockValue, int nMasternodeCount, int nHeight)
 int64_t GetMasternodePayment(int nHeight, int64_t blockValue, int nMasternodeCount) {
     int64_t ret = 0;
 
-    int64_t blockValueForSeeSaw = blockValue - 50 * COIN;
+    int64_t blockValueForSeeSaw = blockValue;
 
     if (Params().NetworkID() == CBaseChainParams::TESTNET) {
         if (nHeight < 200)
@@ -3835,17 +3866,30 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
         		return state.DoS(100, error("CheckBlock() : PoS rewards commitment not correct"));
         }
 
-        const CTxOut& foundationOut = coinstake.vout[numUTXO - 1];
-        if (foundationOut.nValue != 50 * COIN)
-        	return state.DoS(100, error("CheckBlock() : Incorrect amount PoS rewards for foundation"));
+        CAmount posBlockReward = PoSBlockReward();
+        int thisBlockHeight = mapBlockIndex[block.hashPrevBlock]->nHeight + 1; //avoid potential block disorder during download
+        CAmount blockValue = GetBlockValue(thisBlockHeight - 1);
+        if (blockValue > posBlockReward) {
+        	//numUTXO - 1 is team rewards, numUTXO - 2 is masternode reward
+        	const CTxOut& mnOut = coinstake.vout[numUTXO - 2];
+        	std::string mnsa(mnOut.masternodeStealthAddress.begin(), mnOut.masternodeStealthAddress.end());
+        	if (!VerifyDerivedAddress(mnOut, mnsa))
+        		return state.DoS(100, error("CheckBlock() : Incorrect derived address for masternode rewards"));
 
-        if (!VerifyDerivedAddress(foundationOut, FOUNDATION_WALLET))
-        	return state.DoS(100, error("CheckBlock() : Incorrect derived address PoS rewards for foundation"));
+        	CAmount teamReward = blockValue - posBlockReward;
+        	const CTxOut& foundationOut = coinstake.vout[numUTXO - 1];
+        	if (foundationOut.nValue != teamReward)
+        		return state.DoS(100, error("CheckBlock() : Incorrect amount PoS rewards for foundation, reward = %d while the correct reward = %d", foundationOut.nValue, teamReward));
 
-        const CTxOut& mnOut = coinstake.vout[numUTXO - 2];
-        std::string mnsa(mnOut.masternodeStealthAddress.begin(), mnOut.masternodeStealthAddress.end());
-        if (!VerifyDerivedAddress(mnOut, mnsa))
-                	return state.DoS(100, error("CheckBlock() : Incorrect derived address for masternode rewards"));
+        	if (!VerifyDerivedAddress(foundationOut, FOUNDATION_WALLET))
+        		return state.DoS(100, error("CheckBlock() : Incorrect derived address PoS rewards for foundation"));
+        } else {
+        	//there is no team rewards in this block
+        	const CTxOut& mnOut = coinstake.vout[numUTXO - 1];
+        	std::string mnsa(mnOut.masternodeStealthAddress.begin(), mnOut.masternodeStealthAddress.end());
+        	if (!VerifyDerivedAddress(mnOut, mnsa))
+        		return state.DoS(100, error("CheckBlock() : Incorrect derived address for masternode rewards"));
+        }
     }
 
     if (block.IsProofOfAudit() || block.IsProofOfWork()) {
