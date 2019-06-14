@@ -171,6 +171,16 @@ void OptionsPage::on_pushButtonPassword_clicked()
     ui->pushButtonPassword->repaint();
 }
 
+void OptionsPage::on_pushButtonPasswordClear_clicked()
+{
+    ui->lineEditOldPass->clear();
+    ui->lineEditNewPass->clear();
+    ui->lineEditNewPassRepeat->clear();
+    ui->lineEditOldPass->setStyleSheet(GUIUtil::loadStyleSheet());
+    ui->lineEditNewPass->setStyleSheet(GUIUtil::loadStyleSheet());
+    ui->lineEditNewPassRepeat->setStyleSheet(GUIUtil::loadStyleSheet());
+}
+
 void OptionsPage::on_pushButtonBackup_clicked(){
     if (model->backupWallet(QString("BackupWallet.dat"))) {
         ui->pushButtonBackup->setStyleSheet("border: 2px solid green");

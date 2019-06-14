@@ -44,10 +44,10 @@ public:
     void setModel(WalletModel* model);
     void setMapper();
     bool matchNewPasswords();
-	QString getStakingStatusError();
+    QString getStakingStatusError();
 
 public slots:
-	void on_EnableStaking(ToggleButton*);
+    void on_EnableStaking(ToggleButton*);
 
 protected:
     virtual void keyPressEvent(QKeyEvent* event);
@@ -70,6 +70,7 @@ private slots:
     void validateNewPassRepeat();
     void onOldPassChanged();
     void on_pushButtonPassword_clicked();
+    void on_pushButtonPasswordClear_clicked();
     void on_pushButtonBackup_clicked();
     void changeTheme(ToggleButton* widget);
     void on_Enable2FA(ToggleButton* widget);
