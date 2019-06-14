@@ -69,7 +69,7 @@
            <string>An optional message to attach to the payment request, which will be displayed when the request is opened.&lt;br&gt;Note: The message will not be sent with the payment over the DAPScoin network.</string>
           </property>
           <property name="placeholderText">
-           <string>Payment ID (optional)</string>
+           <string>Description (optional)</string>
           </property>
          </widget>
         </item>
@@ -79,7 +79,7 @@
            <string>An optional message to attach to the payment request, which will be displayed when the request is opened.&lt;br&gt;Note: The message will not be sent with the payment over the DAPScoin network.</string>
           </property>
           <property name="text">
-           <string>Payment ID:</string>
+           <string>Description:</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
