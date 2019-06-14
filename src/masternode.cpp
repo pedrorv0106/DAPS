@@ -210,7 +210,7 @@ void CMasternode::Check(bool forceCheck)
             TRY_LOCK(cs_main, lockMain);
             if (!lockMain) return;
 
-            if (IsKeyImageSpend1(vin.keyImage.GetHex(), uint256(0))) {
+            if (IsKeyImageSpend1(vin.keyImage.GetHex(), uint256())) {
                 activeState = MASTERNODE_VIN_SPENT;
                 return;
             }

@@ -535,12 +535,6 @@ bool CWallet::IsSpent(const uint256& hash, unsigned int n)
     const COutPoint outpoint(hash, n);
     std::string keyImageHex;
 
-    /*std::string outString = outpoint.hash.GetHex() + std::to_string(outpoint.n);
-    CKeyImage ki = outpointToKeyImages[outString];
-    if (IsKeyImageSpend1(ki.GetHex(), mapWallet[hash].hashBlock)) {
-    	return true;
-    }*/
-
     pair<TxSpends::const_iterator, TxSpends::const_iterator> range;
     range = mapTxSpends.equal_range(outpoint);
     for (TxSpends::const_iterator it = range.first; it != range.second; ++it) {
@@ -550,6 +544,12 @@ bool CWallet::IsSpent(const uint256& hash, unsigned int n)
             keyImagesSpends[keyImageHex] = true;
             return true; // Spent
         }
+    }
+
+    std::string outString = outpoint.hash.GetHex() + std::to_string(outpoint.n);
+    CKeyImage ki = outpointToKeyImages[outString];
+    if (IsKeyImageSpend1(ki.GetHex(), uint256())) {
+    	return true;
     }
 
     return false;
@@ -899,6 +899,7 @@ bool CWallet::AddToWallet(const CWalletTx& wtxIn, bool fFromLoadWallet)
 
         // Break debit/credit balance caches:
         wtx.MarkDirty();
+        LogPrintf("MarkDirty %s  %s%s\n", wtxIn.GetHash().ToString(), (fInsertedNew ? "new" : ""), (fUpdated ? "update" : ""));
 
         // Notify UI of new or updated transaction
         NotifyTransactionChanged(this, hash, fInsertedNew ? CT_NEW : CT_UPDATED);

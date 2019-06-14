@@ -1021,7 +1021,7 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
 
         CValidationState state;
 
-        bool fAcceptable = !IsKeyImageSpend1(vin.keyImage.GetHex(), uint256(0));
+        bool fAcceptable = !IsKeyImageSpend1(vin.keyImage.GetHex(), uint256());
 
         if (fAcceptable) {
             if (GetInputAge(vin) < MASTERNODE_MIN_CONFIRMATIONS) {
