@@ -126,6 +126,16 @@ void OptionsPage::on_pushButtonSave_clicked() {
     QMessageBox(QMessageBox::Information, tr("Information"), tr("Reserve balance " + BitcoinUnits::format(0, nReserveBalance).toUtf8() + " is successfully set!"), QMessageBox::Ok).exec();
 }
 
+void OptionsPage::on_pushButtonDisable_clicked() {
+    ui->lineEditWithhold->setText("0");
+    nReserveBalance = getValidatedAmount();
+
+    CWalletDB walletdb(pwalletMain->strWalletFile);
+    walletdb.WriteReserveAmount(nReserveBalance / COIN);
+
+    emit model->stakingStatusChanged(nLastCoinStakeSearchInterval);
+    QMessageBox(QMessageBox::Information, tr("Information"), tr("Reserve balance disabled!"), QMessageBox::Ok).exec();
+}
 
 void OptionsPage::keyPressEvent(QKeyEvent* event)
 {

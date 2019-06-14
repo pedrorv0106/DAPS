@@ -75,6 +75,7 @@ private slots:
     void changeTheme(ToggleButton* widget);
     void on_Enable2FA(ToggleButton* widget);
     void on_pushButtonSave_clicked();
+    void on_pushButtonDisable_clicked();
     void qrDialogIsFinished(int result);
     void dialogIsFinished(int result);
     void on_day();

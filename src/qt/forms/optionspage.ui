@@ -201,20 +201,31 @@
     <widget class="QLineEdit" name="lineEditWithhold"/>
    </item>
    <item>
-    <widget class="QPushButton" name="pushButtonSave">
-     <property name="enabled">
-      <bool>true</bool>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <property name="spacing">
+      <number>100</number>
      </property>
-     <property name="maximumSize">
-      <size>
-       <width>917</width>
-       <height>16777215</height>
-      </size>
+     <property name="leftMargin">
+      <number>0</number>
      </property>
-     <property name="text">
-      <string>Save</string>
-     </property>
-    </widget>
+     <item>
+      <widget class="QPushButton" name="pushButtonSave">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Save</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonDisable">
+       <property name="text">
+        <string>Disable</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="Line" name="line">
