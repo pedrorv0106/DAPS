@@ -275,7 +275,6 @@ CAmount GetValueIn(CCoinsViewCache view, const CTransaction& tx)
 }
 
 bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
-	//if (fReindex || fImporting) return false;
     uint256 bh;
     if (!pblocktree->ReadKeyImage(kiHex, bh)) {
         //not spent yet because not found in database
@@ -569,7 +568,6 @@ uint256 GetTxInSignatureHash(const CTxIn& txin)
 	CTxInShortDigest cts(txin);
 	return cts.GetHash();
 }
-
 
 //////////////////////////////////////////////////////////////////////////////
 //
