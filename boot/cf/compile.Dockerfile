@@ -19,14 +19,16 @@ RUN apt-get autoremove -y
 RUN cd /DAPS/ && mkdir -p /BUILD/ && \
 #
     if [ "$BUILD_TARGET" = "windowsx64" ]; \
-      then echo "Compiling for win64" && \
+      then echo "Compiling for Windows 64-bit (x86_64-w64-mingw32)..." && \
         if [ -d depends/chilkat/include ]; then mkdir -p depends/x86_64-w64-mingw32/include/chilkat-9.5.0; fi && \
         if [ -d depends/chilkat/include ]; then cp depends/chilkat/include/* depends/x86_64-w64-mingw32/include/chilkat-9.5.0; fi && \
         if [ -d depends/chilkat/lib ]; then cp depends/chilkat/lib/* depends/x86_64-w64-mingw32/lib; fi && \
         ./autogen.sh && \
         CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure --prefix=/ && \
         make -j2 && \
+        make deploy && \
         make install DESTDIR=/BUILD/ && \
+        cp *.exe /BUILD/bin/ && \
         cd assets/cpuminer-2.5.0 && \
         wget -N https://curl.haxx.se/download/curl-7.40.0.tar.gz && tar xzf curl-7.40.0.tar.gz && \
         wget -N https://sourceware.org/pub/pthreads-win32/pthreads-w32-2-9-1-release.tar.gz && tar xzf pthreads-w32-2-9-1-release.tar.gz && \
@@ -43,17 +45,19 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         cp pthread.h semaphore.h sched.h ${DEPS}/include && \
         cd .. && ./build.sh && \
         DESTDIR=/daps/bin/ && \
-        cp minerd.exe /BUILD/bin/dapscoin-poa-minerd.exe; \
+        if [ -f minerd.exe ]; then cp minerd.exe /BUILD/bin/dapscoin-poa-minerd.exe; fi; \
 #
     elif [ "$BUILD_TARGET" = "windowsx86" ]; \
-      then echo "Compiling for win86" && \
+      then echo "Compiling for Windows 32-bit (i686-w64-mingw32)..." && \
         if [ -d depends/chilkat/x86/include ]; then mkdir -p depends/i686-w64-mingw32/include/chilkat-9.5.0; fi && \
         if [ -d depends/chilkat/x86/include ]; then cp depends/chilkat/x86/include/* depends/i686-w64-mingw32/include/chilkat-9.5.0; fi && \
         if [ -d depends/chilkat/x86/lib ]; then cp depends/chilkat/x86/lib/* depends/i686-w64-mingw32/lib; fi && \
         ./autogen.sh && \
         CONFIG_SITE=$PWD/depends/i686-w64-mingw32/share/config.site ./configure --prefix=/ && \
         make -j2 && \
+        make deploy && \
         make install DESTDIR=/BUILD/ && \
+        cp *.exe /BUILD/bin/ && \
         cd assets/cpuminer-2.5.0 && \
         wget -N https://curl.haxx.se/download/curl-7.40.0.tar.gz && tar xzf curl-7.40.0.tar.gz && \
         wget -N https://sourceware.org/pub/pthreads-win32/pthreads-w32-2-9-1-release.tar.gz && tar xzf pthreads-w32-2-9-1-release.tar.gz && \
@@ -70,11 +74,10 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         cp pthread.h semaphore.h sched.h ${DEPS}/include && \
         cd .. && ./buildx86.sh && \
         DESTDIR=/daps/bin/ && \
-        cp minerd.exe /BUILD/bin/dapscoin-poa-minerd.exe; \
+        if [ -f minerd.exe ]; then cp minerd.exe /BUILD/bin/dapscoin-poa-minerd.exe; fi; \
 #
     elif [ "$BUILD_TARGET" = "linux" ]; \
-       then echo "Compiling for linux" && \
-        su && \
+       then echo "Compiling for Linux (x86_64-pc-linux-gnu)..." && \
         apt-get remove libzmq3-dev -y && \
         ./autogen.sh && \
         CONFIG_SITE=$PWD/depends/x86_64-linux-gnu/share/config.site ./configure --prefix=/ && \
@@ -83,10 +86,28 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         strip src/dapscoin-cli && \
         strip src/dapscoin-tx && \
         strip src/qt/dapscoin-qt && \
+        make install DESTDIR=/BUILD/ && \
+        apt-get install libcurl4-openssl-dev -y && \
+        if [ -f assets/cpuminer-2.5.0/build_linux.sh ]; then cd assets/cpuminer-2.5.0; fi && \
+        if [ -f build_linux.sh ]; then ./build_linux.sh; fi && \
+        if [ -f minerd ]; then cp minerd /BUILD/usr/local/bin/dapscoin-poa-minerd; fi; \
+#
+    elif [ "$BUILD_TARGET" = "linuxarm64" ]; \
+       then echo "Compiling for Linux ARM 64-bit (aarch64-linux-gnu)..." && \
+        ./autogen.sh && \
+        CONFIG_SITE=$PWD/depends/aarch64-linux-gnu/share/config.site ./configure --prefix=/ && \
+        make -j2 && \
+        make install DESTDIR=/BUILD/; \
+#
+    elif [ "$BUILD_TARGET" = "linuxarm32" ]; \
+       then echo "Compiling for Linux ARM 32-bit (arm-linux-gnueabihf)" && \
+        ./autogen.sh && \
+        CONFIG_SITE=$PWD/depends/arm-linux-gnueabihf/share/config.site ./configure --prefix=/ && \
+        make -j2 && \
         make install DESTDIR=/BUILD/; \
 #
     elif [ "$BUILD_TARGET" = "mac" ]; \
-       then echo "Compiling for mac" && \
+       then echo "Compiling for MacOS (x86_64-apple-darwin11)..." && \
         ./autogen.sh --with-gui=yes && \
         CONFIG_SITE=$PWD/depends/x86_64-apple-darwin11/share/config.site ./configure --prefix=/ && \
         make HOST="x86_64-apple-darwin11" -j2 && \
@@ -104,7 +125,7 @@ RUN cd /BUILD/ && \
     #files only
     find ./ -type f | \
     #flatten
-    tar cvf - --transform 's/.*\///g' --files-from=/dev/stdin | \
+    tar pcvf - --transform 's/.*\///g' --files-from=/dev/stdin | \
     #compress
     xz -9 - > $DESTDIR$BUILD_TARGET.tar.xz
 

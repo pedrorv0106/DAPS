@@ -345,8 +345,8 @@ bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
     	hasPayment = false;
     }
 
-    CAmount blockValue = GetBlockValue(pindexPrev->nHeight);
-    CAmount masternodePayment = GetMasternodePayment(pindexPrev->nHeight, blockValue);
+    CAmount posBlockReward = PoSBlockReward();
+    CAmount masternodePayment = GetMasternodePayment(pindexPrev->nHeight, posBlockReward);
     LogPrintf("\n%s: masternodePaymen=%d\n", __func__, masternodePayment);
     if (hasPayment) {
         if (fProofOfStake) {
@@ -372,7 +372,7 @@ bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
             txNew.vout.resize(2);
             txNew.vout[1].scriptPubKey = payee;
             txNew.vout[1].nValue = masternodePayment;
-            txNew.vout[0].nValue = blockValue - masternodePayment;
+            txNew.vout[0].nValue = posBlockReward - masternodePayment;
         }
 
         LogPrintf("Masternode payment of %s to %s\n", FormatMoney(masternodePayment).c_str(), payee.ToString().c_str());
