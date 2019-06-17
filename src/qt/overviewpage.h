@@ -11,6 +11,7 @@
 #include <QTimer>
 #include <QElapsedTimer>
 #include <QDialog>
+#include <QSizeGrip>
 
 class ClientModel;
 class TransactionFilterProxy;
@@ -39,7 +40,6 @@ public:
     void setWalletModel(WalletModel* walletModel);
     void showBlockSync(bool fShow);
     void showBalanceSync(bool fShow);
-    
 
     QTimer* animTicker;
     QElapsedTimer* animClock;
@@ -52,6 +52,9 @@ public slots:
     void updateTotalBlocksLabel();
     int tryNetworkBlockCount();
     void updateRecentTransactions();
+    void refreshRecentTransactions();
+    void setSpendableBalance(bool isStaking);
+    void showBlockCurrentHeight();
 
 signals:
     void transactionClicked(const QModelIndex& index);
@@ -66,14 +69,11 @@ private:
     CAmount currentBalance;
     CAmount currentUnconfirmedBalance;
     CAmount currentImmatureBalance;
-    CAmount currentZerocoinBalance;
-    CAmount currentUnconfirmedZerocoinBalance;
-    CAmount currentimmatureZerocoinBalance;
     CAmount currentWatchOnlyBalance;
     CAmount currentWatchUnconfBalance;
     CAmount currentWatchImmatureBalance;
     int nDisplayUnit;
-    void getPercentage(CAmount nTotalBalance, CAmount nZerocoinBalance, QString& sDAPSPercentage, QString& szDAPSPercentage);
+    void getPercentage(CAmount nTotalBalance, QString& sDAPSPercentage);
 
     TxViewDelegate* txdelegate;
     TransactionFilterProxy* filter;

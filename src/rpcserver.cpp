@@ -93,7 +93,7 @@ static inline int64_t roundint64(double d)
 CAmount AmountFromValue(const Value& value)
 {
     double dAmount = value.get_real();
-    if (dAmount <= 0.0 || dAmount > 21000000.0)
+    if (dAmount <= 0.0 || dAmount > Params().MAX_MONEY)
         throw JSONRPCError(RPC_TYPE_ERROR, "Invalid amount");
     CAmount nAmount = roundint64(dAmount * COIN);
     if (!MoneyRange(nAmount))
@@ -372,10 +372,20 @@ static const CRPCCommand vRPCCommands[] =
         {"wallet", "bip38encrypt", &bip38encrypt, true, false, true},
         {"wallet", "bip38decrypt", &bip38decrypt, true, false, true},
         {"wallet", "encryptwallet", &encryptwallet, true, false, true},
+        {"wallet", "createprivacywallet", &createprivacywallet, true, false, true},
+        {"wallet", "createprivacyaccount", &createprivacyaccount, true, false, true},
+        {"wallet", "revealviewprivatekey", &revealviewprivatekey, true, false, true},
+        {"wallet", "revealspendprivatekey", &revealspendprivatekey, true, false, true},
+        {"wallet", "showtxprivatekeys", &showtxprivatekeys, true, false, true},
+        {"wallet", "rescanwallettransactions", &rescanwallettransactions, true, false, true},
+        {"wallet", "decodestealthaddress", &decodestealthaddress, true, false, true},
+        {"wallet", "sendtostealthaddress", &sendtostealthaddress, false, false, true},
+        {"wallet", "createprivacysubaddress", &createprivacysubaddress, true, false, true},
         {"wallet", "getaccountaddress", &getaccountaddress, true, false, true},
         {"wallet", "getaccount", &getaccount, true, false, true},
         {"wallet", "getaddressesbyaccount", &getaddressesbyaccount, true, false, true},
         {"wallet", "getbalance", &getbalance, false, false, true},
+        {"wallet", "getbalances", &getbalances, false, false, true},
         {"wallet", "getnewaddress", &getnewaddress, true, false, true},
         {"wallet", "getrawchangeaddress", &getrawchangeaddress, true, false, true},
         {"wallet", "getreceivedbyaccount", &getreceivedbyaccount, false, false, true},

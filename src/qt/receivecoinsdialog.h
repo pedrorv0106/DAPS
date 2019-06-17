@@ -14,6 +14,8 @@
 #include <QMenu>
 #include <QPoint>
 #include <QVariant>
+#include <QSizeGrip>
+#include <QList>
 
 class OptionsModel;
 class WalletModel;
@@ -44,11 +46,13 @@ public:
     ~ReceiveCoinsDialog();
 
     void setModel(WalletModel* model);
+    void loadAccount();
 
 public slots:
     void clear();
     void reject();
     void accept();
+    void copyAddress();
 
 protected:
     virtual void keyPressEvent(QKeyEvent* event);
@@ -60,18 +64,12 @@ private:
     QMenu* contextMenu;
     void copyColumnToClipboard(int column);
     virtual void resizeEvent(QResizeEvent* event);
+    CAmount getValidatedAmount();
 
 private slots:
     void on_receiveButton_clicked();
-    void on_showRequestButton_clicked();
-    void on_removeRequestButton_clicked();
-    void on_recentRequestsView_doubleClicked(const QModelIndex& index);
-    void recentRequestsView_selectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
     void updateDisplayUnit();
-    void showMenu(const QPoint& point);
-    void copyLabel();
-    void copyMessage();
-    void copyAmount();
+
 };
 
 #endif // BITCOIN_QT_RECEIVECOINSDIALOG_H

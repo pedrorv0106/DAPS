@@ -36,7 +36,6 @@ AddressBookPage::AddressBookPage(Mode mode, Tabs tab, QWidget* parent) : QDialog
     ui->deleteAddress->setIcon(QIcon());
     ui->exportButton->setIcon(QIcon());
 #endif
-
     switch (mode) {
     case ForSelection:
         switch (tab) {
@@ -130,7 +129,6 @@ void AddressBookPage::setModel(AddressTableModel* model)
         break;
     }
     ui->tableView->setModel(proxyModel);
-    ui->tableView->sortByColumn(0, Qt::AscendingOrder);
 
 // Set column widths
 #if QT_VERSION < 0x050000

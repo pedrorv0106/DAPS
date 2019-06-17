@@ -13,6 +13,7 @@
 #include "tinyformat.h"
 #include "utilstrencodings.h"
 #include "transaction.h"
+#include "secp256k1.h"
 
 #include <boost/foreach.hpp>
 
@@ -53,10 +54,7 @@ std::string CTxIn::ToString() const
     str += "CTxIn(";
     str += prevout.ToString();
     if (prevout.IsNull())
-        if(scriptSig.IsZerocoinSpend())
-            str += strprintf(", zerocoinspend %s", HexStr(scriptSig));
-        else
-            str += strprintf(", coinbase %s", HexStr(scriptSig));
+        str += strprintf(", coinbase %s", HexStr(scriptSig));
     else
         str += strprintf(", scriptSig=%s", scriptSig.ToString().substr(0,24));
     if (nSequence != std::numeric_limits<unsigned int>::max())
@@ -90,8 +88,8 @@ std::string CTxOut::ToString() const
     return strprintf("CTxOut(nValue=%d.%08d, scriptPubKey=%s)", nValue / COIN, nValue % COIN, scriptPubKey.ToString().substr(0,30));
 }
 
-CMutableTransaction::CMutableTransaction() : nVersion(CTransaction::CURRENT_VERSION), nLockTime(0) {}
-CMutableTransaction::CMutableTransaction(const CTransaction& tx) : nVersion(tx.nVersion), vin(tx.vin), vout(tx.vout), nLockTime(tx.nLockTime) {}
+CMutableTransaction::CMutableTransaction() : nVersion(CTransaction::CURRENT_VERSION), nLockTime(0), hasPaymentID(0), paymentID(0), txType(TX_TYPE_FULL), nTxFee(0) {}
+CMutableTransaction::CMutableTransaction(const CTransaction& tx) : nVersion(tx.nVersion), vin(tx.vin), vout(tx.vout), nLockTime(tx.nLockTime), txPrivM(tx.txPrivM), hasPaymentID(tx.hasPaymentID), paymentID(tx.paymentID), txType(tx.txType), bulletproofs(tx.bulletproofs), nTxFee(tx.nTxFee), c(tx.c), S(tx.S), ntxFeeKeyImage(tx.ntxFeeKeyImage) {}
 
 uint256 CMutableTransaction::GetHash() const
 {
@@ -118,9 +116,9 @@ void CTransaction::UpdateHash() const
     *const_cast<uint256*>(&hash) = SerializeHash(*this);
 }
 
-CTransaction::CTransaction() : hash(), nVersion(CTransaction::CURRENT_VERSION), vin(), vout(), nLockTime(0) { }
+CTransaction::CTransaction() : hash(), nVersion(CTransaction::CURRENT_VERSION), vin(), vout(), nLockTime(0), hasPaymentID(0), paymentID(0), txType(TX_TYPE_FULL), nTxFee(0) { }
 
-CTransaction::CTransaction(const CMutableTransaction &tx) : nVersion(tx.nVersion), vin(tx.vin), vout(tx.vout), nLockTime(tx.nLockTime) {
+CTransaction::CTransaction(const CMutableTransaction &tx) : nVersion(tx.nVersion), vin(tx.vin), vout(tx.vout), nLockTime(tx.nLockTime), hasPaymentID(tx.hasPaymentID), paymentID(tx.paymentID), txType(tx.txType), bulletproofs(tx.bulletproofs), nTxFee(tx.nTxFee), c(tx.c), S(tx.S), ntxFeeKeyImage(tx.ntxFeeKeyImage) {
     UpdateHash();
 }
 
@@ -129,7 +127,17 @@ CTransaction& CTransaction::operator=(const CTransaction &tx) {
     *const_cast<std::vector<CTxIn>*>(&vin) = tx.vin;
     *const_cast<std::vector<CTxOut>*>(&vout) = tx.vout;
     *const_cast<unsigned int*>(&nLockTime) = tx.nLockTime;
-    *const_cast<uint256*>(&hash) = tx.hash;
+    *const_cast<CKey*>(&txPrivM) = tx.txPrivM;
+    *const_cast<char*>(&hasPaymentID) = tx.hasPaymentID;
+    *const_cast<uint64_t*>(&paymentID) = tx.paymentID;
+    *const_cast<uint32_t*>(&txType) = tx.txType;
+    bulletproofs = tx.bulletproofs;
+    c = tx.c;
+    S = tx.S;
+    //*const_cast<std::vector<CKeyImage>*>(&keyImages) = tx.keyImages;
+    //*const_cast<std::vector<std::vector<CTxIn>>*>(&decoys) = tx.decoys;
+    nTxFee = tx.nTxFee;
+    ntxFeeKeyImage = tx.ntxFeeKeyImage;
     return *this;
 }
 
@@ -145,21 +153,9 @@ CAmount CTransaction::GetValueOut() const
         if ((nValueOut + it->nValue) < nValueOut)
             throw std::runtime_error("CTransaction::GetValueOut() : value out of range : wraps the int64_t boundary");
 
-        nValueOut += it->nValue;
+        if (IsCoinBase() || IsCoinStake() || IsCoinAudit()) nValueOut += it->nValue;
     }
     return nValueOut;
-}
-
-CAmount CTransaction::GetZerocoinMinted() const
-{
-    for (const CTxOut txOut : vout) {
-        if(!txOut.scriptPubKey.IsZerocoinMint())
-            continue;
-
-        return txOut.nValue;
-    }
-
-    return  CAmount(0);
 }
 
 bool CTransaction::UsesUTXO(const COutPoint out)
@@ -179,37 +175,6 @@ std::list<COutPoint> CTransaction::GetOutPoints() const
     for (unsigned int i = 0; i < vout.size(); i++)
         listOutPoints.emplace_back(COutPoint(txHash, i));
     return listOutPoints;
-}
-
-CAmount CTransaction::GetZerocoinSpent() const
-{
-    if(!IsZerocoinSpend())
-        return 0;
-
-    CAmount nValueOut = 0;
-    for (const CTxIn txin : vin) {
-        if(!txin.scriptSig.IsZerocoinSpend())
-            LogPrintf("%s is not zcspend\n", __func__);
-
-        std::vector<char, zero_after_free_allocator<char> > dataTxIn;
-        dataTxIn.insert(dataTxIn.end(), txin.scriptSig.begin() + 4, txin.scriptSig.end());
-
-        CDataStream serializedCoinSpend(dataTxIn, SER_NETWORK, PROTOCOL_VERSION);
-        libzerocoin::CoinSpend spend(Params().Zerocoin_Params(), serializedCoinSpend);
-        nValueOut += libzerocoin::ZerocoinDenominationToAmount(spend.getDenomination());
-    }
-
-    return nValueOut;
-}
-
-int CTransaction::GetZerocoinMintCount() const
-{
-    int nCount = 0;
-    for (const CTxOut out : vout) {
-        if (out.scriptPubKey.IsZerocoinMint())
-            nCount++;
-    }
-    return nCount;
 }
 
 double CTransaction::ComputePriority(double dPriorityInputs, unsigned int nTxSize) const
@@ -241,6 +206,7 @@ unsigned int CTransaction::CalculateModifiedSize(unsigned int nTxSize) const
 std::string CTransaction::ToString() const
 {
     std::string str;
+    //CPubKey pubkey(txPub);
     str += strprintf("CTransaction(hash=%s, ver=%d, vin.size=%u, vout.size=%u, nLockTime=%u)\n",
         GetHash().ToString().substr(0,10),
         nVersion,

@@ -63,11 +63,6 @@ enum txnouttype
     TX_SCRIPTHASH,
     TX_MULTISIG,
     TX_NULL_DATA,
-    /**
-     * @author Top1st
-     * @type zerocoin
-     */
-    TX_ZEROCOINMINT,
 };
 
 class CNoDestination {
@@ -90,9 +85,11 @@ const char* GetTxnOutputType(txnouttype t);
 bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, std::vector<std::vector<unsigned char> >& vSolutionsRet);
 int ScriptSigArgsExpected(txnouttype t, const std::vector<std::vector<unsigned char> >& vSolutions);
 bool IsStandard(const CScript& scriptPubKey, txnouttype& whichType);
+bool ExtractPubKey(const CScript &scriptPubKey, CPubKey& out);
 bool ExtractDestination(const CScript& scriptPubKey, CTxDestination& addressRet);
 bool ExtractDestinations(const CScript& scriptPubKey, txnouttype& typeRet, std::vector<CTxDestination>& addressRet, int& nRequiredRet);
 
+CScript GetScriptForDestination(const CPubKey& dest);
 CScript GetScriptForDestination(const CTxDestination& dest);
 CScript GetScriptForMultisig(int nRequired, const std::vector<CPubKey>& keys);
 

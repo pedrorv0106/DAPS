@@ -11,17 +11,16 @@
 #include "db.h"
 #include "key.h"
 #include "keystore.h"
-#include "primitives/zerocoin.h"
-#include "libzerocoin/Accumulator.h"
-#include "libzerocoin/Denominations.h"
 
 #include <list>
 #include <stdint.h>
 #include <string>
 #include <utility>
 #include <vector>
+#include "bignum.h"
 
 class CAccount;
+class CStealthAccount;
 class CAccountingEntry;
 struct CBlockLocator;
 class CKeyPool;
@@ -29,8 +28,6 @@ class CMasterKey;
 class CScript;
 class CWallet;
 class CWalletTx;
-class CZerocoinMint;
-class CZerocoinSpend;
 class uint160;
 class uint256;
 
@@ -95,6 +92,21 @@ public:
     bool WriteTx(uint256 hash, const CWalletTx& wtx);
     bool EraseTx(uint256 hash);
 
+    bool WriteStakingStatus(bool status);
+    bool ReadStakingStatus();
+
+    bool WriteScannedBlockHeight(int height);
+    bool ReadScannedBlockHeight(int& height);
+
+    bool WriteReserveAmount(const double &amount);
+    bool ReadReserveAmount(double &amount);
+
+    bool WriteTxPrivateKey(const std::string& outpointKey, const std::string& k);
+    bool ReadTxPrivateKey(const std::string& outpointKey, std::string& k);
+
+    bool WriteKeyImage(const std::string& outpointKey, const CKeyImage& k);
+    bool ReadKeyImage(const std::string& outpointKey, CKeyImage& k);
+
     bool WriteKey(const CPubKey& vchPubKey, const CPrivKey& vchPrivKey, const CKeyMetadata& keyMeta);
     bool WriteCryptedKey(const CPubKey& vchPubKey, const std::vector<unsigned char>& vchCryptedSecret, const CKeyMetadata& keyMeta);
     bool WriteMasterKey(unsigned int nID, const CMasterKey& kMasterKey);
@@ -132,6 +144,9 @@ public:
     bool ReadAccount(const std::string& strAccount, CAccount& account);
     bool WriteAccount(const std::string& strAccount, const CAccount& account);
 
+    bool ReadStealthAccount(const std::string& strAccount, CStealthAccount& account);
+    bool WriteStealthAccount(const std::string& strAccount, const CStealthAccount& account);
+
     /// Write destination data key,value tuple to database
     bool WriteDestData(const std::string& address, const std::string& key, const std::string& value);
     /// Erase destination data tuple from wallet database
@@ -147,21 +162,11 @@ public:
     DBErrors ZapWalletTx(CWallet* pwallet, std::vector<CWalletTx>& vWtx);
     static bool Recover(CDBEnv& dbenv, std::string filename, bool fOnlyKeys);
     static bool Recover(CDBEnv& dbenv, std::string filename);
-
-    bool WriteZerocoinMint(const CZerocoinMint& zerocoinMint);
-    bool EraseZerocoinMint(const CZerocoinMint& zerocoinMint);
-    bool ReadZerocoinMint(const CBigNum &bnSerial, CZerocoinMint& zerocoinMint);
-    bool ArchiveMintOrphan(const CZerocoinMint& zerocoinMint);
-    bool UnarchiveZerocoin(const CZerocoinMint& mint);
-    std::list<CZerocoinMint> ListMintedCoins(bool fUnusedOnly, bool fMaturedOnly, bool fUpdateStatus);
-    std::list<CZerocoinSpend> ListSpentCoins();
     std::list<CBigNum> ListMintedCoinsSerial();
     std::list<CBigNum> ListSpentCoinsSerial();
-    std::list<CZerocoinMint> ListArchivedZerocoins();
-    bool WriteZerocoinSpendSerialEntry(const CZerocoinSpend& zerocoinSpend);
-    bool EraseZerocoinSpendSerialEntry(const CBigNum& serialEntry);
-    bool ReadZerocoinSpendSerialEntry(const CBigNum& bnSerial);
 
+    bool AppendStealthAccountList(const std::string& accountName);
+    bool ReadStealthAccountList(std::string& accountList);
 private:
     CWalletDB(const CWalletDB&);
     void operator=(const CWalletDB&);

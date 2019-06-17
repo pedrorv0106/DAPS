@@ -76,7 +76,7 @@ bool CMasternodeDB::Write(const CMasternodeMan& mnodemanToSave)
     } catch (std::exception& e) {
         return error("%s : Serialize or I/O error - %s", __func__, e.what());
     }
-    //    FileCommit(fileout);
+
     fileout.fclose();
 
     LogPrint("masternode","Written info to mncache.dat  %dms\n", GetTimeMillis() - nStart);
@@ -225,7 +225,9 @@ void CMasternodeMan::AskForMN(CNode* pnode, CTxIn& vin)
 
     // ask for the mnb info once from the node that sent mnp
 
-    LogPrint("masternode", "CMasternodeMan::AskForMN - Asking node for missing entry, vin: %s\n", vin.prevout.hash.ToString());
+    LogPrintf("\nCMasternodeMan::AskForMN - Asking node for missing entry, vin: %s\n", vin.prevout.hash.ToString());
+    std::string stl(vin.masternodeStealthAddress.begin(), vin.masternodeStealthAddress.end());
+    LogPrintf("\nCMasternodeMan::AskForMN - stealth masternode address = %s\n", stl);
     pnode->PushMessage("dseg", vin);
     int64_t askAgain = GetTime() + MASTERNODE_MIN_MNP_SECONDS;
     mWeAskedForMasternodeListEntry[vin.prevout] = askAgain;
@@ -441,7 +443,7 @@ CMasternode* CMasternodeMan::Find(const CScript& payee)
     CScript payee2;
 
     BOOST_FOREACH (CMasternode& mn, vMasternodes) {
-        payee2 = GetScriptForDestination(mn.pubKeyCollateralAddress.GetID());
+        payee2 = GetScriptForDestination(mn.pubKeyCollateralAddress);
         if (payee2 == payee)
             return &mn;
     }
@@ -728,7 +730,6 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
     if (!masternodeSync.IsBlockchainSynced()) return;
 
     LOCK(cs_process_message);
-
     if (strCommand == "mnb") { //Masternode Broadcast
         CMasternodeBroadcast mnb;
         vRecv >> mnb;
@@ -856,9 +857,8 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
 
     // Light version for OLD MASSTERNODES - fake pings, no self-activation
     else if (strCommand == "dsee") { //ObfuScation Election Entry
-
         if (IsSporkActive(SPORK_10_MASTERNODE_PAY_UPDATED_NODES)) return;
-
+        LogPrintf("Parsing masternode broadcast\n");
         CTxIn vin;
         CService addr;
         CPubKey pubkey;
@@ -874,12 +874,43 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
         std::string strMessage;
 
         vRecv >> vin >> addr >> vchSig >> sigTime >> pubkey >> pubkey2 >> count >> current >> lastUpdated >> protocolVersion >> donationAddress >> donationPercentage;
-
         // make sure signature isn't in the future (past is OK)
         if (sigTime > GetAdjustedTime() + 60 * 60) {
             LogPrint("masternode","dsee - Signature rejected, too far into the future %s\n", vin.prevout.hash.ToString());
             Misbehaving(pfrom->GetId(), 1);
             return;
+        }
+
+        if (!VerifyShnorrKeyImageTxIn(vin, GetTxInSignatureHash(vin))) {
+            LogPrint("masternode","dsee - Shnorr Signature rejected%s\n", vin.prevout.hash.ToString());
+            return;
+        }
+
+        //verify the value if 1M DAPS
+        COutPoint prevout = vin.prevout;
+        CTransaction prev;
+        uint256 bh;
+        if (!GetTransaction(prevout.hash, prev, bh, true)) {
+            LogPrint("masternode","dsee - failed to read transaction hash %s\n", vin.prevout.hash.ToString());
+        	return;
+        }
+
+        CTxOut out = prev.vout[prevout.n];
+        CPubKey sharedSec(vin.encryptionKey.begin(), vin.encryptionKey.end());
+        CKey mask;
+        CAmount amount;
+        ECDHInfo::Decode(out.maskValue.mask.begin(), out.maskValue.amount.begin(), sharedSec, mask, amount);
+
+        std::vector<unsigned char> commitment;
+        CWallet::CreateCommitment(mask.begin(), amount, commitment);
+        if (commitment != out.commitment) {
+        	LogPrint("masternode","dsee - decoded masternode collateralization not match %s\n", vin.prevout.hash.ToString());
+        	return;
+        }
+
+        if (amount != 1000000 * COIN) {
+        	LogPrint("masternode","dsee - masternode collateralization not equal to 1M %s\n", vin.prevout.hash.ToString());
+        	return;
         }
 
         std::string vchPubKey(pubkey.begin(), pubkey.end());
@@ -894,18 +925,17 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
         }
 
         CScript pubkeyScript;
-        pubkeyScript = GetScriptForDestination(pubkey.GetID());
+        pubkeyScript = GetScriptForDestination(pubkey);
 
-        if (pubkeyScript.size() != 25) {
+        if ((pubkey.IsCompressed() && pubkeyScript.size() != 35) || (!pubkey.IsCompressed() && pubkeyScript.size() != 67)) {
             LogPrint("masternode","dsee - pubkey the wrong size\n");
             Misbehaving(pfrom->GetId(), 100);
             return;
         }
 
         CScript pubkeyScript2;
-        pubkeyScript2 = GetScriptForDestination(pubkey2.GetID());
-
-        if (pubkeyScript2.size() != 25) {
+        pubkeyScript2 = GetScriptForDestination(pubkey2);
+        if ((pubkey2.IsCompressed() && pubkeyScript2.size() != 35) || (!pubkey2.IsCompressed() && pubkeyScript2.size() != 67)) {
             LogPrint("masternode","dsee - pubkey2 the wrong size\n");
             Misbehaving(pfrom->GetId(), 100);
             return;
@@ -937,9 +967,12 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
             // mn.pubkey = pubkey, IsVinAssociatedWithPubkey is validated once below,
             //   after that they just need to match
             if (count == -1 && pmn->pubKeyCollateralAddress == pubkey && (GetAdjustedTime() - pmn->nLastDsee > MASTERNODE_MIN_MNB_SECONDS)) {
-                if (pmn->protocolVersion > GETHEADERS_VERSION && sigTime - pmn->lastPing.sigTime < MASTERNODE_MIN_MNB_SECONDS) return;
+                if (pmn->protocolVersion > GETHEADERS_VERSION && sigTime - pmn->lastPing.sigTime < MASTERNODE_MIN_MNB_SECONDS) {
+                    LogPrintf("Ended because MASTERNODE_MIN_MNB_SECONDS\n");
+                    return;
+                }
                 if (pmn->nLastDsee < sigTime) { //take the newest entry
-                    LogPrint("masternode", "dsee - Got updated entry for %s\n", vin.prevout.hash.ToString());
+                    LogPrintf("masternode: dsee - Got updated entry for %s\n", vin.prevout.hash.ToString());
                     if (pmn->protocolVersion < GETHEADERS_VERSION) {
                         pmn->pubKeyMasternode = pubkey2;
                         pmn->sigTime = sigTime;
@@ -948,6 +981,7 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
                         pmn->addr = addr;
                         //fake ping
                         pmn->lastPing = CMasternodePing(vin);
+                        pmn->vin.masternodeStealthAddress = vin.masternodeStealthAddress;
                     }
                     pmn->nLastDsee = sigTime;
                     pmn->Check();
@@ -963,7 +997,6 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
 
             return;
         }
-
         static std::map<COutPoint, CPubKey> mapSeenDsee;
         if (mapSeenDsee.count(vin.prevout) && mapSeenDsee[vin.prevout] == pubkey) {
             LogPrint("masternode", "dsee - already seen this vin %s\n", vin.prevout.ToString());
@@ -985,17 +1018,8 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
         //  - this is checked later by .check() in many places and by ThreadCheckObfuScationPool()
 
         CValidationState state;
-        CMutableTransaction tx = CMutableTransaction();
-        CTxOut vout = CTxOut(9999.99 * COIN, obfuScationPool.collateralPubKey);
-        tx.vin.push_back(vin);
-        tx.vout.push_back(vout);
 
-        bool fAcceptable = false;
-        {
-            TRY_LOCK(cs_main, lockMain);
-            if (!lockMain) return;
-            fAcceptable = AcceptableInputs(mempool, state, CTransaction(tx), false, NULL);
-        }
+        bool fAcceptable = !IsKeyImageSpend1(vin.keyImage.GetHex(), uint256(0));
 
         if (fAcceptable) {
             if (GetInputAge(vin) < MASTERNODE_MIN_CONFIRMATIONS) {
@@ -1004,25 +1028,8 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
                 return;
             }
 
-            // verify that sig time is legit in past
-            // should be at least not earlier than block when 1000 DAPScoin tx got MASTERNODE_MIN_CONFIRMATIONS
-            uint256 hashBlock = 0;
-            CTransaction tx2;
-            GetTransaction(vin.prevout.hash, tx2, hashBlock, true);
-            BlockMap::iterator mi = mapBlockIndex.find(hashBlock);
-            if (mi != mapBlockIndex.end() && (*mi).second) {
-                CBlockIndex* pMNIndex = (*mi).second;                                                        // block for 1000000 DAPS tx -> 1 confirmation
-                CBlockIndex* pConfIndex = chainActive[pMNIndex->nHeight + MASTERNODE_MIN_CONFIRMATIONS - 1]; // block where tx got MASTERNODE_MIN_CONFIRMATIONS
-                if (pConfIndex->GetBlockTime() > sigTime) {
-                    LogPrint("masternode","mnb - Bad sigTime %d for Masternode %s (%i conf block is at %d)\n",
-                        sigTime, vin.prevout.hash.ToString(), MASTERNODE_MIN_CONFIRMATIONS, pConfIndex->GetBlockTime());
-                    return;
-                }
-            }
-
             // use this as a peer
             addrman.Add(CAddress(addr), pfrom->addr, 2 * 60 * 60);
-
             // add Masternode
             CMasternode mn = CMasternode();
             mn.addr = addr;
@@ -1036,10 +1043,9 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
             mn.lastPing = CMasternodePing(vin);
             mn.Check(true);
             // add v11 masternodes, v12 should be added by mnb only
-            if (protocolVersion < GETHEADERS_VERSION) {
-                LogPrint("masternode", "dsee - Accepted OLD Masternode entry %i %i\n", count, current);
-                Add(mn);
-            }
+            LogPrint("masternode", "dsee - Accepted OLD Masternode entry %i %i\n", count, current);
+            Add(mn);
+
             if (mn.IsEnabled()) {
                 TRY_LOCK(cs_vNodes, lockNodes);
                 if (!lockNodes) return;
@@ -1052,7 +1058,7 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
 
             int nDoS = 0;
             if (state.IsInvalid(nDoS)) {
-                LogPrint("masternode","dsee - %s from %i %s was not accepted into the memory pool\n", tx.GetHash().ToString().c_str(),
+                LogPrint("masternode","dsee - %i %s was not accepted into the memory pool\n",
                     pfrom->GetId(), pfrom->cleanSubVer.c_str());
                 if (nDoS > 0)
                     Misbehaving(pfrom->GetId(), nDoS);
@@ -1070,7 +1076,10 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
         bool stop;
         vRecv >> vin >> vchSig >> sigTime >> stop;
 
-        //LogPrint("masternode","dseep - Received: vin: %s sigTime: %lld stop: %s\n", vin.ToString().c_str(), sigTime, stop ? "true" : "false");
+        if (!VerifyShnorrKeyImageTxIn(vin, GetTxInSignatureHash(vin))) {
+        	LogPrint("masternode","dsee - Shnorr Signature rejected%s\n", vin.prevout.hash.ToString());
+        	return;
+        }
 
         if (sigTime > GetAdjustedTime() + 60 * 60) {
             LogPrint("masternode","dseep - Signature rejected, too far into the future %s\n", vin.prevout.hash.ToString());
@@ -1093,7 +1102,6 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
         // see if we have this Masternode
         CMasternode* pmn = this->Find(vin);
         if (pmn != NULL && pmn->protocolVersion >= masternodePayments.GetMinMasternodePaymentsProto()) {
-            // LogPrint("masternode","dseep - Found corresponding mn for vin: %s\n", vin.ToString().c_str());
             // take this only if it's newer
             if (sigTime - pmn->nLastDseep > MASTERNODE_MIN_MNP_SECONDS) {
                 std::string strMessage = pmn->addr.ToString() + boost::lexical_cast<std::string>(sigTime) + boost::lexical_cast<std::string>(stop);
@@ -1101,7 +1109,6 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
                 std::string errorMessage = "";
                 if (!obfuScationSigner.VerifyMessage(pmn->pubKeyMasternode, vchSig, strMessage, errorMessage)) {
                     LogPrint("masternode","dseep - Got bad Masternode address signature %s \n", vin.prevout.hash.ToString());
-                    //Misbehaving(pfrom->GetId(), 100);
                     return;
                 }
 

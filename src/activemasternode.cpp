@@ -164,7 +164,8 @@ bool CActiveMasternode::SendMasternodePing(std::string& errorMessage)
     }
 
     LogPrintf("CActiveMasternode::SendMasternodePing() - Relay Masternode Ping vin = %s\n", vin.ToString());
-
+    std::string stl(vin.masternodeStealthAddress.begin(), vin.masternodeStealthAddress.end());
+    LogPrintf("CActiveMasternode::SendMasternodePing() - masternodestealthaddress = %s\n", stl);
     CMasternodePing mnp(vin);
     if (!mnp.Sign(keyMasternode, pubKeyMasternode)) {
         errorMessage = "Couldn't sign Masternode Ping";
@@ -273,7 +274,6 @@ bool CActiveMasternode::CreateBroadcast(CTxIn vin, CService service, CKey keyCol
 {
     // wait for reindex and/or import to finish
     if (fImporting || fReindex) return false;
-
     CMasternodePing mnp(vin);
     if (!mnp.Sign(keyMasternode, pubKeyMasternode)) {
         errorMessage = strprintf("Failed to sign ping, vin: %s", vin.ToString());
@@ -291,12 +291,6 @@ bool CActiveMasternode::CreateBroadcast(CTxIn vin, CService service, CKey keyCol
         return false;
     }
 
-    /*
-     * IT'S SAFE TO REMOVE THIS IN FURTHER VERSIONS
-     * AFTER MIGRATION TO V12 IS DONE
-     */
-
-    if (IsSporkActive(SPORK_10_MASTERNODE_PAY_UPDATED_NODES)) return true;
     // for migration purposes inject our node in old masternodes' list too
     std::string retErrorMessage;
     std::vector<unsigned char> vchMasterNodeSignature;
@@ -320,14 +314,9 @@ bool CActiveMasternode::CreateBroadcast(CTxIn vin, CService service, CKey keyCol
         LogPrintf("CActiveMasternode::Register() - Error: %s\n", errorMessage.c_str());
         return false;
     }
-
     LOCK(cs_vNodes);
     BOOST_FOREACH (CNode* pnode, vNodes)
     pnode->PushMessage("dsee", vin, service, vchMasterNodeSignature, masterNodeSignatureTime, pubKeyCollateralAddress, pubKeyMasternode, -1, -1, masterNodeSignatureTime, PROTOCOL_VERSION, donationAddress, donationPercantage);
-
-    /*
-     * END OF "REMOVE"
-     */
 
     return true;
 }
@@ -398,9 +387,14 @@ bool CActiveMasternode::GetVinFromOutput(COutput out, CTxIn& vin, CPubKey& pubke
     vin = CTxIn(out.tx->GetHash(), out.i);
     pubScript = out.tx->vout[out.i].scriptPubKey; // the inputs PubKey
 
+    pwalletMain->findCorrespondingPrivateKey(out.tx->vout[out.i], secretKey);
     CTxDestination address1;
     ExtractDestination(pubScript, address1);
     CBitcoinAddress address2(address1);
+    CPubKey sharedSec;
+    pwalletMain->computeSharedSec(*out.tx, out.tx->vout[out.i], sharedSec);
+    vin.encryptionKey.clear();
+    std::copy(sharedSec.begin(), sharedSec.end(), std::back_inserter(vin.encryptionKey));
 
     CKeyID keyID;
     if (!address2.GetKeyID(keyID)) {
@@ -414,6 +408,52 @@ bool CActiveMasternode::GetVinFromOutput(COutput out, CTxIn& vin, CPubKey& pubke
     }
 
     pubkey = secretKey.GetPubKey();
+    std::string msa;
+    pwalletMain->ComputeStealthPublicAddress("masteraccount", msa);
+    std::copy(msa.begin(), msa.end(), std::back_inserter(vin.masternodeStealthAddress));
+    if (!pwalletMain->generateKeyImage(out.tx->vout[out.i].scriptPubKey, vin.keyImage)) {
+    	LogPrintf("CActiveMasternode::GetMasterNodeVin - Failed to generate key image\n");
+    	return false;
+    }
+    if (!pwalletMain->MakeShnorrSignatureTxIn(vin, GetTxInSignatureHash(vin))) {
+    	LogPrintf("CActiveMasternode::GetMasterNodeVin - Failed to make Shnorr signature\n");
+    	return false;
+    }
+
+
+    //test verification masternode broadcast
+    if (!VerifyShnorrKeyImageTxIn(vin, GetTxInSignatureHash(vin))) {
+    	LogPrintf("CActiveMasternode::GetMasterNodeVin - Failed to verify Shnorr signature\n");
+    	return false;
+    }
+
+    //Test the commitment and decoded value, if everything goes right, other nodes can verify it as well
+    COutPoint prevout = vin.prevout;
+    CTransaction prev;
+    uint256 bh;
+    if (!GetTransaction(prevout.hash, prev, bh, true)) {
+    	LogPrint("masternode","dsee - failed to read transaction hash %s\n", vin.prevout.hash.ToString());
+    	return false;
+    }
+
+    CTxOut txout = prev.vout[prevout.n];
+    CPubKey sharedSec1(vin.encryptionKey.begin(), vin.encryptionKey.end());
+    CKey mask;
+    CAmount amount;
+    ECDHInfo::Decode(txout.maskValue.mask.begin(), txout.maskValue.amount.begin(), sharedSec1, mask, amount);
+
+    std::vector<unsigned char> commitment;
+    CWallet::CreateCommitment(mask.begin(), amount, commitment);
+    if (commitment != txout.commitment) {
+    	LogPrintf("dsee - decoded masternode collateralization not match %s\n", vin.prevout.hash.ToString());
+    	return false;
+    }
+
+    if (amount != 1000000 * COIN) {
+    	LogPrintf("dsee - masternode collateralization not equal to 1M %s\n", vin.prevout.hash.ToString());
+    	return false;
+    }
+
     return true;
 }
 
@@ -451,7 +491,7 @@ vector<COutput> CActiveMasternode::SelectCoinsMasternode()
 
     // Filter
     BOOST_FOREACH (const COutput& out, vCoins) {
-        if (out.tx->vout[out.i].nValue == 1000000 * COIN) { //exactly
+        if (pwalletMain->getCTxOutValue(*out.tx, out.tx->vout[out.i]) == 1000000 * COIN) { //exactly
             filteredCoins.push_back(out);
         }
     }

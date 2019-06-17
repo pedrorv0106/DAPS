@@ -31,7 +31,6 @@
 using namespace json_spirit;
 using namespace std;
 
-static bool PoABlockBeingMined = false;
 static uint256 PoAMerkleRoot;
 
 /**
@@ -239,7 +238,6 @@ Value generatepoa(const Array& params, bool fHelp)
 		nHeight = nHeightStart;
 		nHeightEnd = nHeightStart + nGenerate;
 	}
-	unsigned int nExtraNonce = 0;
 	Array blockHashes;
 
 	bool createPoABlock = false;
@@ -561,8 +559,13 @@ Value getblocktemplate(const Array& params, bool fHelp)
             delete pblocktemplate;
             pblocktemplate = NULL;
         }
+        CPubKey des, txPub;
+        CKey txPriv;
+        if (!pwalletMain->GenerateAddress(des, txPub, txPriv)) {
+        	throw runtime_error("Wallet is locked, please unlock it");
+        }
         CScript scriptDummy = CScript() << OP_TRUE;
-        pblocktemplate = CreateNewBlock(scriptDummy, pwalletMain, false);
+        pblocktemplate = CreateNewBlock(scriptDummy, txPub, txPriv, pwalletMain, false);
         if (!pblocktemplate)
             throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");
 
@@ -633,8 +636,6 @@ Value getblocktemplate(const Array& params, bool fHelp)
     result.push_back(Pair("mintime", (int64_t)pindexPrev->GetMedianTimePast() + 1));
     result.push_back(Pair("mutable", aMutable));
     result.push_back(Pair("noncerange", "00000000ffffffff"));
-//    result.push_back(Pair("sigoplimit", (int64_t)MAX_BLOCK_SIGOPS));
-//    result.push_back(Pair("sizelimit", (int64_t)MAX_BLOCK_SIZE));
     result.push_back(Pair("curtime", pblock->GetBlockTime()));
     result.push_back(Pair("bits", strprintf("%08x", pblock->nBits)));
     result.push_back(Pair("height", (int64_t)(pindexPrev->nHeight + 1)));
@@ -790,7 +791,7 @@ Value getpoablocktemplate(const Array& params, bool fHelp)
 
     //Information about PoS blocks to be audited
     Array posBlocksAudited;
-    for (int idx = 0; idx < pblock->posBlocksAudited.size(); idx++) {
+    for (size_t idx = 0; idx < pblock->posBlocksAudited.size(); idx++) {
     	Object entry;
     	PoSBlockSummary pos = pblock->posBlocksAudited.at(idx);
     	entry.push_back(Pair("data", EncodeHexPoSBlockSummary(pos)));
@@ -809,10 +810,7 @@ Value getpoablocktemplate(const Array& params, bool fHelp)
     result.push_back(Pair("transactions", transactions));
     result.push_back(Pair("coinbasetxn", coinbasetxn));
     result.push_back(Pair("coinbasevalue", (int64_t)pblock->vtx[0].GetValueOut()));
-    //result.push_back(Pair("longpollid", chainActive.Tip()->GetBlockHash().GetHex() + i64tostr(nTransactionsUpdatedLast)));
     result.push_back(Pair("noncerange", "00000000ffffffff"));
-//    result.push_back(Pair("sigoplimit", (int64_t)MAX_BLOCK_SIGOPS));
-//    result.push_back(Pair("sizelimit", (int64_t)MAX_BLOCK_SIZE));
     result.push_back(Pair("curtime", pblock->GetBlockTime()));
     result.push_back(Pair("bits", strprintf("%08x", pblock->nBits)));
     result.push_back(Pair("target", hashTarget.GetHex()));
@@ -894,7 +892,7 @@ Value submitblock(const Array& params, bool fHelp)
     CBlock block;
     std::string datastr(params[0].get_str());
 
-    for (int i = 0; i < datastr.size(); i++) {
+    for (size_t i = 0; i < datastr.size(); i++) {
         if (('0' <= datastr[i] && datastr[i] <= '9') || ('a' <= datastr[i] && datastr[i] <= 'f') || ('A' <= datastr[i] && datastr[i] <= 'F')) {
 
         } else {

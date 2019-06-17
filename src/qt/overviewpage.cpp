@@ -23,7 +23,6 @@
 #include <QAbstractItemDelegate>
 #include <QPainter>
 #include <QSettings>
-#include <QSizePolicy>
 #include <QTimer>
 #include <QtMath>
 
@@ -113,13 +112,11 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
                                               currentBalance(-1),
                                               currentUnconfirmedBalance(-1),
                                               currentImmatureBalance(-1),
-                                              currentZerocoinBalance(-1),
-                                              currentUnconfirmedZerocoinBalance(-1),
-                                              currentimmatureZerocoinBalance(-1),
                                               currentWatchOnlyBalance(-1),
                                               currentWatchUnconfBalance(-1),
                                               currentWatchImmatureBalance(-1),
                                               txdelegate(new TxViewDelegate()),
+                                              // m_SizeGrip(this),
                                               filter(0)
 {
     nDisplayUnit = 0; // just make sure it's not unitialized
@@ -132,6 +129,11 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
     pingNetworkInterval = new QTimer();
 
     initSyncCircle(.8);
+
+    QTimer* timerBlockHeightLabel = new QTimer();
+    connect(timerBlockHeightLabel, SIGNAL(timeout()), this, SLOT(showBlockCurrentHeight()));
+    timerBlockHeightLabel->start(10000);
+
     updateRecentTransactions();
 }
 
@@ -146,28 +148,13 @@ OverviewPage::~OverviewPage()
     delete ui;
 }
 
-void OverviewPage::getPercentage(CAmount nUnlockedBalance, CAmount nZerocoinBalance, QString& sDAPSPercentage, QString& szDAPSPercentage)
+void OverviewPage::getPercentage(CAmount nUnlockedBalance, QString& sDAPSPercentage)
 {
     int nPrecision = 2;
-    double dzPercentage = 0.0;
 
-    if (nZerocoinBalance <= 0){
-        dzPercentage = 0.0;
-    }
-    else{
-        if (nUnlockedBalance <= 0){
-            dzPercentage = 100.0;
-        }
-        else{
-            dzPercentage = 100.0 * (double)(nZerocoinBalance / (double)(nZerocoinBalance + nUnlockedBalance));
-        }
-    }
-
-    double dPercentage = 100.0 - dzPercentage;
+    double dPercentage = 100.0;
     
-    szDAPSPercentage = "(" + QLocale(QLocale::system()).toString(dzPercentage, 'f', nPrecision) + " %)";
     sDAPSPercentage = "(" + QLocale(QLocale::system()).toString(dPercentage, 'f', nPrecision) + " %)";
-    
 }
 
 void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, 
@@ -177,19 +164,29 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     currentBalance = balance;
     currentUnconfirmedBalance = unconfirmedBalance;
     currentImmatureBalance = immatureBalance;
-    currentZerocoinBalance = zerocoinBalance;
-    currentUnconfirmedZerocoinBalance = unconfirmedZerocoinBalance;
-    currentimmatureZerocoinBalance = immatureZerocoinBalance;
     currentWatchOnlyBalance = watchOnlyBalance;
     currentWatchUnconfBalance = watchUnconfBalance;
     currentWatchImmatureBalance = watchImmatureBalance;
-
+    CAmount nSpendableBalance = balance - immatureBalance;
+    if (nSpendableBalance < 0) {
+    	nSpendableBalance = pwalletMain->GetSpendableBalance();
+    }
+    CAmount nSpendableDisplayed = nSpendableBalance; //if it is not staking
+    if (nLastCoinStakeSearchInterval) {
+        //if staking enabled
+        nSpendableDisplayed = nSpendableDisplayed > nReserveBalance ? nReserveBalance:nSpendableDisplayed;
+    }
     // DAPS labels
-    ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance - immatureBalance, false, BitcoinUnits::separatorAlways));
+    //Cam: Remove immatureBalance from showing on qt wallet (as andrew says)
+    ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, nSpendableDisplayed, false, BitcoinUnits::separatorAlways));
     ui->labelUnconfirmed->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, unconfirmedBalance, false, BitcoinUnits::separatorAlways));
-    ui->labelBalance_2->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance - immatureBalance, false, BitcoinUnits::separatorAlways));
+    ui->labelBalance_2->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance, false, BitcoinUnits::separatorAlways));
 
-  
+    QFont font = ui->labelBalance_2->font();
+    font.setPointSize(15);
+    font.setBold(true);
+    ui->labelBalance_2->setFont(font);
+
     // zDAPS labels
     QString szPercentage = "";
     QString sPercentage = "";
@@ -197,36 +194,10 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     if (pwalletMain) {
         nLockedBalance = pwalletMain->GetLockedCoins();
     }
-//    ui->labelLockedBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, nLockedBalance, false, BitcoinUnits::separatorAlways));
 
     CAmount nTotalBalance = balance + unconfirmedBalance;
     CAmount nUnlockedBalance = nTotalBalance - nLockedBalance;
-    getPercentage(nUnlockedBalance, zerocoinBalance, sPercentage, szPercentage);
-
-
-    /**
-* @author Wang
-* @type zerocoin
-*/
-
-    // Adjust bubble-help according to AutoMint settings
-    QString automintHelp = tr("Current percentage of zDAPS.\nIf AutoMint is enabled this percentage will settle around the configured AutoMint percentage (default = 10%).\n");
-    bool fEnableZeromint = GetBoolArg("-enablezeromint", false);
-    int nZeromintPercentage = GetArg("-zeromintpercentage", 10);
-    if (fEnableZeromint) {
-        automintHelp += tr("AutoMint is currently enabled and set to ") + QString::number(nZeromintPercentage) + "%.\n";
-        automintHelp += tr("To disable AutoMint add 'enablezeromint=0' in dapscoin.conf.");
-    }
-    else {
-        automintHelp += tr("AutoMint is currently disabled.\nTo enable AutoMint change 'enablezeromint=0' to 'enablezeromint=1' in dapscoin.conf");
-    }
-
-    // REMOVE static int cachedTxLocks = 0;
-
-    // REMOVE if (cachedTxLocks != nCompleteTXLocks) {
-    // REMOVE     cachedTxLocks = nCompleteTXLocks;
-    // REMOVE     ui->listTransactions->update();
-    // REMOVE }
+    getPercentage(nUnlockedBalance, sPercentage);
 }
 
 // show/hide watch-only labels
@@ -246,11 +217,21 @@ void OverviewPage::setClientModel(ClientModel* model)
     }
 }
 
+void OverviewPage::setSpendableBalance(bool isStaking) {
+    CAmount nSpendableDisplayed = this->walletModel->getSpendableBalance();
+    if (isStaking) {
+        //if staking enabled
+        nSpendableDisplayed = nSpendableDisplayed > nReserveBalance ? nReserveBalance:nSpendableDisplayed;
+    }
+    ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, nSpendableDisplayed, false, BitcoinUnits::separatorAlways));
+}
+
 void OverviewPage::setWalletModel(WalletModel* model)
 {
     this->walletModel = model;
     if (model && model->getOptionsModel()) {
         // Set up transaction list
+        LogPrintf("\n%s:setWalletModel\n", __func__);
         filter = new TransactionFilterProxy();
         filter->setSourceModel(model->getTransactionTableModel());
         filter->setLimit(NUM_ITEMS);
@@ -261,15 +242,19 @@ void OverviewPage::setWalletModel(WalletModel* model)
 
         // Keep up to date with wallet
         setBalance(model->getBalance(), model->getUnconfirmedBalance(), model->getImmatureBalance(),
-                   model->getZerocoinBalance(), model->getUnconfirmedZerocoinBalance(), model->getImmatureZerocoinBalance(), 
+                   0, 0, 0,
                    model->getWatchBalance(), model->getWatchUnconfirmedBalance(), model->getWatchImmatureBalance());
         connect(model, SIGNAL(balanceChanged(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)), this, 
                          SLOT(setBalance(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)));
-
+        connect(model, SIGNAL(stakingStatusChanged(bool)), this, 
+                         SLOT(setSpendableBalance(bool)));
+        
         connect(model->getOptionsModel(), SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit()));
 
         updateWatchOnlyLabels(model->haveWatchOnly());
         connect(model, SIGNAL(notifyWatchonlyChanged(bool)), this, SLOT(updateWatchOnlyLabels(bool)));
+
+        connect(walletModel, SIGNAL(RefreshRecent()), this, SLOT(refreshRecentTransactions()));
     }
 
     // update the display unit, to not use the default ("DAPS")
@@ -281,13 +266,11 @@ void OverviewPage::updateDisplayUnit()
     if (walletModel && walletModel->getOptionsModel()) {
         nDisplayUnit = walletModel->getOptionsModel()->getDisplayUnit();
         if (currentBalance != -1)
-            setBalance(currentBalance, currentUnconfirmedBalance, currentImmatureBalance, currentZerocoinBalance, currentUnconfirmedZerocoinBalance, currentimmatureZerocoinBalance,
+            setBalance(currentBalance, currentUnconfirmedBalance, currentImmatureBalance, 0, 0, 0,
                 currentWatchOnlyBalance, currentWatchUnconfBalance, currentWatchImmatureBalance);
 
         // Update txdelegate->unit with the current unit
         txdelegate->unit = nDisplayUnit;
-
-        // REMOVE ui->listTransactions->update();
     }
 }
 
@@ -299,12 +282,10 @@ void OverviewPage::updateAlerts(const QString& warnings)
 
 void OverviewPage::showBalanceSync(bool fShow){
         ui->labelWalletStatus->setVisible(fShow);
-        ui->labelPendingText->setVisible(fShow);
-        ui->labelUnconfirmed->setVisible(fShow);
-        ui->labelBalanceText->setVisible(fShow);
+        ui->labelPendingText->setVisible(true);
+        ui->labelUnconfirmed->setVisible(true);
+        ui->labelBalanceText->setVisible(true);
         isSyncingBalance = fShow;
-        ui->labelBlockCurrent->setAlignment(!fShow? (Qt::AlignRight | Qt::AlignVCenter) : (Qt::AlignHCenter | Qt::AlignTop));
-
 }
 
 void OverviewPage::showBlockSync(bool fShow)
@@ -316,6 +297,12 @@ void OverviewPage::showBlockSync(bool fShow)
     isSyncingBlocks = fShow;
 
     ui->labelBlockCurrent->setText(QString::number(clientModel->getNumBlocks()));
+    ui->labelBlockCurrent->setAlignment(fShow? (Qt::AlignRight|Qt::AlignVCenter):(Qt::AlignHCenter|Qt::AlignTop));
+}
+
+void OverviewPage::showBlockCurrentHeight()
+{
+	ui->labelBlockCurrent->setText(QString::number(chainActive.Height()));
 }
 
 void OverviewPage::initSyncCircle(float ratioToParent)
@@ -408,25 +395,70 @@ int OverviewPage::tryNetworkBlockCount(){
         }
     }catch(int err_code)
     {
-         //QDebug()<<endl<<"Error: "+QString::number(err_code)<<endl;
     }
     return -1;
 }
 
 void OverviewPage::updateRecentTransactions(){
     QLayoutItem* item;
+    QSettings settings;
+    QVariant theme = settings.value("theme");
+    QString themeName = QString(theme.toString());
+
     while ( ( item = ui->verticalLayoutRecent->takeAt( 0 ) ) != NULL )
     {
         delete item->widget();
         delete item;
     }
-    auto txs = WalletUtil::getTXs(pwalletMain);
+    if (pwalletMain) {
+    	vector<std::map<QString, QString>> txs;// = WalletUtil::getTXs(pwalletMain);
 
-    for (int i = 0; i< (txs.size()>5)? 5:txs.size(); i++){
-        TxEntry* entry = new TxEntry(this);
-        ui->verticalLayoutRecent->addWidget(entry);
-        entry->setData(txs[i]["date"], txs[i]["address"] , txs[i]["amount"], txs[i]["ID"], txs[i]["type"]);
+        std::map<uint256, CWalletTx> txMap = pwalletMain->mapWallet;
+        std::vector<CWalletTx> latestTxes;
+        for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
+        	if (tx->second.GetDepthInMainChain() > 0) {
+        		int64_t txTime = tx->second.GetComputedTxTime();
+        		int idx = -1;
+        		for (int i = 0; i < (int)latestTxes.size(); i++) {
+        			if (txTime >= latestTxes[i].GetComputedTxTime()) {
+        				idx = i;
+        				break;
+        			}
+        		}
+        		if (idx == -1) {
+        			latestTxes.push_back(tx->second);
+        		} else {
+        			latestTxes.insert(latestTxes.begin() + idx, tx->second);
+        		}
+        	}
+        }
+
+        for (int i = 0; i < (int)latestTxes.size(); i++) {
+        	txs.push_back(WalletUtil::getTx(pwalletMain, latestTxes[i]));
+        	if (txs.size() >= 5) break;
+        }
+
+        int length = (txs.size()>5)? 5:txs.size();
+        for (int i = 0; i< length; i++){
+        	uint256 txHash;
+        	txHash.SetHex(txs[i]["id"].toStdString());
+            TxEntry* entry = new TxEntry(this);
+            ui->verticalLayoutRecent->addWidget(entry);
+            CWalletTx wtx = pwalletMain->mapWallet[txHash];
+            int64_t txTime = wtx.GetComputedTxTime();
+            entry->setData(txTime, txs[i]["address"] , txs[i]["amount"], txs[i]["id"], txs[i]["type"]);
+            if (i % 2 == 0) {
+                entry->setObjectName("secondaryTxEntry");
+            }
+        }
+
+        ui->label_4->setVisible(txs.size());
+    } else {
+        LogPrintf("\npwalletMain has not been initialized\n");
     }
+}
 
-    ui->label_4->setVisible(txs.size());
+void OverviewPage::refreshRecentTransactions() {
+	LogPrintf("\n: Refreshing history\n");
+	updateRecentTransactions();
 }

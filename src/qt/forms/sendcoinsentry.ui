@@ -23,9 +23,6 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
-   <property name="toolTip">
-    <string>This is a normal payment.</string>
-   </property>
    <property name="frameShape">
     <enum>QFrame::StyledPanel</enum>
    </property>
@@ -45,9 +42,6 @@
         </property>
         <item>
          <widget class="QLabel" name="payToLabel">
-            <property name="styleSheet">
-            <string notr="true">border-image: url(':/icons/qr-code') 0 0 0 0 stretch stretch;</string>
-            </property>
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -60,6 +54,9 @@
             <height>30</height>
            </size>
           </property>
+          <property name="styleSheet">
+           <string notr="true">border-image: url(':/icons/qr-code') 0 0 0 0 stretch stretch;</string>
+          </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
@@ -67,14 +64,16 @@
         </item>
         <item>
          <widget class="QValidatedLineEdit" name="payTo">
-            <property name="placeholderText">
-            <string>Wallet Address</string>
-            </property>
+          <property name="toolTip">
+           <string>DAPS Wallet Address to send to</string>
+          </property>
+          <property name="placeholderText">
+           <string>Wallet Address</string>
+          </property>
          </widget>
         </item>
         <item>
-         <widget class="QToolButton" name="addressBookButton">
-         </widget>
+         <widget class="QToolButton" name="addressBookButton"/>
         </item>
         <item>
          <widget class="QToolButton" name="deleteButton">
@@ -96,9 +95,6 @@
        <layout class="QHBoxLayout" name="horizontalLayout_15">
         <item>
          <widget class="QLabel" name="labelLabel">
-           <property name="styleSheet">
-            <string notr="true">border-image: url(':/icons/cashbook') 0 0 0 0 stretch stretch;</string>
-            </property>
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -110,6 +106,9 @@
             <width>30</width>
             <height>30</height>
            </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">border-image: url(':/icons/cashbook') 0 0 0 0 stretch stretch;</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -118,9 +117,12 @@
         </item>
         <item>
          <widget class="QLineEdit" name="addAsLabel">
-            <property name="placeholderText">
-            <string>Description (Optional)</string>
-            </property>
+          <property name="toolTip">
+           <string>An optional description to attach to the payment</string>
+          </property>
+          <property name="placeholderText">
+           <string>Description (Optional)</string>
+          </property>
          </widget>
         </item>
        </layout>
@@ -129,9 +131,6 @@
        <layout class="QHBoxLayout" name="horizontalLayout_13">
         <item>
          <widget class="QLabel" name="amountLabel">
-          <property name="styleSheet">
-            <string notr="true">border-image: url(':/icons/wallet') 0 0 0 0 stretch stretch;</string>
-            </property>
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -144,11 +143,8 @@
             <height>30</height>
            </size>
           </property>
-          <property name="minimumSize">
-           <size>
-            <width>30</width>
-            <height>30</height>
-           </size>
+          <property name="styleSheet">
+           <string notr="true">border-image: url(':/icons/wallet') 0 0 0 0 stretch stretch;</string>
           </property>
           <property name="text">
            <string/>
@@ -162,17 +158,33 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="payAmount">
-          </widget>
+         <widget class="QLineEdit" name="payAmount">
+          <property name="toolTip">
+           <string>Amount of DAPS to send to address above</string>
+          </property>
+          <property name="placeholderText">
+           <string>DAPS Amount</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
-     </layout>
-    </item>
+        <item alignment="Qt::AlignRight">
+         <widget class="QPushButton" name="clearAllButton">
+        <property name="toolTip">
+         <string>Clear all of the fields above</string>
+        </property>
+          <property name="text">
+           <string>Clear All</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
    </layout>
   </widget>
   <widget class="QFrame" name="SendCoins_InsecurePaymentRequest">
-    <property name="autoFillBackground">
+   <property name="autoFillBackground">
     <bool>true</bool>
    </property>
    <layout class="QGridLayout" name="gridLayout_is">
@@ -340,15 +352,15 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>QValidatedLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>qvalidatedlineedit.h</header>
+  </customwidget>
+  <customwidget>
    <class>BitcoinAmountField</class>
    <extends>QLineEdit</extends>
    <header>bitcoinamountfield.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QValidatedLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>qvalidatedlineedit.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>
@@ -357,12 +369,6 @@
   <tabstop>payAmount_s</tabstop>
   <tabstop>deleteButton_s</tabstop>
  </tabstops>
- <resources>
-  <include location="../DAPS/NewWallet/res.qrc"/>
-  <include location="C:/Users/ryanm/Downloads/DAPS-develop/src/qt/dapscoin2.qrc"/>
-  <include location="C:/Users/ryanm/Downloads/DAPS-develop/src/qt/dapscoin.qrc"/>
-  <include location="../../Downloads/DAPS-develop/src/qt/dapscoin.qrc"/>
-  <include location="../../git/DAPS/src/qt/dapscoin.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

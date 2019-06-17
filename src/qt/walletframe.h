@@ -29,14 +29,10 @@ public:
     ~WalletFrame();
 
     void setClientModel(ClientModel* clientModel);
-
     bool addWallet(const QString& name, WalletModel* walletModel);
     bool setCurrentWallet(const QString& name);
     bool removeWallet(const QString& name);
     void removeAllWallets();
-
-    bool handlePaymentRequest(const SendCoinsRecipient& recipient);
-
     void showSyncStatus(bool fShow);
 
 private:
@@ -44,9 +40,7 @@ private:
     BitcoinGUI* gui;
     ClientModel* clientModel;
     QMap<QString, WalletView*> mapWalletViews;
-
     bool bOutOfSync;
-
     WalletView* currentWalletView();
 
 public slots:
@@ -60,8 +54,6 @@ public slots:
     void gotoReceiveCoinsPage();
     /** Switch to options page */
     void gotoOptionsPage();
-    /** Switch to privacy page */
-//    void gotoPrivacyPage();
     /** Switch to send coins page */
     void gotoSendCoinsPage(QString addr = "");
     /** Switch to explorer page */

@@ -18,6 +18,7 @@
 #include <QPoint>
 #include <QPushButton>
 #include <QSystemTrayIcon>
+#include <QProgressDialog>
 
 class ClientModel;
 class NetworkStyle;
@@ -127,6 +128,8 @@ private:
     QAction* showHelpMessageAction;
     QAction* multiSendAction;
 
+    QProgressDialog* progressDialog = nullptr;
+
     QSystemTrayIcon* trayIcon;
     QMenu* trayIconMenu;
     Notificator* notificator;
@@ -137,6 +140,8 @@ private:
     /** Keep track of previous number of blocks, to detect progress */
     int prevBlocks;
     int spinnerFrame;
+    QPoint m_previousPos;
+    bool m_fMousePress;
 
     /** Create the main UI actions. */
     void createActions(const NetworkStyle* networkStyle);
@@ -181,6 +186,9 @@ public slots:
     void message(const QString& title, const QString& message, unsigned int style, bool* ret = NULL);
 
     void setStakingStatus();
+    void setStakingInProgress(bool);
+
+    void exitApp();
 
 #ifdef ENABLE_WALLET
     /** Set the encryption status as shown in the UI.
@@ -189,10 +197,8 @@ public slots:
     */
     void setEncryptionStatus(int status);
 
-    bool handlePaymentRequest(const SendCoinsRecipient& recipient);
-
     /** Show incoming transaction notification for new transactions. */
-    void incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address);
+    void incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address, const QString& confirmations);
 #endif // ENABLE_WALLET
 
 private slots:
@@ -249,6 +255,9 @@ private slots:
 
     /** called by a timer to check if fRequestShutdown has been set **/
     void detectShutdown();
+
+    /** Show progress dialog e.g. for verifychain */
+    void showProgress(const QString &title, int nProgress);
 };
 
 class UnitDisplayStatusBarControl : public QLabel

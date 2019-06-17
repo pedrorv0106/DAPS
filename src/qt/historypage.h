@@ -19,6 +19,7 @@
 #include <QSettings>
 #include <QTimeEdit>
 #include <QVariant>
+#include <QSizeGrip>
 
 class WalletModel;
 
@@ -44,7 +45,7 @@ public:
 public slots:
     void updateFilter();
     void syncTime(QDateTimeEdit* calendar, QTimeEdit* clock);
-
+    void txalert(QString, int, CAmount, QString, QString, QString);
 
 
 protected:
@@ -68,8 +69,8 @@ private:
     void updateTableData(CWallet *wallet);
     void updateAddressBookData(CWallet *wallet);
 
-
 private slots:
+    void on_cellClicked(int row, int column);
 };
 
 #endif // BITCOIN_QT_HISTORYPAGE_H

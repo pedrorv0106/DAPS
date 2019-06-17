@@ -15,6 +15,7 @@
 
 #include <QApplication>
 #include <QClipboard>
+#include <QDoubleValidator>
 
 SendCoinsEntry::SendCoinsEntry(QWidget* parent) : QStackedWidget(parent),
                                                   ui(new Ui::SendCoinsEntry),
@@ -28,21 +29,27 @@ SendCoinsEntry::SendCoinsEntry(QWidget* parent) : QStackedWidget(parent),
 #ifdef Q_OS_MAC
     ui->payToLayout_s->setSpacing(4);
 #endif
-// #if QT_VERSION >= 0x040700
-//     ui->addAsLabel->setPlaceholderText(tr("Enter a label for this address to add it to your address book"));
-// #endif
 
     // normal dapscoin address field
     GUIUtil::setupAddressWidget(ui->payTo, this);
 
     // Connect signals
-    connect(ui->payAmount, SIGNAL(valueChanged()), this, SIGNAL(payAmountChanged()));
     connect(ui->deleteButton, SIGNAL(clicked()), this, SLOT(deleteClicked()));
     connect(ui->deleteButton_is, SIGNAL(clicked()), this, SLOT(deleteClicked()));
     connect(ui->deleteButton_s, SIGNAL(clicked()), this, SLOT(deleteClicked()));
-
     // #HIDE multisend
     ui->deleteButton->setVisible(false);
+
+    //Cam: Hide address book button
+    ui->addressBookButton->setVisible(false);
+
+    QDoubleValidator *dblVal = new QDoubleValidator(0, Params().MAX_MONEY, 6, ui->payAmount);
+    dblVal->setNotation(QDoubleValidator::StandardNotation);
+    dblVal->setLocale(QLocale::C);
+    ui->payAmount->setValidator(dblVal);
+
+
+    //place holder text for payAmount
 }
 
 SendCoinsEntry::~SendCoinsEntry()
@@ -68,6 +75,13 @@ void SendCoinsEntry::on_addressBookButton_clicked()
     }
 }
 
+void SendCoinsEntry::on_clearAllButton_clicked()
+{
+    ui->payTo->clear();
+    ui->addAsLabel->clear();
+    ui->payAmount->clear();
+}
+
 void SendCoinsEntry::on_payTo_textChanged(const QString& address)
 {
     updateLabel(address);
@@ -89,9 +103,6 @@ void SendCoinsEntry::clear()
     ui->payTo->clear();
     ui->addAsLabel->clear();
     ui->payAmount->clear();
-    // #remove ui->messageTextLabel->clear();
-    // #remove ui->messageTextLabel->hide();
-    // #remove ui->messageLabel->hide();
     // clear UI elements for insecure payment request
     ui->payTo_is->clear();
     ui->memoTextLabel_is->clear();
@@ -110,41 +121,18 @@ void SendCoinsEntry::deleteClicked()
     emit removeEntry(this);
 }
 
-// bool SendCoinsEntry::validate()
-// {
-//     if (!model)
-//         return false;
+static inline int64_t roundint64(double d)
+{
+    return (int64_t)(d > 0 ? d + 0.5 : d - 0.5);
+}
 
-//     // Check input validity
-//     bool retval = true;
-
-//     // Skip checks for payment request
-//     if (recipient.paymentRequest.IsInitialized())
-//         return retval;
-
-//     // if (!model->validateAddress(ui->payTo->text())) {
-//     //     ui->payTo->setValid(false);
-//     //     retval = false;
-//     // }
-
-//     if (!ui->payAmount->validate()) {
-//         retval = false;
-//     }
-
-//     // Sending a zero amount is invalid
-//     if (ui->payAmount->value(0) <= 0) {
-//         ui->payAmount->setValid(false);
-//         retval = false;
-//     }
-
-//     // Reject dust outputs:
-//     if (retval && GUIUtil::isDust(ui->payTo->text(), ui->payAmount->value())) {
-//         ui->payAmount->setValid(false);
-//         retval = false;
-//     }
-
-//     return retval;
-// }
+CAmount SendCoinsEntry::getValidatedAmount() {
+    double dAmount = ui->payAmount->text().toDouble();
+    if (dAmount < 0.0 || dAmount > Params().MAX_MONEY)
+        throw runtime_error("Invalid amount, amount should be < 2.1B DAPS");
+    CAmount nAmount = roundint64(dAmount * COIN);
+    return nAmount;
+}
 
 SendCoinsRecipient SendCoinsEntry::getValue()
 {
@@ -155,8 +143,7 @@ SendCoinsRecipient SendCoinsEntry::getValue()
     // Normal payment
     recipient.address = ui->payTo->text();
     recipient.label = ui->addAsLabel->text();
-    recipient.amount = ui->payAmount->value();
-    // #remove recipient.message = ui->messageTextLabel->text();
+    recipient.amount = getValidatedAmount();
 
     return recipient;
 }
@@ -165,10 +152,7 @@ QWidget* SendCoinsEntry::setupTabChain(QWidget* prev)
 {
     QWidget::setTabOrder(prev, ui->payTo);
     QWidget::setTabOrder(ui->payTo, ui->addAsLabel);
-    //QWidget* w = ui->payAmount->setupTabChain(ui->addAsLabel);
-   // QWidget::setTabOrder(w, ui->addressBookButton);
-    // #remove QWidget::setTabOrder(ui->addressBookButton, ui->pasteButton);
-   // #remove QWidget::setTabOrder(ui->pasteButton, ui->deleteButton);
+
     return ui->deleteButton;
 }
 
@@ -195,16 +179,11 @@ void SendCoinsEntry::setValue(const SendCoinsRecipient& value)
         }
     } else // normal payment
     {
-        // message
-        // #remove ui->messageTextLabel->setText(recipient.message);
-        // #remove ui->messageTextLabel->setVisible(!recipient.message.isEmpty());
-        // #remove ui->messageLabel->setVisible(!recipient.message.isEmpty());
-
         ui->addAsLabel->clear();
         ui->payTo->setText(recipient.address); // this may set a label from addressbook
         if (!recipient.label.isEmpty())        // if a label had been set from the addressbook, dont overwrite with an empty label
             ui->addAsLabel->setText(recipient.label);
-        ui->payAmount->setValue(recipient.amount);
+        ui->payAmount->setText(QString::number((double)(recipient.amount) / (double)COIN, 'f', 3));
     }
 }
 
@@ -228,7 +207,6 @@ void SendCoinsEntry::updateDisplayUnit()
 {
     if (model && model->getOptionsModel()) {
         // Update payAmount with the current unit
-        //ui->payAmount->setDisplayUnit(model->getOptionsModel()->getDisplayUnit());
         ui->payAmount_is->setDisplayUnit(model->getOptionsModel()->getDisplayUnit());
         ui->payAmount_s->setDisplayUnit(model->getOptionsModel()->getDisplayUnit());
     }
@@ -247,4 +225,16 @@ bool SendCoinsEntry::updateLabel(const QString& address)
     }
 
     return false;
+}
+
+void SendCoinsEntry::errorAddress(bool valid){
+    if (valid)
+        ui->payTo->setStyleSheet(GUIUtil::loadStyleSheet());
+    else ui->payTo->setStyleSheet("border-color: red;");
+}
+
+void SendCoinsEntry::errorAmount(bool valid){
+    if (valid)
+        ui->payAmount->setStyleSheet(GUIUtil::loadStyleSheet());
+    else ui->payAmount->setStyleSheet("border-color: red;");
 }

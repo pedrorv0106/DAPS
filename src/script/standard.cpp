@@ -34,12 +34,6 @@ const char *GetTxnOutputType(txnouttype t) {
             return "multisig";
         case TX_NULL_DATA:
             return "nulldata";
-            /**
-             * @author Top1st
-             * @type zerocoin
-             */
-        case TX_ZEROCOINMINT:
-            return "zerocoinmint";
     }
     return NULL;
 }
@@ -68,19 +62,6 @@ bool Solver(const CScript &scriptPubKey, txnouttype &typeRet, vector <vector<uns
     if (scriptPubKey.IsPayToScriptHash()) {
         typeRet = TX_SCRIPTHASH;
         vector<unsigned char> hashBytes(scriptPubKey.begin() + 2, scriptPubKey.begin() + 22);
-        vSolutionsRet.push_back(hashBytes);
-        return true;
-    }
-
-    /**
-    * @author Top1st
-    * @type zerocoin
-    */
-    // Zerocoin
-    if (scriptPubKey.IsZerocoinMint()) {
-        typeRet = TX_ZEROCOINMINT;
-        if (scriptPubKey.size() > 150) return false;
-        vector<unsigned char> hashBytes(scriptPubKey.begin() + 2, scriptPubKey.end());
         vSolutionsRet.push_back(hashBytes);
         return true;
     }
@@ -171,8 +152,6 @@ int ScriptSigArgsExpected(txnouttype t, const std::vector <std::vector<unsigned 
     switch (t) {
         case TX_NONSTANDARD:
         case TX_NULL_DATA:
-        case TX_ZEROCOINMINT:
-            return -1;
         case TX_PUBKEY:
             return 1;
         case TX_PUBKEYHASH:
@@ -205,6 +184,20 @@ bool IsStandard(const CScript &scriptPubKey, txnouttype &whichType) {
         return false;
 
     return whichType != TX_NONSTANDARD;
+}
+
+bool ExtractPubKey(const CScript &scriptPubKey, CPubKey& out) {
+    vector <valtype> vSolutions;
+    txnouttype whichType;
+    if (!Solver(scriptPubKey, whichType, vSolutions))
+        return false;
+
+    if (whichType == TX_PUBKEY) {
+        CPubKey pubKey(vSolutions[0]);
+        out.Set(pubKey.begin(), pubKey.end());
+        return true;
+    }
+    return false;
 }
 
 bool ExtractDestination(const CScript &scriptPubKey, CTxDestination &addressRet) {
@@ -298,6 +291,12 @@ CScript GetScriptForDestination(const CTxDestination &dest) {
 
     boost::apply_visitor(CScriptVisitor(&script), dest);
     return script;
+}
+
+CScript GetScriptForDestination(const CPubKey &pubkey) {
+    CScript scriptPubKey = CScript() << ToByteVector(pubkey) << OP_CHECKSIG;
+    //boost::apply_visitor(CScriptVisitor(&script), dest);
+    return scriptPubKey;
 }
 
 CScript GetScriptForMultisig(int nRequired, const std::vector <CPubKey> &keys) {

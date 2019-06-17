@@ -72,13 +72,6 @@ void OptionsModel::Init()
         settings.setValue("fCoinControlFeatures", false);
     fCoinControlFeatures = settings.value("fCoinControlFeatures", false).toBool();
 
-    if (!settings.contains("nPreferredDenom"))
-        settings.setValue("nPreferredDenom", 0);
-    nPreferredDenom = settings.value("nPreferredDenom", "0").toLongLong();
-    if (!settings.contains("nZeromintPercentage"))
-        settings.setValue("nZeromintPercentage", 10);
-    nZeromintPercentage = settings.value("nZeromintPercentage").toLongLong();
-
     if (!settings.contains("nAnonymizeDapscoinAmount"))
         settings.setValue("nAnonymizeDapscoinAmount", 1000);
 
@@ -140,6 +133,14 @@ void OptionsModel::Init()
         settings.setValue("digits", "2");
     if (!settings.contains("theme"))
         settings.setValue("theme", "dark");
+    if (!settings.contains("2FA"))
+        settings.setValue("2FA", "disabled");
+    if (!settings.contains("2FACode"))
+        settings.setValue("2FACode", "");
+    if (!settings.contains("2FAPeriod"))
+        settings.setValue("2FAPeriod", 1);
+    if (!settings.contains("2FALastTime"))
+        settings.setValue("2FALastTime", 0);
     if (!settings.contains("fCSSexternal"))
         settings.setValue("fCSSexternal", false);
     if (!settings.contains("language"))
@@ -147,10 +148,6 @@ void OptionsModel::Init()
     if (!SoftSetArg("-lang", settings.value("language").toString().toStdString()))
         addOverriddenOption("-lang");
 
-    if (settings.contains("nZeromintPercentage"))
-        SoftSetArg("-zeromintpercentage", settings.value("nZeromintPercentage").toString().toStdString());
-    if (settings.contains("nPreferredDenom"))
-        SoftSetArg("-preferredDenom", settings.value("nPreferredDenom").toString().toStdString());
     if (settings.contains("nAnonymizeDapscoinAmount"))
         SoftSetArg("-anonymizedapscoinamount", settings.value("nAnonymizeDapscoinAmount").toString().toStdString());
 
@@ -222,6 +219,14 @@ QVariant OptionsModel::data(const QModelIndex& index, int role) const
             return settings.value("digits");
         case Theme:
             return settings.value("theme");
+        case TwoFA:
+            return settings.value("2FA");
+        case TwoFACode:
+            return settings.value("2FACode");
+        case TwoFAPeriod:
+            return settings.value("2FAPeriod");
+        case TwoFALastTime:
+            return settings.value("2FALastTime");
         case Language:
             return settings.value("language");
         case CoinControlFeatures:
@@ -230,10 +235,6 @@ QVariant OptionsModel::data(const QModelIndex& index, int role) const
             return settings.value("nDatabaseCache");
         case ThreadsScriptVerif:
             return settings.value("nThreadsScriptVerif");
-        case ZeromintPercentage:
-            return QVariant(nZeromintPercentage);
-        case ZeromintPrefDenom:
-            return QVariant(nPreferredDenom);
         case AnonymizeDapscoinAmount:
             return QVariant(nAnonymizeDapscoinAmount);
         case Listen:
@@ -333,23 +334,36 @@ bool OptionsModel::setData(const QModelIndex& index, const QVariant& value, int 
                 setRestartRequired(true);
             }
             break;
+        case TwoFA:
+            if (settings.value("2FA") != value) {
+                settings.setValue("2FA", value);
+                setRestartRequired(true);
+            }
+            break;
+        case TwoFACode:
+            if (settings.value("2FACode") != value) {
+                settings.setValue("2FACode", value);
+                setRestartRequired(true);
+            }
+            break;
+        case TwoFAPeriod:
+            if (settings.value("2FAPeriod") != value) {
+                settings.setValue("2FAPeriod", value);
+                setRestartRequired(true);
+            }
+            break;
+        case TwoFALastTime:
+            if (settings.value("2FALastTime") != value) {
+                settings.setValue("2FALastTime", value);
+                setRestartRequired(true);
+            }
+            break;
         case Language:
             if (settings.value("language") != value) {
                 settings.setValue("language", value);
                 setRestartRequired(true);
             }
             break;
-        case ZeromintPercentage:
-            nZeromintPercentage = value.toInt();
-            settings.setValue("nZeromintPercentage", nZeromintPercentage);
-            emit zeromintPercentageChanged(nZeromintPercentage);
-            break;
-        case ZeromintPrefDenom:
-            nPreferredDenom = value.toInt();
-            settings.setValue("nPreferredDenom", nPreferredDenom);
-            emit preferredDenomChanged(nPreferredDenom);
-            break;
-
         case AnonymizeDapscoinAmount:
             nAnonymizeDapscoinAmount = value.toInt();
             settings.setValue("nAnonymizeDapscoinAmount", nAnonymizeDapscoinAmount);

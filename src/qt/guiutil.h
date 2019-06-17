@@ -42,6 +42,7 @@ QString dateTimeStr(qint64 nTime);
 // Render DAPScoin addresses in monospace font
 QFont bitcoinAddressFont();
 
+void HideDisabledWidgets(QVector<QWidget*> widgets  );
 
 
 // Set up widgets for address and amounts
@@ -135,9 +136,7 @@ class ToolTipEventFilter : public QObject
     Q_OBJECT
 public:
     explicit ToolTipEventFilter(QObject* parent=0);
-    //explicit ToolTipEventFilter(QObject* parent);
 protected:
-    // bool eventFilter(QObject* object, QEvent* event) override;
     bool eventFilter(QObject* object, QEvent* event) override
     {
         if (event->type() == QEvent::ToolTip)
@@ -146,15 +145,6 @@ protected:
             return object->eventFilter(object, event);
     }
 };
-// bool ToolTipEventFilter::eventFilter(QObject* object, QEvent* event) override
-// {
-//     if (event->type() == QEvent::ToolTip)
-//         return true;
-//     else
-//         return object->eventFilter(object, event);
-// }
-//ToolTipEventFilter::ToolTipEventFilter(){}
-//ToolTipEventFilter::ToolTipEventFilter(QObject* parent){}
 
 class ToolTipToRichTextFilter : public QObject
 {

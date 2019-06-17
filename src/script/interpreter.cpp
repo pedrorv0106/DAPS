@@ -13,6 +13,7 @@
 #include "pubkey.h"
 #include "script/script.h"
 #include "uint256.h"
+#include "util.h"
 
 using namespace std;
 
@@ -47,6 +48,9 @@ bool CastToBool(const valtype& vch)
                 return false;
             return true;
         }
+    }
+    if (vch.size() == 0) {
+    	return true;
     }
     return false;
 }
@@ -1090,22 +1094,23 @@ bool VerifyScript(const CScript& scriptSig, const CScript& scriptPubKey, unsigne
     if ((flags & SCRIPT_VERIFY_SIGPUSHONLY) != 0 && !scriptSig.IsPushOnly()) {
         return set_error(serror, SCRIPT_ERR_SIG_PUSHONLY);
     }
-
     vector<vector<unsigned char> > stack, stackCopy;
-    if (!EvalScript(stack, scriptSig, flags, checker, serror))
+    if (!EvalScript(stack, scriptSig, flags, checker, serror)) {
         // serror is set
         return false;
+    }
     if (flags & SCRIPT_VERIFY_P2SH)
         stackCopy = stack;
-    if (!EvalScript(stack, scriptPubKey, flags, checker, serror))
+    if (!EvalScript(stack, scriptPubKey, flags, checker, serror)) {
         // serror is set
         return false;
-    if (stack.empty())
+    }
+    if (stack.empty()) {
         return set_error(serror, SCRIPT_ERR_EVAL_FALSE);
-
-    if (CastToBool(stack.back()) == false)
+    }
+    if (CastToBool(stack.back()) == false) {
         return set_error(serror, SCRIPT_ERR_EVAL_FALSE);
-
+    }
     // Additional validation for spend-to-script-hash transactions:
     if ((flags & SCRIPT_VERIFY_P2SH) && scriptPubKey.IsPayToScriptHash())
     {
@@ -1132,6 +1137,5 @@ bool VerifyScript(const CScript& scriptSig, const CScript& scriptPubKey, unsigne
         else
             return set_success(serror);
     }
-
     return set_success(serror);
 }

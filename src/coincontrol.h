@@ -15,6 +15,8 @@ class CCoinControl
 {
 public:
     CTxDestination destChange;
+    CPubKey receiver;
+    CKey txPriv;//for change UTXO
     bool useObfuScation;
     bool useSwiftTX;
     bool fSplitBlock;

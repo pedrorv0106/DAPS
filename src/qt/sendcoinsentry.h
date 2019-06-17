@@ -8,6 +8,7 @@
 #include "walletmodel.h"
 
 #include <QStackedWidget>
+#include <QSpinBox>
 
 class WalletModel;
 
@@ -37,6 +38,8 @@ public:
 
     void setValue(const SendCoinsRecipient& value);
     void setAddress(const QString& address);
+    void errorAddress(bool valid);
+    void errorAmount(bool valid);
 
     /** Set up the tab chain manually, as Qt messes up the tab chain by default in some cases
      *  (issue https://bugreports.qt-project.org/browse/QTBUG-10907).
@@ -51,12 +54,14 @@ public slots:
 signals:
     void removeEntry(SendCoinsEntry* entry);
     void payAmountChanged();
+    void validateAmount(const QString& textAmount);
 
 private slots:
     void deleteClicked();
     void on_payTo_textChanged(const QString& address);
     void on_addressBookButton_clicked();
     void on_pasteButton_clicked();
+	void on_clearAllButton_clicked();
     void updateDisplayUnit();
 
 private:
@@ -65,6 +70,8 @@ private:
     WalletModel* model;
 
     bool updateLabel(const QString& address);
+
+    CAmount getValidatedAmount();
 };
 
 #endif // BITCOIN_QT_SENDCOINSENTRY_H

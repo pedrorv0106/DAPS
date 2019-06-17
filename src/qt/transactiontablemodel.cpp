@@ -126,6 +126,7 @@ public:
                     qWarning() << "TransactionTablePriv::updateWallet : Warning: Got CT_NEW, but transaction is not in wallet";
                     break;
                 }
+
                 // Added -- insert at the right position
                 QList<TransactionRecord> toInsert =
                     TransactionRecord::decomposeTransaction(wallet, mi->second);
@@ -210,7 +211,7 @@ TransactionTableModel::TransactionTableModel(CWallet* wallet, WalletModel* paren
                                                                                      priv(new TransactionTablePriv(wallet, this)),
                                                                                      fProcessingQueuedTransactions(false)
 {
-    columns << QString() << QString() << tr("Date") << tr("Type") << tr("Address") << BitcoinUnits::getAmountColumnTitle(walletModel->getOptionsModel()->getDisplayUnit());
+    columns << QString() << QString() << tr("Date") << tr("Type") << tr("Address") << BitcoinUnits::getAmountColumnTitle(walletModel->getOptionsModel()->getDisplayUnit()) << tr("Confirmations");
     priv->refreshWallet();
 
     connect(walletModel->getOptionsModel(), SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit()));
@@ -237,6 +238,7 @@ void TransactionTableModel::updateTransaction(const QString& hash, int status, b
     updated.SetHex(hash.toStdString());
 
     priv->updateWallet(updated, status, showTransaction);
+    emit walletModel->RefreshRecent();
 }
 
 void TransactionTableModel::updateConfirmations()
@@ -355,20 +357,14 @@ QString TransactionTableModel::formatTxType(const TransactionRecord* wtx) const
         return tr("Obfuscation Create Denominations");
     case TransactionRecord::Obfuscated:
         return tr("Obfuscated");
-    case TransactionRecord::ZerocoinMint:
-        return tr("Converted Daps to zDaps");
-    case TransactionRecord::ZerocoinSpend:
-        return tr("Spent zDaps");
-    case TransactionRecord::RecvFromZerocoinSpend:
-        return tr("Received Daps from zDaps");
-    case TransactionRecord::ZerocoinSpend_Change_zDaps:
-        return tr("Minted Change as zDaps from zDaps Spend");
-    case TransactionRecord::ZerocoinSpend_FromMe:
-        return tr("Converted zDaps to Daps");
-
     default:
         return QString();
     }
+}
+
+QString TransactionTableModel::formatTxConfirmations(const TransactionRecord* wtx) const
+{
+    return QString::number(wtx->status.depth);
 }
 
 QVariant TransactionTableModel::txAddressDecoration(const TransactionRecord* wtx) const
@@ -381,11 +377,9 @@ QVariant TransactionTableModel::txAddressDecoration(const TransactionRecord* wtx
     case TransactionRecord::RecvWithObfuscation:
     case TransactionRecord::RecvWithAddress:
     case TransactionRecord::RecvFromOther:
-    case TransactionRecord::RecvFromZerocoinSpend:
         return QIcon(":/icons/tx_input");
     case TransactionRecord::SendToAddress:
     case TransactionRecord::SendToOther:
-    case TransactionRecord::ZerocoinSpend:
         return QIcon(":/icons/tx_output");
     default:
         return QIcon(":/icons/tx_inout");
@@ -409,18 +403,13 @@ QString TransactionTableModel::formatTxToAddress(const TransactionRecord* wtx, b
     case TransactionRecord::SendToAddress:
     case TransactionRecord::Generated:
     case TransactionRecord::StakeMint:
-    case TransactionRecord::ZerocoinSpend:
-    case TransactionRecord::ZerocoinSpend_FromMe:
-    case TransactionRecord::RecvFromZerocoinSpend:
         return lookupAddress(wtx->address, tooltip);
     case TransactionRecord::Obfuscated:
         return lookupAddress(wtx->address, tooltip) + watchAddress;
     case TransactionRecord::SendToOther:
         return QString::fromStdString(wtx->address) + watchAddress;
-    case TransactionRecord::ZerocoinMint:
-    case TransactionRecord::ZerocoinSpend_Change_zDaps:
-        return tr("zDaps Accumulator");
     case TransactionRecord::SendToSelf:
+        return QString::fromStdString(wtx->address) + watchAddress;
     default:
         return tr("(n/a)") + watchAddress;
     }
@@ -543,6 +532,8 @@ QVariant TransactionTableModel::data(const QModelIndex& index, int role) const
             return formatTxToAddress(rec, false);
         case Amount:
             return formatTxAmount(rec, true, BitcoinUnits::separatorAlways);
+        case Confirmations:
+            return formatTxConfirmations(rec);
         }
         break;
     case Qt::EditRole:
@@ -560,6 +551,8 @@ QVariant TransactionTableModel::data(const QModelIndex& index, int role) const
             return formatTxToAddress(rec, true);
         case Amount:
             return qint64(rec->credit + rec->debit);
+        case Confirmations:
+            return formatTxConfirmations(rec);
         }
         break;
     case Qt::ToolTipRole:
@@ -633,6 +626,8 @@ QVariant TransactionTableModel::headerData(int section, Qt::Orientation orientat
                 return tr("Destination address of transaction.");
             case Amount:
                 return tr("Amount removed from or added to balance.");
+            case Confirmations:
+                return tr("Confirmed Count.");
             }
         }
     }

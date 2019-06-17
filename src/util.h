@@ -28,6 +28,7 @@
 
 #include <boost/filesystem/path.hpp>
 #include <boost/thread/exceptions.hpp>
+#include "pubkey.h"
 
 //DAPScoin only features
 
@@ -35,12 +36,9 @@ extern bool fMasterNode;
 extern bool fLiteMode;
 extern bool fEnableSwiftTX;
 extern int nSwiftTXDepth;
-extern int nZeromintPercentage;
 extern const int64_t AUTOMINT_DELAY;
-extern int nPreferredDenom;
 extern int nAnonymizeDapscoinAmount;
 extern int nLiquidityProvider;
-extern bool fEnableZeromint;
 extern int64_t enforceMasternodePaymentsTime;
 extern std::string strMasterNodeAddr;
 extern int keysLoaded;
@@ -227,5 +225,7 @@ void TraceThread(const char* name, Callable func)
         throw;
     }
 }
+
+bool PointHashingSuccessively(const CPubKey& pk, const unsigned char* tweak, unsigned char* out);
 
 #endif // BITCOIN_UTIL_H

@@ -188,12 +188,17 @@ public:
         return std::vector<unsigned char>(vch, vch + size());
     }
 
-    std::string GetHex()
+    std::string GetHex() const
     {
-        std::string my_std_string(reinterpret_cast<const char*>(vch), 65);
-        return my_std_string;
+        unsigned int sz = size();
+        char psz[sz * 2 + 1];
+        for (unsigned int i = 0; i < sz; i++)
+            sprintf(psz + i * 2, "%02x", vch[sz - i - 1]);
+        return std::string(psz, psz + sz * 2);
     }
 };
+
+typedef CPubKey CKeyImage;
 
 struct CExtPubKey {
     unsigned char nDepth;

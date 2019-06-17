@@ -89,7 +89,7 @@ namespace GUIUtil
 {
 QString dateTimeStr(const QDateTime& date)
 {
-    return date.date().toString(Qt::SystemLocaleShortDate) + QString(" ") + date.toString("hh:mm");
+    return date.date().toString(Qt::SystemLocaleShortDate) + QString(" ") + date.toString("hh:mm:ss");
 }
 
 QString dateTimeStr(qint64 nTime)
@@ -117,8 +117,6 @@ void setupAddressWidget(QValidatedLineEdit* widget, QWidget* parent)
     // and this is the only place, where this address is supplied.
 
 #endif
-    widget->setValidator(new BitcoinAddressEntryValidator(parent));
-    widget->setCheckValidator(new BitcoinAddressCheckValidator(parent));
 }
 
 void setupAmountWidget(QLineEdit* widget, QWidget* parent)
@@ -808,6 +806,12 @@ void saveWindowGeometry(const QString& strSetting, QWidget* parent)
     settings.setValue(strSetting + "Size", parent->size());
 }
 
+void HideDisabledWidgets( QVector<QWidget*> widgets ){
+    auto hide = []( QWidget* widget) { widget->setVisible(false); };
+    for_each (widgets.begin(), widgets.end(), hide);
+}
+
+
 void restoreWindowGeometry(const QString& strSetting, const QSize& defaultSize, QWidget* parent)
 {
     QSettings settings;
@@ -829,9 +833,9 @@ QString loadStyleSheet()
 {
     QString styleSheet;
     QSettings settings;
-    QVariant theme = settings.value("theme", "");
-    QString cssName = QString(":/css/"+theme.toString());
-
+    QVariant theme = settings.value("theme");
+    QString cssName = QString(":/css/" + theme.toString());
+    LogPrintf("\nloadStyleSheet: Loading stylesheet %s\n", cssName.toStdString());
         // Build-in CSS
     settings.setValue("fCSSexternal", false);
 
@@ -863,15 +867,12 @@ void setWindowless(QWidget* widget){
 }
 
 void disableTooltips(QWidget* widget){
-   // ToolTipEventFilter *ToolTipEventFilter = new GUIUtil::ToolTipEventFilter();
-   // widget->installEventFilter(ToolTipEventFilter);
 }
 
 void prompt(QString message){
     QMessageBox* errorPrompt = new QMessageBox();
     GUIUtil::setWindowless(errorPrompt);
     errorPrompt->setStyleSheet(GUIUtil::loadStyleSheet());
-    //errorPrompt->setStyleSheet("background: qlineargradient(x1: 0 y1: 0, x2: 1 y2: 1, stop: 0 #5e0057, stop: 1 #1f192a);");
     errorPrompt->setText(message);
     errorPrompt->exec();
 }
@@ -889,7 +890,6 @@ void colorCalendarWidgetWeekends(QCalendarWidget* widget, QColor color)
     widget->findChild<QWidget*>("qt_calendar_calendarview")->setStyleSheet("padding:5px; margin:0;");
     widget->findChild<QAbstractButton*>("qt_calendar_prevmonth")->setIcon(QIcon(":/images/leftArrow_small"));
     widget->findChild<QAbstractButton*>("qt_calendar_nextmonth")->setIcon(QIcon(":/images/rightArrow_small"));
-    //widget->findChild<QComboBox*>("qt_calendar_monthbutton");
 }
 
 void setClipboard(const QString& str)

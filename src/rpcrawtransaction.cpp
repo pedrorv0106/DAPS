@@ -18,6 +18,7 @@
 #include "script/standard.h"
 #include "uint256.h"
 #include "utilmoneystr.h"
+#include "wallet.h"
 #ifdef ENABLE_WALLET
 #include "wallet.h"
 #endif
@@ -69,20 +70,55 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
     entry.push_back(Pair("txid", tx.GetHash().GetHex()));
     entry.push_back(Pair("version", tx.nVersion));
     entry.push_back(Pair("locktime", (int64_t)tx.nLockTime));
+    entry.push_back(Pair("txfee", ValueFromAmount(tx.nTxFee)));
+    if (tx.hasPaymentID) {
+        entry.push_back(Pair("paymentid", tx.paymentID));
+    }
+    entry.push_back(Pair("txType", (int64_t)tx.txType));
+
     Array vin;
     BOOST_FOREACH (const CTxIn& txin, tx.vin) {
         Object in;
         if (tx.IsCoinBase())
             in.push_back(Pair("coinbase", HexStr(txin.scriptSig.begin(), txin.scriptSig.end())));
         else {
-            in.push_back(Pair("txid", txin.prevout.hash.GetHex()));
-            in.push_back(Pair("vout", (int64_t)txin.prevout.n));
+            {
+                //decoys
+                Array decoys;
+                std::vector<COutPoint> allDecoys = txin.decoys;
+                srand (time(NULL));
+                allDecoys.insert(allDecoys.begin(), txin.prevout);
+                for (size_t i = 0; i < allDecoys.size(); i++) {
+                    Object decoy;
+                    decoy.push_back(Pair("txid", allDecoys[i].hash.GetHex()));
+                    decoy.push_back(Pair("vout", (int64_t)allDecoys[i].n));
+#ifdef ENABLE_WALLET
+                    LOCK(pwalletMain->cs_wallet);
+                    map<uint256, CWalletTx>::const_iterator mi = pwalletMain->mapWallet.find(allDecoys[i].hash);
+                    if (mi != pwalletMain->mapWallet.end()) {
+                        const CWalletTx& prev = (*mi).second;
+                        if (allDecoys[i].n < prev.vout.size()) {
+                            if (pwalletMain->IsMine(prev.vout[allDecoys[i].n])) {
+                                CAmount decodedAmount;
+                                CKey blind;
+                                pwalletMain->RevealTxOutAmount(prev, prev.vout[allDecoys[i].n], decodedAmount, blind);
+                                decoy.push_back(Pair("decoded_amount", ValueFromAmount(decodedAmount)));
+                            }
+                        }
+                    }
+#endif
+                    decoys.push_back(decoy);
+                }
+                in.push_back(Pair("decoys", decoys));
+            }
             Object o;
             o.push_back(Pair("asm", txin.scriptSig.ToString()));
             o.push_back(Pair("hex", HexStr(txin.scriptSig.begin(), txin.scriptSig.end())));
             in.push_back(Pair("scriptSig", o));
         }
         in.push_back(Pair("sequence", (int64_t)txin.nSequence));
+        in.push_back(Pair("keyimage", txin.keyImage.GetHex()));
+        in.push_back(Pair("ringsize", (int64_t) (txin.decoys.size() + 1)));
         vin.push_back(in);
     }
     entry.push_back(Pair("vin", vin));
@@ -95,6 +131,28 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
         Object o;
         ScriptPubKeyToJSON(txout.scriptPubKey, o, true);
         out.push_back(Pair("scriptPubKey", o));
+        out.push_back(Pair("encoded_amount", txout.maskValue.amount.GetHex()));
+        out.push_back(Pair("encoded_mask", txout.maskValue.mask.GetHex()));
+        CPubKey txPubKey(txout.txPub);
+        out.push_back(Pair("txpubkey", txPubKey.GetHex()));
+        out.push_back(Pair("commitment", HexStr(txout.commitment.begin(), txout.commitment.end())));
+
+#ifdef ENABLE_WALLET
+        if (pwalletMain->IsMine(txout)) {
+            CAmount decodedAmount;
+            CKey blind;
+            unsigned char zeroBlind[32];
+            memset(zeroBlind, 0, 32);
+            const unsigned char* pBlind;
+            pwalletMain->RevealTxOutAmount(tx, txout, decodedAmount, blind);
+            if (txout.nValue >0) {
+            	pBlind = zeroBlind;
+            } else {
+            	pBlind = blind.begin();
+            }
+            out.push_back(Pair("decoded_amount", ValueFromAmount(decodedAmount)));
+        }
+#endif
         vout.push_back(out);
     }
     entry.push_back(Pair("vout", vout));
@@ -187,9 +245,7 @@ Value getrawtransaction(const Array& params, bool fHelp)
     uint256 hashBlock = 0;
     if (!GetTransaction(hash, tx, hashBlock, true))
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available about transaction");
-
     string strHex = EncodeHexTx(tx);
-
     if (!fVerbose)
         return strHex;
 
@@ -275,7 +331,7 @@ Value listunspent(const Array& params, bool fHelp)
                 continue;
         }
 
-        CAmount nValue = out.tx->vout[out.i].nValue;
+        CAmount nValue = pwalletMain->getCTxOutValue(*out.tx, out.tx->vout[out.i]);
         const CScript& pk = out.tx->vout[out.i].scriptPubKey;
         Object entry;
         entry.push_back(Pair("txid", out.tx->GetHash().GetHex()));
@@ -738,40 +794,4 @@ Value sendrawtransaction(const Array& params, bool fHelp)
     RelayTransaction(tx);
 
     return hashTx.GetHex();
-}
-
-Value getspentzerocoinamount(const Array& params, bool fHelp)
-{
-    if (fHelp || params.size() != 2)
-        throw runtime_error(
-            "getspentzerocoinamount hexstring index\n"
-            "\nReturns value of spent zerocoin output designated by transaction hash and input index.\n"
-            "\nArguments:\n"
-            "1. hash          (hexstring) Transaction hash\n"
-            "2. index         (int) Input index\n"
-            "\nResult:\n"
-            "\"value\"        (int) Spent output value, -1 if error\n"
-            "\nExamples:\n" +
-            HelpExampleCli("getspentzerocoinamount", "78021ebf92a80dfccef1413067f1222e37535399797cce029bb40ad981131706 0"));
-
-    uint256 txHash = ParseHashV(params[0], "parameter 1");
-    int inputIndex = params[1].get_int();
-    if (inputIndex < 0)
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter for transaction input");
-
-    CTransaction tx;
-    uint256 hashBlock = 0;
-    if (!GetTransaction(txHash, tx, hashBlock, true))
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available about transaction");
-
-    if (inputIndex >= (int)tx.vin.size())
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter for transaction input");
-
-    const CTxIn& input = tx.vin[inputIndex];
-    if (!input.scriptSig.IsZerocoinSpend())
-        return -1;
-
-    libzerocoin::CoinSpend spend = TxInToZerocoinSpend(input);
-    CAmount nValue = libzerocoin::ZerocoinDenominationToAmount(spend.getDenomination());
-    return FormatMoney(nValue); 
 }

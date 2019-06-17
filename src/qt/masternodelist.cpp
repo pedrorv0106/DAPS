@@ -21,6 +21,7 @@ CCriticalSection cs_masternodes;
 MasternodeList::MasternodeList(QWidget* parent) : QDialog(parent),
                                                   ui(new Ui::MasternodeList),
                                                   clientModel(0),
+                                                  // m_SizeGrip(this),
                                                   walletModel(0)
 {
     ui->setupUi(this);
@@ -54,10 +55,6 @@ MasternodeList::MasternodeList(QWidget* parent) : QDialog(parent),
     // Fill MN list
     fFilterUpdated = true;
     nTimeFilterUpdated = GetTime();
-
-
-    ui->toggleStaking->setState(nLastCoinStakeSearchInterval);
-    connect(ui->toggleStaking, SIGNAL(stateChanged(ToggleButton*)), this, SLOT(on_EnableStaking(ToggleButton*)));
 }
 
 MasternodeList::~MasternodeList()
@@ -81,6 +78,11 @@ void MasternodeList::showContextMenu(const QPoint& point)
     if (item) contextMenu->exec(QCursor::pos());
 }
 
+void MasternodeList::resizeEvent(QResizeEvent* event)
+{
+    QWidget::resizeEvent(event);
+}
+
 void MasternodeList::StartAlias(std::string strAlias)
 {
     std::string strStatusHtml;
@@ -91,7 +93,7 @@ void MasternodeList::StartAlias(std::string strAlias)
             std::string strError;
             CMasternodeBroadcast mnb;
 
-            bool fSuccess = CMasternodeBroadcast::Create(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), strError, mnb);
+            bool fSuccess = activeMasternode.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), strError, mnb);
 
             if (fSuccess) {
                 strStatusHtml += "<br>Successfully started masternode.";
@@ -129,7 +131,7 @@ void MasternodeList::StartAll(std::string strCommand)
 
         if (strCommand == "start-missing" && pmn) continue;
 
-        bool fSuccess = CMasternodeBroadcast::Create(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), strError, mnb);
+        bool fSuccess = activeMasternode.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), strError, mnb);
 
         if (fSuccess) {
             nCountSuccessful++;
@@ -140,7 +142,6 @@ void MasternodeList::StartAll(std::string strCommand)
             strFailedHtml += "\nFailed to start " + mne.getAlias() + ". Error: " + strError;
         }
     }
-    pwalletMain->Lock();
 
     std::string returnObj;
     returnObj = strprintf("Successfully started %d masternodes, failed to start %d, total %d", nCountSuccessful, nCountFailed, nCountFailed + nCountSuccessful);
@@ -176,19 +177,17 @@ void MasternodeList::updateMyMasternodeInfo(QString strAlias, QString strAddr, C
 
     QTableWidgetItem* aliasItem = new QTableWidgetItem(strAlias);
     QTableWidgetItem* addrItem = new QTableWidgetItem(pmn ? QString::fromStdString(pmn->addr.ToString()) : strAddr);
-    QTableWidgetItem* protocolItem = new QTableWidgetItem(QString::number(pmn ? pmn->protocolVersion : -1));
     QTableWidgetItem* statusItem = new QTableWidgetItem(QString::fromStdString(pmn ? pmn->GetStatus() : "MISSING"));
     GUIUtil::DHMSTableWidgetItem* activeSecondsItem = new GUIUtil::DHMSTableWidgetItem(pmn ? (pmn->lastPing.sigTime - pmn->sigTime) : 0);
     QTableWidgetItem* lastSeenItem = new QTableWidgetItem(QString::fromStdString(DateTimeStrFormat("%Y-%m-%d %H:%M", pmn ? pmn->lastPing.sigTime : 0)));
-    QTableWidgetItem* pubkeyItem = new QTableWidgetItem(QString::fromStdString(pmn ? CBitcoinAddress(pmn->pubKeyCollateralAddress.GetID()).ToString() : ""));
+    QTableWidgetItem* pubkeyItem = new QTableWidgetItem(QString::fromStdString(pmn ? pmn->pubKeyCollateralAddress.GetHex() : ""));
 
     ui->tableWidgetMyMasternodes->setItem(nNewRow, 0, aliasItem);
     ui->tableWidgetMyMasternodes->setItem(nNewRow, 1, addrItem);
-    ui->tableWidgetMyMasternodes->setItem(nNewRow, 2, protocolItem);
-    ui->tableWidgetMyMasternodes->setItem(nNewRow, 3, statusItem);
-    ui->tableWidgetMyMasternodes->setItem(nNewRow, 4, activeSecondsItem);
-    ui->tableWidgetMyMasternodes->setItem(nNewRow, 5, lastSeenItem);
-    ui->tableWidgetMyMasternodes->setItem(nNewRow, 6, pubkeyItem);
+    ui->tableWidgetMyMasternodes->setItem(nNewRow, 2, statusItem);
+    ui->tableWidgetMyMasternodes->setItem(nNewRow, 3, activeSecondsItem);
+    ui->tableWidgetMyMasternodes->setItem(nNewRow, 4, lastSeenItem);
+    ui->tableWidgetMyMasternodes->setItem(nNewRow, 5, pubkeyItem);
 }
 
 void MasternodeList::updateMyNodeList(bool fForce)
@@ -198,7 +197,6 @@ void MasternodeList::updateMyNodeList(bool fForce)
     // automatically update my masternode list only once in MY_MASTERNODELIST_UPDATE_SECONDS seconds,
     // this update still can be triggered manually at any time via button click
     int64_t nSecondsTillUpdate = nTimeMyListUpdated + MY_MASTERNODELIST_UPDATE_SECONDS - GetTime();
-    // #REMOVE ui->secondsLabel->setText(QString::number(nSecondsTillUpdate));
 
     if (nSecondsTillUpdate > 0 && !fForce) return;
     nTimeMyListUpdated = GetTime();
@@ -214,9 +212,6 @@ void MasternodeList::updateMyNodeList(bool fForce)
         updateMyMasternodeInfo(QString::fromStdString(mne.getAlias()), QString::fromStdString(mne.getIp()), pmn);
     }
     ui->tableWidgetMyMasternodes->setSortingEnabled(true);
-
-    // reset "timer"
-    // #REMOVE ui->secondsLabel->setText("0");
 }
 
 void MasternodeList::on_startButton_clicked()
@@ -318,17 +313,4 @@ void MasternodeList::on_tableWidgetMyMasternodes_itemSelectionChanged()
 void MasternodeList::on_UpdateButton_clicked()
 {
     updateMyNodeList(true);
-}
-
-void MasternodeList::on_EnableStaking(ToggleButton* widget)
-{
-    if (widget->getState()){
-        QStringList errors = walletModel->getStakingStatusError();
-        if (!errors.length())
-            walletModel->generateCoins(true, 1000);
-        else {
-            GUIUtil::prompt(QString("<br><br>")+errors.join(QString("<br><br>"))+QString("<br><br>"));
-            widget->setState(false);
-        }
-    } else walletModel->generateCoins(false, 0);
 }
