@@ -4015,6 +4015,7 @@ bool CheckWork(const CBlock block, CBlockIndex *const pindexPrev) {
         uint256 hash = block.GetHash();
         if (!CheckProofOfStake(block, hashProofOfStake)) {
             LogPrintf("WARNING: ProcessBlock(): check proof-of-stake failed for block %s\n", hash.ToString().c_str());
+
             return false;
         }
         if (!mapProofOfStake.count(hash)) // add to mapProofOfStake
@@ -5713,6 +5714,15 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
             return error("message inv size() = %u", vInv.size());
         }
 
+        // find last block in inv vector
+        unsigned int nLastBlock = (unsigned int)(-1);
+        for (unsigned int nInv = 0; nInv < vInv.size(); nInv++) {
+        	if (vInv[vInv.size() - 1 - nInv].type == MSG_BLOCK) {
+        		nLastBlock = vInv.size() - 1 - nInv;
+        		break;
+        	}
+        }
+
         LOCK(cs_main);
 
         std::vector <CInv> vToFetch;
@@ -5725,9 +5735,8 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
             bool fAlreadyHave = AlreadyHave(inv);
             LogPrint("net", "got inv: %s  %s peer=%d\n", inv.ToString(), fAlreadyHave ? "have" : "new", pfrom->id);
             
-            if (!fAlreadyHave && !fImporting && !fReindex && inv.type != MSG_BLOCK)
-                pfrom->AskFor(inv);
-
+            if (!fAlreadyHave)
+            	pfrom->AskFor(inv, IsInitialBlockDownload()); // peershares: immediate retry during initial download
             if (inv.type == MSG_BLOCK) {
                 UpdateBlockAvailability(pfrom->GetId(), inv.hash);
                 if (!fAlreadyHave && !fImporting && !fReindex && !mapBlocksInFlight.count(inv.hash)) {
@@ -5736,6 +5745,16 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
                     LogPrint("net", "getblocks (%d) %s to peer=%d\n", pindexBestHeader->nHeight, inv.hash.ToString(),
                              pfrom->id);
                 }
+            }
+
+            if (nInv == nLastBlock) {
+            	// In case we are on a very long side-chain, it is possible that we already have
+            	// the last block in an inv bundle sent in response to getblocks. Try to detect
+            	// this situation and push another getblocks to continue.
+            	std::vector<CInv> vGetData(1,inv);
+            	pfrom->PushMessage("getblocks", chainActive.GetLocator(mapBlockIndex[inv.hash]), uint256(0));
+            	if (fDebug)
+            		LogPrintf("force request: %s\n", inv.ToString().c_str());
             }
 
             // Track requests for our stuff
