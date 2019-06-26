@@ -187,7 +187,6 @@ bool CCoinsViewCache::BatchWrite(CCoinsMap& mapCoins, const uint256& hashBlockIn
                     // modified and being pruned. This means we can just delete
                     // it from the parent.
                     cacheCoins.erase(itUs);
-                    std::cout << "Removed hash = " << it->first.GetHex()<< std::endl;
                 } else {
                     // A normal modification.
                     itUs->second.coins.swap(it->second.coins);
