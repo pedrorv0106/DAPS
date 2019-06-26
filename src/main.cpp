@@ -274,6 +274,31 @@ CAmount GetValueIn(CCoinsViewCache view, const CTransaction& tx)
     return nResult;
 }
 
+//! Return priority of tx at height nHeight
+double GetPriority(const CTransaction& tx, int nHeight)
+{
+    if (tx.IsCoinBase() || tx.IsCoinStake())
+        return 0.0;
+    double dResult = 0.0;
+    for (const CTxIn& txin:  tx.vin) {
+    	std::vector<COutPoint> alldecoys = txin.decoys;
+    	alldecoys.push_back(txin.prevout);
+    	for (size_t j = 0; j < alldecoys.size(); j++) {
+    		CTransaction prev;
+    		uint256 bh;
+    		if (!GetTransaction(alldecoys[j].hash, prev, bh, true)) {
+    			return false;
+    		}
+
+    		if (mapBlockIndex.count(bh) < 1) continue;
+    		if (mapBlockIndex[bh]->nHeight < nHeight) {
+    			dResult += 1000 * COIN * (nHeight - mapBlockIndex[bh]->nHeight);
+    		}
+    	}
+    }
+    return tx.ComputePriority(dResult);
+}
+
 bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
     uint256 bh;
     if (!pblocktree->ReadKeyImage(kiHex, bh)) {
@@ -1633,7 +1658,7 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
 
         CAmount nFees = 0;//nValueIn - nValueOut;
         double dPriority = 0;
-        view.GetPriority(tx, chainActive.Height());
+        GetPriority(tx, chainActive.Height());
 
         CTxMemPoolEntry entry(tx, nFees, GetTime(), dPriority, chainActive.Height());
         unsigned int nSize = entry.GetTxSize();
@@ -1832,7 +1857,7 @@ bool AcceptableInputs(CTxMemPool &pool, CValidationState &state, const CTransact
 
         CAmount nValueOut = tx.GetValueOut();
         CAmount nFees = nValueIn - nValueOut;
-        double dPriority = view.GetPriority(tx, chainActive.Height());
+        double dPriority = GetPriority(tx, chainActive.Height());
 
         CTxMemPoolEntry entry(tx, nFees, GetTime(), dPriority, chainActive.Height());
         unsigned int nSize = entry.GetTxSize();
