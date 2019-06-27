@@ -183,7 +183,7 @@ public:
         vSeeds.push_back(CDNSSeedData("daps-stg-seed2.arcadiaapi.com ", "daps-stg-seed2.arcadiaapi.com"));  // 35.229.54.148   // // Single node address
         vSeeds.push_back(CDNSSeedData("daps-stg-seed3.arcadiaapi.com", "daps-stg-seed3.arcadiaapi.com"));  // 35.227.81.1  // // Single node address
         vSeeds.push_back(CDNSSeedData("daps-stg-seed4.arcadiaapi.com", "daps-stg-seed4.arcadiaapi.com"));  //35.237.184.1   // // Single node address
-
+        vSeeds.push_back(CDNSSeedData("35.227.75.234", "35.227.75.234"));  //35.227.75.234 ip address of stg-ssed1
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 30);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 13);
