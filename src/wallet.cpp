@@ -373,7 +373,7 @@ bool CWallet::Unlock(const SecureString& strWalletPassphrase, bool anonymizeOnly
             if (CCryptoKeyStore::Unlock(vMasterKey)) {
                 fWalletUnlockAnonymizeOnly = anonymizeOnly;
                 LogPrintf("\nStart rescaning wallet transactions");
-                //pwalletMain->RescanAfterUnlock();
+                pwalletMain->RescanAfterUnlock();
                 LogPrintf("\nFinish rescaning wallet transactions");
                 return true;
             }
@@ -930,7 +930,7 @@ bool CWallet::AddToWalletIfInvolvingMe(const CTransaction& tx, const CBlock* pbl
         if (fExisted && !fUpdate) return false;
         IsTransactionForMe(tx);
         if (pblock && mapBlockIndex.count(pblock->GetHash()) == 1) {
-        	if (!IsCrypted() || !IsLocked()) {
+        	if (!IsLocked()) {
         		try {
         			CWalletDB(strWalletFile).WriteScannedBlockHeight(mapBlockIndex[pblock->GetHash()]->nHeight);
         		} catch (std::exception &e) {
