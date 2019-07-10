@@ -508,7 +508,8 @@ bool CMasternodeBroadcast::CheckAndUpdate(int& nDos)
 
     LogPrintf("\nCMasternodeBroadcast::Verifying message signature\n");
     std::string errorMessage = "";
-    if (!obfuScationSigner.VerifyMessage(pubKeyCollateralAddress, sig, strMessage, errorMessage) && !VerifyShnorrKeyImageTxIn(vin, GetTxInSignatureHash(vin))) {
+    //only need to verify shnorr signature
+    if (!VerifyShnorrKeyImageTxIn(vin, GetTxInSignatureHash(vin))) {
         LogPrint("masternode","mnb - Got bad Masternode address signature\n");
         LogPrintf("mnb - Got bad Masternode address signature\n");
         nDos = 100;
