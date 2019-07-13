@@ -5,6 +5,7 @@
 #include "bitcoingui.h"
 
 #include <QMessageBox>
+#include <QCloseEvent>
 
 EncryptDialog::EncryptDialog(QWidget *parent) :
     QDialog(parent),
@@ -26,6 +27,12 @@ EncryptDialog::~EncryptDialog()
 void EncryptDialog::setModel(WalletModel* model)
 {
     this->model = model;
+}
+
+void EncryptDialog::closeEvent (QCloseEvent *event)
+{
+    on_btnCancel();
+    event->ignore();
 }
 
 void EncryptDialog::on_btnCancel()

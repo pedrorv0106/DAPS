@@ -28,6 +28,7 @@ private slots:
 private:
     Ui::EncryptDialog *ui;
     WalletModel* model;
+    void closeEvent(QCloseEvent *event);
 };
 
 #endif // ENCRYPTDIALOG_H
