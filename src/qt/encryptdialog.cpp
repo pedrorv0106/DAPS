@@ -58,15 +58,14 @@ void EncryptDialog::on_acceptPassphrase() {
 	}
     
     if (newPass == newPass2) {
-        if (model->setWalletEncrypted(true, newPass)) {
+        if (model->setWalletEncrypted(true, newPass))
             QMessageBox::information(this, tr("Wallet encrypted"),
                     tr("Wallet passphrase was successfully changed."));
-        } else {
+        accept();
+    } else {
             QMessageBox::critical(this, tr("Wallet encryption failed"),
                     tr("The passphrase entered for the wallet decryption was incorrect."));
-        }
-
-        accept();
+        return;
     }
 }
 
