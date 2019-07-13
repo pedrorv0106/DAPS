@@ -51,8 +51,11 @@ void EncryptDialog::on_acceptPassphrase() {
     newPass2.reserve(MAX_PASSPHRASE_SIZE);
     newPass2.assign(ui->linePwdConfirm->text().toStdString().c_str() );
 
-    if ( (ui->linePwd->text().contains(" ")) || (!ui->linePwd->text().length()) )
+    if ( (ui->linePwd->text().contains(" ")) || (!ui->linePwd->text().length()) ) {
+        QMessageBox::critical(this, tr("Wallet encryption failed"),
+                    tr("The passphrase entered for wallet encryption was empty or contained spaces. Please try again."));
         return;
+	}
     
     if (newPass == newPass2) {
         if (model->setWalletEncrypted(true, newPass)) {
