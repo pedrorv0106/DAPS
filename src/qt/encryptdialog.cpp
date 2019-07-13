@@ -15,7 +15,7 @@ EncryptDialog::EncryptDialog(QWidget *parent) :
     connect(ui->linePwd, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPass()));
     connect(ui->linePwdConfirm, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPassRepeat()));
     connect(ui->btnOK, SIGNAL(clicked()), this, SLOT(on_acceptPassphrase()));
-    connect(ui->btnCancel, SIGNAL(clicked()), this, SLOT(reject()));
+    connect(ui->btnCancel, SIGNAL(clicked()), this, SLOT(on_btnCancel()));
 }
 
 EncryptDialog::~EncryptDialog()
@@ -26,6 +26,13 @@ EncryptDialog::~EncryptDialog()
 void EncryptDialog::setModel(WalletModel* model)
 {
     this->model = model;
+}
+
+void EncryptDialog::on_btnCancel()
+{
+    QMessageBox::critical(this, tr("Wallet encryption required"),
+                    tr("There was no passphrase entered for the wallet. Wallet encryption is required for the security of your funds."));
+    return;
 }
 
 void EncryptDialog::on_acceptPassphrase() {

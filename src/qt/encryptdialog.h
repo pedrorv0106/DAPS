@@ -20,6 +20,7 @@ public:
     bool matchNewPasswords();
 
 private slots:
+	void on_btnCancel();
 	void on_acceptPassphrase();
 	void validateNewPass();
     void validateNewPassRepeat();
