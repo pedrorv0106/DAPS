@@ -31,15 +31,24 @@ void EncryptDialog::setModel(WalletModel* model)
 
 void EncryptDialog::closeEvent (QCloseEvent *event)
 {
-    on_btnCancel();
-    event->ignore();
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::warning(this, "Wallet encryption required", "There was no passphrase entered for the wallet. Wallet encryption is required for the security of your funds. What would you like to do?", QMessageBox::Retry|QMessageBox::Close);
+      if (reply == QMessageBox::Retry) {
+      event->ignore();
+      } else {
+      QApplication::quit();
+      }
 }
 
 void EncryptDialog::on_btnCancel()
 {
-    QMessageBox::critical(this, tr("Wallet encryption required"),
-                    tr("There was no passphrase entered for the wallet. Wallet encryption is required for the security of your funds."));
-    return;
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::warning(this, "Wallet encryption required", "There was no passphrase entered for the wallet. Wallet encryption is required for the security of your funds. What would you like to do?", QMessageBox::Retry|QMessageBox::Close);
+      if (reply == QMessageBox::Retry) {
+      return;
+      } else {
+      QApplication::quit();
+      }
 }
 
 void EncryptDialog::on_acceptPassphrase() {
