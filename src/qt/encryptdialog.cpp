@@ -64,7 +64,7 @@ void EncryptDialog::on_acceptPassphrase() {
         QMessageBox::critical(this, tr("Wallet encryption failed"),
                     tr("The passphrase entered for wallet encryption was empty or contained spaces. Please try again."));
         return;
-	}
+    }
     
     if (newPass == newPass2) {
         if (model->setWalletEncrypted(true, newPass))

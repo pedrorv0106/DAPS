@@ -153,7 +153,7 @@ void OptionsPage::on_pushButtonPassword_clicked()
         QMessageBox::critical(this, tr("Wallet encryption failed"),
                     tr("The passphrase entered for wallet encryption was empty or contained spaces. Please try again."));
         return;
-	}
+    }
     //disable password submit button
     SecureString oldPass = SecureString();
     oldPass.reserve(MAX_PASSPHRASE_SIZE);

@@ -50,7 +50,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Please enter the passphrase</string>
+        <string>Please enter a passphrase to encrypt your wallet. This is required.</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
