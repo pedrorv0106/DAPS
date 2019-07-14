@@ -202,6 +202,16 @@ public:
     }
 };
 
+typedef enum MultiSigType {
+	FULL_N_N = 0,
+	PARTIAL_N_1_N
+};
+
+class MultisigWallet {
+public:
+	static CKey computePrivateViewKey(std::vector<CKey> privView);
+};
+
 /**
  * A CWallet is an extension of a keystore, which also maintains a set of transactions and balances,
  * and provides the ability to create new transactions.
