@@ -540,4 +540,56 @@ public:
     }
 };
 
+/** A partial version of CTransaction that contains additional information for multi sig transaction */
+struct CPartialTransaction
+{
+    int32_t nVersion;
+    std::vector<CTxIn> vin;
+    std::vector<CTxOut> vout;
+    uint32_t nLockTime;
+    //For stealth transactions
+    CKey txPrivM;
+    char hasPaymentID;
+    uint64_t paymentID;
+    uint32_t txType;
+    std::vector<unsigned char> bulletproofs;
+
+    CAmount nTxFee;
+    uint256 c;
+    std::vector<std::vector<uint256>> S;
+    CKeyImage ntxFeeKeyImage;
+
+    //this marks the participants who already signs the transaction
+    //If N/N case, this is the hashes of the private keys of participants
+    //if N-1/N case, this is the hashes of the hash of the ECDHs between participants
+    std::vector<uint256> hashesOfSignedSecrets;
+
+    CPartialTransaction();
+    CPartialTransaction(const CTransaction& tx);
+
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
+        READWRITE(this->nVersion);
+        nVersion = this->nVersion;
+        READWRITE(vin);
+        READWRITE(vout);
+        READWRITE(nLockTime);
+        READWRITE(hasPaymentID);
+        if (hasPaymentID != 0) {
+            READWRITE(paymentID);
+        }
+        READWRITE(txType);
+
+        READWRITE(bulletproofs);
+
+        READWRITE(nTxFee);
+        READWRITE(c);
+        READWRITE(S);
+        READWRITE(ntxFeeKeyImage);
+        READWRITE(hashesOfSignedSecrets);
+    }
+};
+
 #endif // BITCOIN_PRIMITIVES_TRANSACTION_H
