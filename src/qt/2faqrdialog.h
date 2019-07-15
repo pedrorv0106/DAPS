@@ -2,6 +2,7 @@
 #define TWOFAQRDIALOG_H
 
 #include <QDialog>
+#include <QSettings>
 
 class WalletModel;
 
