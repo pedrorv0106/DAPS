@@ -63,7 +63,7 @@ void TwoFAQRDialog::update()
     }
     QString periodSetting = settings.value("2FAPeriod").toString();
     QString uri;
-    uri.sprintf("otpauth://totp/dapscoin:test@test.com?secret=%s&issuer=dapscoin&algorithm=SHA1&digits=6&period=", addr.c_str());
+    uri.sprintf("otpauth://totp/DAPScoin:QT%20Wallet?secret=%s&issuer=dapscoin&algorithm=SHA1&digits=6&period=", addr.c_str());
     uri += periodSetting;
     ui->lblURI->setText(uri);
 
