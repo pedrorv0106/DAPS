@@ -149,7 +149,7 @@ void OptionsPage::setMapper()
 
 void OptionsPage::on_pushButtonPassword_clicked()
 {
-    if ( (ui->lineEditNewPass->text().contains(" ")) || (!ui->lineEditNewPass->text().length()) ) {
+    if ( (!ui->lineEditNewPass->text().length()) || (!ui->lineEditNewPassRepeat->text().length()) ) {
         QMessageBox::critical(this, tr("Wallet encryption failed"),
                     tr("The passphrase entered for wallet encryption was empty or contained spaces. Please try again."));
         return;
@@ -208,7 +208,7 @@ void OptionsPage::on_pushButtonBackup_clicked(){
 
 void OptionsPage::validateNewPass()
 {
-    if ( (ui->lineEditNewPass->text().contains(" ")) || (!ui->lineEditNewPass->text().length()) )
+    if (!ui->lineEditNewPass->text().length())
         ui->lineEditNewPass->setStyleSheet("border-color: red");
     else ui->lineEditNewPass->setStyleSheet(GUIUtil::loadStyleSheet());
     matchNewPasswords();
