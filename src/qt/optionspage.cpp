@@ -149,7 +149,7 @@ void OptionsPage::setMapper()
 
 void OptionsPage::on_pushButtonPassword_clicked()
 {
-    if ( (ui->lineEditNewPass->text().contains(" ")) || (!ui->lineEditNewPass->text().length()) ) {
+    if ( (!ui->lineEditNewPass->text().length()) || (!ui->lineEditNewPassRepeat->text().length()) ) {
         QMessageBox::critical(this, tr("Wallet encryption failed"),
                     tr("The passphrase entered for wallet encryption was empty or contained spaces. Please try again."));
         return;
@@ -168,16 +168,14 @@ void OptionsPage::on_pushButtonPassword_clicked()
 
     bool success = false;
 
-
     if (newPass == newPass2) {
-    	if (model->changePassphrase(oldPass, newPass)) {
-    		QMessageBox::information(this, tr("Wallet encrypted"),
-    				tr("Wallet passphrase was successfully changed."));
+    	if (model->changePassphrase(oldPass, newPass))
+    		QMessageBox::information(this, tr("Passphrase change successful"),
+                    tr("Wallet passphrase was successfully changed. Please remember your passphrase as there is no way to recover it."));
     		success = true;
-    	} else {
+    } else {
     		QMessageBox::critical(this, tr("Wallet encryption failed"),
-    				tr("The passphrase entered for the wallet decryption was incorrect."));
-    	}
+    				tr("The passphrases entered for wallet encryption do not match. Please try again."));
     }
 
     if (success)
@@ -208,7 +206,7 @@ void OptionsPage::on_pushButtonBackup_clicked(){
 
 void OptionsPage::validateNewPass()
 {
-    if ( (ui->lineEditNewPass->text().contains(" ")) || (!ui->lineEditNewPass->text().length()) )
+    if (!ui->lineEditNewPass->text().length())
         ui->lineEditNewPass->setStyleSheet("border-color: red");
     else ui->lineEditNewPass->setStyleSheet(GUIUtil::loadStyleSheet());
     matchNewPasswords();
