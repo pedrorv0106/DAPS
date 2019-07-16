@@ -168,16 +168,14 @@ void OptionsPage::on_pushButtonPassword_clicked()
 
     bool success = false;
 
-
     if (newPass == newPass2) {
-    	if (model->changePassphrase(oldPass, newPass)) {
-    		QMessageBox::information(this, tr("Wallet encrypted"),
-    				tr("Wallet passphrase was successfully changed."));
+    	if (model->changePassphrase(oldPass, newPass))
+    		QMessageBox::information(this, tr("Passphrase change successful"),
+                    tr("Wallet passphrase was successfully changed. Please remember your passphrase as there is no way to recover it."));
     		success = true;
-    	} else {
+    } else {
     		QMessageBox::critical(this, tr("Wallet encryption failed"),
-    				tr("The passphrase entered for the wallet decryption was incorrect."));
-    	}
+    				tr("The passphrases entered for wallet encryption do not match. Please try again."));
     }
 
     if (success)
