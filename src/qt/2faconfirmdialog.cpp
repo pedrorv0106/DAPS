@@ -111,10 +111,6 @@ void TwoFAConfirmDialog::on_acceptCode()
     if (codeSetting != "") {
         if (code != codeSetting)
             return;
-
-        QDateTime current = QDateTime::currentDateTime();
-        settings.setValue("2FALastTime", current.toTime_t());
     }
-
     accept();
 }

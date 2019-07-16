@@ -313,6 +313,8 @@ void OptionsPage::qrDialogIsFinished(int result) {
 void OptionsPage::dialogIsFinished(int result) {
    if(result == QDialog::Accepted){
         settings.setValue("2FA", "enabled");
+        QDateTime current = QDateTime::currentDateTime();
+        settings.setValue("2FALastTime", current.toTime_t());
         enable2FA();
 
         QMessageBox::information(this, tr("SUCCESS!"),
