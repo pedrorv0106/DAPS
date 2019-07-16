@@ -334,10 +334,6 @@ void OptionsPage::changeTheme(ToggleButton* widget)
 }
 
 void OptionsPage::disable2FA() {
-    ui->btn_day->setEnabled(false);
-    ui->btn_week->setEnabled(false);
-    ui->btn_month->setEnabled(false);
-
     ui->code_1->setText("");
     ui->code_2->setText("");
     ui->code_3->setText("");
@@ -355,10 +351,6 @@ void OptionsPage::disable2FA() {
 }
 
 void OptionsPage::enable2FA() {
-    ui->btn_day->setEnabled(true);
-    ui->btn_week->setEnabled(true);
-    ui->btn_month->setEnabled(true);
-
     ui->label_3->setEnabled(true);
     ui->label_4->setEnabled(true);
     ui->label->setEnabled(true);
