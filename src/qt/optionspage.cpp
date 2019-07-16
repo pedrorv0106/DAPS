@@ -384,16 +384,16 @@ void OptionsPage::enable2FA() {
      
     int period = settings.value("2FAPeriod").toInt();
     if (period == 1)
-        ui->btn_day->setStyleSheet("border-color: red;");
+        ui->btn_day->setStyleSheet("border-color: green;");
     else if (period == 7)
-        ui->btn_week->setStyleSheet("border-color: red;");
+        ui->btn_week->setStyleSheet("border-color: green;");
     else if (period == 30)
-        ui->btn_month->setStyleSheet("border-color: red;");
+        ui->btn_month->setStyleSheet("border-color: green;");
 }
 
 void OptionsPage::on_day() {
     settings.setValue("2FAPeriod", "1");
-    ui->btn_day->setStyleSheet("border-color: red;");
+    ui->btn_day->setStyleSheet("border-color: green;");
     ui->btn_week->setStyleSheet("border-color: white;");
     ui->btn_month->setStyleSheet("border-color: white;");
 }
@@ -401,7 +401,7 @@ void OptionsPage::on_day() {
 void OptionsPage::on_week() {
     settings.setValue("2FAPeriod", "7");
     ui->btn_day->setStyleSheet("border-color: white;");
-    ui->btn_week->setStyleSheet("border-color: red;");
+    ui->btn_week->setStyleSheet("border-color: green;");
     ui->btn_month->setStyleSheet("border-color: white;");
 }
 
@@ -409,5 +409,5 @@ void OptionsPage::on_month() {
     settings.setValue("2FAPeriod", "30");
     ui->btn_day->setStyleSheet("border-color: white;");
     ui->btn_week->setStyleSheet("border-color: white;");
-    ui->btn_month->setStyleSheet("border-color: red;");
+    ui->btn_month->setStyleSheet("border-color: green;");
 }
