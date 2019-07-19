@@ -5760,8 +5760,8 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
             bool fAlreadyHave = AlreadyHave(inv);
             LogPrint("net", "got inv: %s  %s peer=%d\n", inv.ToString(), fAlreadyHave ? "have" : "new", pfrom->id);
             
-            if (!fAlreadyHave)
-            	pfrom->AskFor(inv, IsInitialBlockDownload()); // peershares: immediate retry during initial download
+            if (!fAlreadyHave && !fImporting && !fReindex && inv.type != MSG_BLOCK)
+            	pfrom->AskFor(inv); // peershares: immediate retry during initial download
             if (inv.type == MSG_BLOCK) {
                 UpdateBlockAvailability(pfrom->GetId(), inv.hash);
                 if (!fAlreadyHave && !fImporting && !fReindex && !mapBlocksInFlight.count(inv.hash)) {
@@ -5770,16 +5770,6 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
                     LogPrint("net", "getblocks (%d) %s to peer=%d\n", pindexBestHeader->nHeight, inv.hash.ToString(),
                              pfrom->id);
                 }
-            }
-
-            if (nInv == nLastBlock) {
-            	// In case we are on a very long side-chain, it is possible that we already have
-            	// the last block in an inv bundle sent in response to getblocks. Try to detect
-            	// this situation and push another getblocks to continue.
-            	std::vector<CInv> vGetData(1,inv);
-            	pfrom->PushMessage("getblocks", chainActive.GetLocator(mapBlockIndex[inv.hash]), uint256(0));
-            	if (fDebug)
-            		LogPrintf("force request: %s\n", inv.ToString().c_str());
             }
 
             // Track requests for our stuff
