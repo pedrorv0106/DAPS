@@ -9,6 +9,7 @@
 #include "random.h"
 #include "util.h"
 #include "utilstrencodings.h"
+#include "streams.h"
 
 #include <assert.h>
 
@@ -16,6 +17,20 @@
 
 using namespace std;
 using namespace boost::assign;
+
+std::string EncodeHexTx(const CMutableTransaction& tx)
+{
+    CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
+    ssTx << tx;
+    return HexStr(ssTx.begin(), ssTx.end());
+}
+
+std::string EncodeHexBlock(const CBlock& b)
+{
+    CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
+    ssTx << b;
+    return HexStr(ssTx.begin(), ssTx.end());
+}
 
 struct SeedSpec6 {
     uint8_t addr[16];
@@ -133,6 +148,8 @@ public:
         txNew.vin[0].scriptSig = CScript() << 486604799 << CScriptNum(4) << vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
         txNew.vout[0].nValue = 0 * COIN;
         txNew.vout[0].scriptPubKey = CScript() << ParseHex("041db2a1b75bc00fc1a18e9f8de27c65fede32eb9ac1c11e2587402a66732656d71f7b5de649c8dc7f94aeb433485ce3122ba856644b02e433c2d5fc94ea26bf8e") << OP_CHECKSIG;
+        std::cout << "TxHex:" << EncodeHexTx(txNew) << std::endl;
+
         genesis.vtx.push_back(txNew);
         genesis.hashPrevBlock = 0;
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
@@ -171,9 +188,8 @@ public:
 
         }
 
-
-
         hashGenesisBlock = genesis.GetHash();
+        std::cout << "Genesis Block Hash:" << EncodeHexBlock(genesis) << std::endl;
         assert(hashGenesisBlock == uint256("0000059f433f00d4ed1aa073e7bdd9b358676cc8e2537d371c354256390122b6"));
         printf("genesis.hashMerkleRoot: %s\n", genesis.hashMerkleRoot.GetHex().c_str());
         assert(genesis.hashMerkleRoot == uint256("03fcb696ffbce2bb8248c65f6286c9948a4927919506331f21992a7021f969ed"));
