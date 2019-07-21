@@ -313,7 +313,7 @@ static const CRPCCommand vRPCCommands[] =
         {"rawtransactions", "getrawtransaction", &getrawtransaction, true, false, false},
         {"rawtransactions", "sendrawtransaction", &sendrawtransaction, false, false, false},
         {"rawtransactions", "signrawtransaction", &signrawtransaction, false, false, false}, /* uses wallet if enabled */
-
+        {"rawtransactions", "getrawtransactionbyblockheight", &getrawtransactionbyblockheight, true, false, false},
         /* Utility functions */
         {"util", "createmultisig", &createmultisig, true, true, false},
         {"util", "validateaddress", &validateaddress, true, false, false}, /* uses wallet if enabled */
@@ -374,6 +374,7 @@ static const CRPCCommand vRPCCommands[] =
         {"wallet", "encryptwallet", &encryptwallet, true, false, true},
         {"wallet", "createprivacywallet", &createprivacywallet, true, false, true},
         {"wallet", "createprivacyaccount", &createprivacyaccount, true, false, true},
+        {"wallet", "importkeys", &importkeys, true, false, true},
         {"wallet", "revealviewprivatekey", &revealviewprivatekey, true, false, true},
         {"wallet", "revealspendprivatekey", &revealspendprivatekey, true, false, true},
         {"wallet", "showtxprivatekeys", &showtxprivatekeys, true, false, true},

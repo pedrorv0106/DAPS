@@ -5434,7 +5434,7 @@ bool CWallet::DecodeStealthAddress(const std::string& stealth, CPubKey& pubViewK
             //check whether '1' is padding
             int padIdx = lastPad;
             while (padIdx >= 0 && sub[padIdx] == '1') {
-                std::string str_without_pads = sub.substr(padIdx + 1, sub.length() - padIdx - 1);
+                std::string str_without_pads = sub.substr(padIdx + 1);
                 decoded.clear();
                 if (DecodeBase58(str_without_pads, decoded)) {
                     if ((decoded.size() == 8 && i + 11 < stealth.length()) || (decoded.size() == 7 && i + 11 == stealth.length())) {
