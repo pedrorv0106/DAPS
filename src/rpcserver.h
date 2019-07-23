@@ -216,6 +216,7 @@ extern json_spirit::Value walletlock(const json_spirit::Array& params, bool fHel
 extern json_spirit::Value encryptwallet(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value createprivacywallet(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value createprivacyaccount(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value importkeys(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value revealviewprivatekey(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value revealspendprivatekey(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value showtxprivatekeys(const json_spirit::Array& params, bool fHelp);
@@ -233,6 +234,7 @@ extern json_spirit::Value multisend(const json_spirit::Array& params, bool fHelp
 extern json_spirit::Value autocombinerewards(const json_spirit::Array& params, bool fHelp);
 
 extern json_spirit::Value getrawtransaction(const json_spirit::Array& params, bool fHelp); // in rcprawtransaction.cpp
+extern json_spirit::Value getrawtransactionbyblockheight(const json_spirit::Array& params, bool fHelp); // in rcprawtransaction.cpp
 extern json_spirit::Value listunspent(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value lockunspent(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value listlockunspent(const json_spirit::Array& params, bool fHelp);
