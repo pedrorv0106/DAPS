@@ -2417,7 +2417,7 @@ Value createprivacyaccount(const Array& params, bool fHelp)
         std::string stealthAddr;
         pwalletMain->EncodeStealthPublicAddress(viewAccount.vchPubKey, spendAccount.vchPubKey, stealthAddr);
         ret.emplace_back(Pair("stealthaddress", stealthAddr));
-        walletdb.AppendStealthAccountList("masteraccount");
+        //walletdb.AppendStealthAccountList("masteraccount");
         break;
     }
     return ret;
