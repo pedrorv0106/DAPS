@@ -5317,7 +5317,6 @@ void add1s(std::string& s, int wantedSize) {
 
 
 bool CWallet::encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth) {
-    //in monero, the size is 69 and 77, respectively
     if (raw.size() != 71 && raw.size() != 79) {
         return false;
     }
@@ -5357,7 +5356,7 @@ bool CWallet::EncodeStealthPublicAddress(const std::vector<unsigned char>& pubVi
     pubAddr.push_back(*(begin));
     pubAddr.push_back(*(begin + 1));
     pubAddr.push_back(*(begin + 2));
-    pubAddr.push_back(*(begin + 3));//total 71 bytes intead of 69 bytes as monero
+    pubAddr.push_back(*(begin + 3));
 
     encodeStealthBase58(pubAddr, pubAddrb58);
 
@@ -5375,7 +5374,7 @@ bool CWallet::EncodeIntegratedAddress(const std::vector<unsigned char>& pubViewK
     pubAddr.push_back(*(begin));
     pubAddr.push_back(*(begin + 1));
     pubAddr.push_back(*(begin + 2));
-    pubAddr.push_back(*(begin + 3));//total 71 bytes intead of 69 bytes as monero
+    pubAddr.push_back(*(begin + 3));
 
     encodeStealthBase58(pubAddr, pubAddrb58);
 
