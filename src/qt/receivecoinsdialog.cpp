@@ -46,24 +46,13 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
     ui->pushButtonCP->setStyleSheet("background:transparent;");
     ui->pushButtonCP->setIcon(QIcon(":/icons/editcopy"));
     connect(ui->pushButtonCP, SIGNAL(clicked()), this, SLOT(copyAddress()));
-    CPubKey temp;
-    if (pwalletMain) {
+
+    //Create privacy account (wallet is unlocked first launch so !pwalletMain->IsLocked() works here)
+    if (pwalletMain && !pwalletMain->IsLocked()) {
+        CPubKey temp;
         pwalletMain->GetKeyFromPool(temp);
         pwalletMain->CreatePrivacyAccount();
-        std::string pubAddress;
-        pwalletMain->ComputeStealthPublicAddress("masteraccount", pubAddress);
-        ui->lineEditAddress->setText(pubAddress.c_str());
-
-        std::vector<std::string> addrList, accountList;
-        QList<QString> stringsList;
-        accountList.push_back("Master Account");
-        addrList.push_back(pubAddress);
-        for(size_t i = 0; i < addrList.size(); i++) {
-            stringsList.append(QString(accountList[i].c_str()) + " - " + QString(addrList[i].c_str()));
-        }
-
-        ui->reqAddress->addItem(QString(accountList[0].c_str()) + " - " + QString(addrList[0].c_str()));
-    }
+     }
 
     QDoubleValidator *dblVal = new QDoubleValidator(0, Params().MAX_MONEY, 6, ui->reqAmount);
     dblVal->setNotation(QDoubleValidator::StandardNotation);
@@ -118,6 +107,8 @@ void ReceiveCoinsDialog::loadAccount() {
     }
 
     ui->reqAddress->addItems(stringsList);
+    //Set lineEditAddress to Master Account address for copy to clipboard
+    ui->lineEditAddress->setText(QString(addrList[0].c_str()));
 }
 
 ReceiveCoinsDialog::~ReceiveCoinsDialog()
