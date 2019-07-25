@@ -47,7 +47,7 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
     ui->pushButtonCP->setIcon(QIcon(":/icons/editcopy"));
     connect(ui->pushButtonCP, SIGNAL(clicked()), this, SLOT(copyAddress()));
     CPubKey temp;
-    if (pwalletMain && !pwalletMain->IsLocked()) {
+    if (pwalletMain) {
         pwalletMain->GetKeyFromPool(temp);
         pwalletMain->CreatePrivacyAccount();
         std::string pubAddress;
