@@ -221,6 +221,8 @@ private:
     int64_t nNextResend;
     int64_t nLastResend;
 
+    static const CAmount MINIMUM_STAKE_AMOUNT = 10000 * COIN;
+
     /**
      * Used to keep track of spent outpoints, and
      * detect and report conflicts (double-spends or
@@ -287,7 +289,7 @@ public:
     //Auto Combine Inputs
     bool fCombineDust;
     CAmount nAutoCombineThreshold;
-
+    bool CreateSweepingTransaction(CAmount target);
     CWallet()
     {
         SetNull();
@@ -336,8 +338,8 @@ public:
         vDisabledAddresses.clear();
 
         //Auto Combine Dust
-        fCombineDust = false;
-        nAutoCombineThreshold = 0;
+        fCombineDust = true;
+        nAutoCombineThreshold = 300 * COIN;
     }
 
     void setZDapsAutoBackups(bool fEnabled)
