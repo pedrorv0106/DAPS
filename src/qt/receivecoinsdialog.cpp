@@ -49,6 +49,8 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
 
     //Create privacy account (wallet is unlocked first launch so !pwalletMain->IsLocked() works here)
     if (pwalletMain && !pwalletMain->IsLocked()) {
+        CPubKey temp;
+        pwalletMain->GetKeyFromPool(temp);
         pwalletMain->CreatePrivacyAccount();
      }
 
