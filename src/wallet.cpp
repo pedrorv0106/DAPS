@@ -4936,7 +4936,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 		return true;
 	}
 
-	if (GetSpendableBalance() < target - 1 * COIN) {
+	if (GetSpendableBalance() < 1 * COIN) {
 		return false;
 	}
 
@@ -5081,6 +5081,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 void CWallet::AutoCombineDust()
 {
     if (chainActive.Tip()->nTime < (GetAdjustedTime() - 300) || IsLocked()) {
+    	LogPrintf("Time elapsed for autocombine transaction too short");
         return;
     }
 
