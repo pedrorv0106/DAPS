@@ -2964,6 +2964,29 @@ bool CWallet::generateBulletProofAggregate(CTransaction& tx)
 	return ret;
 }
 
+bool CWallet::generateBulletProofForStaking(CMutableTransaction& tx)
+{
+	unsigned char proof[2000];
+	size_t len = 2000;
+	const size_t MAX_VOUT = 5;
+	unsigned char nonce[32];
+	GetRandBytes(nonce, 32);
+	unsigned char blinds[MAX_VOUT][32];
+	memset(blinds, 0, 2 * 32);
+	uint64_t values[MAX_VOUT];
+	size_t i = 0;
+	const unsigned char *blind_ptr[MAX_VOUT];
+	if (tx.vout.size() > MAX_VOUT) return false;
+	for (i = 0; i < 2; i++) {
+		memcpy(&blinds[i][0], tx.vout[i + 1].maskValue.inMemoryRawBind.begin(), 32);
+		blind_ptr[i] = blinds[i];
+		values[i] = tx.vout[i + 1].nValue;
+	}
+	int ret = secp256k1_bulletproof_rangeproof_prove(GetContext(), GetScratch(), GetGenerator(), proof, &len, values, NULL, blind_ptr, 2, &secp256k1_generator_const_h, 64, nonce, NULL, 0);
+	std::copy(proof, proof + len, std::back_inserter(tx.bulletproofs));
+	return ret;
+}
+
 bool CWallet::makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFailReason)
 {
 	int myIndex;
@@ -3819,11 +3842,26 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             //so that every fullnode can verify the exact transaction amount within the transaction
             for(size_t i = 1; i < txNew.vout.size(); i++) {
             	if (i == 1 || i == 2) {
-            		computeSharedSec(txNew, txNew.vout[i], sharedSec1, true);
-					EncodeTxOutAmount(txNew.vout[i], txNew.vout[i].nValue, sharedSec1.begin(), true);
-					//create commitment
-					txNew.vout[i].commitment.clear();
-					CreateCommitment(txNew.vout[i].maskValue.inMemoryRawBind.begin(), txNew.vout[i].nValue, txNew.vout[i].commitment);
+					computeSharedSec(txNew, txNew.vout[i], sharedSec1, true);
+            		if (i == 2) {
+            			unsigned char negateKey[32];
+            			memcpy(negateKey, txNew.vout[1].maskValue.inMemoryRawBind.begin(), 32);
+            			if (!secp256k1_ec_privkey_negate2(GetContext(), negateKey)) {
+            				LogPrintf("Failed to negate private key");
+            				return false;
+            			}
+            			txNew.vout[i].maskValue.inMemoryRawBind.Set(negateKey, negateKey + 32, true);
+            			memcpy(txNew.vout[i].maskValue.mask.begin(), txNew.vout[i].maskValue.inMemoryRawBind.begin(), 32);
+            			uint256 tempAmount((uint64_t) txNew.vout[i].nValue);
+            			memcpy(txNew.vout[i].maskValue.amount.begin(), tempAmount.begin(), 32);
+            			ECDHInfo::Encode(txNew.vout[i].maskValue.inMemoryRawBind, txNew.vout[i].nValue, sharedSec1, txNew.vout[i].maskValue.mask, txNew.vout[i].maskValue.amount);
+            			txNew.vout[i].maskValue.hashOfKey = Hash(sharedSec1.begin(), sharedSec1.begin() + 33);
+            		} else {
+						EncodeTxOutAmount(txNew.vout[i], txNew.vout[i].nValue, sharedSec1.begin(), true);
+            		}
+            		//create commitment
+            		txNew.vout[i].commitment.clear();
+            		CreateCommitment(txNew.vout[i].maskValue.inMemoryRawBind.begin(), txNew.vout[i].nValue, txNew.vout[i].commitment);
             	} else {
             		sharedSec1.Set(txNew.vout[i].txPub.begin(), txNew.vout[i].txPub.end());
             		EncodeTxOutAmount(txNew.vout[i], txNew.vout[i].nValue, sharedSec1.begin(), false);
@@ -3834,6 +3872,13 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             		CreateCommitment(zeroBlind, txNew.vout[i].nValue, txNew.vout[i].commitment);
             	}
             }
+
+            if (!generateBulletProofForStaking(txNew)) {
+            	return false;
+            }
+
+            txNew.vout[1].nValue = 0;
+            txNew.vout[2].nValue = 0;
 
             // ECDSA sign
             int nIn = 0;
