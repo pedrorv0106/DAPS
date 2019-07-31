@@ -1401,7 +1401,7 @@ bool VerifyStakingAmount(const CBlock& block) {
 
 	const CTransaction& tx = block.vtx[1];
 	if (!tx.IsCoinStake()) return true;
-	if (tx.vout[1].nValue > 0 && tx.vout[2].nValue > 0) return true;
+	if (tx.vout[1].nValue + tx.vout[2].nValue > 0) return true;
 	secp256k1_pedersen_commitment commitment1, commitment2;
 	if (!secp256k1_pedersen_commitment_parse(GetContext(), &commitment1, &tx.vout[1].commitment[0])) {
 		LogPrintf("Failed to parse commitment");
@@ -2973,6 +2973,14 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
         pos.nTxOffset += ::GetSerializeSize(tx, SER_DISK, CLIENT_VERSION);
     }
     // track money supply and mint amount info
+    //check whether it is a PoS block and the values of UTXO1 + UTXO2 = input + 900 - masternode rewards + fees
+    if (pindex->IsProofOfStake()) {
+    	if (block.vtx[1].vout[1].nValue + block.vtx[1].vout[2].nValue == 0) {
+    		CAmount masternodeReward = block.vtx[1].vout[3].nValue;
+    		CAmount sum = nValueIn + PoSBlockReward() - masternodeReward + nFees;
+    		nValueOut += sum;
+    	}
+    }
     CAmount nMoneySupplyPrev = pindex->pprev ? pindex->pprev->nMoneySupply : 0;
     pindex->nMoneySupply = nMoneySupplyPrev + nValueOut - nValueIn -nFees;
     LogPrintf("%s: nValueOut=%d, nValueIn=%d, nMoneySupplyPrev=%d, pindex->nMoneySupply=%d, nFees=%d", __func__, nValueOut, nValueIn, nMoneySupplyPrev, pindex->nMoneySupply, nFees);
