@@ -735,12 +735,12 @@ public:
     bool MakeShnorrSignature(CTransaction&);
     bool MakeShnorrSignatureTxIn(CTxIn& txin, uint256);
     bool computeSharedSec(const CTransaction& tx, const CTxOut& out, CPubKey& sharedSec, bool hide) const;
+    bool GenerateBulletProofForStaking(CTransaction& tx);
 private:
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
     void createMasterKey() const;
     bool generateBulletProofAggregate(CTransaction& tx);
-    bool generateBulletProofForStaking(CMutableTransaction& tx);
     bool selectDecoysAndRealIndex(CTransaction& tx, int& myIndex, int ringSize);
     bool makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFailReason);
     int walletIdxCache = 0;

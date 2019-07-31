@@ -2964,7 +2964,7 @@ bool CWallet::generateBulletProofAggregate(CTransaction& tx)
 	return ret;
 }
 
-bool CWallet::generateBulletProofForStaking(CMutableTransaction& tx)
+bool CWallet::GenerateBulletProofForStaking(CTransaction& tx)
 {
 	unsigned char proof[2000];
 	size_t len = 2000;
@@ -3827,41 +3827,20 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
 				std::copy(foundationTxPub.begin(), foundationTxPub.end(), std::back_inserter(foundationalOut.txPub));
 				txNew.vout.push_back(foundationalOut);
             }
-
             //re-randomize values of vout[1] and vout[2] which belong to staking nodes
             int64_t diff = txNew.vout[1].nValue - txNew.vout[2].nValue;
-            if (diff < 0) diff = -diff;
+            if (diff < 0) diff = txNew.vout[2].nValue - txNew.vout[1].nValue;
+            if (diff == 0) diff = txNew.vout[2].nValue/2;
             CAmount R = rand() % diff;
             CAmount sum = txNew.vout[1].nValue + txNew.vout[2].nValue;
-            txNew.vout[1].nValue = sum/2 + diff;
+            txNew.vout[1].nValue = sum/2 + R;
             txNew.vout[2].nValue = sum - txNew.vout[1].nValue;
-
             //Encoding amount
             CPubKey sharedSec1;
             //In this case, use the transaction pubkey to encode the transactiona amount
             //so that every fullnode can verify the exact transaction amount within the transaction
             for(size_t i = 1; i < txNew.vout.size(); i++) {
             	if (i == 1 || i == 2) {
-					computeSharedSec(txNew, txNew.vout[i], sharedSec1, true);
-            		if (i == 2) {
-            			unsigned char negateKey[32];
-            			memcpy(negateKey, txNew.vout[1].maskValue.inMemoryRawBind.begin(), 32);
-            			if (!secp256k1_ec_privkey_negate2(GetContext(), negateKey)) {
-            				LogPrintf("Failed to negate private key");
-            				return false;
-            			}
-            			txNew.vout[i].maskValue.inMemoryRawBind.Set(negateKey, negateKey + 32, true);
-            			memcpy(txNew.vout[i].maskValue.mask.begin(), txNew.vout[i].maskValue.inMemoryRawBind.begin(), 32);
-            			uint256 tempAmount((uint64_t) txNew.vout[i].nValue);
-            			memcpy(txNew.vout[i].maskValue.amount.begin(), tempAmount.begin(), 32);
-            			ECDHInfo::Encode(txNew.vout[i].maskValue.inMemoryRawBind, txNew.vout[i].nValue, sharedSec1, txNew.vout[i].maskValue.mask, txNew.vout[i].maskValue.amount);
-            			txNew.vout[i].maskValue.hashOfKey = Hash(sharedSec1.begin(), sharedSec1.begin() + 33);
-            		} else {
-						EncodeTxOutAmount(txNew.vout[i], txNew.vout[i].nValue, sharedSec1.begin(), true);
-            		}
-            		//create commitment
-            		txNew.vout[i].commitment.clear();
-            		CreateCommitment(txNew.vout[i].maskValue.inMemoryRawBind.begin(), txNew.vout[i].nValue, txNew.vout[i].commitment);
             	} else {
             		sharedSec1.Set(txNew.vout[i].txPub.begin(), txNew.vout[i].txPub.end());
             		EncodeTxOutAmount(txNew.vout[i], txNew.vout[i].nValue, sharedSec1.begin(), false);
@@ -3872,13 +3851,6 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             		CreateCommitment(zeroBlind, txNew.vout[i].nValue, txNew.vout[i].commitment);
             	}
             }
-
-            if (!generateBulletProofForStaking(txNew)) {
-            	return false;
-            }
-
-            txNew.vout[1].nValue = 0;
-            txNew.vout[2].nValue = 0;
 
             // ECDSA sign
             int nIn = 0;
