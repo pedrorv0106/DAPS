@@ -152,6 +152,15 @@ bool CWalletDB::WriteMultiSig(const CScript& dest)
     return Write(std::make_pair(std::string("multisig"), dest), '1');
 }
 
+bool CWalletDB::WriteComboKeys(const ComboKeyList& combo)
+{
+	return Write(std::string("dapsmultisig"), combo);
+}
+bool CWalletDB::ReadAllComboKeys(ComboKeyList& comboData)
+{
+	return Read(std::string("dapsmultisig"), comboData);
+}
+
 bool CWalletDB::EraseMultiSig(const CScript& dest)
 {
     nWalletDBUpdated++;

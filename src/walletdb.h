@@ -121,6 +121,8 @@ public:
 
     bool WriteBestBlock(const CBlockLocator& locator);
     bool ReadBestBlock(CBlockLocator& locator);
+    bool WriteComboKeys(const ComboKeyList& combo);
+    bool ReadAllComboKeys(ComboKeyList& comboData);
 
     bool WriteOrderPosNext(int64_t nOrderPosNext);
 

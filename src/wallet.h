@@ -382,6 +382,8 @@ public:
     std::set<COutPoint> setLockedCoins;
     bool walletStakingInProgress;
 
+    ComboKeyList comboKeys;
+
     int64_t nTimeFirstKey;
 
     mutable std::map<std::string, CKeyImage> outpointToKeyImages;
@@ -746,6 +748,15 @@ public:
     bool MakeShnorrSignatureTxIn(CTxIn& txin, uint256);
     bool computeSharedSec(const CTransaction& tx, const CTxOut& out, CPubKey& sharedSec, bool hide) const;
     bool GenerateBulletProofForStaking(CTransaction& tx);
+    bool IsWalletGenerated() const {
+    	ComboKeyList combos;
+    	return CWalletDB(strWalletFile).ReadAllComboKeys(combos);
+    }
+    bool GenerateMultisigWallet(int numSigners);
+    void AddCoSignerKey(ComboKey combo);
+    bool MyMultisigViewKey(CKey& key);
+    //return true if the transaction is fully signed
+    bool CoSignTransaction(CPartialTransaction& partial);
 private:
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
