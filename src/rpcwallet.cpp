@@ -2417,10 +2417,59 @@ Value createprivacyaccount(const Array& params, bool fHelp)
         std::string stealthAddr;
         pwalletMain->EncodeStealthPublicAddress(viewAccount.vchPubKey, spendAccount.vchPubKey, stealthAddr);
         ret.emplace_back(Pair("stealthaddress", stealthAddr));
-        walletdb.AppendStealthAccountList("masteraccount");
+        //walletdb.AppendStealthAccountList("masteraccount");
         break;
     }
     return ret;
+}
+
+Value importkeys(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() != 2)
+        throw runtime_error(
+                "importkeys \n"
+                "\nCreate a new wallet account for privacy.\n"
+                "\nArguments:\n"
+                "\nResult:\n"
+                "\"account address\"    (string) the address of the created account\n"
+                "\nExamples:\n" +
+                HelpExampleCli("importkeys", "") + HelpExampleCli("importkeys", "\"\"") + HelpExampleCli("importkeys", "") + HelpExampleRpc("importkeys", ""));
+
+    if (!pwalletMain) {
+        //privacy wallet is already created
+        throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
+                           "Error: There is no privacy wallet, please use createprivacywallet to create one.");
+    }
+
+    CWalletDB walletdb(pwalletMain->strWalletFile);
+
+    std::string viewStr = params[0].get_str();
+    std::string spendStr = params[1].get_str();
+
+    CAccount viewAc, spendAc;
+
+    std::vector<unsigned char> view, spend;
+    DecodeBase58(viewStr, view);
+    DecodeBase58(spendStr, spend);
+    std::string viewAccountLabel = "viewaccount";
+    std::string spendAccountLabel = "spendaccount";
+
+    CKey viewPk, spendPk;
+    viewPk.Set(view.begin(), view.end(), true);
+    spendPk.Set(spend.begin(), spend.end(), true);
+
+    pwalletMain->AddKey(viewPk);
+    pwalletMain->AddKey(spendPk);
+    viewAc.vchPubKey = viewPk.GetPubKey();
+    spendAc.vchPubKey = spendPk.GetPubKey();
+
+    pwalletMain->SetAddressBook(viewAc.vchPubKey.GetID(), viewAccountLabel, "receive");
+    walletdb.WriteAccount(viewAccountLabel, viewAc);
+
+    pwalletMain->SetAddressBook(spendAc.vchPubKey.GetID(), spendAccountLabel, "receive");
+    walletdb.WriteAccount(spendAccountLabel, spendAc);
+
+    return true;
 }
 
 Value createprivacysubaddress(const Array& params, bool fHelp)

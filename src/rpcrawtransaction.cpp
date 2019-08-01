@@ -172,6 +172,59 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
     }
 }
 
+//for mobile wallet fast sync
+Value getrawtransactionbyblockheight(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw runtime_error(
+            "getrawtransactionbyblockheight \"blockheight\" ( verbose )\n"
+            "\nNOTE: By default this function only works sometimes. This is when the tx is in the mempool\n"
+            "or there is an unspent output in the utxo for this transaction. To make it always work,\n"
+            "you need to maintain a transaction index, using the -txindex command line option.\n"
+            "\nReturn the raw transaction data.\n"
+            "\nIf verbose=0, returns a string that is serialized, hex-encoded data for 'txid'.\n"
+            "If verbose is non-zero, returns an Object with information about 'txid'.\n"
+
+            "\nArguments:\n"
+            "1. \"blockheight\"      (numeric, required) The transaction id\n"
+
+            "\nResult (if verbose is not set or set to 0):\n"
+            "\"data\"      (string) The serialized, hex-encoded data for 'txid'\n"
+
+            "\nResult (if verbose > 0):\n"
+            "{\n"
+            "  \"hex\" : \"data\",       (string) The serialized, hex-encoded data for 'txid'\n"
+            "  \"blockhash\" : \"hash\",   (string) the block hash\n"
+            "  \"confirmations\" : n,      (numeric) The confirmations\n"
+            "  \"blocktime\" : ttt         (numeric) The block time in seconds since epoch (Jan 1 1970 GMT)\n"
+            "}\n"
+
+            "\nExamples:\n" +
+            HelpExampleCli("getrawtransaction", "\"mytxid\"") + HelpExampleCli("getrawtransaction", "\"mytxid\" 1") + HelpExampleRpc("getrawtransaction", "\"mytxid\", 1"));
+
+    int nHeight = params[0].get_int();
+    if (nHeight > chainActive.Height()) {
+        throw JSONRPCError(RPC_INVALID_BLOCK_HEIGHT, "Block height is too high");
+    }
+    CBlock block;
+    if (!ReadBlockFromDisk(block, chainActive[nHeight])) {
+        throw JSONRPCError(RPC_INVALID_BLOCK_HEIGHT, "Block cannot be read from disk");
+    }
+
+    Object result;
+    Array hexs;
+    for (size_t i = 0; i < block.vtx.size(); i++) {
+        CTransaction& tx = block.vtx[i];
+        string strHex = EncodeHexTx(tx);
+        hexs.push_back(strHex);
+    }
+    result.push_back(Pair("hexs", hexs));
+    result.push_back(Pair("blockhash", block.GetHash().GetHex()));
+    result.push_back(Pair("confirmations", chainActive.Height() - nHeight + 1));
+    result.push_back(Pair("blocktime", block.GetBlockTime()));
+    return result;
+}
+
 Value getrawtransaction(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() < 1 || params.size() > 2)
@@ -248,7 +301,7 @@ Value getrawtransaction(const Array& params, bool fHelp)
     string strHex = EncodeHexTx(tx);
     if (!fVerbose)
         return strHex;
-
+    pwalletMain->IsTransactionForMe(tx);
     Object result;
     result.push_back(Pair("hex", strHex));
     TxToJSON(tx, hashBlock, result);

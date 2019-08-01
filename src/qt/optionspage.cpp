@@ -149,7 +149,7 @@ void OptionsPage::setMapper()
 
 void OptionsPage::on_pushButtonPassword_clicked()
 {
-    if ( (ui->lineEditNewPass->text().contains(" ")) || (!ui->lineEditNewPass->text().length()) ) {
+    if ( (!ui->lineEditNewPass->text().length()) || (!ui->lineEditNewPassRepeat->text().length()) ) {
         QMessageBox::critical(this, tr("Wallet encryption failed"),
                     tr("The passphrase entered for wallet encryption was empty or contained spaces. Please try again."));
         return;
@@ -168,16 +168,14 @@ void OptionsPage::on_pushButtonPassword_clicked()
 
     bool success = false;
 
-
     if (newPass == newPass2) {
-    	if (model->changePassphrase(oldPass, newPass)) {
-    		QMessageBox::information(this, tr("Wallet encrypted"),
-    				tr("Wallet passphrase was successfully changed."));
+    	if (model->changePassphrase(oldPass, newPass))
+    		QMessageBox::information(this, tr("Passphrase change successful"),
+                    tr("Wallet passphrase was successfully changed. Please remember your passphrase as there is no way to recover it."));
     		success = true;
-    	} else {
+    } else {
     		QMessageBox::critical(this, tr("Wallet encryption failed"),
-    				tr("The passphrase entered for the wallet decryption was incorrect."));
-    	}
+    				tr("The passphrases entered for wallet encryption do not match. Please try again."));
     }
 
     if (success)
@@ -208,7 +206,7 @@ void OptionsPage::on_pushButtonBackup_clicked(){
 
 void OptionsPage::validateNewPass()
 {
-    if ( (ui->lineEditNewPass->text().contains(" ")) || (!ui->lineEditNewPass->text().length()) )
+    if (!ui->lineEditNewPass->text().length())
         ui->lineEditNewPass->setStyleSheet("border-color: red");
     else ui->lineEditNewPass->setStyleSheet(GUIUtil::loadStyleSheet());
     matchNewPasswords();
@@ -318,6 +316,8 @@ void OptionsPage::qrDialogIsFinished(int result) {
 void OptionsPage::dialogIsFinished(int result) {
    if(result == QDialog::Accepted){
         settings.setValue("2FA", "enabled");
+        QDateTime current = QDateTime::currentDateTime();
+        settings.setValue("2FALastTime", current.toTime_t());
         enable2FA();
 
         QMessageBox::information(this, tr("SUCCESS!"),
@@ -337,10 +337,6 @@ void OptionsPage::changeTheme(ToggleButton* widget)
 }
 
 void OptionsPage::disable2FA() {
-    ui->btn_day->setEnabled(false);
-    ui->btn_week->setEnabled(false);
-    ui->btn_month->setEnabled(false);
-
     ui->code_1->setText("");
     ui->code_2->setText("");
     ui->code_3->setText("");
@@ -358,10 +354,6 @@ void OptionsPage::disable2FA() {
 }
 
 void OptionsPage::enable2FA() {
-    ui->btn_day->setEnabled(true);
-    ui->btn_week->setEnabled(true);
-    ui->btn_month->setEnabled(true);
-
     ui->label_3->setEnabled(true);
     ui->label_4->setEnabled(true);
     ui->label->setEnabled(true);
@@ -387,16 +379,16 @@ void OptionsPage::enable2FA() {
      
     int period = settings.value("2FAPeriod").toInt();
     if (period == 1)
-        ui->btn_day->setStyleSheet("border-color: red;");
+        ui->btn_day->setStyleSheet("border-color: green;");
     else if (period == 7)
-        ui->btn_week->setStyleSheet("border-color: red;");
-    else if (period == 31)
-        ui->btn_month->setStyleSheet("border-color: red;");
+        ui->btn_week->setStyleSheet("border-color: green;");
+    else if (period == 30)
+        ui->btn_month->setStyleSheet("border-color: green;");
 }
 
 void OptionsPage::on_day() {
     settings.setValue("2FAPeriod", "1");
-    ui->btn_day->setStyleSheet("border-color: red;");
+    ui->btn_day->setStyleSheet("border-color: green;");
     ui->btn_week->setStyleSheet("border-color: white;");
     ui->btn_month->setStyleSheet("border-color: white;");
 }
@@ -404,13 +396,13 @@ void OptionsPage::on_day() {
 void OptionsPage::on_week() {
     settings.setValue("2FAPeriod", "7");
     ui->btn_day->setStyleSheet("border-color: white;");
-    ui->btn_week->setStyleSheet("border-color: red;");
+    ui->btn_week->setStyleSheet("border-color: green;");
     ui->btn_month->setStyleSheet("border-color: white;");
 }
 
 void OptionsPage::on_month() {
-    settings.setValue("2FAPeriod", "31");
+    settings.setValue("2FAPeriod", "30");
     ui->btn_day->setStyleSheet("border-color: white;");
     ui->btn_week->setStyleSheet("border-color: white;");
-    ui->btn_month->setStyleSheet("border-color: red;");
+    ui->btn_month->setStyleSheet("border-color: green;");
 }

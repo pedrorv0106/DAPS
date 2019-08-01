@@ -2,6 +2,7 @@
 #define TWOFAQRDIALOG_H
 
 #include <QDialog>
+#include <QSettings>
 
 class WalletModel;
 
@@ -29,6 +30,7 @@ private slots:
 private:
     Ui::TwoFAQRDialog *ui;
     WalletModel* model;
+    QSettings settings;
 };
 
 #endif // TWOFAQRDIALOG_H
