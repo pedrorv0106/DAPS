@@ -383,6 +383,8 @@ public:
     bool walletStakingInProgress;
 
     ComboKeyList comboKeys;
+    CKey multiSigPrivView;
+    CPubKey multiSigPubSpend;
 
     int64_t nTimeFirstKey;
 
@@ -752,9 +754,63 @@ public:
     	ComboKeyList combos;
     	return CWalletDB(strWalletFile).ReadAllComboKeys(combos);
     }
-    bool GenerateMultisigWallet(int numSigners);
-    void AddCoSignerKey(ComboKey combo);
-    bool MyMultisigViewKey(CKey& key);
+    ComboKey MyComboKey() const {
+    	if (IsLocked()) throw runtime_error("Wallet need to be unlocked");
+    	CKey view, spend;
+    	myViewPrivateKey(view);
+    	mySpendPrivateKey(spend);
+    	CPubKey pubSpend = spend.GetPubKey();
+    	ComboKey combo;
+    	combo.pubSpend = pubSpend;
+    	std::copy(view.begin(), view.end(), std::back_inserter(combo.privView));
+    	return combo;
+    }
+    void AddCoSignerKey(ComboKey combo)
+    {
+    	if (IsWalletGenerated()) throw runtime_error("Multisig wallet is already generated");
+    	comboKeys.AddKey(MyComboKey());
+    	comboKeys.AddKey(combo);
+    }
+
+    void GenerateMultisigWallet(int numSigners) {
+    	if (multiSigPrivView.IsValid() && multiSigPubSpend.IsFullyValid()) return;
+
+    	if (IsLocked()) throw runtime_error("Wallet need to be unlocked");
+    	if (IsWalletGenerated()) throw runtime_error("Multisig wallet is already generated");
+    	if (numSigners != comboKeys.comboKeys.size()) throw runtime_error("numSigners should be equal to the number of signers");
+    	unsigned char view[32];
+    	unsigned char pubSpend[33];
+    	memcpy(view, &(comboKeys.comboKeys[0].privView[0]), 32);
+    	secp256k1_pedersen_commitment pubkeysCommitment[numSigners];
+		const secp256k1_pedersen_commitment *elements[numSigners];
+		secp256k1_pedersen_serialized_pubkey_to_commitment(&pubkeysCommitment[0], 33, comboKeys.comboKeys[0].pubSpend.begin());
+		elements[0] = &pubkeysCommitment[0];
+		for(size_t i = 1; i < comboKeys.comboKeys.size(); i++) {
+    		if (!secp256k1_ec_privkey_tweak_add(view, &(comboKeys.comboKeys[i].privView[0]))) {
+    			throw runtime_error("Cannot compute private view key");
+    		}
+    		secp256k1_pedersen_serialized_pubkey_to_commitment(&pubkeysCommitment[i], 33, comboKeys.comboKeys[i].pubSpend.begin());
+    		elements[i] = &pubkeysCommitment[i];
+		}
+		secp256k1_pedersen_commitment out;
+    	secp256k1_pedersen_commitment_sum_pos(GetContext(), elements, numSigners, &out);
+    	secp256k1_pedersen_commitment_to_serialized_pubkey(&out, pubSpend, 33);
+
+    	multiSigPrivView.Set(view, view + 32, true);
+    	multiSigPubSpend.Set(pubSpend, pubSpend + 33);
+    }
+
+    CPubKey GetMultisigPubSpendKey()
+    {
+    	GenerateMultisigWallet();
+    	multiSigPubSpend;
+    }
+
+    Ckey MyMultisigViewKey()
+    {
+    	GenerateMultisigWallet();
+    	return multiSigPrivView;
+    }
     //return true if the transaction is fully signed
     bool CoSignTransaction(CPartialTransaction& partial);
 private:
