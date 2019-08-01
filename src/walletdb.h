@@ -75,7 +75,7 @@ public:
     }
 };
 
-/** Access to the wallet database (wallet.dat) */
+/** Access to the wallet database (multisig_wallet.dat) */
 class CWalletDB : public CDB
 {
 public:

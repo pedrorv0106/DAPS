@@ -5586,7 +5586,7 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
     if (!pwalletMain->CommitTransaction(wtxNew, reservekey, (!fUseIX ? "tx" : "ix"))) {
     	inSpendQueueOutpointsPerSession.clear();
         throw runtime_error(
-                "Error: The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.");
+                "Error: The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of multisig_wallet.dat and coins were spent in the copy but not marked as spent here.");
     }
     for(size_t i = 0; i < inSpendQueueOutpointsPerSession.size(); i++) {
     	inSpendQueueOutpoints[inSpendQueueOutpointsPerSession[i]] = true;

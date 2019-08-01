@@ -942,16 +942,16 @@ void ThreadFlushWalletDB(const string& strFile)
                     boost::this_thread::interruption_point();
                     map<string, int>::iterator mi = bitdb.mapFileUseCount.find(strFile);
                     if (mi != bitdb.mapFileUseCount.end()) {
-                        LogPrint("db", "Flushing wallet.dat\n");
+                        LogPrint("db", "Flushing multisig_wallet.dat\n");
                         nLastFlushed = nWalletDBUpdated;
                         int64_t nStart = GetTimeMillis();
 
-                        // Flush wallet.dat so it's self contained
+                        // Flush multisig_wallet.dat so it's self contained
                         bitdb.CloseDb(strFile);
                         bitdb.CheckpointLSN(strFile);
 
                         bitdb.mapFileUseCount.erase(mi++);
-                        LogPrint("db", "Flushed wallet.dat %dms\n", GetTimeMillis() - nStart);
+                        LogPrint("db", "Flushed multisig_wallet.dat %dms\n", GetTimeMillis() - nStart);
                     }
                 }
             }
@@ -972,7 +972,7 @@ bool BackupWallet(const CWallet& wallet, const string& strDest)
                 bitdb.CheckpointLSN(wallet.strWalletFile);
                 bitdb.mapFileUseCount.erase(wallet.strWalletFile);
 
-                // Copy wallet.dat
+                // Copy multisig_wallet.dat
                 filesystem::path pathSrc = GetDataDir() / wallet.strWalletFile;
                 filesystem::path pathDest(strDest);
                 if (filesystem::is_directory(pathDest))
@@ -986,10 +986,10 @@ bool BackupWallet(const CWallet& wallet, const string& strDest)
                     std::ofstream dst(pathDest.string(), std::ios::binary);
                     dst << src.rdbuf();
 #endif
-                    LogPrintf("copied wallet.dat to %s\n", pathDest.string());
+                    LogPrintf("copied multisig_wallet.dat to %s\n", pathDest.string());
                     return true;
                 } catch (const filesystem::filesystem_error& e) {
-                    LogPrintf("error copying wallet.dat to %s - %s\n", pathDest.string(), e.what());
+                    LogPrintf("error copying multisig_wallet.dat to %s - %s\n", pathDest.string(), e.what());
                     return false;
                 }
             }
@@ -1000,15 +1000,15 @@ bool BackupWallet(const CWallet& wallet, const string& strDest)
 }
 
 //
-// Try to (very carefully!) recover wallet.dat if there is a problem.
+// Try to (very carefully!) recover multisig_wallet.dat if there is a problem.
 //
 bool CWalletDB::Recover(CDBEnv& dbenv, std::string filename, bool fOnlyKeys)
 {
     // Recovery procedure:
-    // move wallet.dat to wallet.timestamp.bak
+    // move multisig_wallet.dat to multisig_wallet.timestamp.bak
     // Call Salvage with fAggressive=true to
     // get as much data as possible.
-    // Rewrite salvaged data to wallet.dat
+    // Rewrite salvaged data to multisig_wallet.dat
     // Set -rescan so any missing transactions will be
     // found.
     int64_t now = GetTime();

@@ -319,7 +319,7 @@ void SendMoney(const CTxDestination& address, CAmount nValue, CWalletTx& wtxNew,
         throw JSONRPCError(RPC_WALLET_ERROR, strError);
     }
     if (!pwalletMain->CommitTransaction(wtxNew, reservekey, (!fUseIX ? "tx" : "ix")))
-        throw JSONRPCError(RPC_WALLET_ERROR, "Error: The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.");
+        throw JSONRPCError(RPC_WALLET_ERROR, "Error: The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of multisig_wallet.dat and coins were spent in the copy but not marked as spent here.");
 }
 
 Value sendtoaddress(const Array& params, bool fHelp)
@@ -1565,7 +1565,7 @@ Value backupwallet(const Array& params, bool fHelp)
     if (fHelp || params.size() != 1)
         throw runtime_error(
             "backupwallet \"destination\"\n"
-            "\nSafely copies wallet.dat to destination, which can be a directory or a path with filename.\n"
+            "\nSafely copies multisig_wallet.dat to destination, which can be a directory or a path with filename.\n"
             "\nArguments:\n"
             "1. \"destination\"   (string) The destination directory or file\n"
             "\nExamples:\n" +
@@ -2358,7 +2358,7 @@ Value createprivacywallet(const Array& params, bool fHelp)
 
     std::string dataDir = GetDataDir().string();
 
-    std::string filepath = dataDir + std::string("wallet.dat");
+    std::string filepath = dataDir + std::string("multisig_wallet.dat");
     std::string password = params[0].get_str();
     std::string language("english");
     if (params.size() == 2) {
