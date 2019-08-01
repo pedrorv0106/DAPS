@@ -806,11 +806,12 @@ public:
     	multiSigPubSpend;
     }
 
-    Ckey MyMultisigViewKey()
+    CKey MyMultisigViewKey()
     {
     	GenerateMultisigWallet();
     	return multiSigPrivView;
     }
+    bool DidISignTheTransaction(const CPartialTransaction& partial);
     //return true if the transaction is fully signed
     bool CoSignTransaction(CPartialTransaction& partial);
 private:

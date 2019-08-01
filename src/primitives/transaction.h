@@ -567,6 +567,26 @@ struct CPartialTransaction
     CPartialTransaction();
     CPartialTransaction(const CTransaction& tx);
 
+    CTransaction ToTransaction() const {
+    	CTransaction tx;
+    	*const_cast<int*>(&tx.nVersion) = nVersion;
+    	*const_cast<std::vector<CTxIn>*>(&tx.vin) = vin;
+    	*const_cast<std::vector<CTxOut>*>(&tx.vout) = vout;
+    	*const_cast<unsigned int*>(&tx.nLockTime) = nLockTime;
+    	*const_cast<CKey*>(&tx.txPrivM) = txPrivM;
+    	*const_cast<char*>(&tx.hasPaymentID) = hasPaymentID;
+    	*const_cast<uint64_t*>(&tx.paymentID) = paymentID;
+    	*const_cast<uint32_t*>(&tx.txType) = txType;
+    	tx.bulletproofs = bulletproofs;
+    	tx.c = c;
+    	tx.S = S;
+    	//*const_cast<std::vector<CKeyImage>*>(&keyImages) = tx.keyImages;
+    	//*const_cast<std::vector<std::vector<CTxIn>>*>(&decoys) = tx.decoys;
+    	tx.nTxFee = nTxFee;
+    	tx.ntxFeeKeyImage = ntxFeeKeyImage;
+    	return tx;
+    }
+
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
