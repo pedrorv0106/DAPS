@@ -5761,6 +5761,7 @@ bool CWallet::IsTransactionForMe(const CTransaction& tx) {
     		LOCK(cs_wallet);
     		//put in map from address to txHash used for qt wallet
     		CKeyID tempKeyID = expectedDes.GetID();
+    		AddWatchOnly(scriptPubKey);
     		addrToTxHashMap[CBitcoinAddress(tempKeyID).ToString()] = tx.GetHash().GetHex();
     		CAmount c;
     		CKey blind;
