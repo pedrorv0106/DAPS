@@ -154,7 +154,7 @@ Value preparebudget(const Array& params, bool fHelp)
             HelpExampleRpc("preparebudget", "\"test-proposal\" \"https://forum.dapscoin.org/t/test-proposal\" 2 820800 \"D9oc6C3dttUbv8zd7zGNq1qKBGf4ZQ1XEE\" 500"));
 
     if (pwalletMain->IsLocked())
-        throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Please enter the wallet passphrase with walletpassphrase first.");
+        throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Please enter the wallet passphrase with unlockwallet first.");
 
     std::string strProposalName = SanitizeString(params[0].get_str());
     if (strProposalName.size() > 20)

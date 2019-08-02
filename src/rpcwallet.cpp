@@ -43,7 +43,7 @@ std::string HelpRequiringPassphrase()
 void EnsureWalletIsUnlocked()
 {
     if (pwalletMain->IsLocked() || pwalletMain->fWalletUnlockAnonymizeOnly)
-        throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Please enter the wallet passphrase with walletpassphrase first.");
+        throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Please enter the wallet passphrase with unlockwallet first.");
 }
 
 void WalletTxToJSON(const CWalletTx& wtx, Object& entry)
@@ -1718,11 +1718,11 @@ Value walletlock(const Array& params, bool fHelp)
         throw runtime_error(
             "walletlock\n"
             "\nRemoves the wallet encryption key from memory, locking the wallet.\n"
-            "After calling this method, you will need to call walletpassphrase again\n"
+            "After calling this method, you will need to call unlockwallet again\n"
             "before being able to call any methods which require the wallet to be unlocked.\n"
             "\nExamples:\n"
             "\nSet the passphrase for 2 minutes to perform a transaction\n" +
-            HelpExampleCli("walletpassphrase", "\"my pass phrase\" 120") +
+            HelpExampleCli("unlockwallet", "\"my pass phrase\" 120") +
             "\nPerform a send (requires passphrase set)\n" + HelpExampleCli("sendtoaddress", "\"DEQsu2RRB5iphm9tKXiP4iWSRMC17gseW5\" 1.0") +
             "\nClear the passphrase since we are done before 2 minutes is up\n" + HelpExampleCli("walletlock", "") +
             "\nAs json rpc call\n" + HelpExampleRpc("walletlock", ""));
@@ -1752,7 +1752,7 @@ Value encryptwallet(const Array& params, bool fHelp)
             "\nEncrypts the wallet with 'passphrase'. This is for first time encryption.\n"
             "After this, any calls that interact with private keys such as sending or signing \n"
             "will require the passphrase to be set prior the making these calls.\n"
-            "Use the walletpassphrase call for this, and then walletlock call.\n"
+            "Use the unlockwallet call for this, and then walletlock call.\n"
             "If the wallet is already encrypted, use the walletpassphrasechange call.\n"
             "Note that this will shutdown the server.\n"
             "\nArguments:\n"
@@ -1760,7 +1760,7 @@ Value encryptwallet(const Array& params, bool fHelp)
             "\nExamples:\n"
             "\nEncrypt you wallet\n" +
             HelpExampleCli("encryptwallet", "\"my pass phrase\"") +
-            "\nNow set the passphrase to use the wallet, such as for signing or sending DAPSs\n" + HelpExampleCli("walletpassphrase", "\"my pass phrase\"") +
+            "\nNow set the passphrase to use the wallet, such as for signing or sending DAPSs\n" + HelpExampleCli("unlockwallet", "\"my pass phrase\"") +
             "\nNow we can so something like sign\n" + HelpExampleCli("signmessage", "\"dapscoinaddress\" \"test message\"") +
             "\nNow lock the wallet again by removing the passphrase\n" + HelpExampleCli("walletlock", "") +
             "\nAs a json rpc call\n" + HelpExampleRpc("encryptwallet", "\"my pass phrase\""));
@@ -2300,7 +2300,7 @@ Value multisend(const Array& params, bool fHelp)
     if (boost::lexical_cast<int>(params[1].get_str()) < 0)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected valid percentage");
     if (pwalletMain->IsLocked())
-        throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Please enter the wallet passphrase with walletpassphrase first.");
+        throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Please enter the wallet passphrase with unlockwallet first.");
     unsigned int nPercent = boost::lexical_cast<unsigned int>(params[1].get_str());
 
     LOCK(pwalletMain->cs_wallet);
