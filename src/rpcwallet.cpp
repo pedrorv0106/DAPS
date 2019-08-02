@@ -460,7 +460,7 @@ Value signmessage(const Array& params, bool fHelp)
                                         "\"signature\"          (string) The signature of the message encoded in base 64\n"
                                         "\nExamples:\n"
                                         "\nUnlock the wallet for 30 seconds\n" +
-            HelpExampleCli("walletpassphrase", "\"mypassphrase\" 30") +
+            HelpExampleCli("unlockwallet", "\"mypassphrase\" 30") +
             "\nCreate the signature\n" + HelpExampleCli("signmessage", "\"DEQsu2RRB5iphm9tKXiP4iWSRMC17gseW5\" \"my message\"") +
             "\nVerify the signature\n" + HelpExampleCli("verifymessage", "\"DEQsu2RRB5iphm9tKXiP4iWSRMC17gseW5\" \"signature\" \"my message\"") +
             "\nAs json rpc\n" + HelpExampleRpc("signmessage", "\"DEQsu2RRB5iphm9tKXiP4iWSRMC17gseW5\", \"my message\""));
@@ -1617,11 +1617,11 @@ static void LockWallet(CWallet* pWallet)
     pWallet->Lock();
 }
 
-Value walletpassphrase(const Array& params, bool fHelp)
+Value unlockwallet(const Array& params, bool fHelp)
 {
     if (pwalletMain->IsCrypted() && (fHelp || params.size() < 2 || params.size() > 3))
         throw runtime_error(
-            "walletpassphrase \"passphrase\" timeout ( anonymizeonly )\n"
+            "unlockwallet \"passphrase\" timeout ( anonymizeonly )\n"
             "\nStores the wallet decryption key in memory for 'timeout' seconds.\n"
             "This is needed prior to performing transactions related to private keys such as sending DAPSs\n"
             "\nArguments:\n"
@@ -1629,19 +1629,19 @@ Value walletpassphrase(const Array& params, bool fHelp)
             "2. timeout            (numeric, required) The time to keep the decryption key in seconds.\n"
             "3. anonymizeonly      (boolean, optional, default=flase) If is true sending functions are disabled."
             "\nNote:\n"
-            "Issuing the walletpassphrase command while the wallet is already unlocked will set a new unlock\n"
+            "Issuing the unlockwallet command while the wallet is already unlocked will set a new unlock\n"
             "time that overrides the old one. A timeout of \"0\" unlocks until the wallet is closed.\n"
             "\nExamples:\n"
             "\nUnlock the wallet for 60 seconds\n" +
-            HelpExampleCli("walletpassphrase", "\"my pass phrase\" 60") +
-            "\nUnlock the wallet for 60 seconds but allow Obfuscation only\n" + HelpExampleCli("walletpassphrase", "\"my pass phrase\" 60 true") +
+            HelpExampleCli("unlockwallet", "\"my pass phrase\" 60") +
+            "\nUnlock the wallet for 60 seconds but allow Obfuscation only\n" + HelpExampleCli("unlockwallet", "\"my pass phrase\" 60 true") +
             "\nLock the wallet again (before 60 seconds)\n" + HelpExampleCli("walletlock", "") +
-            "\nAs json rpc call\n" + HelpExampleRpc("walletpassphrase", "\"my pass phrase\", 60"));
+            "\nAs json rpc call\n" + HelpExampleRpc("unlockwallet", "\"my pass phrase\", 60"));
 
     if (fHelp)
         return true;
     if (!pwalletMain->IsCrypted())
-        throw JSONRPCError(RPC_WALLET_WRONG_ENC_STATE, "Error: running with an unencrypted wallet, but walletpassphrase was called.");
+        throw JSONRPCError(RPC_WALLET_WRONG_ENC_STATE, "Error: running with an unencrypted wallet, but unlockwallet was called.");
 
     // Note that the walletpassphrase is stored in params[0] which is not mlock()ed
     SecureString strWalletPass;
