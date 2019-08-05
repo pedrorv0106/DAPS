@@ -247,6 +247,10 @@ void OverviewPage::setWalletModel(WalletModel* model)
                          SLOT(setBalance(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)));
         connect(model, SIGNAL(stakingStatusChanged(bool)), this, 
                          SLOT(setSpendableBalance(bool)));
+        connect(model, SIGNAL(WalletUnlocked()), this,
+                                 SLOT(refreshRecentTransactions()));
+        connect(model, SIGNAL(WalletUnlocked()), this,
+                                         SLOT(updateBalance()));
         
         connect(model->getOptionsModel(), SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit()));
 
@@ -258,6 +262,14 @@ void OverviewPage::setWalletModel(WalletModel* model)
 
     // update the display unit, to not use the default ("DAPS")
     updateDisplayUnit();
+}
+
+void OverviewPage::updateBalance()
+{
+	WalletModel* model = this->walletModel;
+	setBalance(model->getBalance(), model->getUnconfirmedBalance(), model->getImmatureBalance(),
+			0, 0, 0,
+			model->getWatchBalance(), model->getWatchUnconfirmedBalance(), model->getWatchImmatureBalance());
 }
 
 void OverviewPage::updateDisplayUnit()

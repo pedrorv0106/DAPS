@@ -276,6 +276,7 @@ public:
     unsigned int nHashInterval;
     uint64_t nStakeSplitThreshold;
     int nStakeSetUpdateTime;
+    int walletUnlockCountStatus = 0;
 
     //MultiSend
     std::vector<std::pair<std::string, int> > vMultiSend;

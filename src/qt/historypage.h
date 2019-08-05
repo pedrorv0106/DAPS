@@ -41,6 +41,7 @@ class HistoryPage : public QDialog
 public:
     explicit HistoryPage(QWidget* parent = 0);
     ~HistoryPage();
+    void setModel(WalletModel* model);
 
 public slots:
     void updateFilter();

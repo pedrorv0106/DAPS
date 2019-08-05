@@ -184,6 +184,10 @@ void HistoryPage::addTableData(std::map<QString, QString>)
 
 void HistoryPage::updateTableData(CWallet* wallet)
 {
+	while (ui->tableView->rowCount() > 0)
+	{
+		ui->tableView->removeRow(0);
+	}
     ui->tableView->setRowCount(0);
     auto txs = WalletUtil::getTXs(wallet);
     std::sort (txs.begin(), txs.end(), TxCompare);
@@ -262,6 +266,13 @@ void HistoryPage::updateFilter()
 void HistoryPage::syncTime(QDateTimeEdit* calendar, QTimeEdit* clock)
 {
     calendar->setTime(clock->time());
+}
+
+void HistoryPage::setModel(WalletModel* model)
+{
+	this->model = model;
+	connect(model, SIGNAL(WalletUnlocked()), this,
+	                                         SLOT(updateTableData()));
 }
 
 void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e, QString f){

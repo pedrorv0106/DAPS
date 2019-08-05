@@ -280,6 +280,7 @@ signals:
     void notifyMultiSigChanged(bool fHaveMultiSig);
 
     void RefreshRecent();
+    void WalletUnlocked();
 
 public slots:
     /* Wallet status might have changed */

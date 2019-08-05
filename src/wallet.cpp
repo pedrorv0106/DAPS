@@ -374,6 +374,7 @@ bool CWallet::Unlock(const SecureString& strWalletPassphrase, bool anonymizeOnly
                 fWalletUnlockAnonymizeOnly = anonymizeOnly;
                 LogPrintf("\nStart rescaning wallet transactions");
                 pwalletMain->RescanAfterUnlock();
+                walletUnlockCountStatus++;
                 LogPrintf("\nFinish rescaning wallet transactions");
                 return true;
             }
@@ -5874,7 +5875,10 @@ bool CWallet::myViewPrivateKey(CKey& view) const {
 }
 
 bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmount &amount, CKey& blind) const {
-    if (tx.IsCoinBase()) {
+    if (IsLocked()) {
+    	return true;
+    }
+	if (tx.IsCoinBase()) {
         //Coinbase transaction output is not hidden, not need to decrypt
         amount = out.nValue;
         return true;
@@ -5891,10 +5895,6 @@ bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmou
         amount = amountMap[out.scriptPubKey];
         blind.Set(blindMap[out.scriptPubKey].begin(), blindMap[out.scriptPubKey].end(), true);
         return true;
-    }
-
-    if (IsLocked()) {
-    	return true;
     }
 
     std::set<CKeyID> keyIDs;
