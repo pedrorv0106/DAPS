@@ -3033,6 +3033,7 @@ bool CWallet::makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFai
 
 	int myBlindsIdx = 0;
 	//additional member in the ring = Sum of All input public keys + sum of all input commitments - sum of all output commitments
+	//here we cannot collect private keys of inputs, thus only do partially
 	for (size_t j = 0; j < wtxNew.vin.size(); j++) {
 		COutPoint myOutpoint;
 		if (myIndex == -1) {
@@ -5653,19 +5654,17 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
 
     //Compute stealth destination
     CPubKey stealthDes;
-    CKey spend;
-    mySpendPrivateKey(spend);
     computeStealthDestination(secret, pubViewKey, pubSpendKey, stealthDes);
 
     CScript scriptPubKey = GetScriptForDestination(stealthDes);
     CReserveKey reservekey(pwalletMain);
 
+    CKey multiSigView = MyMultisigViewKey();
+    CPubKey multiSigPubSpend = GetMultisigPubSpendKey();
     CPubKey changeDes;
-    CKey view;
-    myViewPrivateKey(view);
     CKey secretChange;
     secretChange.MakeNewKey(true);
-    computeStealthDestination(secretChange, view.GetPubKey(), spend.GetPubKey(), changeDes);
+    computeStealthDestination(secretChange, multiSigView.GetPubKey(), multiSigPubSpend, changeDes);
     CBitcoinAddress changeAddress(changeDes.GetID());
     CCoinControl control;
     control.destChange = changeAddress.Get();
@@ -5701,24 +5700,31 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
 
 bool CWallet::DidISignTheTransaction(const CPartialTransaction& partial) {
 	//check whether I sign the transaction
-	uint256 footPrint = Hash(BEGIN(partial.vin), END(partial.vin));
+	//the data to be combined with the private view key is the outpoint of the first input in the transaction
 	ComboKey mycombo = MyComboKey();
 	unsigned char combo[65];
 	memcpy(combo, &(mycombo.privView[0]), 32);
 	memcpy(combo + 32, mycombo.pubSpend.begin(), 33);
 	unsigned char data[97];
-	memcpy(data, footPrint.begin(), 32);
 	memcpy(data + 32, combo, 65);
-	uint256 h = Hash(data, data + 97);
-
-	for (size_t i = 0; i < partial.hashesOfSignedSecrets.size(); i++) {
-		if (h == partial.hashesOfSignedSecrets[i]) return true;
+	std::vector<COutPoint> firstOutpoints;
+	firstOutpoints.push_back(partial.vin[0].prevout);
+	firstOutpoints.insert(firstOutpoints.end(), partial.vin[0].decoys.begin(), partial.vin[0].decoys.end());
+	for(size_t i = 0; i < firstOutpoints.size(); i++) {
+		uint256 footPrint = firstOutpoints[i].GetHash();
+		memcpy(data, footPrint.begin(), 32);
+		uint256 h = Hash(data, data + 97);
+		for (size_t i = 0; i < partial.hashesOfSignedSecrets.size(); i++) {
+			if (h == partial.hashesOfSignedSecrets[i]) return true;
+		}
 	}
+
 	return false;
 }
 
 bool CWallet::CoSignTransaction(CPartialTransaction& partial) {
 	if (DidISignTheTransaction()) {
+		//check whether the transaction is fully signed
 		if (VerifyRingSignatureWithTxFee(partial.ToTransaction())) return true;
 	}
 	//sign the transaction
