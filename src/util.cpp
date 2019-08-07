@@ -253,12 +253,36 @@ bool LogAcceptCategory(const char* category)
     return true;
 }
 
+std::string FilterInjection(const std::string& str) 
+{
+    int n = str.length(); 
+    char char_array[n]; 
+    strcpy(char_array, str.c_str());
+    
+    for (int i = 0; i < n; i++) {
+        if (char_array[i] == '\r' || char_array[i] == '\t' || char_array[i] == '\0')
+            char_array[i] = ' ';
+        else if (char_array[i] == '\n') {
+            if (i == n - 1)
+                continue;
+            char_array[i] = ' ';
+        }
+        else if (char_array[i] == '%' || char_array[i] == '&' || char_array[i] == '<' ||
+            char_array[i] == '>' || char_array[i] == '\"' || char_array[i] == '\'')
+            char_array[i] = '$';
+    }
+
+    std::string result(char_array);
+    return result;
+}
+
 int LogPrintStr(const std::string& str)
 {
+    std::string filteredStr = FilterInjection(str);
     int ret = 0; // Returns total number of characters written
     if (fPrintToConsole) {
         // print to console
-        ret = fwrite(str.data(), 1, str.size(), stdout);
+        ret = fwrite(filteredStr.data(), 1, filteredStr.size(), stdout);
         fflush(stdout);
     } else if (fPrintToDebugLog && AreBaseParamsConfigured()) {
         static bool fStartedNewLine = true;
@@ -280,12 +304,12 @@ int LogPrintStr(const std::string& str)
         // Debug print useful for profiling
         if (fLogTimestamps && fStartedNewLine)
             ret += fprintf(fileout, "%s ", DateTimeStrFormat("%Y-%m-%d %H:%M:%S", GetTime()).c_str());
-        if (!str.empty() && str[str.size() - 1] == '\n')
+        if (!filteredStr.empty() && filteredStr[filteredStr.size() - 1] == '\n')
             fStartedNewLine = true;
         else
             fStartedNewLine = false;
 
-        ret = fwrite(str.data(), 1, str.size(), fileout);
+        ret = fwrite(filteredStr.data(), 1, filteredStr.size(), fileout);
     }
 
     return ret;
