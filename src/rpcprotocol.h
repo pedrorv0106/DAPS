@@ -72,7 +72,7 @@ enum RPCErrorCode {
     RPC_WALLET_INSUFFICIENT_FUNDS = -6,    //! Not enough funds in wallet or account
     RPC_WALLET_INVALID_ACCOUNT_NAME = -11, //! Invalid account name
     RPC_WALLET_KEYPOOL_RAN_OUT = -12,      //! Keypool ran out, call keypoolrefill first
-    RPC_WALLET_UNLOCK_NEEDED = -13,        //! Enter the wallet passphrase with walletpassphrase first
+    RPC_WALLET_UNLOCK_NEEDED = -13,        //! Enter the wallet passphrase with unlockwallet first
     RPC_WALLET_PASSPHRASE_INCORRECT = -14, //! The wallet passphrase entered was incorrect
     RPC_WALLET_WRONG_ENC_STATE = -15,      //! Command given in wrong wallet encryption state (encrypting an encrypted wallet etc.)
     RPC_WALLET_ENCRYPTION_FAILED = -16,    //! Failed to encrypt the wallet

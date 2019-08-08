@@ -493,7 +493,7 @@ UniValue verifymessage(const UniValue& params, bool fHelp)
 
             "\nExamples:\n"
             "\nUnlock the wallet for 30 seconds\n" +
-            HelpExampleCli("walletpassphrase", "\"mypassphrase\" 30") +
+            HelpExampleCli("unlockwallet", "\"mypassphrase\" 30") +
             "\nCreate the signature\n" +
             HelpExampleCli("signmessage", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XZ\" \"my message\"") +
             "\nVerify the signature\n" +
