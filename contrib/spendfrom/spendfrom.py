@@ -89,7 +89,7 @@ def unlock_wallet(dapscoind):
     if t <= time.time():
         try:
             passphrase = getpass.getpass("Wallet is locked; enter passphrase: ")
-            dapscoind.walletpassphrase(passphrase, 5)
+            dapscoind.unlockwallet(passphrase, 5)
         except:
             sys.stderr.write("Wrong passphrase\n")
 

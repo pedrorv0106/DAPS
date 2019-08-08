@@ -322,10 +322,10 @@ elif cmd == "validateaddress":
     except:
         print "\n---An error occurred---\n"
 
-elif cmd == "walletpassphrase":
+elif cmd == "unlockwallet":
     try:
         pwd = getpass.getpass(prompt="Enter wallet passphrase: ")
-        access.walletpassphrase(pwd, 60)
+        access.unlockwallet(pwd, 60)
         print "\n---Wallet unlocked---\n"
     except:
         print "\n---An error occurred---\n"
