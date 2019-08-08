@@ -565,7 +565,24 @@ struct CPartialTransaction
     std::vector<uint256> hashesOfSignedSecrets;
 
     CPartialTransaction();
-    CPartialTransaction(const CTransaction& tx);
+    CPartialTransaction(const CTransaction& tx)
+    {
+    	*const_cast<int*>(&nVersion) = tx.nVersion;
+    	*const_cast<std::vector<CTxIn>*>(&vin) = tx.vin;
+    	*const_cast<std::vector<CTxOut>*>(&vout) = tx.vout;
+    	*const_cast<unsigned int*>(&nLockTime) = tx.nLockTime;
+    	*const_cast<CKey*>(&txPrivM) = tx.txPrivM;
+    	*const_cast<char*>(&hasPaymentID) = tx.hasPaymentID;
+    	*const_cast<uint64_t*>(&paymentID) = tx.paymentID;
+    	*const_cast<uint32_t*>(&txType) = tx.txType;
+    	bulletproofs = tx.bulletproofs;
+    	c = tx.c;
+    	S = tx.S;
+    	//*const_cast<std::vector<CKeyImage>*>(&keyImages) = tx.keyImages;
+    	//*const_cast<std::vector<std::vector<CTxIn>>*>(&decoys) = tx.decoys;
+    	nTxFee = tx.nTxFee;
+    	ntxFeeKeyImage = tx.ntxFeeKeyImage;
+    }
 
     CTransaction ToTransaction() const {
     	CTransaction tx;

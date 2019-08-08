@@ -1413,6 +1413,103 @@ bool CWalletTx::InMempool() const
     return false;
 }
 
+CKey CWallet::GeneratePartialKey(const COutPoint& out)
+{
+	if (mapWallet.count(out.hash) < 1) throw runtime_error("Outpoint not found");
+	return GeneratePartialKey(mapWallet[out.hash].vout[out.n]);
+}
+
+CKey CWallet::GeneratePartialKey(const CTxOut& out)
+{
+	CKey ret;
+	CPubKey txPub(out.txPub);
+	CPubKey pubSpendKey = GetMultisigPubSpendKey();
+	CKey view = MyMultisigViewKey();
+	//compute the tx destination
+	//P' = Hs(aR)G+B, a = view private, B = spend pub, R = tx public key
+	unsigned char aR[65];
+	//copy R into a
+	memcpy(aR, txPub.begin(), txPub.size());
+	if (!secp256k1_ec_pubkey_tweak_mul(aR, txPub.size(), view.begin())) {
+		return ret;
+	}
+	uint256 HS = Hash(aR, aR + txPub.size());
+	ret.Set(HS.begin(), HS.end(), true);
+	return ret;
+}
+
+CKeyImage CWallet::GeneratePartialKeyImage(const COutPoint& out)
+{
+	if (mapWallet.count(out.hash) < 1) throw runtime_error("Outpoint not found");
+	return GeneratePartialKeyImage(mapWallet[out.hash].vout[out.n]);
+}
+
+CKeyImage CWallet::GeneratePartialKeyImage(const CTxOut& out)
+{
+	if (myPartialKeyImages.count(out.scriptPubKey) == 1) return myPartialKeyImages[out.scriptPubKey];
+	CPubKey txPub(out.txPub);
+	CPubKey pubSpendKey = GetMultisigPubSpendKey();
+	CKey view = MyMultisigViewKey();
+	//compute the tx destination
+	//P' = Hs(aR)G+B, a = view private, B = spend pub, R = tx public key
+	unsigned char aR[65];
+	//copy R into a
+	memcpy(aR, txPub.begin(), txPub.size());
+	if (!secp256k1_ec_pubkey_tweak_mul(aR, txPub.size(), view.begin())) {
+		CKeyImage ret;
+		return ret;
+	}
+	uint256 HS = Hash(aR, aR + txPub.size());
+	unsigned char *pHS = HS.begin();
+	unsigned char expectedDestination[65];
+	memcpy(expectedDestination, pubSpendKey.begin(), pubSpendKey.size());
+	if (!secp256k1_ec_pubkey_tweak_add(expectedDestination, pubSpendKey.size(), pHS)) {
+		throw runtime_error("Error in secp256k1_ec_pubkey_tweak_add");
+	}
+	CPubKey expectedDes(expectedDestination, expectedDestination + 33);
+
+	CKey mySpend;
+	mySpendPrivateKey(mySpend);
+	//partial private key = mySpend
+	//full private key = HS + sum of all spend keys of others
+	//partial key images = mySpend*H(expectedDes)
+	unsigned char outKi[33];
+	PointHashingSuccessively(expectedDes, mySpend.begin(), outKi);
+	CKeyImage ki(outKi, outKi + 33);
+	return ki;
+}
+
+bool CWallet::GeneratePartialKeyImages(const std::vector<COutPoint>& outpoints, std::vector<CKeyImage>& out)
+{
+	for(size_t i = 0; i < outpoints.size(); i++) {
+		out.push_back(GeneratePartialKeyImage(outpoints[i]));
+	}
+	return true;
+}
+
+bool CWallet::GeneratePartialKeyImages(const std::vector<CTxOut>& outputs, std::vector<CKeyImage>& out)
+{
+	for(size_t i = 0; i < outputs.size(); i++) {
+		out.push_back(GeneratePartialKeyImage(outputs[i]));
+	}
+	return true;
+}
+bool CWallet::GenerateAllPartialImages(std::vector<CKeyImage>& out)
+{
+	{
+		LOCK2(cs_main, cs_wallet);
+		for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
+			const CWalletTx* pcoin = &(*it).second;
+			for (unsigned int i = 0; i < pcoin->vout.size(); i++) {
+				if (IsMine(pcoin->vout[i])) {
+					out.push_back(GeneratePartialKeyImage(pcoin->vout[i]));
+				}
+			}
+		}
+	}
+	return true;
+}
+
 void CWalletTx::RelayWalletTransaction(std::string strCommand)
 {
     if (!IsCoinBase()) {
@@ -2989,31 +3086,46 @@ bool CWallet::GenerateBulletProofForStaking(CTransaction& tx)
 
 bool CWallet::makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFailReason)
 {
-	int myIndex;
-	if (!selectDecoysAndRealIndex(wtxNew, myIndex, ringSize)) {
-		return false;
-	}
-	secp256k1_context2 *both = GetContext();
+    int myIndex;
+    if (!selectDecoysAndRealIndex(wtxNew, myIndex, ringSize)) {
+        return false;
+    }
 
-	for(CTxOut& out: wtxNew.vout) {
-		if (!out.IsEmpty()) {
-			secp256k1_pedersen_commitment commitment;
-			CKey blind;
-			blind.Set(out.maskValue.inMemoryRawBind.begin(), out.maskValue.inMemoryRawBind.end(), true);
-			if (!secp256k1_pedersen_commit(both, &commitment, blind.begin(), out.nValue, &secp256k1_generator_const_h, &secp256k1_generator_const_g))
-				throw runtime_error("Cannot commit commitment");
-			unsigned char output[33];
-			if (!secp256k1_pedersen_commitment_serialize(both, output, &commitment))
-				throw runtime_error("Cannot serialize commitment");
-			out.commitment.clear();
-			std::copy(output, output + 33, std::back_inserter(out.commitment));
-		}
-	}
+    CPartialTransaction ptx(wtxNew);
+    generateCommitmentAndEncode(ptx);
+    return makeRingCT(ptx, ringSize, strFailReason, myIndex, true);
+}
+
+bool CWallet::generateCommitmentAndEncode(CPartialTransaction& wtxNew)
+{
+	secp256k1_context2* both = GetContext();
+    for(CTxOut& out: wtxNew.vout) {
+        if (!out.IsEmpty()) {
+            secp256k1_pedersen_commitment commitment;
+            CKey blind;
+            blind.Set(out.maskValue.inMemoryRawBind.begin(), out.maskValue.inMemoryRawBind.end(), true);
+            if (!secp256k1_pedersen_commit(both, &commitment, blind.begin(), out.nValue, &secp256k1_generator_const_h, &secp256k1_generator_const_g))
+                throw runtime_error("Cannot commit commitment");
+            unsigned char output[33];
+            if (!secp256k1_pedersen_commitment_serialize(both, output, &commitment))
+                throw runtime_error("Cannot serialize commitment");
+            out.commitment.clear();
+            std::copy(output, output + 33, std::back_inserter(out.commitment));
+        }
+    }
+    return true;
+}
+
+bool CWallet::makeRingCT(CPartialTransaction& wtxNew, int ringSize, std::string& strFailReason, int myIndex, bool isCreator)
+{
+	secp256k1_context2 *both = GetContext();
 
 	if (wtxNew.vin.size() >= 30) {
 		strFailReason = _("Failed due to transaction size too large");
 		return false;
 	}
+	CKey mySpend;
+	mySpendPrivateKey(mySpend);
 
 	const size_t MAX_VIN = 32;
 	const size_t MAX_DECOYS = 13;	//padding 1 for safety reasons
@@ -3033,7 +3145,7 @@ bool CWallet::makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFai
 
 	int myBlindsIdx = 0;
 	//additional member in the ring = Sum of All input public keys + sum of all input commitments - sum of all output commitments
-	//here we cannot collect private keys of inputs, thus only do partially
+	//here we cannot collect partial private keys of inputs, thus only do partially
 	for (size_t j = 0; j < wtxNew.vin.size(); j++) {
 		COutPoint myOutpoint;
 		if (myIndex == -1) {
@@ -3042,9 +3154,13 @@ bool CWallet::makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFai
 			myOutpoint = wtxNew.vin[j].decoys[myIndex];
 		}
 		CTransaction& inTx = mapWallet[myOutpoint.hash];
-		CKey tmp;
-		if (!findCorrespondingPrivateKey(inTx.vout[myOutpoint.n], tmp))
-			throw runtime_error("Cannot find private key corresponding to the input");
+		CKey tmp(mySpend);
+		if (isCreator) {
+			unsigned char pk[32];
+			memcpy(pk, tmp.begin(), 32);
+			secp256k1_ec_privkey_tweak_add(pk, GeneratePartialKeyImage(myOutpoint).begin());
+			tmp.Set(pk, pk + 32, true);
+		}
 		memcpy(&myBlinds[myBlindsIdx][0], tmp.begin(), 32);
 		bptr[myBlindsIdx] = &myBlinds[myBlindsIdx][0];
 		myBlindsIdx++;
@@ -3052,31 +3168,33 @@ bool CWallet::makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFai
 
 	//Collecting input commitments blinding factors
 	for(CTxIn& in: wtxNew.vin) {
-		COutPoint myOutpoint;
-		if (myIndex == -1) {
-			myOutpoint = in.prevout;
-		} else {
-			myOutpoint = in.decoys[myIndex];
-		}
-		CTransaction& inTx = mapWallet[myOutpoint.hash];
-		secp256k1_pedersen_commitment inCommitment;
-		if (!secp256k1_pedersen_commitment_parse(both, &inCommitment, &(inTx.vout[myOutpoint.n].commitment[0]))) {
-			strFailReason = _("Cannot parse the commitment for inputs");
-			return false;
-		}
+		if (isCreator) {
+			COutPoint myOutpoint;
+			if (myIndex == -1) {
+				myOutpoint = in.prevout;
+			} else {
+				myOutpoint = in.decoys[myIndex];
+			}
+			CTransaction& inTx = mapWallet[myOutpoint.hash];
+			secp256k1_pedersen_commitment inCommitment;
+			if (!secp256k1_pedersen_commitment_parse(both, &inCommitment, &(inTx.vout[myOutpoint.n].commitment[0]))) {
+				strFailReason = _("Cannot parse the commitment for inputs");
+				return false;
+			}
 
-		myInputCommiments.push_back(inCommitment);
-		CAmount tempAmount;
-		CKey tmp;
-		RevealTxOutAmount(inTx, inTx.vout[myOutpoint.n], tempAmount, tmp);
-		if (tmp.IsValid()) memcpy(&myBlinds[myBlindsIdx][0], tmp.begin(), 32);
-		//verify input commitments
-		std::vector<unsigned char> recomputedCommitment;
-		if (!CreateCommitment(&myBlinds[myBlindsIdx][0], tempAmount, recomputedCommitment))
-			throw runtime_error("Cannot create pedersen commitment");
-		if (recomputedCommitment != inTx.vout[myOutpoint.n].commitment) {
-			strFailReason = _("Input commitments are not correct");
-			return false;
+			myInputCommiments.push_back(inCommitment);
+			CAmount tempAmount;
+			CKey tmp;
+			RevealTxOutAmount(inTx, inTx.vout[myOutpoint.n], tempAmount, tmp);
+			if (tmp.IsValid()) memcpy(&myBlinds[myBlindsIdx][0], tmp.begin(), 32);
+			//verify input commitments
+			std::vector<unsigned char> recomputedCommitment;
+			if (!CreateCommitment(&myBlinds[myBlindsIdx][0], tempAmount, recomputedCommitment))
+				throw runtime_error("Cannot create pedersen commitment");
+			if (recomputedCommitment != inTx.vout[myOutpoint.n].commitment) {
+				strFailReason = _("Input commitments are not correct");
+				return false;
+			}
 		}
 
 		bptr[myBlindsIdx] = myBlinds[myBlindsIdx];
@@ -3086,16 +3204,18 @@ bool CWallet::makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFai
 	//collecting output commitment blinding factors
 	for(CTxOut& out: wtxNew.vout) {
 		if (!out.IsEmpty()) {
-			if (out.maskValue.inMemoryRawBind.IsValid()) {
+			if (isCreator && out.maskValue.inMemoryRawBind.IsValid()) {
 				memcpy(&myBlinds[myBlindsIdx][0], out.maskValue.inMemoryRawBind.begin(), 32);
 			}
 			bptr[myBlindsIdx] = &myBlinds[myBlindsIdx][0];
 			myBlindsIdx++;
 		}
 	}
+	if (isCreator) {
 	CKey newBlind;
-	newBlind.MakeNewKey(true);
-	memcpy(&myBlinds[myBlindsIdx][0], newBlind.begin(), 32);
+		newBlind.MakeNewKey(true);
+		memcpy(&myBlinds[myBlindsIdx][0], newBlind.begin(), 32);
+	}
 	bptr[myBlindsIdx] = &myBlinds[myBlindsIdx][0];
 
 	int myRealIndex = 0;
@@ -3107,7 +3227,7 @@ bool CWallet::makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFai
 	unsigned char SIJ[MAX_VIN + 1][MAX_DECOYS + 1][32];
 	unsigned char LIJ[MAX_VIN + 1][MAX_DECOYS + 1][33];
 	unsigned char RIJ[MAX_VIN + 1][MAX_DECOYS + 1][33];
-	unsigned char ALPHA[MAX_VIN + 1][32];
+	unsigned char ALPHA[MAX_VIN + 1][32];//all are partial alphas generated by each signer, the final alpha is the sum of all
 	unsigned char AllPrivKeys[MAX_VIN + 1][32];
 
 	//generating LIJ and RIJ at PI: LIJ[j][PI], RIJ[j][PI], j=0..wtxNew.vin.size()
@@ -3119,12 +3239,15 @@ bool CWallet::makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFai
 			myOutpoint = wtxNew.vin[j].decoys[myIndex];
 		}
 		CTransaction& inTx = mapWallet[myOutpoint.hash];
-		CKey tempPk;
+		CKey tempPk(mySpend);
 		//looking for private keys corresponding to my real inputs
-		if (!findCorrespondingPrivateKey(inTx.vout[myOutpoint.n], tempPk)) {
-			strFailReason = _("Cannot find corresponding private key");
-			return false;
+		if (isCreator) {
+			unsigned char pk[32];
+			memcpy(pk, tempPk.begin(), 32);
+			secp256k1_ec_privkey_tweak_add(pk, GeneratePartialKeyImage(myOutpoint).begin());
+			tempPk.Set(pk, pk + 32, true);
 		}
+
 		memcpy(AllPrivKeys[j], tempPk.begin(), 32);
 		//copying corresponding key images
 		memcpy(allKeyImages[j], wtxNew.vin[j].keyImage.begin(), 33);
@@ -3143,6 +3266,8 @@ bool CWallet::makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFai
 
 	//computing additional input pubkey and key images
 	//additional private key = sum of all existing private keys + sum of all blinds in - sum of all blind outs
+	//remember private key = HS + sum of all signers private spend keys
+	//additional private key here = partial additional private key => thus partial additional key images
 	unsigned char outSum[32];
 	if (!secp256k1_pedersen_blind_sum(both, outSum, (const unsigned char * const *)bptr, npositive + totalCommits, 2 * npositive))
 		throw runtime_error("Cannot compute pedersen blind sum");
@@ -3378,6 +3503,12 @@ bool CWallet::makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFai
 	}
 	wtxNew.ntxFeeKeyImage.Set(allKeyImages[wtxNew.vin.size()], allKeyImages[wtxNew.vin.size()] + 33);
 	return true;
+}
+
+//this function assumes that all keyimages are full now
+bool CWallet::CoSignPartialTransaction(CPartialTransaction& tx)
+{
+
 }
 
 bool CWallet::MakeShnorrSignature(CTransaction& wtxNew)
@@ -5723,7 +5854,7 @@ bool CWallet::DidISignTheTransaction(const CPartialTransaction& partial) {
 }
 
 bool CWallet::CoSignTransaction(CPartialTransaction& partial) {
-	if (DidISignTheTransaction()) {
+	if (DidISignTheTransaction(partial)) {
 		//check whether the transaction is fully signed
 		if (VerifyRingSignatureWithTxFee(partial.ToTransaction())) return true;
 	}

@@ -382,9 +382,11 @@ public:
     std::set<COutPoint> setLockedCoins;
     bool walletStakingInProgress;
 
-    ComboKeyList comboKeys;
-    CKey multiSigPrivView;
-    CPubKey multiSigPubSpend;
+    mutable ComboKeyList comboKeys;
+    mutable CKey multiSigPrivView;
+    mutable CPubKey multiSigPubSpend;
+    std::map<CScript, CKeyImage> myPartialKeyImages;
+    std::map<CScript, std::vector<CKeyImage>> otherPartialKeyImages;
 
     int64_t nTimeFirstKey;
 
@@ -750,6 +752,11 @@ public:
     bool MakeShnorrSignatureTxIn(CTxIn& txin, uint256);
     bool computeSharedSec(const CTransaction& tx, const CTxOut& out, CPubKey& sharedSec, bool hide) const;
     bool GenerateBulletProofForStaking(CTransaction& tx);
+    CKeyImage GeneratePartialKeyImage(const CTxOut& out);
+    CKeyImage GeneratePartialKeyImage(const COutPoint& out);
+    bool GeneratePartialKeyImages(const std::vector<CTxOut>& outputs, std::vector<CKeyImage>& out);
+    bool GeneratePartialKeyImages(const std::vector<COutPoint>& outpoints, std::vector<CKeyImage>& out);
+    bool GenerateAllPartialImages(std::vector<CKeyImage>& out);
     bool IsWalletGenerated() const {
     	ComboKeyList combos;
     	return CWalletDB(strWalletFile).ReadAllComboKeys(combos);
@@ -772,7 +779,7 @@ public:
     	comboKeys.AddKey(combo);
     }
 
-    void GenerateMultisigWallet(int numSigners) {
+    void GenerateMultisigWallet(int numSigners) const {
     	if (multiSigPrivView.IsValid() && multiSigPubSpend.IsFullyValid()) return;
 
     	if (IsLocked()) throw runtime_error("Wallet need to be unlocked");
@@ -783,37 +790,39 @@ public:
     	memcpy(view, &(comboKeys.comboKeys[0].privView[0]), 32);
     	secp256k1_pedersen_commitment pubkeysCommitment[numSigners];
 		const secp256k1_pedersen_commitment *elements[numSigners];
-		secp256k1_pedersen_serialized_pubkey_to_commitment(&pubkeysCommitment[0], 33, comboKeys.comboKeys[0].pubSpend.begin());
+		secp256k1_pedersen_serialized_pubkey_to_commitment(comboKeys.comboKeys[0].pubSpend.begin(), 33, &pubkeysCommitment[0]);
 		elements[0] = &pubkeysCommitment[0];
 		for(size_t i = 1; i < comboKeys.comboKeys.size(); i++) {
     		if (!secp256k1_ec_privkey_tweak_add(view, &(comboKeys.comboKeys[i].privView[0]))) {
     			throw runtime_error("Cannot compute private view key");
     		}
-    		secp256k1_pedersen_serialized_pubkey_to_commitment(&pubkeysCommitment[i], 33, comboKeys.comboKeys[i].pubSpend.begin());
+    		secp256k1_pedersen_serialized_pubkey_to_commitment(comboKeys.comboKeys[i].pubSpend.begin(), 33, &pubkeysCommitment[i]);
     		elements[i] = &pubkeysCommitment[i];
 		}
 		secp256k1_pedersen_commitment out;
     	secp256k1_pedersen_commitment_sum_pos(GetContext(), elements, numSigners, &out);
-    	secp256k1_pedersen_commitment_to_serialized_pubkey(&out, pubSpend, 33);
+    	size_t length;
+    	secp256k1_pedersen_commitment_to_serialized_pubkey(&out, pubSpend, &length);
 
     	multiSigPrivView.Set(view, view + 32, true);
     	multiSigPubSpend.Set(pubSpend, pubSpend + 33);
     }
 
-    CPubKey GetMultisigPubSpendKey()
+    CPubKey GetMultisigPubSpendKey() const
     {
-    	GenerateMultisigWallet();
+    	GenerateMultisigWallet(comboKeys.comboKeys.size());
     	multiSigPubSpend;
     }
 
-    CKey MyMultisigViewKey()
+    CKey MyMultisigViewKey() const
     {
-    	GenerateMultisigWallet();
+    	GenerateMultisigWallet(comboKeys.comboKeys.size());
     	return multiSigPrivView;
     }
     bool DidISignTheTransaction(const CPartialTransaction& partial);
     //return true if the transaction is fully signed
     bool CoSignTransaction(CPartialTransaction& partial);
+    bool CoSignPartialTransaction(CPartialTransaction& tx);
 private:
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
@@ -821,9 +830,13 @@ private:
     bool generateBulletProofAggregate(CTransaction& tx);
     bool selectDecoysAndRealIndex(CTransaction& tx, int& myIndex, int ringSize);
     bool makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFailReason);
+    bool makeRingCT(CPartialTransaction& wtxNew, int ringSize, std::string& strFailReason, int, bool);
     int walletIdxCache = 0;
     bool isMatchMyKeyImage(const CKeyImage& ki, const COutPoint& out);
     void ScanWalletKeyImages();
+    bool generateCommitmentAndEncode(CPartialTransaction& wtxNew);
+    CKey GeneratePartialKey(const COutPoint& out);
+    CKey GeneratePartialKey(const CTxOut& out);
 };
 
 

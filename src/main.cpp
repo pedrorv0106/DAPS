@@ -588,6 +588,12 @@ uint256 GetTxSignatureHash(const CTransaction& tx)
 	return cts.GetHash();
 }
 
+uint256 GetTxSignatureHash(const CPartialTransaction& tx)
+{
+	CTransactionSignature cts(tx.ToTransaction());
+	return cts.GetHash();
+}
+
 uint256 GetTxInSignatureHash(const CTxIn& txin)
 {
 	CTxInShortDigest cts(txin);
@@ -2980,7 +2986,8 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
     		CAmount sum = nValueIn + PoSBlockReward() - masternodeReward + nFees;
     		nValueOut += sum;
     	}
-    	CTransaction& coinstake = block.vtx[1];
+    	const CTransaction& coinstake = block.vtx[1];
+    	size_t numUTXO = coinstake.vout.size();
     	CAmount posBlockReward = PoSBlockReward();
     	int thisBlockHeight = mapBlockIndex[pindex->pprev->GetBlockHash()]->nHeight + 1; //avoid potential block disorder during download
     	CAmount blockValue = GetBlockValue(thisBlockHeight - 1);
