@@ -137,12 +137,12 @@ public:
         genesis.hashPrevBlock = 0;
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
         genesis.nVersion = 1;
-        genesis.nTime = 1558521974;
+        genesis.nTime = 1558521975;
         genesis.nBits = 0x1e0ffff0;
-        genesis.nNonce = 13653769;
+        genesis.nNonce = 16758790;
 
         //change blockhash from 0x00000e9468bba3df97334bfb5015543488a0fb38193c82b101472937590e3037 because of transaction structure change
-        if(genesis.GetHash()!=uint256("0000059f433f00d4ed1aa073e7bdd9b358676cc8e2537d371c354256390122b6"))
+        if(genesis.GetHash()!=uint256("000000c1f997ef7feee72e7aaa24f33fb94666c7c5cb9806a3bc63437b4e3479"))
         {
             printf("Searchingforgenesisblock...\n");
             uint256 hashTarget=uint256().SetCompact(genesis.nBits);
@@ -174,7 +174,7 @@ public:
 
 
         hashGenesisBlock = genesis.GetHash();
-        assert(hashGenesisBlock == uint256("0000059f433f00d4ed1aa073e7bdd9b358676cc8e2537d371c354256390122b6"));
+        assert(hashGenesisBlock == uint256("000000c1f997ef7feee72e7aaa24f33fb94666c7c5cb9806a3bc63437b4e3479"));
         printf("genesis.hashMerkleRoot: %s\n", genesis.hashMerkleRoot.GetHex().c_str());
         assert(genesis.hashMerkleRoot == uint256("03fcb696ffbce2bb8248c65f6286c9948a4927919506331f21992a7021f969ed"));
 
