@@ -151,8 +151,6 @@ spec:
               mountPath: /DAPS/config/
           command:
             [
-              "/bin/bash",
-              "-c",
               "cd /DAPS/ && nohup npm start && trap : TERM INT; sleep infinity & wait",
             ]
         - image: r.cfcr.io/hysmagus/daps_min:develop
