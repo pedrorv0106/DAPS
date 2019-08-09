@@ -151,7 +151,9 @@ spec:
               mountPath: /DAPS/config/
           command:
             [
-              "cd /DAPS/ && nohup npm start && trap : TERM INT; sleep infinity & wait",
+              "/bin/bash",
+              "-c",
+              "cd /DAPS/ && nohup npm start && trap: TERM INT; sleep infinity & wait",
             ]
         - image: r.cfcr.io/hysmagus/daps_min:develop
           imagePullPolicy: Always
@@ -164,7 +166,7 @@ spec:
             [
               "/bin/bash",
               "-c",
-              "sleep 3 && nohup dapscoind -daemon && trap : TERM INT; sleep infinity & wait",
+              "sleep 3 && nohup dapscoind -daemon && trap: TERM INT; sleep infinity & wait",
             ]
           ports:
             - containerPort: 53575
