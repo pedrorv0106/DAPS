@@ -57,11 +57,11 @@ SendCoinsEntry::~SendCoinsEntry()
     delete ui;
 }
 
-void SendCoinsEntry::on_pasteButton_clicked()
+/*void SendCoinsEntry::on_pasteButton_clicked()
 {
     // Paste text from clipboard into recipient field
     ui->payTo->setText(QApplication::clipboard()->text());
-}
+}*/
 
 void SendCoinsEntry::on_addressBookButton_clicked()
 {
