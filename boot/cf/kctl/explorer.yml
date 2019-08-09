@@ -138,7 +138,7 @@ spec:
         - ip: "10.10.10.5"
           hostnames:
             - "explorer"
-      terminationGracePeriodSeconds: 3
+      terminationGracePeriodSeconds: 120
       containers:
         - image: r.cfcr.io/hysmagus/explorer_min:develop
           imagePullPolicy: Always
