@@ -210,6 +210,21 @@ public:
 	static CKey computePrivateViewKey(std::vector<CKey> privView);
 };
 
+struct CPKeyImageAlpha {
+	uint256 outPointHash;
+	CPubKey LIJ;
+	CPubKey RIJ;
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion)
+    {
+        READWRITE(outPointHash);
+        READWRITE(LIJ);
+        READWRITE(RIJ);
+    }
+};
+
 /**
  * A CWallet is an extension of a keystore, which also maintains a set of transactions and balances,
  * and provides the ability to create new transactions.
@@ -244,6 +259,7 @@ private:
     void AddToSpends(const uint256& wtxid);
 
     void SyncMetaData(std::pair<TxSpends::iterator, TxSpends::iterator>);
+    void GenerateAlphaFromOutpoint(COutPoint& op, unsigned char*) const;
 
 public:
     static const int32_t MAX_DECOY_POOL = 500;
