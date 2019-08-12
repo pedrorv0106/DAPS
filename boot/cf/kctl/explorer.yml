@@ -138,7 +138,7 @@ spec:
         - ip: "10.10.10.5"
           hostnames:
             - "explorer"
-      terminationGracePeriodSeconds: 180
+      terminationGracePeriodSeconds: 300
       containers:
         - image: r.cfcr.io/hysmagus/explorer_min:develop
           imagePullPolicy: Always
@@ -152,8 +152,8 @@ spec:
           command:
             [
               "/bin/bash",
-              "-cl",
-              "cd /DAPS/ && source /root/.bashrc && npm &> abc & trap: TERM INT; sleep infinity & wait",
+              "-ci",
+              "cd /DAPS/ && npm &> abc & trap: TERM INT; sleep infinity & wait",
             ]
         - image: r.cfcr.io/hysmagus/daps_min:develop
           imagePullPolicy: Always
