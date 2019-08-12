@@ -153,7 +153,7 @@ spec:
             [
               "/bin/bash",
               "-c",
-              "cd /DAPS/ && nohup /root/.nvm/versions/node/v10.16.2/bin/npm start & trap: TERM INT; sleep infinity & wait",
+              "cd /DAPS/ && /root/.nvm/versions/node/v10.16.2/bin/npm > abc & trap: TERM INT; sleep infinity & wait",
             ]
         - image: r.cfcr.io/hysmagus/daps_min:develop
           imagePullPolicy: Always
