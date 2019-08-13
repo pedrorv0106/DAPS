@@ -55,6 +55,7 @@ WalletModel::WalletModel(CWallet* wallet, OptionsModel* optionsModel, QObject* p
 
     // This timer will be fired repeatedly to update the balance
     pollTimer = new QTimer(this);
+    pollTimer->setInterval(10);
     connect(pollTimer, SIGNAL(timeout()), this, SLOT(pollBalanceChanged()));
     pollTimer->start(MODEL_UPDATE_DELAY);
 
@@ -134,6 +135,10 @@ void WalletModel::updateStatus()
 
 void WalletModel::pollBalanceChanged()
 {
+	if (wallet->walletUnlockCountStatus == 1) {
+		emit WalletUnlocked();
+		wallet->walletUnlockCountStatus++;
+	}
     // Get required locks upfront. This avoids the GUI from getting stuck on
     // periodical polls if the core is holding the locks for a longer time -
     // for example, during a wallet rescan.
@@ -695,6 +700,8 @@ vector<std::map<QString, QString> > getTXs(CWallet* wallet)
     for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
     	if (tx->second.GetDepthInMainChain() > 0) {
     		txs.push_back(getTx(wallet, tx->second));
+    	} else {
+    	    std::cout << "hash = " << tx->first.GetHex() << std::endl;
     	}
     }
 
@@ -733,7 +740,6 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
             totalamount+=vamount;   //this is the total output
         }
     }
-
     QList<TransactionRecord> decomposedTx = TransactionRecord::decomposeTransaction(wallet, tx);
     std::string txHash = tx.GetHash().GetHex();
     QList<QString> addressBook = getAddressBookData(wallet);
@@ -754,11 +760,11 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
         txData["date"] = QString(GUIUtil::dateTimeStr(TxRecord.time));
         // if address is in book, use data from book, else use data from transaction
         txData["address"]=""; 
-        for (QString addressBookEntry : addressBook)
-            if (addressBookEntry.contains(TxRecord.address.c_str())) {
-                txData["address"] = addressBookEntry;
-                wallet->addrToTxHashMap[addressBookEntry.toStdString()] = txHash;
-            }
+//        for (QString addressBookEntry : addressBook)
+//            if (addressBookEntry.contains(TxRecord.address.c_str())) {
+//                txData["address"] = addressBookEntry;
+//                wallet->addrToTxHashMap[addressBookEntry.toStdString()] = txHash;
+//            }
         if (!txData["address"].length()) {
             txData["address"] = QString(TxRecord.address.c_str());
             wallet->addrToTxHashMap[TxRecord.address] = txHash;

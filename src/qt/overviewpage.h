@@ -55,6 +55,7 @@ public slots:
     void refreshRecentTransactions();
     void setSpendableBalance(bool isStaking);
     void showBlockCurrentHeight();
+    void updateBalance();
 
 signals:
     void transactionClicked(const QModelIndex& index);
