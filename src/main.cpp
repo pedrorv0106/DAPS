@@ -2124,10 +2124,10 @@ CAmount GetSeeSaw(const CAmount& blockValue, int nMasternodeCount, int nHeight)
 
     //if a mn count is inserted into the function we are looking for a specific result for a masternode count
     if (nMasternodeCount < 1) {
-        if (IsSporkActive(SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT))
+        /*if (IsSporkActive(SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT))
             nMasternodeCount = mnodeman.stable_size();
-        else
-            nMasternodeCount = mnodeman.size();
+        else*/
+    	nMasternodeCount = mnodeman.size();
     }
 
     int64_t mNodeCoins = nMasternodeCount * 1000000 * COIN;
@@ -3955,7 +3955,7 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
     }
 
     // ----------- swiftTX transaction scanning -----------
-    if (!block.IsPoABlockByVersion() && IsSporkActive(SPORK_3_SWIFTTX_BLOCK_FILTERING)) {
+    /*if (!block.IsPoABlockByVersion() && IsSporkActive(SPORK_3_SWIFTTX_BLOCK_FILTERING)) {
         BOOST_FOREACH(
         const CTransaction &tx, block.vtx) {
             if (!tx.IsCoinBase()) {
@@ -3975,7 +3975,7 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
                 }
             }
         }
-    } else {
+    } else */{
         LogPrintf("CheckBlock() : skipping transaction locking checks\n");
     }
     // masternode payments / budgets
@@ -5422,13 +5422,13 @@ void static ProcessGetData(CNode *pfrom) {
                     }
                 }
                 if (!pushed && inv.type == MSG_SPORK) {
-                    if (mapSporks.count(inv.hash)) {
+                    /*if (mapSporks.count(inv.hash)) {
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
                         ss << mapSporks[inv.hash];
                         pfrom->PushMessage("spork", ss);
                         pushed = true;
-                    }
+                    }*/
                 }
                 if (!pushed && inv.type == MSG_MASTERNODE_WINNER) {
                     if (masternodePayments.mapMasternodePayeeVotes.count(inv.hash)) {
@@ -5560,13 +5560,13 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
 
         // DAPScoin: We use certain sporks during IBD, so check to see if they are
         // available. If not, ask the first peer connected for them.
-        bool fMissingSporks = !pSporkDB->SporkExists(SPORK_14_NEW_PROTOCOL_ENFORCEMENT) &&
+        /*bool fMissingSporks = !pSporkDB->SporkExists(SPORK_14_NEW_PROTOCOL_ENFORCEMENT) &&
                               !pSporkDB->SporkExists(SPORK_15_NEW_PROTOCOL_ENFORCEMENT_2);
 
         if (fMissingSporks || !fRequestedSporksIDB) {
             pfrom->PushMessage("getsporks");
             fRequestedSporksIDB = true;
-        }
+        }*/
 
         int64_t nTime;
         CAddress addrMe;
@@ -6334,7 +6334,7 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
         budget.ProcessMessage(pfrom, strCommand, vRecv);
         masternodePayments.ProcessMessageMasternodePayments(pfrom, strCommand, vRecv);
         ProcessMessageSwiftTX(pfrom, strCommand, vRecv);
-        ProcessSpork(pfrom, strCommand, vRecv);
+        //ProcessSpork(pfrom, strCommand, vRecv);
         masternodeSync.ProcessMessage(pfrom, strCommand, vRecv);
     }
 
