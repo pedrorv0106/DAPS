@@ -208,6 +208,15 @@ QPushButton#btn_resync{
   font-size: 15px;
 }
 
+QPushButton#btnLockUnlock{
+  margin-right: 9px;
+  width: 20px;
+  height:25px;
+  background-color: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
 /*** Spin Boxes, Combo Boxes ***/
 QWidget::up-button {
   border-radius: 10px 10px 0 0;
