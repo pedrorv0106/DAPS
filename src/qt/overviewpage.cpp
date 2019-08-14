@@ -472,7 +472,7 @@ void OverviewPage::updateRecentTransactions(){
             }
         }
 
-        ui->label_4->setVisible(txs.size());
+        ui->label_4->setVisible(true);
     } else {
         LogPrintf("\npwalletMain has not been initialized\n");
     }
