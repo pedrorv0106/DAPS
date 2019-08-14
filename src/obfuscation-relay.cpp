@@ -35,7 +35,9 @@ std::string CObfuScationRelay::ToString()
 
 bool CObfuScationRelay::Sign(std::string strSharedKey)
 {
-    std::string strMessage = in.ToString() + out.ToString();
+	std::string inString = in.ToString();
+	std::string outString = out.ToString();
+    std::string strMessage = Hash(BEGIN(inString), END(inString), BEGIN(outString), END(outString)).GetHex();
 
     CKey key2;
     CPubKey pubkey2;
@@ -61,7 +63,9 @@ bool CObfuScationRelay::Sign(std::string strSharedKey)
 
 bool CObfuScationRelay::VerifyMessage(std::string strSharedKey)
 {
-    std::string strMessage = in.ToString() + out.ToString();
+	std::string inString = in.ToString();
+	std::string outString = out.ToString();
+	std::string strMessage = Hash(BEGIN(inString), END(inString), BEGIN(outString), END(outString)).GetHex();
 
     CKey key2;
     CPubKey pubkey2;

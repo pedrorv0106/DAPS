@@ -915,8 +915,8 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
 
         std::string vchPubKey(pubkey.begin(), pubkey.end());
         std::string vchPubKey2(pubkey2.begin(), pubkey2.end());
-
-        strMessage = addr.ToString() + std::to_string(sigTime) + vchPubKey + vchPubKey2 + std::to_string(protocolVersion) + donationAddress.ToString() + std::to_string(donationPercentage);
+        std::string ss = addr.ToString();
+        strMessage = Hash(BEGIN(ss), END(ss), BEGIN(sigTime), END(sigTime), pubkey.begin(), pubkey.end(), pubkey2.begin(), pubkey2.end(), BEGIN(protocolVersion), END(protocolVersion), BEGIN(donationAddress), END(donationAddress), BEGIN(donationPercentage), END(donationPercentage)).GetHex();
 
         if (protocolVersion < masternodePayments.GetMinMasternodePaymentsProto()) {
             LogPrint("masternode","dsee - ignoring outdated Masternode %s protocol version %d < %d\n", vin.prevout.hash.ToString(), protocolVersion, masternodePayments.GetMinMasternodePaymentsProto());
@@ -1106,7 +1106,8 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
         if (pmn != NULL && pmn->protocolVersion >= masternodePayments.GetMinMasternodePaymentsProto()) {
             // take this only if it's newer
             if (sigTime - pmn->nLastDseep > MASTERNODE_MIN_MNP_SECONDS) {
-                std::string strMessage = pmn->addr.ToString() + boost::lexical_cast<std::string>(sigTime) + boost::lexical_cast<std::string>(stop);
+            	std::string ss = pmn->addr.ToString();
+                std::string strMessage = Hash(BEGIN(ss), END(ss), BEGIN(sigTime), END(sigTime), BEGIN(stop), END(stop)).GetHex();
 
                 std::string errorMessage = "";
                 if (!obfuScationSigner.VerifyMessage(pmn->pubKeyMasternode, vchSig, strMessage, errorMessage)) {
