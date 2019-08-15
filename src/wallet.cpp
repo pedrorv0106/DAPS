@@ -1438,12 +1438,31 @@ CKey CWallet::GeneratePartialKey(const CTxOut& out)
 	return ret;
 }
 
-void CWallet::GenerateAlphaFromOutpoint(COutPoint& op, unsigned char* alpha) const
+void CWallet::GeneratePKeyImageAlpha(const COutPoint& op, CPKeyImageAlpha& combo) const
+{
+	unsigned char alpha[32];
+	GenerateAlphaFromOutpoint(op, alpha);
+	CKey alphaKey;
+	alphaKey.Set(alpha, alpha + 32, true);
+	CPubKey alphaPub = alphaKey.GetPubKey();
+	combo.LIJ.Set(alphaPub.begin(), alphaPub.end());
+	unsigned char rij[33];
+	const CTxOut txout = mapWallet[op.hash].vout[op.n];
+	CPubKey destKey;
+	if (!ExtractPubKey(txout.scriptPubKey, destKey)) {
+		throw runtime_error("cannot extract public key from destination script");
+	}
+	PointHashingSuccessively(destKey, alpha, rij);
+	combo.RIJ.Set(rij, rij + 33);
+	combo.ki = GeneratePartialKeyImage(op);
+}
+
+void CWallet::GenerateAlphaFromOutpoint(const COutPoint& op, unsigned char* alpha) const
 {
 	if (!alpha) return;
 	CKey spend;
 	mySpendPrivateKey(spend);
-	uint256 h = op.GetHash();
+	uint256 h = ((COutPoint)op).GetHash();
 	unsigned char data[64];
 	memcpy(data, spend.begin(), 32);
 	memcpy(data + 32, h.begin(), 32);
@@ -1451,13 +1470,13 @@ void CWallet::GenerateAlphaFromOutpoint(COutPoint& op, unsigned char* alpha) con
 	memcpy(alpha, hash.begin(), 32);
 }
 
-CKeyImage CWallet::GeneratePartialKeyImage(const COutPoint& out)
+CKeyImage CWallet::GeneratePartialKeyImage(const COutPoint& out) const
 {
 	if (mapWallet.count(out.hash) < 1) throw runtime_error("Outpoint not found");
 	return GeneratePartialKeyImage(mapWallet[out.hash].vout[out.n]);
 }
 
-CKeyImage CWallet::GeneratePartialKeyImage(const CTxOut& out)
+CKeyImage CWallet::GeneratePartialKeyImage(const CTxOut& out) const
 {
 	if (myPartialKeyImages.count(out.scriptPubKey) == 1) return myPartialKeyImages[out.scriptPubKey];
 	CPubKey txPub(out.txPub);

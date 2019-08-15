@@ -214,6 +214,7 @@ struct CPKeyImageAlpha {
 	uint256 outPointHash;
 	CPubKey LIJ;
 	CPubKey RIJ;
+	CKeyImage ki;
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
@@ -222,6 +223,7 @@ struct CPKeyImageAlpha {
         READWRITE(outPointHash);
         READWRITE(LIJ);
         READWRITE(RIJ);
+        READWRITE(ki);
     }
 };
 
@@ -259,7 +261,7 @@ private:
     void AddToSpends(const uint256& wtxid);
 
     void SyncMetaData(std::pair<TxSpends::iterator, TxSpends::iterator>);
-    void GenerateAlphaFromOutpoint(COutPoint& op, unsigned char*) const;
+    void GenerateAlphaFromOutpoint(const COutPoint& op, unsigned char*) const;
 
 public:
     static const int32_t MAX_DECOY_POOL = 500;
@@ -401,8 +403,8 @@ public:
     mutable ComboKeyList comboKeys;
     mutable CKey multiSigPrivView;
     mutable CPubKey multiSigPubSpend;
-    std::map<CScript, CKeyImage> myPartialKeyImages;
-    std::map<CScript, std::vector<CKeyImage>> otherPartialKeyImages;
+    mutable std::map<CScript, CKeyImage> myPartialKeyImages;
+    mutable std::map<CScript, std::vector<CKeyImage>> otherPartialKeyImages;
 
     int64_t nTimeFirstKey;
 
@@ -768,8 +770,8 @@ public:
     bool MakeShnorrSignatureTxIn(CTxIn& txin, uint256);
     bool computeSharedSec(const CTransaction& tx, const CTxOut& out, CPubKey& sharedSec, bool hide) const;
     bool GenerateBulletProofForStaking(CTransaction& tx);
-    CKeyImage GeneratePartialKeyImage(const CTxOut& out);
-    CKeyImage GeneratePartialKeyImage(const COutPoint& out);
+    CKeyImage GeneratePartialKeyImage(const CTxOut& out) const;
+    CKeyImage GeneratePartialKeyImage(const COutPoint& out) const;
     bool GeneratePartialKeyImages(const std::vector<CTxOut>& outputs, std::vector<CKeyImage>& out);
     bool GeneratePartialKeyImages(const std::vector<COutPoint>& outpoints, std::vector<CKeyImage>& out);
     bool GenerateAllPartialImages(std::vector<CKeyImage>& out);
@@ -840,6 +842,7 @@ public:
     bool CoSignTransaction(CPartialTransaction& partial);
     bool CoSignPartialTransaction(CPartialTransaction& tx);
 private:
+    void GeneratePKeyImageAlpha(const COutPoint& op, CPKeyImageAlpha&) const;
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
     void createMasterKey() const;
