@@ -1212,13 +1212,6 @@ unsigned int GetLegacySigOpCount(const CTransaction &tx) {
     return nSigOps;
 }
 
-unsigned int GetP2SHSigOpCount(const CTransaction &tx, const CCoinsViewCache &inputs) {
-    if (tx.IsCoinBase())
-        return 0;
-
-    return 0;
-}
-
 int GetInputAge(CTxIn &vin) {
     CCoinsView viewDummy;
     CCoinsViewCache view(&viewDummy);
@@ -1650,7 +1643,6 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
         {
             unsigned int nSigOps = GetLegacySigOpCount(tx);
             unsigned int nMaxSigOps = MAX_TX_SIGOPS_CURRENT;
-            nSigOps += GetP2SHSigOpCount(tx, view);
             if (nSigOps > nMaxSigOps)
                 return state.DoS(0,
                                  error("AcceptToMemoryPool : too many sigops %s, %d > %d",
@@ -1850,7 +1842,6 @@ bool AcceptableInputs(CTxMemPool &pool, CValidationState &state, const CTransact
         // merely non-standard transaction.
         unsigned int nSigOps = GetLegacySigOpCount(tx);
         unsigned int nMaxSigOps = MAX_TX_SIGOPS_CURRENT;
-        nSigOps += GetP2SHSigOpCount(tx, view);
         if (nSigOps > nMaxSigOps)
             return state.DoS(0,
                              error("AcceptableInputs : too many sigops %s, %d > %d",
