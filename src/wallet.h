@@ -339,7 +339,7 @@ public:
         vDisabledAddresses.clear();
 
         //Auto Combine Dust
-        fCombineDust = true;
+        fCombineDust = false;
         nAutoCombineThreshold = 300 * COIN;
     }
 

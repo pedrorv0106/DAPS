@@ -1209,13 +1209,6 @@ unsigned int GetLegacySigOpCount(const CTransaction &tx) {
     return nSigOps;
 }
 
-unsigned int GetP2SHSigOpCount(const CTransaction &tx, const CCoinsViewCache &inputs) {
-    if (tx.IsCoinBase())
-        return 0;
-
-    return 0;
-}
-
 int GetInputAge(CTxIn &vin) {
     CCoinsView viewDummy;
     CCoinsViewCache view(&viewDummy);
@@ -1425,12 +1418,14 @@ bool CheckTransaction(const CTransaction &tx, bool fzcActive, bool fRejectBadUTX
     }
 
     // Check for duplicate inputs
-    set <COutPoint> vInOutPoints;
+    set <CKeyImage> keyimages;
     for (const CTxIn &txin : tx.vin) {
-        if (vInOutPoints.count(txin.prevout))
-            return state.DoS(100, error("CheckTransaction() : duplicate inputs"),
-                             REJECT_INVALID, "bad-txns-inputs-duplicate");
+        if (keyimages.count(txin.keyImage)) {
+        	return state.DoS(100, error("CheckTransaction() : duplicate inputs"),
+        	                 REJECT_INVALID, "bad-txns-inputs-duplicate");
+        }
     }
+
 
     if (tx.IsCoinBase()) {
         if (tx.vin[0].scriptSig.size() < 2 || tx.vin[0].scriptSig.size() > 150)
@@ -1645,7 +1640,6 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
         {
             unsigned int nSigOps = GetLegacySigOpCount(tx);
             unsigned int nMaxSigOps = MAX_TX_SIGOPS_CURRENT;
-            nSigOps += GetP2SHSigOpCount(tx, view);
             if (nSigOps > nMaxSigOps)
                 return state.DoS(0,
                                  error("AcceptToMemoryPool : too many sigops %s, %d > %d",
@@ -1845,7 +1839,6 @@ bool AcceptableInputs(CTxMemPool &pool, CValidationState &state, const CTransact
         // merely non-standard transaction.
         unsigned int nSigOps = GetLegacySigOpCount(tx);
         unsigned int nMaxSigOps = MAX_TX_SIGOPS_CURRENT;
-        nSigOps += GetP2SHSigOpCount(tx, view);
         if (nSigOps > nMaxSigOps)
             return state.DoS(0,
                              error("AcceptableInputs : too many sigops %s, %d > %d",
@@ -2756,6 +2749,37 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
     // Check it again in case a previous version let a bad block in
     if (!fAlreadyChecked && !CheckBlock(block, state, !fJustCheck, !fJustCheck))
         return false;
+
+    //move this code from checkBlock to ConnectBlock functions to check for forks
+    //Check PoA block time
+    if (block.IsPoABlockByVersion() && !CheckPoAblockTime(block)) {
+    	return state.Invalid(error("CheckBlock() : Time elapsed between two PoA blocks is too short"),
+    			REJECT_INVALID, "time-too-new");
+    }
+    //Check PoA block not auditing PoS blocks audited by its previous PoA block
+    if (block.IsPoABlockByVersion() && !CheckPoABlockNotAuditingOverlap(block)) {
+    	return state.Invalid(error("CheckBlock() : PoA block auditing PoS blocks previously audited by its parent"),
+    			REJECT_INVALID, "overlap-audit");
+    }
+
+    /**
+     * @todo Audit checkblock
+     */
+    if (block.IsProofOfAudit()) {
+    	//Check PoA consensus rules
+    	if (!CheckPoAContainRecentHash(block)) {
+    		return state.DoS(100, error("CheckBlock() : PoA block should contain only non-audited recent PoS blocks"));
+    	}
+
+    	if (!CheckNumberOfAuditedPoSBlocks(block)) {
+    		return state.DoS(100, error("CheckBlock() : A PoA block should audit at least 59 PoS blocks"));
+    	}
+
+    	if (!CheckPoABlockNotContainingPoABlockInfo(block)) {
+    		return state.DoS(100, error("CheckBlock() : A PoA block should not audit any existing PoA blocks"));
+    	}
+    }
+
     // verify that the view's current state corresponds to the previous block
     uint256 hashPrevBlock = pindex->pprev == NULL ? uint256(0) : pindex->pprev->GetBlockHash();
     if (hashPrevBlock != view.GetBestBlock())
@@ -3830,17 +3854,6 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
         return state.Invalid(error("CheckBlock() : block timestamp too far in the future"),
                              REJECT_INVALID, "time-too-new");
 
-    //Check PoA block time
-    if (block.IsPoABlockByVersion() && !CheckPoAblockTime(block)) {
-    	return state.Invalid(error("CheckBlock() : Time elapsed between two PoA blocks is too short"),
-    	                             REJECT_INVALID, "time-too-new");
-    }
-    //Check PoA block not auditing PoS blocks audited by its previous PoA block
-    if (block.IsPoABlockByVersion() && !CheckPoABlockNotAuditingOverlap(block)) {
-    	return state.Invalid(error("CheckBlock() : PoA block auditing PoS blocks previously audited by its parent"),
-    	    	                             REJECT_INVALID, "overlap-audit");
-    }
-
     // Check the merkle root.
     if (fCheckMerkleRoot) {
         bool mutated;
@@ -3930,19 +3943,6 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
      * @todo Audit checkblock
      */
     if (block.IsProofOfAudit()) {
-        //Check PoA consensus rules
-        if (!CheckPoAContainRecentHash(block)) {
-        	return state.DoS(100, error("CheckBlock() : PoA block should contain only non-audited recent PoS blocks"));
-        }
-
-        if (!CheckNumberOfAuditedPoSBlocks(block)) {
-        	return state.DoS(100, error("CheckBlock() : A PoA block should audit at least 59 PoS blocks"));
-        }
-
-        if (!CheckPoABlockNotContainingPoABlockInfo(block)) {
-        	return state.DoS(100, error("CheckBlock() : A PoA block should not audit any existing PoA blocks"));
-        }
-
         if (chainActive.Tip()->nHeight < Params().START_POA_BLOCK()) {
             return state.DoS(100, error("CheckBlock() : PoA block should only start at block height=%d", Params().START_POA_BLOCK()));
         }
@@ -4330,6 +4330,12 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
         if (mi == mapBlockIndex.end()) {
             pfrom->PushMessage("getblocks", chainActive.GetLocator(), uint256(0));
             return false;
+        } else {
+        	CBlock r;
+        	if (!ReadBlockFromDisk(r, mapBlockIndex[pblock->hashPrevBlock])) {
+                pfrom->PushMessage("getblocks", chainActive.GetLocator(), uint256(0));
+                return false;
+        	}
         }
     }
     {
@@ -5711,7 +5717,7 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
             pfrom->AddInventoryKnown(inv);
 
             bool fAlreadyHave = AlreadyHave(inv);
-            LogPrint("net", "got inv: %s  %s peer=%d\n", inv.ToString(), fAlreadyHave ? "have" : "new", pfrom->id);
+            LogPrint("net", "got inv: %s  %s peer=%d, inv.type=%d, mapBlocksInFlight.count(inv.hash)=%d\n", inv.ToString(), fAlreadyHave ? "have" : "new", pfrom->id, inv.type, mapBlocksInFlight.count(inv.hash));
             
             if (!fAlreadyHave && !fImporting && !fReindex && inv.type != MSG_BLOCK)
             	pfrom->AskFor(inv); // peershares: immediate retry during initial download
@@ -6037,27 +6043,15 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
 
         //sometimes we will be sent their most recent block and its not the one we want, in that case tell where we are
         if (!mapBlockIndex.count(block.hashPrevBlock)) {
+        	if (find(pfrom->vBlockRequested.begin(), pfrom->vBlockRequested.end(), hashBlock) != pfrom->vBlockRequested.end()) {
         		//we already asked for this block, so lets work backwards and ask for the previous block
-        	LogPrint("net", "here requesting block %s", block.hashPrevBlock.GetHex());
-        	CBlockLocator locator = chainActive.GetLocator();
-        	if (find(locator.vHave.begin(), locator.vHave.end(), block.hashPrevBlock) != locator.vHave.end()) {
-        		LogPrint("net", "Strange block hash = %s", block.hashPrevBlock.GetHex());
+        		pfrom->PushMessage("getblocks", chainActive.GetLocator(), block.hashPrevBlock);
+        		pfrom->vBlockRequested.push_back(block.hashPrevBlock);
+        	} else {
+        		//ask to sync to this block
+        		pfrom->PushMessage("getblocks", chainActive.GetLocator(), hashBlock);
+        		pfrom->vBlockRequested.push_back(hashBlock);
         	}
-        	LogPrint("net", "chain tip %s", chainActive.Tip()->GetBlockHash().GetHex());
-        	pfrom->PushMessage("getblocks", locator, block.hashPrevBlock);
-        	pfrom->vBlockRequested.push_back(block.hashPrevBlock);
-            if (find(pfrom->vBlockRequested.begin(), pfrom->vBlockRequested.end(), hashBlock) !=
-                pfrom->vBlockRequested.end()) {
-                //we already asked for this block, so lets work backwards and ask for the previous block
-            	LogPrint("net", "requesting block %s", block.hashPrevBlock.GetHex());
-                pfrom->PushMessage("getblocks", chainActive.GetLocator(), block.hashPrevBlock);
-                pfrom->vBlockRequested.push_back(block.hashPrevBlock);
-            } else {
-                //ask to sync to this block
-            	LogPrint("net", "requesting block %s", hashBlock.GetHex());
-                pfrom->PushMessage("getblocks", chainActive.GetLocator(), hashBlock);
-                pfrom->vBlockRequested.push_back(hashBlock);
-            }
         } else {
             pfrom->AddInventoryKnown(inv);
             CValidationState state;

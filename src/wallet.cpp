@@ -38,6 +38,23 @@
 
 using namespace std;
 
+#include "secp256k1-mw/src/hash_impl.h"
+static secp256k1_rfc6979_hmac_sha256 secp256k1_test_rng;
+static uint32_t secp256k1_test_rng_precomputed[8];
+static int secp256k1_test_rng_precomputed_used = 8;
+
+SECP256K1_INLINE static void secp256k1_rand_seed(const unsigned char *seed16) {
+    secp256k1_rfc6979_hmac_sha256_initialize(&secp256k1_test_rng, seed16, 16);
+}
+
+SECP256K1_INLINE static uint32_t secp256k1_rand32(void) {
+    if (secp256k1_test_rng_precomputed_used == 8) {
+        secp256k1_rfc6979_hmac_sha256_generate(&secp256k1_test_rng, (unsigned char*)(&secp256k1_test_rng_precomputed[0]), sizeof(secp256k1_test_rng_precomputed));
+        secp256k1_test_rng_precomputed_used = 0;
+    }
+    return secp256k1_test_rng_precomputed[secp256k1_test_rng_precomputed_used++];
+}
+
 /**
  * Settings
  */
@@ -2572,8 +2589,10 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     if (useIX && nFeePay < CENT) nFeePay = CENT;
 
     //randomize ring size
-
-    ringSize = 6 + rand() % 6;
+    unsigned char rand_seed[16];
+    memcpy(rand_seed, txPrivDes.begin(), 16);
+    secp256k1_rand_seed(rand_seed);
+    ringSize = 11 + secp256k1_rand32() % 4;
 
     //Currently we only allow transaction with one or two recipients
     //If two, the second recipient is a change output
@@ -5002,7 +5021,10 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 
 	CScript scriptPubKey = GetScriptForDestination(stealthDes);
 
-	int ringSize = 6 + rand() % 6;
+    unsigned char rand_seed[16];
+    memcpy(rand_seed, secret.begin(), 16);
+    secp256k1_rand_seed(rand_seed);
+	int ringSize = 11 + secp256k1_rand32() % 4;
 
 	CAmount nValue = total - COIN;
 

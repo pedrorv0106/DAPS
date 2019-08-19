@@ -259,7 +259,7 @@ Value getaccount(const Array& params, bool fHelp)
     if (mi != pwalletMain->mapAddressBook.end() && !(*mi).second.name.empty())
         strAccount = (*mi).second.name;
     
-    return "";
+    return strAccount;
 }
 
 
@@ -2349,24 +2349,9 @@ Value createprivacywallet(const Array& params, bool fHelp)
                 "\nExamples:\n" +
                 HelpExampleCli("createprivacywallet", "") + HelpExampleCli("createprivacywallet", "\"\"") + HelpExampleCli("createprivacywallet", "\"1234567890\"") + HelpExampleRpc("createprivacywallet", "\"1234567890\""));
 
-    if (pwalletMain) {
-        //privacy wallet is already created
-        throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
-                           "Error: Privacy wallet is alread created.");
-    }
-
-    std::string dataDir = GetDataDir().string();
-
-    std::string filepath = dataDir + std::string("wallet.dat");
-    std::string password = params[0].get_str();
-    std::string language("english");
-    if (params.size() == 2) {
-        language = params[0].get_str();
-    }
-
-    Object ret;
-
-    return ret;
+    //privacy wallet is already created
+    throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
+                           "Error: RPC unimplemented.");
 }
 
 Value createprivacyaccount(const Array& params, bool fHelp)
