@@ -4311,10 +4311,6 @@ Por favor tenga paciencia...</translation>
         <translation>Distribuido bajo licencia MIT software license, ver el archivo adjunto COPYING or &lt;http://www.opensource.org/licenses/mit-license.php&gt;</translation>
     </message>
     <message>
-        <source>Enable spork administration functionality with the appropriate private key.</source>
-        <translation>Activar la función de administración de sporks con la llave privada apropiada.</translation>
-    </message>
-    <message>
         <source>Enter regression test mode, which uses a special chain in which blocks can be solved instantly.</source>
         <translation>Entrar en el modo prueba de regresión, el cual usa una cadena especial en el cual los bloques pueden ser resueltos instantaneamente.</translation>
     </message>
@@ -5031,10 +5027,6 @@ por ejemplo: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Cargando cache de pagos de nodos maestros</translation>
     </message>
     <message>
-        <source>Loading sporks...</source>
-        <translation>Cargando sporks...</translation>
-    </message>
-    <message>
         <source>Loading wallet... (%3.2f %%)</source>
         <translation>Cargando monedero: (%3.2f %%)</translation>
     </message>
@@ -5375,10 +5367,6 @@ por ejemplo: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Sincronizando masternodes...</translation>
     </message>
     <message>
-        <source>Synchronizing sporks...</source>
-        <translation>Sincronizando con la red... </translation>
-    </message>
-    <message>
         <source>This help message</source>
         <translation>Este mensaje de ayuda</translation>
     </message>
@@ -5441,10 +5429,6 @@ por ejemplo: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
     <message>
         <source>Unable to bind to %s on this computer (bind returned error %s)</source>
         <translation>Imposible enlazar %s en esta computadora (enlace retorna error %s)</translation>
-    </message>
-    <message>
-        <source>Unable to sign spork message, wrong key?</source>
-        <translation>Imposible firmar el mensaje spork, ¿llave equivocada?</translation>
     </message>
     <message>
         <source>Unknown network specified in -onlynet: '%s'</source>

@@ -3598,10 +3598,6 @@ Nesubrendusios: patvirtintos, bet mažiau nei 1 konvertacijos tos pačio nominal
         <translation>Kraunamas masternodų išmokų podėlis...</translation>
     </message>
     <message>
-        <source>Loading sporks...</source>
-        <translation>Kraunami sporkai...</translation>
-    </message>
-    <message>
         <source>Loading wallet... (%3.2f %%)</source>
         <translation>Kraunama piniginė... (%3.2f %%)</translation>
     </message>

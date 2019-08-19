@@ -4951,10 +4951,6 @@ Either mint higher denominations (so fewer inputs are needed) or reduce the amou
         <translation>Omogući ili onemogući staking funkcionalnosti za zDAPS unose (0-1, default: %u)</translation>
     </message>
     <message>
-        <source>Enable spork administration functionality with the appropriate private key.</source>
-        <translation>Omogućite funkcionalnost administracije s odgovarajućim privatnim ključem.</translation>
-    </message>
-    <message>
         <source>Enter regression test mode, which uses a special chain in which blocks can be solved instantly.</source>
         <translation>Unesite način rada regresije, koji koristi poseban lanac u kojem blokovi mogu biti riješeni odmah.</translation>
     </message>
@@ -5751,10 +5747,6 @@ Either mint higher denominations (so fewer inputs are needed) or reduce the amou
         <translation>Učitavanje predmemorije plaćanja masternoda ...</translation>
     </message>
     <message>
-        <source>Loading sporks...</source>
-        <translation>Učitavanje aplikacije ...</translation>
-    </message>
-    <message>
         <source>Loading wallet... (%3.2f %%)</source>
         <translation>Učitavanje novčanika ... (%3.2f %%)</translation>
     </message>
@@ -6115,10 +6107,6 @@ Either mint higher denominations (so fewer inputs are needed) or reduce the amou
         <translation>Sinkronizacija masternoda...</translation>
     </message>
     <message>
-        <source>Synchronizing sporks...</source>
-        <translation>Sinkronizacija sporka...</translation>
-    </message>
-    <message>
         <source>Syncing zDAPS wallet...</source>
         <translation>Sinkronizacija zDAPS novčanika...</translation>
     </message>
@@ -6225,10 +6213,6 @@ Either mint higher denominations (so fewer inputs are needed) or reduce the amou
     <message>
         <source>Unable to find transaction containing mint</source>
         <translation>Nije moguće pronaći transakciju koja sadrži mintanje</translation>
-    </message>
-    <message>
-        <source>Unable to sign spork message, wrong key?</source>
-        <translation>Nije moguće potpisati spork poruku, pogrešan ključ?</translation>
     </message>
     <message>
         <source>Unable to start HTTP server. See debug log for details.</source>

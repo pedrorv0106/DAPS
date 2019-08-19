@@ -24,7 +24,6 @@
 
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
-#include "spork.h"
 #include <boost/assign/list_of.hpp>
 
 using namespace std;

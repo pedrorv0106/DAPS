@@ -4282,10 +4282,6 @@ Bitte haben Sie Geduld...</translation>
         <translation>Veröffentlicht unter der MIT-Software-Lizenz, siehe die beigelegte Datei COPYING oder &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</translation>
     </message>
     <message>
-        <source>Enable spork administration functionality with the appropriate private key.</source>
-        <translation>Aktiviere die Funktionalität der Spork-Administration mit dem entsprechenden privaten Schlüssel.</translation>
-    </message>
-    <message>
         <source>Enter regression test mode, which uses a special chain in which blocks can be solved instantly.</source>
         <translation>Gebe den Regressions-Testmodus ein, der eine spezielle Kette verwendet, in der Blöcke sofort gelöst werden können.</translation>
     </message>
@@ -4942,10 +4938,6 @@ Beispiel: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Lade Masternode-Zahlungs-Puffer... </translation>
     </message>
     <message>
-        <source>Loading sporks...</source>
-        <translation>Lade Sporks...</translation>
-    </message>
-    <message>
         <source>Loading wallet... (%3.2f %%)</source>
         <translation>Lade Wallet... (%3.2f %%)</translation>
     </message>
@@ -5238,10 +5230,6 @@ Beispiel: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Synchronisiere Masternodes....</translation>
     </message>
     <message>
-        <source>Synchronizing sporks...</source>
-        <translation>Synchronisiere Sporks....</translation>
-    </message>
-    <message>
         <source>This help message</source>
         <translation>Dieser Hilfetext</translation>
     </message>
@@ -5304,10 +5292,6 @@ Beispiel: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
     <message>
         <source>Unable to bind to %s on this computer (bind returned error %s)</source>
         <translation>Kann auf diesem Computer nicht an %s binden (zurückgegebener Fehler: %s)</translation>
-    </message>
-    <message>
-        <source>Unable to sign spork message, wrong key?</source>
-        <translation>Die Spork-Nachricht konnte nicht signiert werden. Falscher Key?</translation>
     </message>
     <message>
         <source>Unknown network specified in -onlynet: '%s'</source>

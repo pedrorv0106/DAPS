@@ -9,7 +9,6 @@
 #include "masternode-sync.h"
 #include "masternodeman.h"
 #include "obfuscation.h"
-#include "spork.h"
 #include "sync.h"
 #include "util.h"
 #include "utilmoneystr.h"
@@ -202,11 +201,6 @@ bool IsBlockValueValid(const CBlock& block, CAmount nExpectedValue, CAmount nMin
         }
     } else { // we're synced and have data so check the budget schedule
 
-        //are these blocks even enabled
-        /*if (!IsSporkActive(SPORK_13_ENABLE_SUPERBLOCKS)) {
-            return nMinted <= nExpectedValue;
-        }*/
-
         if (budget.IsBudgetPaymentBlock(nHeight)) {
             //the value of the block is evaluated in CheckBlock
             return true;
@@ -229,28 +223,11 @@ bool IsBlockPayeeValid(const CBlock& block, int nBlockHeight)
 
     const CTransaction& txNew = (nBlockHeight > Params().LAST_POW_BLOCK() ? block.vtx[1] : block.vtx[0]);
 
-    //check if it's a budget block
-    /*if (IsSporkActive(SPORK_13_ENABLE_SUPERBLOCKS)) {
-        if (budget.IsBudgetPaymentBlock(nBlockHeight)) {
-            if (budget.IsTransactionValid(txNew, nBlockHeight))
-                return true;
-
-            LogPrint("masternode","Invalid budget payment detected %s\n", txNew.ToString().c_str());
-            if (IsSporkActive(SPORK_9_MASTERNODE_BUDGET_ENFORCEMENT))
-                return false;
-
-            LogPrint("masternode","Budget enforcement is disabled, accepting block\n");
-            return true;
-        }
-    }*/
-
     //check for masternode payee
     if (masternodePayments.IsTransactionValid(txNew, nBlockHeight))
         return true;
     LogPrint("masternode","Invalid mn payment detected %s\n", txNew.ToString().c_str());
 
-    if (IsSporkActive(SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT))
-        return false;
     LogPrint("masternode","Masternode payment enforcement is disabled, accepting block\n");
 
     return true;
@@ -262,20 +239,12 @@ bool FillBlockPayee(CMutableTransaction& txNew, CAmount nFees, bool fProofOfStak
     CBlockIndex* pindexPrev = chainActive.Tip();
     if (!pindexPrev) return false;
 
-    if (IsSporkActive(SPORK_13_ENABLE_SUPERBLOCKS) && budget.IsBudgetPaymentBlock(pindexPrev->nHeight + 1)) {
-        return budget.FillBlockPayee(txNew, nFees, fProofOfStake);
-    } else {
-        return masternodePayments.FillBlockPayee(txNew, nFees, fProofOfStake);
-    }
+    return masternodePayments.FillBlockPayee(txNew, nFees, fProofOfStake);
 }
 
 std::string GetRequiredPaymentsString(int nBlockHeight)
 {
-    /*if (IsSporkActive(SPORK_13_ENABLE_SUPERBLOCKS) && budget.IsBudgetPaymentBlock(nBlockHeight)) {
-        return budget.GetRequiredPaymentsString(nBlockHeight);
-    } else*/ {
-        return masternodePayments.GetRequiredPaymentsString(nBlockHeight);
-    }
+    return masternodePayments.GetRequiredPaymentsString(nBlockHeight);
 }
 
 bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFees, bool fProofOfStake)
@@ -290,7 +259,6 @@ bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
     mnPaymentPrivTx.MakeNewKey(true);
     CPubKey mnPaymentPubTx = mnPaymentPrivTx.GetPubKey();
 
-    //spork
     masternodePayments.GetBlockPayee(pindexPrev->nHeight + 1, payeeAddr);
     if (payeeAddr.size() != 0) {
     	bool isNotSpent = false;
@@ -382,10 +350,7 @@ bool CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
 
 int CMasternodePayments::GetMinMasternodePaymentsProto()
 {
-    /*if (IsSporkActive(SPORK_10_MASTERNODE_PAY_UPDATED_NODES))
-        return ActiveProtocol();                          // Allow only updated peers
-    else*/
-        return MIN_PEER_PROTO_VERSION_BEFORE_ENFORCEMENT; // Also allow old peers as long as they are allowed to run
+    return MIN_PEER_PROTO_VERSION_BEFORE_ENFORCEMENT; // Also allow old peers as long as they are allowed to run
 }
 
 void CMasternodePayments::ProcessMessageMasternodePayments(CNode* pfrom, std::string& strCommand, CDataStream& vRecv)
@@ -558,17 +523,7 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransaction& txNew)
     int nMasternode_Drift_Count = 0;
 
     std::string strPayeesPossible = "";
-
-    /*if (IsSporkActive(SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT)) {
-        // Get a stable number of masternodes by ignoring newly activated (< 8000 sec old) masternodes
-        nMasternode_Drift_Count = mnodeman.stable_size() + Params().MasternodeCountDrift();
-    }
-    else*/ {
-        //account for the fact that all peers do not see the same masternode count. A allowance of being off our masternode count is given
-        //we only need to look at an increased masternode count because as count increases, the reward decreases. This code only checks
-        //for mnPayment >= required, so it only makes sense to check the max node count allowed.
-        nMasternode_Drift_Count = mnodeman.size() + Params().MasternodeCountDrift();
-    }
+    nMasternode_Drift_Count = mnodeman.size() + Params().MasternodeCountDrift();
     CBlockIndex* pindexPrev = chainActive.Tip();
     CAmount requiredMasternodePayment = GetMasternodePayment(nBlockHeight, GetBlockValue(pindexPrev->nHeight));
 

@@ -20,7 +20,6 @@
 #include "keystore.h"
 #include "main.h"
 #include "miner.h"
-#include "spork.h"
 #include "sync.h"
 #include "ui_interface.h"
 #include "wallet.h"

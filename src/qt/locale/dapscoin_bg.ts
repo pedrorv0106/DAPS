@@ -4259,10 +4259,6 @@ Please be patient...</source>
         <translation>Разпространява се пот MIT софтуерен лиценз, виж съпровождащия файл от &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</translation>
     </message>
     <message>
-        <source>Enable spork administration functionality with the appropriate private key.</source>
-        <translation>Включете функцията за spork администрация с подходящия личен ключ.</translation>
-    </message>
-    <message>
         <source>Enter regression test mode, which uses a special chain in which blocks can be solved instantly.</source>
         <translation>Влезете в тестови режим на регресия, използвайки специален блокчейн в който блоковете се калкулират мигновено.</translation>
     </message>

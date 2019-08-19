@@ -48,7 +48,6 @@
 
 class CBlockIndex;
 class CBlockTreeDB;
-class CSporkDB;
 class CBloomFilter;
 class CInv;
 class CScriptCheck;
@@ -654,9 +653,6 @@ extern CCoinsViewCache* pcoinsTip;
 
 /** Global variable that points to the active block tree (protected by cs_main) */
 extern CBlockTreeDB* pblocktree;
-
-/** Global variable that points to the spork database (protected by cs_main) */
-extern CSporkDB* pSporkDB;
 
 struct CBlockTemplate {
     CBlock block;

@@ -8,7 +8,6 @@
 #include "addrman.h"
 #include "masternode.h"
 #include "obfuscation.h"
-#include "spork.h"
 #include "util.h"
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
@@ -361,12 +360,6 @@ int CMasternodeMan::stable_size ()
         if (mn.protocolVersion < nMinProtocol) {
             continue; // Skip obsolete versions
         }
-        /*if (IsSporkActive (SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT)) {
-            nMasternode_Age = GetAdjustedTime() - mn.sigTime;
-            if ((nMasternode_Age) < nMasternode_Min_Age) {
-                continue; // Skip masternodes younger than (default) 8000 sec (MUST be > MASTERNODE_REMOVAL_SECONDS)
-            }
-        }*/
         mn.Check ();
         if (!mn.IsEnabled ())
             continue; // Skip not-enabled masternodes
@@ -610,13 +603,6 @@ int CMasternodeMan::GetMasternodeRank(const CTxIn& vin, int64_t nBlockHeight, in
             continue;                                                       // Skip obsolete versions
         }
 
-        /*if (IsSporkActive(SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT)) {
-            nMasternode_Age = GetAdjustedTime() - mn.sigTime;
-            if ((nMasternode_Age) < nMasternode_Min_Age) {
-                if (fDebug) LogPrint("masternode","Skipping just activated Masternode. Age: %ld\n", nMasternode_Age);
-                continue;                                                   // Skip masternodes younger than (default) 1 hour
-            }
-        }*/
         if (fOnlyActive) {
             mn.Check();
             if (!mn.IsEnabled()) continue;
@@ -857,7 +843,6 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
 
     // Light version for OLD MASSTERNODES - fake pings, no self-activation
     else if (strCommand == "dsee") { //ObfuScation Election Entry
-        //if (IsSporkActive(SPORK_10_MASTERNODE_PAY_UPDATED_NODES)) return;
         LogPrintf("\n%s:Parsing masternode broadcast\n", __func__);
         CTxIn vin;
         CService addr;
@@ -1069,8 +1054,6 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
     }
 
     else if (strCommand == "dseep") { //ObfuScation Election Entry Ping
-
-        //if (IsSporkActive(SPORK_10_MASTERNODE_PAY_UPDATED_NODES)) return;
 
         CTxIn vin;
         vector<unsigned char> vchSig;

@@ -13,7 +13,6 @@
 #include "masternodeman.h"
 #include "rpcserver.h"
 #include "utilmoneystr.h"
-#include "spork.h"
 
 #include <boost/tokenizer.hpp>
 

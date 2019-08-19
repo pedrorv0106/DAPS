@@ -383,7 +383,6 @@ static const CRPCCommand vRPCCommands[] =
         {"dapscoin", "mnfinalbudget", &mnfinalbudget, true, true, false},
         {"dapscoin", "checkbudgets", &checkbudgets, true, true, false},
         {"dapscoin", "mnsync", &mnsync, true, true, false},
-        {"dapscoin", "spork", &spork, true, true, false},
         {"dapscoin", "getpoolinfo", &getpoolinfo, true, true, false},
 
 #ifdef ENABLE_WALLET
