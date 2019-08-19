@@ -227,6 +227,24 @@ struct CPKeyImageAlpha {
     }
 };
 
+//each signer after receive transaction from the initiator, will need to create this and send it back to the initiator
+struct CListPKeyImageAlpha {
+	std::vector<CPKeyImageAlpha> partialAlphas;
+	uint256 hashOfAllInputOutpoints;
+	ADD_SERIALIZE_METHODS;
+
+	template <typename Stream, typename Operation>
+	inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion)
+	{
+		READWRITE(partialAlphas);
+		READWRITE(hashOfAllInputOutpoints);
+	}
+
+	CListPKeyImageAlpha() {
+		hashOfAllInputOutpoints.SetNull();
+	}
+};
+
 /**
  * A CWallet is an extension of a keystore, which also maintains a set of transactions and balances,
  * and provides the ability to create new transactions.
@@ -841,6 +859,7 @@ public:
     //return true if the transaction is fully signed
     bool CoSignTransaction(CPartialTransaction& partial);
     bool CoSignPartialTransaction(CPartialTransaction& tx);
+    bool generatePKeyImageAlphaListFromPartialTx(const CPartialTransaction& tx, CListPKeyImageAlpha& l);
 private:
     void GeneratePKeyImageAlpha(const COutPoint& op, CPKeyImageAlpha&) const;
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
@@ -850,10 +869,13 @@ private:
     bool selectDecoysAndRealIndex(CTransaction& tx, int& myIndex, int ringSize);
     bool makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFailReason);
     bool makeRingCT(CPartialTransaction& wtxNew, int ringSize, std::string& strFailReason, int, bool);
+    bool finishRingCTAfterKeyImageSynced(CPartialTransaction& wtxNew, std::vector<CListPKeyImageAlpha> ls);
+    bool findMultisigInputIndex(const CPartialTransaction& tx);
     int walletIdxCache = 0;
     bool isMatchMyKeyImage(const CKeyImage& ki, const COutPoint& out);
     void ScanWalletKeyImages();
     bool generateCommitmentAndEncode(CPartialTransaction& wtxNew);
+    bool makePartialRingCT(CPartialTransaction& wtxNew, int ringSize, std::string& strFailReason, int myIndex);
     CKey GeneratePartialKey(const COutPoint& out);
     CKey GeneratePartialKey(const CTxOut& out);
 };

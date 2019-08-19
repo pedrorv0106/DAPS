@@ -70,7 +70,7 @@ public:
     std::string ToString() const;
     std::string ToStringShort() const;
 
-    uint256 GetHash();
+    uint256 GetHash() const;
 
 };
 
@@ -563,6 +563,7 @@ struct CPartialTransaction
     //If N/N case, this is the hashes of the private keys of participants
     //if N-1/N case, this is the hashes of the hash of the ECDHs between participants
     std::vector<uint256> hashesOfSignedSecrets;
+    uint256 selectedUTXOHash;
 
     CPartialTransaction();
     CPartialTransaction(const CTransaction& tx)
@@ -612,6 +613,10 @@ struct CPartialTransaction
         nVersion = this->nVersion;
         READWRITE(vin);
         READWRITE(vout);
+        //serialize transaction private key for other signers to decode blinds for outputs
+        for(int i = 0; i < vout.size(); i++) {
+        	READWRITE(vout[i].maskValue.inMemoryRawBind);
+        }
         READWRITE(nLockTime);
         READWRITE(hasPaymentID);
         if (hasPaymentID != 0) {
@@ -626,6 +631,7 @@ struct CPartialTransaction
         READWRITE(S);
         READWRITE(ntxFeeKeyImage);
         READWRITE(hashesOfSignedSecrets);
+        READWRITE(selectedUTXOHash);
     }
 };
 
