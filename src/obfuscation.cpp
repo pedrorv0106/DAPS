@@ -598,7 +598,7 @@ void CObfuscationPool::CheckFinalTransaction()
         // sign a message
 
         int64_t sigTime = GetAdjustedTime();
-        std::string strMessage = txNew.GetHash().ToString() + boost::lexical_cast<std::string>(sigTime);
+        std::string strMessage = Hash(txNew.GetHash().begin(), txNew.GetHash().end(), BEGIN(sigTime), END(sigTime)).GetHex();
         std::string strError = "";
         std::vector<unsigned char> vchSig;
         CKey key2;
@@ -1913,8 +1913,8 @@ bool CObfuScationSigner::VerifyMessage(CPubKey pubkey, vector<unsigned char>& vc
 bool CObfuscationQueue::Sign()
 {
     if (!fMasterNode) return false;
-
-    std::string strMessage = vin.ToString() + boost::lexical_cast<std::string>(nDenom) + boost::lexical_cast<std::string>(time) + boost::lexical_cast<std::string>(ready);
+    std::string ss = vin.ToString();
+    std::string strMessage = Hash(BEGIN(ss), END(ss), BEGIN(nDenom), END(nDenom), BEGIN(time), END(time), BEGIN(ready), END(ready)).GetHex();
 
     CKey key2;
     CPubKey pubkey2;
@@ -1954,7 +1954,8 @@ bool CObfuscationQueue::CheckSignature()
     CMasternode* pmn = mnodeman.Find(vin);
 
     if (pmn != NULL) {
-        std::string strMessage = vin.ToString() + boost::lexical_cast<std::string>(nDenom) + boost::lexical_cast<std::string>(time) + boost::lexical_cast<std::string>(ready);
+    	std::string vinStr = vin.ToString();
+        std::string strMessage = Hash(BEGIN(vinStr), END(vinStr), BEGIN(nDenom), END(nDenom), BEGIN(time), END(time), BEGIN(ready), END(ready)).GetHex();
 
         std::string errorMessage = "";
         if (!obfuScationSigner.VerifyMessage(pmn->pubKeyMasternode, vchSig, strMessage, errorMessage)) {

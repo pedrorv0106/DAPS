@@ -176,7 +176,7 @@ void ReprocessBlocks(int nBlocks)
 bool CSporkManager::CheckSignature(CSporkMessage& spork)
 {
     //note: need to investigate why this is failing
-    std::string strMessage = boost::lexical_cast<std::string>(spork.nSporkID) + boost::lexical_cast<std::string>(spork.nValue) + boost::lexical_cast<std::string>(spork.nTimeSigned);
+    std::string strMessage = Hash(BEGIN(spork.nSporkID), END(spork.nSporkID), BEGIN(spork.nValue), END(spork.nValue), BEGIN(spork.nTimeSigned), END(spork.nTimeSigned)).GetHex();
     CPubKey pubkeynew(ParseHex(Params().SporkKey()));
     std::string errorMessage = "";
     if (obfuScationSigner.VerifyMessage(pubkeynew, spork.vchSig, strMessage, errorMessage)) {
@@ -188,7 +188,7 @@ bool CSporkManager::CheckSignature(CSporkMessage& spork)
 
 bool CSporkManager::Sign(CSporkMessage& spork)
 {
-    std::string strMessage = boost::lexical_cast<std::string>(spork.nSporkID) + boost::lexical_cast<std::string>(spork.nValue) + boost::lexical_cast<std::string>(spork.nTimeSigned);
+    std::string strMessage = Hash(BEGIN(spork.nSporkID), END(spork.nSporkID), BEGIN(spork.nValue), END(spork.nValue), BEGIN(spork.nTimeSigned), END(spork.nTimeSigned)).GetHex();
 
     CKey key2;
     CPubKey pubkey2;

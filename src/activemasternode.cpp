@@ -204,8 +204,10 @@ bool CActiveMasternode::SendMasternodePing(std::string& errorMessage)
         std::string retErrorMessage;
         std::vector<unsigned char> vchMasterNodeSignature;
         int64_t masterNodeSignatureTime = GetAdjustedTime();
-
-        std::string strMessage = service.ToString() + boost::lexical_cast<std::string>(masterNodeSignatureTime) + boost::lexical_cast<std::string>(false);
+        std::string ss = service.ToString();
+        bool val = false;
+        uint256 h = Hash(BEGIN(ss), END(ss), BEGIN(masterNodeSignatureTime), END(masterNodeSignatureTime), BEGIN(val), END(val));
+        std::string strMessage = h.GetHex();
 
         if (!obfuScationSigner.SignMessage(strMessage, retErrorMessage, vchMasterNodeSignature, keyMasternode)) {
             errorMessage = "dseep sign message failed: " + retErrorMessage;
@@ -304,8 +306,9 @@ bool CActiveMasternode::CreateBroadcast(CTxIn vin, CService service, CKey keyCol
 
     std::string vchPubKey(pubKeyCollateralAddress.begin(), pubKeyCollateralAddress.end());
     std::string vchPubKey2(pubKeyMasternode.begin(), pubKeyMasternode.end());
-
-    std::string strMessage = service.ToString() + boost::lexical_cast<std::string>(masterNodeSignatureTime) + vchPubKey + vchPubKey2 + boost::lexical_cast<std::string>(PROTOCOL_VERSION) + donationAddress + boost::lexical_cast<std::string>(donationPercantage);
+    std::string ss = service.ToString();
+    uint256 h = Hash(BEGIN(ss), END(ss), BEGIN(masterNodeSignatureTime), END(masterNodeSignatureTime), BEGIN(vchPubKey), END(vchPubKey), BEGIN(PROTOCOL_VERSION), END(PROTOCOL_VERSION), BEGIN(donationPercantage), END(donationPercantage));
+    std::string strMessage = h.GetHex() + vchPubKey + vchPubKey2;
     LogPrintf("\nCActiveMasternode::CreateBroadcast: sign key = %s, strMessage=%s\n", pubKeyCollateralAddress.GetHex(), strMessage);
     LogPrintf("\nCActiveMasternode::CreateBroadcast: masternode key = %s, strMessage=%s\n", pubKeyMasternode.GetHex(), strMessage);
     if (!obfuScationSigner.SignMessage(strMessage, retErrorMessage, vchMasterNodeSignature, keyCollateralAddress)) {

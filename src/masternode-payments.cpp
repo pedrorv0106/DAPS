@@ -466,16 +466,15 @@ bool CMasternodePaymentWinner::Sign(CKey& keyMasternode, CPubKey& pubKeyMasterno
     std::string errorMessage;
     std::string strMasterNodeSignMessage;
     std::string payeeString(payee.begin(), payee.end());
-    std::string strMessage = vinMasternode.prevout.ToStringShort() +
-                             boost::lexical_cast<std::string>(nBlockHeight) +
-							 payeeString;
+    uint256 hashPrevout = vinMasternode.prevout.GetHash();
+    uint256 h = Hash(hashPrevout.begin(), hashPrevout.end(), BEGIN(nBlockHeight), END(nBlockHeight), payee.begin(), payee.end());
 
-    if (!obfuScationSigner.SignMessage(strMessage, errorMessage, vchSig, keyMasternode)) {
+    if (!obfuScationSigner.SignMessage(h.GetHex(), errorMessage, vchSig, keyMasternode)) {
         LogPrint("masternode","CMasternodePing::Sign() - Error: %s\n", errorMessage.c_str());
         return false;
     }
 
-    if (!obfuScationSigner.VerifyMessage(pubKeyMasternode, vchSig, strMessage, errorMessage)) {
+    if (!obfuScationSigner.VerifyMessage(pubKeyMasternode, vchSig, h.GetHex(), errorMessage)) {
         LogPrint("masternode","CMasternodePing::Sign() - Error: %s\n", errorMessage.c_str());
         return false;
     }
@@ -799,9 +798,9 @@ bool CMasternodePaymentWinner::SignatureValid()
 
     if (pmn != NULL) {
     	std::string payeeString(payee.begin(), payee.end());
-        std::string strMessage = vinMasternode.prevout.ToStringShort() +
-                                 boost::lexical_cast<std::string>(nBlockHeight) +
-                                 payeeString;
+    	uint256 prevoutHash = vinMasternode.prevout.GetHash();
+    	uint256 h = Hash(prevoutHash.begin(), prevoutHash.end(), BEGIN(nBlockHeight), END(nBlockHeight), payee.begin(), payee.end());
+        std::string strMessage = h.GetHex();
 
         std::string errorMessage = "";
         if (!obfuScationSigner.VerifyMessage(pmn->pubKeyMasternode, vchSig, strMessage, errorMessage)) {

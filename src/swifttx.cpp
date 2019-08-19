@@ -457,7 +457,7 @@ uint256 CConsensusVote::GetHash() const
 bool CConsensusVote::SignatureValid()
 {
     std::string errorMessage;
-    std::string strMessage = txHash.ToString().c_str() + boost::lexical_cast<std::string>(nBlockHeight);
+    std::string strMessage = Hash(txHash.begin(), txHash.end(), BEGIN(nBlockHeight), END(nBlockHeight)).ToString();
 
     CMasternode* pmn = mnodeman.Find(vinMasternode);
 
@@ -480,7 +480,7 @@ bool CConsensusVote::Sign()
 
     CKey key2;
     CPubKey pubkey2;
-    std::string strMessage = txHash.ToString().c_str() + boost::lexical_cast<std::string>(nBlockHeight);
+    std::string strMessage = Hash(txHash.begin(), txHash.end(), BEGIN(nBlockHeight), END(nBlockHeight)).GetHex();
 
     if (!obfuScationSigner.SetKey(strMasterNodePrivKey, errorMessage, key2, pubkey2)) {
         LogPrintf("CConsensusVote::Sign() - ERROR: Invalid masternodeprivkey: '%s'\n", errorMessage.c_str());
