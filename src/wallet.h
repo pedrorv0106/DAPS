@@ -790,6 +790,8 @@ public:
     bool GenerateBulletProofForStaking(CTransaction& tx);
     CKeyImage GeneratePartialKeyImage(const CTxOut& out) const;
     CKeyImage GeneratePartialKeyImage(const COutPoint& out) const;
+    CPubKey computeDestination(const COutPoint& out) const;
+    CPubKey computeDestination(const CTxOut& out);
     bool GeneratePartialKeyImages(const std::vector<CTxOut>& outputs, std::vector<CKeyImage>& out);
     bool GeneratePartialKeyImages(const std::vector<COutPoint>& outpoints, std::vector<CKeyImage>& out);
     bool GenerateAllPartialImages(std::vector<CKeyImage>& out);
@@ -870,6 +872,7 @@ private:
     bool makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFailReason);
     bool makeRingCT(CPartialTransaction& wtxNew, int ringSize, std::string& strFailReason, int, bool);
     bool finishRingCTAfterKeyImageSynced(CPartialTransaction& wtxNew, std::vector<CListPKeyImageAlpha> ls);
+    CPubKey SumOfAllPubKeys(std::vector<CPubKey> l) const;
     bool findMultisigInputIndex(const CPartialTransaction& tx);
     int walletIdxCache = 0;
     bool isMatchMyKeyImage(const CKeyImage& ki, const COutPoint& out);
