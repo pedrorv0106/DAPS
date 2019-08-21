@@ -307,8 +307,8 @@ bool CActiveMasternode::CreateBroadcast(CTxIn vin, CService service, CKey keyCol
     std::string vchPubKey(pubKeyCollateralAddress.begin(), pubKeyCollateralAddress.end());
     std::string vchPubKey2(pubKeyMasternode.begin(), pubKeyMasternode.end());
     std::string ss = service.ToString();
-    uint256 h = Hash(BEGIN(ss), END(ss), BEGIN(masterNodeSignatureTime), END(masterNodeSignatureTime), BEGIN(vchPubKey), END(vchPubKey), BEGIN(PROTOCOL_VERSION), END(PROTOCOL_VERSION), BEGIN(donationPercantage), END(donationPercantage));
-    std::string strMessage = h.GetHex() + vchPubKey + vchPubKey2;
+    uint256 h = Hash(BEGIN(ss), END(ss), BEGIN(masterNodeSignatureTime), END(masterNodeSignatureTime), pubKeyCollateralAddress.begin(), pubKeyCollateralAddress.end(), pubKeyMasternode.begin(), pubKeyMasternode.end(), BEGIN(PROTOCOL_VERSION), END(PROTOCOL_VERSION), BEGIN(donationAddress), END(donationAddress), BEGIN(donationPercantage), END(donationPercantage));
+    std::string strMessage = h.GetHex();
     LogPrintf("\nCActiveMasternode::CreateBroadcast: sign key = %s, strMessage=%s\n", pubKeyCollateralAddress.GetHex(), strMessage);
     LogPrintf("\nCActiveMasternode::CreateBroadcast: masternode key = %s, strMessage=%s\n", pubKeyMasternode.GetHex(), strMessage);
     if (!obfuScationSigner.SignMessage(strMessage, retErrorMessage, vchMasterNodeSignature, keyCollateralAddress)) {
