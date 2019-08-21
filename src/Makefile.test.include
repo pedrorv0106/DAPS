@@ -87,8 +87,14 @@ if ENABLE_WALLET
 test_test_dapscoin_LDADD += $(LIBBITCOIN_WALLET) $(LIBSECP256K1) $(LIBSECP256K1_2)
 endif
 
-test_test_dapscoin_LDADD += $(LIBBITCOIN_CONSENSUS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(ZMQ_LIBS) argon2/lib/libargon2.a
+test_test_dapscoin_LDADD += $(LIBBITCOIN_CONSENSUS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(ZMQ_LIBS)
 test_test_dapscoin_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) -static
+
+if TARGET_DARWIN
+test_test_dapscoin_LDADD += argon2/lib/libargon2_mac.a
+else
+test_test_dapscoin_LDADD += argon2/lib/libargon2.a
+endif
 
 if ENABLE_ZMQ
 test_test_dapscoin_LDADD += $(LIBBITCOIN_ZMQ) $(ZMQ_LIBS)

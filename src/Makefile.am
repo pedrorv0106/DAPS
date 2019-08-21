@@ -425,9 +425,15 @@ if TARGET_WINDOWS
 dapscoind_SOURCES += dapscoind-res.rc
 endif
 
-dapscoind_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(srcdir)/argon2/lib/libargon2.a
+dapscoind_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS)
 dapscoind_CPPFLAGS = $(BITCOIN_INCLUDES)
 dapscoind_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+
+if TARGET_DARWIN
+dapscoind_LDADD += $(srcdir)/argon2/lib/libargon2_mac.a
+else
+dapscoind_LDADD += $(srcdir)/argon2/lib/libargon2.a
+endif
 
 
 # dapscoin-cli binary #
