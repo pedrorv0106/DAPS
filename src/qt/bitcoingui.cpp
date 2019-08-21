@@ -19,6 +19,7 @@
 #include "overviewpage.h"
 #include "rpcconsole.h"
 #include "utilitydialog.h"
+#include "masternode-sync.h"
 
 #ifdef ENABLE_WALLET
 #include "blockexplorer.h"
