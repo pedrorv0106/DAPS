@@ -901,7 +901,14 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
         std::string vchPubKey(pubkey.begin(), pubkey.end());
         std::string vchPubKey2(pubkey2.begin(), pubkey2.end());
         std::string ss = addr.ToString();
-        strMessage = Hash(BEGIN(ss), END(ss), BEGIN(sigTime), END(sigTime), pubkey.begin(), pubkey.end(), pubkey2.begin(), pubkey2.end(), BEGIN(protocolVersion), END(protocolVersion), BEGIN(donationAddress), END(donationAddress), BEGIN(donationPercentage), END(donationPercentage)).GetHex();
+        CDataStream ser(SER_NETWORK, protocolVersion);
+        ser << ss << sigTime << pubkey << pubkey2 << protocolVersion;
+        /*strMessage = Hash(BEGIN(ss), END(ss),
+        				BEGIN(sigTime), END(sigTime),
+						pubkey.begin(), pubkey.end(),
+						pubkey2.begin(), pubkey2.end(),
+						BEGIN(protocolVersion), END(protocolVersion)).GetHex();*/
+        strMessage = HexStr(ser.begin(), ser.end());
 
         if (protocolVersion < masternodePayments.GetMinMasternodePaymentsProto()) {
             LogPrint("masternode","dsee - ignoring outdated Masternode %s protocol version %d < %d\n", vin.prevout.hash.ToString(), protocolVersion, masternodePayments.GetMinMasternodePaymentsProto());
@@ -1090,7 +1097,8 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
             // take this only if it's newer
             if (sigTime - pmn->nLastDseep > MASTERNODE_MIN_MNP_SECONDS) {
             	std::string ss = pmn->addr.ToString();
-                std::string strMessage = Hash(BEGIN(ss), END(ss), BEGIN(sigTime), END(sigTime), BEGIN(stop), END(stop)).GetHex();
+                HEX_DATA_STREAM_PROTOCOL(PROTOCOL_VERSION) << pmn->addr.ToString() << sigTime << stop;
+                std::string strMessage = HEX_STR(ser);
 
                 std::string errorMessage = "";
                 if (!obfuScationSigner.VerifyMessage(pmn->pubKeyMasternode, vchSig, strMessage, errorMessage)) {
