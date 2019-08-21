@@ -307,8 +307,17 @@ bool CActiveMasternode::CreateBroadcast(CTxIn vin, CService service, CKey keyCol
     std::string vchPubKey(pubKeyCollateralAddress.begin(), pubKeyCollateralAddress.end());
     std::string vchPubKey2(pubKeyMasternode.begin(), pubKeyMasternode.end());
     std::string ss = service.ToString();
-    uint256 h = Hash(BEGIN(ss), END(ss), BEGIN(masterNodeSignatureTime), END(masterNodeSignatureTime), pubKeyCollateralAddress.begin(), pubKeyCollateralAddress.end(), pubKeyMasternode.begin(), pubKeyMasternode.end(), BEGIN(PROTOCOL_VERSION), END(PROTOCOL_VERSION), BEGIN(donationAddress), END(donationAddress), BEGIN(donationPercantage), END(donationPercantage));
-    std::string strMessage = h.GetHex();
+
+    CDataStream ser(SER_NETWORK, PROTOCOL_VERSION);
+    ser << ss << masterNodeSignatureTime << pubKeyCollateralAddress << pubKeyMasternode << PROTOCOL_VERSION;
+
+    /*uint256 h = Hash(BEGIN(ss), END(ss),
+    				BEGIN(masterNodeSignatureTime), END(masterNodeSignatureTime),
+					pubKeyCollateralAddress.begin(), pubKeyCollateralAddress.end(),
+					pubKeyMasternode.begin(), pubKeyMasternode.end(),
+					BEGIN(PROTOCOL_VERSION), END(PROTOCOL_VERSION));*/
+    std::string strMessage = HexStr(ser.begin(), ser.end());
+    LogPrintf("\nCActiveMasternode::CreateBroadcast: strMessage=%s\n", strMessage);
     LogPrintf("\nCActiveMasternode::CreateBroadcast: sign key = %s, strMessage=%s\n", pubKeyCollateralAddress.GetHex(), strMessage);
     LogPrintf("\nCActiveMasternode::CreateBroadcast: masternode key = %s, strMessage=%s\n", pubKeyMasternode.GetHex(), strMessage);
     if (!obfuScationSigner.SignMessage(strMessage, retErrorMessage, vchMasterNodeSignature, keyCollateralAddress)) {
