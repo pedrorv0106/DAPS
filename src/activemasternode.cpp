@@ -206,9 +206,10 @@ bool CActiveMasternode::SendMasternodePing(std::string& errorMessage)
         int64_t masterNodeSignatureTime = GetAdjustedTime();
         std::string ss = service.ToString();
         bool val = false;
-        uint256 h = Hash(BEGIN(ss), END(ss), BEGIN(masterNodeSignatureTime), END(masterNodeSignatureTime), BEGIN(val), END(val));
-        std::string strMessage = h.GetHex();
-
+        CDataStream ser(SER_NETWORK, PROTOCOL_VERSION);
+        ser << ss << masterNodeSignatureTime << val;
+        std::string strMessage = HexStr(ser.begin(), ser.end());
+        LogPrintf("\n%s: strMessage = %s\n", __func__, strMessage);
         if (!obfuScationSigner.SignMessage(strMessage, retErrorMessage, vchMasterNodeSignature, keyMasternode)) {
             errorMessage = "dseep sign message failed: " + retErrorMessage;
             return false;

@@ -467,14 +467,17 @@ bool CMasternodePaymentWinner::Sign(CKey& keyMasternode, CPubKey& pubKeyMasterno
     std::string strMasterNodeSignMessage;
     std::string payeeString(payee.begin(), payee.end());
     uint256 hashPrevout = vinMasternode.prevout.GetHash();
-    uint256 h = Hash(hashPrevout.begin(), hashPrevout.end(), BEGIN(nBlockHeight), END(nBlockHeight), payee.begin(), payee.end());
+    HEX_DATA_STREAM_PROTOCOL(PROTOCOL_VERSION) << vinMasternode.prevout.GetHash() << nBlockHeight << payee;
+    std::string strMessage = HEX_STR(ser);
 
-    if (!obfuScationSigner.SignMessage(h.GetHex(), errorMessage, vchSig, keyMasternode)) {
+    LogPrintf("\nCMasternodePaymentWinner::Sign strMessage = %s\n", strMessage);
+
+    if (!obfuScationSigner.SignMessage(strMessage, errorMessage, vchSig, keyMasternode)) {
         LogPrint("masternode","CMasternodePing::Sign() - Error: %s\n", errorMessage.c_str());
         return false;
     }
 
-    if (!obfuScationSigner.VerifyMessage(pubKeyMasternode, vchSig, h.GetHex(), errorMessage)) {
+    if (!obfuScationSigner.VerifyMessage(pubKeyMasternode, vchSig, strMessage, errorMessage)) {
         LogPrint("masternode","CMasternodePing::Sign() - Error: %s\n", errorMessage.c_str());
         return false;
     }
@@ -797,11 +800,9 @@ bool CMasternodePaymentWinner::SignatureValid()
     CMasternode* pmn = mnodeman.Find(vinMasternode);
 
     if (pmn != NULL) {
-    	std::string payeeString(payee.begin(), payee.end());
-    	uint256 prevoutHash = vinMasternode.prevout.GetHash();
-    	uint256 h = Hash(prevoutHash.begin(), prevoutHash.end(), BEGIN(nBlockHeight), END(nBlockHeight), payee.begin(), payee.end());
-        std::string strMessage = h.GetHex();
-
+        HEX_DATA_STREAM_PROTOCOL(PROTOCOL_VERSION) << vinMasternode.prevout.GetHash() << nBlockHeight << payee;
+        std::string strMessage = HEX_STR(ser);
+        LogPrintf("\nCMasternodePaymentWinner::SignatureValid strMessage = %s\n", strMessage);
         std::string errorMessage = "";
         if (!obfuScationSigner.VerifyMessage(pmn->pubKeyMasternode, vchSig, strMessage, errorMessage)) {
             return error("CMasternodePaymentWinner::SignatureValid() - Got bad Masternode address signature %s\n", vinMasternode.prevout.hash.ToString());
