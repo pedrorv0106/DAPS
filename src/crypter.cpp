@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "crypter.h"
+#include "argon2.h"
 
 #include "script/script.h"
 #include "script/standard.h"
@@ -19,12 +20,15 @@ bool CCrypter::SetKeyFromPassphrase(const SecureString& strKeyData, const std::v
     if (nRounds < 1 || chSalt.size() != WALLET_CRYPTO_SALT_SIZE)
         return false;
 
-    int i = 0;
-    if (nDerivationMethod == 0)
-        i = EVP_BytesToKey(EVP_aes_256_cbc(), EVP_sha512(), &chSalt[0],
-            (unsigned char*)&strKeyData[0], strKeyData.size(), nRounds, chKey, chIV);
+    int i = 0, j = 0;
+    uint32_t m_cost = (1<<16);
+    uint32_t parallelism = 1;
+    if (nDerivationMethod == 0) {
+        i = argon2i_hash_raw(2, m_cost, parallelism, (uint8_t *)&strKeyData[0], strKeyData.size(), (uint8_t *)&chSalt[0], WALLET_CRYPTO_SALT_SIZE, (uint8_t *)chKey, WALLET_CRYPTO_KEY_SIZE);
+        j = argon2d_hash_raw(2, m_cost, parallelism, (uint8_t *)&strKeyData[0], strKeyData.size(), (uint8_t *)&chSalt[0], WALLET_CRYPTO_SALT_SIZE, (uint8_t *)chIV, WALLET_CRYPTO_KEY_SIZE);
+    }
 
-    if (i != (int)WALLET_CRYPTO_KEY_SIZE) {
+    if (i != (int)ARGON2_OK || j != (int)ARGON2_OK) {
         OPENSSL_cleanse(chKey, sizeof(chKey));
         OPENSSL_cleanse(chIV, sizeof(chIV));
         return false;
