@@ -3938,10 +3938,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Distributed under the MIT software license, see the accompanying file COPYING or &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</translation>
     </message>
     <message>
-        <source>Enable spork administration functionality with the appropriate private key.</source>
-        <translation>Enable spork administration functionality with the appropriate private key.</translation>
-    </message>
-    <message>
         <source>Enable swifttx, show confirmations for locked transactions (bool, default: %s)</source>
         <translation>Enable swifttx, show confirmations for locked transactions (bool, default: %s)</translation>
     </message>
@@ -4966,10 +4962,6 @@ for example: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Synchronizing masternodes...</translation>
     </message>
     <message>
-        <source>Synchronizing sporks...</source>
-        <translation>Synchronizing sporks...</translation>
-    </message>
-    <message>
         <source>This help message</source>
         <translation>This help message</translation>
     </message>
@@ -5024,10 +5016,6 @@ for example: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
     <message>
         <source>Unable to bind to %s on this computer (bind returned error %s)</source>
         <translation>Unable to bind to %s on this computer (bind returned error %s)</translation>
-    </message>
-    <message>
-        <source>Unable to sign spork message, wrong key?</source>
-        <translation>Unable to sign spork message, wrong key?</translation>
     </message>
     <message>
         <source>Unknown network specified in -onlynet: '%s'</source>

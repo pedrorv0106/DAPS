@@ -8,7 +8,6 @@
 #include "addrman.h"
 #include "masternode.h"
 #include "obfuscation.h"
-#include "spork.h"
 #include "util.h"
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
@@ -361,12 +360,6 @@ int CMasternodeMan::stable_size ()
         if (mn.protocolVersion < nMinProtocol) {
             continue; // Skip obsolete versions
         }
-        if (IsSporkActive (SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT)) {
-            nMasternode_Age = GetAdjustedTime() - mn.sigTime;
-            if ((nMasternode_Age) < nMasternode_Min_Age) {
-                continue; // Skip masternodes younger than (default) 8000 sec (MUST be > MASTERNODE_REMOVAL_SECONDS)
-            }
-        }
         mn.Check ();
         if (!mn.IsEnabled ())
             continue; // Skip not-enabled masternodes
@@ -610,13 +603,6 @@ int CMasternodeMan::GetMasternodeRank(const CTxIn& vin, int64_t nBlockHeight, in
             continue;                                                       // Skip obsolete versions
         }
 
-        if (IsSporkActive(SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT)) {
-            nMasternode_Age = GetAdjustedTime() - mn.sigTime;
-            if ((nMasternode_Age) < nMasternode_Min_Age) {
-                if (fDebug) LogPrint("masternode","Skipping just activated Masternode. Age: %ld\n", nMasternode_Age);
-                continue;                                                   // Skip masternodes younger than (default) 1 hour
-            }
-        }
         if (fOnlyActive) {
             mn.Check();
             if (!mn.IsEnabled()) continue;
@@ -857,7 +843,6 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
 
     // Light version for OLD MASSTERNODES - fake pings, no self-activation
     else if (strCommand == "dsee") { //ObfuScation Election Entry
-        if (IsSporkActive(SPORK_10_MASTERNODE_PAY_UPDATED_NODES)) return;
         LogPrintf("\n%s:Parsing masternode broadcast\n", __func__);
         CTxIn vin;
         CService addr;
@@ -916,7 +901,14 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
         std::string vchPubKey(pubkey.begin(), pubkey.end());
         std::string vchPubKey2(pubkey2.begin(), pubkey2.end());
         std::string ss = addr.ToString();
-        strMessage = Hash(BEGIN(ss), END(ss), BEGIN(sigTime), END(sigTime), pubkey.begin(), pubkey.end(), pubkey2.begin(), pubkey2.end(), BEGIN(protocolVersion), END(protocolVersion), BEGIN(donationAddress), END(donationAddress), BEGIN(donationPercentage), END(donationPercentage)).GetHex();
+        CDataStream ser(SER_NETWORK, protocolVersion);
+        ser << ss << sigTime << pubkey << pubkey2 << protocolVersion;
+        /*strMessage = Hash(BEGIN(ss), END(ss),
+        				BEGIN(sigTime), END(sigTime),
+						pubkey.begin(), pubkey.end(),
+						pubkey2.begin(), pubkey2.end(),
+						BEGIN(protocolVersion), END(protocolVersion)).GetHex();*/
+        strMessage = HexStr(ser.begin(), ser.end());
 
         if (protocolVersion < masternodePayments.GetMinMasternodePaymentsProto()) {
             LogPrint("masternode","dsee - ignoring outdated Masternode %s protocol version %d < %d\n", vin.prevout.hash.ToString(), protocolVersion, masternodePayments.GetMinMasternodePaymentsProto());
@@ -1070,8 +1062,6 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
 
     else if (strCommand == "dseep") { //ObfuScation Election Entry Ping
 
-        if (IsSporkActive(SPORK_10_MASTERNODE_PAY_UPDATED_NODES)) return;
-
         CTxIn vin;
         vector<unsigned char> vchSig;
         int64_t sigTime;
@@ -1107,7 +1097,8 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
             // take this only if it's newer
             if (sigTime - pmn->nLastDseep > MASTERNODE_MIN_MNP_SECONDS) {
             	std::string ss = pmn->addr.ToString();
-                std::string strMessage = Hash(BEGIN(ss), END(ss), BEGIN(sigTime), END(sigTime), BEGIN(stop), END(stop)).GetHex();
+                HEX_DATA_STREAM_PROTOCOL(PROTOCOL_VERSION) << pmn->addr.ToString() << sigTime << stop;
+                std::string strMessage = HEX_STR(ser);
 
                 std::string errorMessage = "";
                 if (!obfuScationSigner.VerifyMessage(pmn->pubKeyMasternode, vchSig, strMessage, errorMessage)) {

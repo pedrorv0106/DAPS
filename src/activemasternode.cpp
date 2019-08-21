@@ -9,7 +9,6 @@
 #include "masternodeconfig.h"
 #include "masternodeman.h"
 #include "protocol.h"
-#include "spork.h"
 
 //
 // Bootup the Masternode, look for a 1000000 DAPScoin input and register on the network
@@ -194,21 +193,16 @@ bool CActiveMasternode::SendMasternodePing(std::string& errorMessage)
 
         mnp.Relay();
 
-        /*
-         * IT'S SAFE TO REMOVE THIS IN FURTHER VERSIONS
-         * AFTER MIGRATION TO V12 IS DONE
-         */
-
-        if (IsSporkActive(SPORK_10_MASTERNODE_PAY_UPDATED_NODES)) return true;
         // for migration purposes ping our node on old masternodes network too
         std::string retErrorMessage;
         std::vector<unsigned char> vchMasterNodeSignature;
         int64_t masterNodeSignatureTime = GetAdjustedTime();
         std::string ss = service.ToString();
         bool val = false;
-        uint256 h = Hash(BEGIN(ss), END(ss), BEGIN(masterNodeSignatureTime), END(masterNodeSignatureTime), BEGIN(val), END(val));
-        std::string strMessage = h.GetHex();
-
+        CDataStream ser(SER_NETWORK, PROTOCOL_VERSION);
+        ser << ss << masterNodeSignatureTime << val;
+        std::string strMessage = HexStr(ser.begin(), ser.end());
+        LogPrintf("\n%s: strMessage = %s\n", __func__, strMessage);
         if (!obfuScationSigner.SignMessage(strMessage, retErrorMessage, vchMasterNodeSignature, keyMasternode)) {
             errorMessage = "dseep sign message failed: " + retErrorMessage;
             return false;
@@ -307,8 +301,17 @@ bool CActiveMasternode::CreateBroadcast(CTxIn vin, CService service, CKey keyCol
     std::string vchPubKey(pubKeyCollateralAddress.begin(), pubKeyCollateralAddress.end());
     std::string vchPubKey2(pubKeyMasternode.begin(), pubKeyMasternode.end());
     std::string ss = service.ToString();
-    uint256 h = Hash(BEGIN(ss), END(ss), BEGIN(masterNodeSignatureTime), END(masterNodeSignatureTime), BEGIN(vchPubKey), END(vchPubKey), BEGIN(PROTOCOL_VERSION), END(PROTOCOL_VERSION), BEGIN(donationPercantage), END(donationPercantage));
-    std::string strMessage = h.GetHex() + vchPubKey + vchPubKey2;
+
+    CDataStream ser(SER_NETWORK, PROTOCOL_VERSION);
+    ser << ss << masterNodeSignatureTime << pubKeyCollateralAddress << pubKeyMasternode << PROTOCOL_VERSION;
+
+    /*uint256 h = Hash(BEGIN(ss), END(ss),
+    				BEGIN(masterNodeSignatureTime), END(masterNodeSignatureTime),
+					pubKeyCollateralAddress.begin(), pubKeyCollateralAddress.end(),
+					pubKeyMasternode.begin(), pubKeyMasternode.end(),
+					BEGIN(PROTOCOL_VERSION), END(PROTOCOL_VERSION));*/
+    std::string strMessage = HexStr(ser.begin(), ser.end());
+    LogPrintf("\nCActiveMasternode::CreateBroadcast: strMessage=%s\n", strMessage);
     LogPrintf("\nCActiveMasternode::CreateBroadcast: sign key = %s, strMessage=%s\n", pubKeyCollateralAddress.GetHex(), strMessage);
     LogPrintf("\nCActiveMasternode::CreateBroadcast: masternode key = %s, strMessage=%s\n", pubKeyMasternode.GetHex(), strMessage);
     if (!obfuScationSigner.SignMessage(strMessage, retErrorMessage, vchMasterNodeSignature, keyCollateralAddress)) {

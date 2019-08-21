@@ -21,6 +21,10 @@
 #include <utility>
 #include <vector>
 
+#define HEX_DATA_STREAM CDataStream ser(SER_NETWORK, PROTOCOL_VERSION); ser
+#define HEX_DATA_STREAM_PROTOCOL(protocolVersion) CDataStream ser(SER_NETWORK, protocolVersion); ser
+#define HEX_STR(a)	HexStr(a.begin(), a.end())
+
 /** Double ended buffer combining vector and stream-like interfaces.
  *
  * >> and << read and write unformatted data using the above serialization templates.
