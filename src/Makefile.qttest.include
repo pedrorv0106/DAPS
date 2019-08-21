@@ -42,7 +42,11 @@ qt_test_test_dapscoin_qt_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(QT_LDFLAGS) $(LI
 if TARGET_DARWIN
 qt_test_test_dapscoin_qt_LDADD += argon2/lib/libargon2_mac.a
 else
+if TARGET_WINDOWS
+qt_test_test_dapscoin_qt_LDADD += argon2/lib/libargon2_win.a
+else
 qt_test_test_dapscoin_qt_LDADD += argon2/lib/libargon2.a
+endif
 endif
 
 CLEAN_BITCOIN_QT_TEST = $(TEST_QT_MOC_CPP) qt/test/*.gcda qt/test/*.gcno

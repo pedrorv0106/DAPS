@@ -432,7 +432,11 @@ dapscoind_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 if TARGET_DARWIN
 dapscoind_LDADD += $(srcdir)/argon2/lib/libargon2_mac.a
 else
+if TARGET_WINDOWS
+dapscoind_LDADD += $(srcdir)/argon2/lib/libargon2_win.a
+else
 dapscoind_LDADD += $(srcdir)/argon2/lib/libargon2.a
+endif
 endif
 
 

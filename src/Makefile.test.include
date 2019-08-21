@@ -93,7 +93,11 @@ test_test_dapscoin_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) -
 if TARGET_DARWIN
 test_test_dapscoin_LDADD += argon2/lib/libargon2_mac.a
 else
+if TARGET_WINDOWS
+test_test_dapscoin_LDADD += argon2/lib/libargon2_win.a
+else
 test_test_dapscoin_LDADD += argon2/lib/libargon2.a
+endif
 endif
 
 if ENABLE_ZMQ
