@@ -179,15 +179,15 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle* networkStyle, QWidget* parent) : QMai
     createTrayIcon(networkStyle);
 
     // Status bar notification icons
-    QFrame* frameBlocks = new QFrame();
+    QFrame* frameBlocks = new QFrame(this);
     frameBlocks->setContentsMargins(0, 0, 0, 0);
     frameBlocks->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
     QHBoxLayout* frameBlocksLayout = new QHBoxLayout(frameBlocks);
     frameBlocksLayout->setContentsMargins(3, 0, 3, 0);
     frameBlocksLayout->setSpacing(3);
-    unitDisplayControl = new UnitDisplayStatusBarControl();
+    unitDisplayControl = new UnitDisplayStatusBarControl(this);
     labelStakingIcon = new QLabel();
-    labelEncryptionIcon = new QPushButton();
+    labelEncryptionIcon = new QPushButton(this);
     labelEncryptionIcon->setFlat(true); // Make the button look like a label, but clickable
     labelEncryptionIcon->setStyleSheet(".QPushButton { background-color: rgba(255, 255, 255, 0);}");
     labelEncryptionIcon->setMaximumSize(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE);
@@ -259,6 +259,7 @@ BitcoinGUI::~BitcoinGUI()
     GUIUtil::saveWindowGeometry("nWindow", this);
     if (trayIcon) // Hide tray icon, as deleting will let it linger until quit (on Ubuntu)
         trayIcon->hide();
+
 #ifdef Q_OS_MAC
     delete appMenuBar;
     MacDockIconHandler::cleanup();
@@ -1271,7 +1272,8 @@ void UnitDisplayStatusBarControl::mousePressEvent(QMouseEvent* event)
 /** Creates context menu, its actions, and wires up all the relevant signals for mouse events. */
 void UnitDisplayStatusBarControl::createContextMenu()
 {
-    menu = new QMenu();
+    menu = new QMenu(this);
+    menu->setAttribute(Qt::WA_DeleteOnClose);
     foreach (BitcoinUnits::Unit u, BitcoinUnits::availableUnits()) {
         QAction* menuAction = new QAction(QString(BitcoinUnits::name(u)), this);
         menuAction->setData(QVariant(u));

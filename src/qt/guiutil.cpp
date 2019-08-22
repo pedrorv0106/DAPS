@@ -875,6 +875,7 @@ void prompt(QString message){
     errorPrompt->setStyleSheet(GUIUtil::loadStyleSheet());
     errorPrompt->setText(message);
     errorPrompt->exec();
+    errorPrompt->deleteLater();
 }
 
 void colorCalendarWidgetWeekends(QCalendarWidget* widget, QColor color)
