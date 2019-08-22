@@ -147,6 +147,7 @@ void OverviewPage::handleTransactionClicked(const QModelIndex& index)
 
 OverviewPage::~OverviewPage()
 {
+    delete animClock;
     delete ui;
 }
 
@@ -329,7 +330,7 @@ void OverviewPage::initSyncCircle(float ratioToParent)
 {
     animTicker = new QTimer(this);
     animTicker->setInterval(17); //17 mSecs or ~60 fps
-    animClock = new QElapsedTimer(this);
+    animClock = new QElapsedTimer();
     connect(animTicker, SIGNAL(timeout()), this, SLOT(onAnimTick()));
     animTicker->start(); animClock->start();
 
