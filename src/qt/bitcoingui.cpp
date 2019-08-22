@@ -185,7 +185,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle* networkStyle, QWidget* parent) : QMai
     QHBoxLayout* frameBlocksLayout = new QHBoxLayout(frameBlocks);
     frameBlocksLayout->setContentsMargins(3, 0, 3, 0);
     frameBlocksLayout->setSpacing(3);
-    unitDisplayControl = new UnitDisplayStatusBarControl(this);
+    unitDisplayControl = new UnitDisplayStatusBarControl();
     labelStakingIcon = new QLabel();
     labelEncryptionIcon = new QPushButton(this);
     labelEncryptionIcon->setFlat(true); // Make the button look like a label, but clickable
@@ -260,6 +260,7 @@ BitcoinGUI::~BitcoinGUI()
     if (trayIcon) // Hide tray icon, as deleting will let it linger until quit (on Ubuntu)
         trayIcon->hide();
 
+    delete unitDisplayControl;
 #ifdef Q_OS_MAC
     delete appMenuBar;
     MacDockIconHandler::cleanup();
