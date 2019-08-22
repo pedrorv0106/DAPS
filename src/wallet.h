@@ -230,6 +230,7 @@ struct CPKeyImageAlpha {
 //each signer after receive transaction from the initiator, will need to create this and send it back to the initiator
 struct CListPKeyImageAlpha {
 	std::vector<CPKeyImageAlpha> partialAlphas;
+	CKeyImage partialAdditionalKeyImage;
 	uint256 hashOfAllInputOutpoints;
 	ADD_SERIALIZE_METHODS;
 
@@ -237,6 +238,7 @@ struct CListPKeyImageAlpha {
 	inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion)
 	{
 		READWRITE(partialAlphas);
+		READWRITE(partialAdditionalKeyImage);
 		READWRITE(hashOfAllInputOutpoints);
 	}
 
@@ -872,6 +874,7 @@ private:
     bool makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFailReason);
     bool makeRingCT(CPartialTransaction& wtxNew, int ringSize, std::string& strFailReason, int, bool);
     bool finishRingCTAfterKeyImageSynced(CPartialTransaction& wtxNew, std::vector<CListPKeyImageAlpha> ls);
+    CKeyImage generatePartialAdditionalKeyImage(CPartialTransaction& wtxNew);
     CPubKey SumOfAllPubKeys(std::vector<CPubKey> l) const;
     bool findMultisigInputIndex(const CPartialTransaction& tx);
     int walletIdxCache = 0;
