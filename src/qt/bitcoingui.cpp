@@ -179,7 +179,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle* networkStyle, QWidget* parent) : QMai
     createTrayIcon(networkStyle);
 
     // Status bar notification icons
-    QFrame* frameBlocks = new QFrame(this);
+    QFrame* frameBlocks = new QFrame();
     frameBlocks->setContentsMargins(0, 0, 0, 0);
     frameBlocks->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
     QHBoxLayout* frameBlocksLayout = new QHBoxLayout(frameBlocks);
@@ -261,6 +261,7 @@ BitcoinGUI::~BitcoinGUI()
         trayIcon->hide();
 
     delete unitDisplayControl;
+    delete frameBlocks;
 #ifdef Q_OS_MAC
     delete appMenuBar;
     MacDockIconHandler::cleanup();
