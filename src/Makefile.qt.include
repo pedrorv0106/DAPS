@@ -439,16 +439,6 @@ qt_dapscoin_qt_LDADD += $(LIBBITCOIN_CLI) $(LIBBITCOIN_COMMON) $(LIBBITCOIN_UTIL
 qt_dapscoin_qt_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(QT_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 qt_dapscoin_qt_LIBTOOLFLAGS = $(AM_LIBTOOLFLAGS) --tag CXX
 
-if TARGET_DARWIN
-qt_dapscoin_qt_LDADD += argon2/lib/libargon2_mac.a
-else
-if TARGET_WINDOWS
-qt_dapscoin_qt_LDADD += argon2/lib/libargon2_win.a
-else
-qt_dapscoin_qt_LDADD += argon2/lib/libargon2.a
-endif
-endif
-
 #locale/foo.ts -> locale/foo.qm
 QT_QM=$(QT_TS:.ts=.qm)
 

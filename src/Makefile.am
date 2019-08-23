@@ -26,7 +26,6 @@ BITCOIN_INCLUDES=-I$(builddir) -I$(builddir)/obj $(BOOST_CPPFLAGS) $(LEVELDB_CPP
 BITCOIN_INCLUDES += -I$(srcdir)/secp256k1/include
 BITCOIN_INCLUDES += -I$(srcdir)/secp256k1-mw/include
 BITCOIN_INCLUDES += -I$(srcdir)/zxcvbn
-BITCOIN_INCLUDES += -I$(srcdir)/argon2/include
 
 LIBBITCOIN_SERVER=libbitcoin_server.a
 LIBBITCOIN_WALLET=libbitcoin_wallet.a
@@ -428,16 +427,6 @@ endif
 dapscoind_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS)
 dapscoind_CPPFLAGS = $(BITCOIN_INCLUDES)
 dapscoind_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
-
-if TARGET_DARWIN
-dapscoind_LDADD += $(srcdir)/argon2/lib/libargon2_mac.a
-else
-if TARGET_WINDOWS
-dapscoind_LDADD += $(srcdir)/argon2/lib/libargon2_win.a
-else
-dapscoind_LDADD += $(srcdir)/argon2/lib/libargon2.a
-endif
-endif
 
 
 # dapscoin-cli binary #
