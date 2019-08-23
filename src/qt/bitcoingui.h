@@ -127,6 +127,7 @@ private:
     QAction* openBlockExplorerAction;
     QAction* showHelpMessageAction;
     QAction* multiSendAction;
+    QFrame* frameBlocks;
 
     QProgressDialog* progressDialog = nullptr;
 
