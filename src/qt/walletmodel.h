@@ -245,8 +245,6 @@ private:
     EncryptionStatus cachedEncryptionStatus;
     int cachedNumBlocks;
     int cachedTxLocks;
-    int cachedZeromintPercentage;
-    QTimer* pingNetworkInterval;
     QTimer* pollTimer;
 
     void subscribeToCoreSignals();
