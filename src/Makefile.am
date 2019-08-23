@@ -408,7 +408,7 @@ dapscoind_LDADD = \
   $(LIBLEVELDB) \
   $(LIBMEMENV) \
   $(LIBSECP256K1) \
-  $(LIBSECP256K1_2)
+  $(LIBSECP256K1_2) 
 
 if ENABLE_ZMQ
 dapscoind_LDADD += $(LIBBITCOIN_ZMQ) $(ZMQ_LIBS)
@@ -439,7 +439,7 @@ dapscoin_cli_LDADD = \
   $(CRYPTO_LIBS) \
   $(EVENT_LIBS) \
   $(LIBSECP256K1) \
-  $(LIBSECP256K1_2)
+  $(LIBSECP256K1_2) 
 
 dapscoin_cli_SOURCES = \
   dapscoin-cli.cpp
