@@ -27,8 +27,6 @@
 #include "rpcserver.h"
 #include "script/standard.h"
 #include "scheduler.h"
-#include "spork.h"
-#include "sporkdb.h"
 #include "txdb.h"
 #include "torcontrol.h"
 #include "ui_interface.h"
@@ -217,8 +215,6 @@ void PrepareShutdown()
         pcoinsdbview = NULL;
         delete pblocktree;
         pblocktree = NULL;
-        delete pSporkDB;
-        pSporkDB = NULL;
     }
 #ifdef ENABLE_WALLET
     if (pwalletMain)
@@ -426,7 +422,6 @@ std::string HelpMessage(HelpMessageMode mode)
         strUsage += HelpMessageOpt("-flushwallet", strprintf(_("Run a thread to flush wallet periodically (default: %u)"), 1));
         strUsage += HelpMessageOpt("-maxreorg", strprintf(_("Use a custom max chain reorganization depth (default: %u)"), 100));
         strUsage += HelpMessageOpt("-stopafterblockimport", strprintf(_("Stop running after importing blocks from disk (default: %u)"), 0));
-        strUsage += HelpMessageOpt("-sporkkey=<privkey>", _("Enable spork administration functionality with the appropriate private key."));
     }
     string debugCategories = "addrman, alert, bench, coindb, db, lock, rand, rpc, selectcoins, tor, mempool, net, proxy, dapscoin, (obfuscation, swiftx, masternode, mnpayments, mnbudget, zero)"; // Don't translate these and qt below
     if (mode == HMM_BITCOIN_QT)
@@ -943,12 +938,6 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
             threadGroup.create_thread(&ThreadScriptCheck);
     }
 
-    if (mapArgs.count("-sporkkey")) // spork priv key
-    {
-        if (!sporkManager.SetPrivKey(GetArg("-sporkkey", "")))
-            return InitError(_("Unable to sign spork message, wrong key?"));
-    }
-
     // Start the lightweight task scheduler thread
     CScheduler::Function serviceLoop = boost::bind(&CScheduler::serviceQueue, &scheduler);
     threadGroup.create_thread(boost::bind(&TraceThread<CScheduler::Function>, "scheduler", serviceLoop));
@@ -1041,9 +1030,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
             // Delete the local blockchain folders to force a resync from scratch to get a consitent blockchain-state
             filesystem::path blocksDir = GetDataDir() / "blocks";
             filesystem::path chainstateDir = GetDataDir() / "chainstate";
-            filesystem::path sporksDir = GetDataDir() / "sporks";
             
-            LogPrintf("Deleting blockchain folders blocks, chainstate and sporks\n");
             // We delete in 4 individual steps in case one of the folder is missing already
             try {
                 if (filesystem::exists(blocksDir)){
@@ -1054,11 +1041,6 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
                 if (filesystem::exists(chainstateDir)){
                     boost::filesystem::remove_all(chainstateDir);
                     LogPrintf("-resync: folder deleted: %s\n", chainstateDir.string().c_str());
-                }
-
-                if (filesystem::exists(sporksDir)){
-                    boost::filesystem::remove_all(sporksDir);
-                    LogPrintf("-resync: folder deleted: %s\n", sporksDir.string().c_str());
                 }
             } catch (boost::filesystem::filesystem_error& error) {
                 LogPrintf("Failed to delete blockchain folders %s\n", error.what());
@@ -1291,9 +1273,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
                 delete pcoinsdbview;
                 delete pcoinscatcher;
                 delete pblocktree;
-                delete pSporkDB;
 
-                pSporkDB = new CSporkDB(0, false, false);
                 pblocktree = new CBlockTreeDB(nBlockTreeDBCache, false, fReindex);
                 pcoinsdbview = new CCoinsViewDB(nCoinDBCache, false, fReindex);
                 pcoinscatcher = new CCoinsViewErrorCatcher(pcoinsdbview);
@@ -1301,10 +1281,6 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
                 if (fReindex)
                     pblocktree->WriteReindexing(true);
-
-                // DAPScoin: load previous sessions sporks if we have them.
-                uiInterface.InitMessage(_("Loading sporks..."));
-                LoadSporksFromDB();
 
                 uiInterface.InitMessage(_("Loading block index..."));
                 string strBlockIndexError = "";

@@ -298,7 +298,6 @@ extern json_spirit::Value checkbudgets(const json_spirit::Array& params, bool fH
 
 extern json_spirit::Value getinfo(const json_spirit::Array& params, bool fHelp); // in rpcmisc.cpp
 extern json_spirit::Value mnsync(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value spork(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value validateaddress(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value createmultisig(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value verifymessage(const json_spirit::Array& params, bool fHelp);

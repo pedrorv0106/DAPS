@@ -12,6 +12,7 @@
 #include "guiutil.h"
 #include "swifttx.h"
 #include "wallet.h"
+#include "init.h"
 
 #include <map>
 #include <vector>

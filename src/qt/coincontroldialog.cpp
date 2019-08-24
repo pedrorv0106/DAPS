@@ -180,8 +180,12 @@ void CoinControlDialog::setModel(WalletModel* model)
 // helper function str_pad
 QString CoinControlDialog::strPad(QString s, int nPadLength, QString sPadding)
 {
+    QString padding = sPadding;
+    if (!sPadding.length())
+        padding = " ";
+
     while (s.length() < nPadLength)
-        s = sPadding + s;
+        s = padding + s;
 
     return s;
 }

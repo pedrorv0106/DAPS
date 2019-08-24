@@ -22,9 +22,9 @@
 #include "utilmoneystr.h"
 #ifdef ENABLE_WALLET
 #include "wallet.h"
+extern CWallet *pwalletMain;
 #endif
 #include "masternode-payments.h"
-#include "spork.h"
 
 #include <boost/thread.hpp>
 #include <boost/tuple/tuple.hpp>

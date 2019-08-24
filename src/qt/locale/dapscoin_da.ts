@@ -3790,10 +3790,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
 &lt;http://www.opensource.org/licenses/mit-license.php&gt;. </translation>
     </message>
     <message>
-        <source>Enable spork administration functionality with the appropriate private key.</source>
-        <translation>Slå spork administrationsfunktionen til med den rette private nøgle</translation>
-    </message>
-    <message>
         <source>Enter regression test mode, which uses a special chain in which blocks can be solved instantly.</source>
         <translation>Opgiv regression test mode, der bruger en særlig kæde, hvor blokke kan løses med det samme</translation>
     </message>
@@ -4734,10 +4730,6 @@ For eksempel: alertnotify=Echo %% | mail - s "DAPScoin ALARM!" e-mail@administra
         <translation>Synkroniserer masternoder...</translation>
     </message>
     <message>
-        <source>Synchronizing sporks...</source>
-        <translation>Synkroniserer sporks...</translation>
-    </message>
-    <message>
         <source>This help message</source>
         <translation>Denne hjælpemeddelelse</translation>
     </message>
@@ -4792,10 +4784,6 @@ For eksempel: alertnotify=Echo %% | mail - s "DAPScoin ALARM!" e-mail@administra
     <message>
         <source>Unable to bind to %s on this computer (bind returned error %s)</source>
         <translation>Det er ikke muligt at forbide til %s på denne computer (bind returnerede fejl %s)</translation>
-    </message>
-    <message>
-        <source>Unable to sign spork message, wrong key?</source>
-        <translation>Det var ikke muligt at signere spork meddelelsen. Er De sikker på De anvender den rigtige nøgle?</translation>
     </message>
     <message>
         <source>Unknown network specified in -onlynet: '%s'</source>

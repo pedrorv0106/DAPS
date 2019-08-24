@@ -61,8 +61,6 @@ QT_TRANSLATE_NOOP("dapscoin-core", ""
 "Enable automatic wallet backups triggered after each zDaps minting (0-1, "
 "default: %u)"),
 QT_TRANSLATE_NOOP("dapscoin-core", ""
-"Enable spork administration functionality with the appropriate private key."),
-QT_TRANSLATE_NOOP("dapscoin-core", ""
 "Enter regression test mode, which uses a special chain in which blocks can "
 "be solved instantly."),
 QT_TRANSLATE_NOOP("dapscoin-core", ""
@@ -348,7 +346,6 @@ QT_TRANSLATE_NOOP("dapscoin-core", "Loading block index..."),
 QT_TRANSLATE_NOOP("dapscoin-core", "Loading budget cache..."),
 QT_TRANSLATE_NOOP("dapscoin-core", "Loading masternode cache..."),
 QT_TRANSLATE_NOOP("dapscoin-core", "Loading masternode payment cache..."),
-QT_TRANSLATE_NOOP("dapscoin-core", "Loading sporks..."),
 QT_TRANSLATE_NOOP("dapscoin-core", "Loading wallet... (%3.2f %%)"),
 QT_TRANSLATE_NOOP("dapscoin-core", "Loading wallet..."),
 QT_TRANSLATE_NOOP("dapscoin-core", "Lock is already in place."),
@@ -437,7 +434,6 @@ QT_TRANSLATE_NOOP("dapscoin-core", "Synchronization pending..."),
 QT_TRANSLATE_NOOP("dapscoin-core", "Synchronizing budgets..."),
 QT_TRANSLATE_NOOP("dapscoin-core", "Synchronizing masternode winners..."),
 QT_TRANSLATE_NOOP("dapscoin-core", "Synchronizing masternodes..."),
-QT_TRANSLATE_NOOP("dapscoin-core", "Synchronizing sporks..."),
 QT_TRANSLATE_NOOP("dapscoin-core", "This help message"),
 QT_TRANSLATE_NOOP("dapscoin-core", "This is experimental software."),
 QT_TRANSLATE_NOOP("dapscoin-core", "This is intended for regression testing tools and app development."),
@@ -454,7 +450,6 @@ QT_TRANSLATE_NOOP("dapscoin-core", "Transaction too large for fee policy"),
 QT_TRANSLATE_NOOP("dapscoin-core", "Transaction too large"),
 QT_TRANSLATE_NOOP("dapscoin-core", "Transmitting final transaction."),
 QT_TRANSLATE_NOOP("dapscoin-core", "Unable to bind to %s on this computer (bind returned error %s)"),
-QT_TRANSLATE_NOOP("dapscoin-core", "Unable to sign spork message, wrong key?"),
 QT_TRANSLATE_NOOP("dapscoin-core", "Unknown network specified in -onlynet: '%s'"),
 QT_TRANSLATE_NOOP("dapscoin-core", "Unknown state: id = %u"),
 QT_TRANSLATE_NOOP("dapscoin-core", "Upgrade wallet to latest format"),

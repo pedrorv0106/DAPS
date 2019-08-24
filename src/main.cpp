@@ -21,8 +21,6 @@
 #include "net.h"
 #include "obfuscation.h"
 #include "pow.h"
-#include "spork.h"
-#include "sporkdb.h"
 #include "swifttx.h"
 #include "txdb.h"
 #include "txmempool.h"
@@ -940,7 +938,6 @@ CBlockIndex *FindForkInGlobalIndex(const CChain &chain, const CBlockLocator &loc
 
 CCoinsViewCache *pcoinsTip = NULL;
 CBlockTreeDB *pblocktree = NULL;
-CSporkDB *pSporkDB = NULL;
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -2117,10 +2114,7 @@ CAmount GetSeeSaw(const CAmount& blockValue, int nMasternodeCount, int nHeight)
 
     //if a mn count is inserted into the function we are looking for a specific result for a masternode count
     if (nMasternodeCount < 1) {
-        if (IsSporkActive(SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT))
-            nMasternodeCount = mnodeman.stable_size();
-        else
-            nMasternodeCount = mnodeman.size();
+    	nMasternodeCount = mnodeman.size();
     }
 
     int64_t mNodeCoins = nMasternodeCount * 1000000 * COIN;
@@ -3954,30 +3948,7 @@ bool CheckBlock(const CBlock &block, CValidationState &state, bool fCheckPOW, bo
         }
     }
 
-    // ----------- swiftTX transaction scanning -----------
-    if (!block.IsPoABlockByVersion() && IsSporkActive(SPORK_3_SWIFTTX_BLOCK_FILTERING)) {
-        BOOST_FOREACH(
-        const CTransaction &tx, block.vtx) {
-            if (!tx.IsCoinBase()) {
-                //only reject blocks when it's based on complete consensus
-                BOOST_FOREACH(
-                const CTxIn &in, tx.vin) {
-                    if (mapLockedInputs.count(in.prevout)) {
-                        if (mapLockedInputs[in.prevout] != tx.GetHash()) {
-                            mapRejectedBlocks.insert(make_pair(block.GetHash(), GetTime()));
-                            LogPrintf("CheckBlock() : found conflicting transaction with transaction lock %s %s\n",
-                                      mapLockedInputs[in.prevout].ToString(), tx.GetHash().ToString());
-                            return state.DoS(0,
-                                             error("CheckBlock() : found conflicting transaction with transaction lock"),
-                                             REJECT_INVALID, "conflicting-tx-ix");
-                        }
-                    }
-                }
-            }
-        }
-    } else {
-        LogPrintf("CheckBlock() : skipping transaction locking checks\n");
-    }
+    LogPrintf("CheckBlock() : skipping transaction locking checks\n");
     // masternode payments / budgets
     CBlockIndex *pindexPrev = chainActive.Tip();
     LogPrintf("%s: chain height = %d, new hash=%s\n", __func__, chainActive.Height(), block.GetHash().GetHex());
@@ -5265,8 +5236,6 @@ bool static AlreadyHave(const CInv &inv) {
                    mapTxLockReqRejected.count(inv.hash);
         case MSG_TXLOCK_VOTE:
             return mapTxLockVote.count(inv.hash);
-        case MSG_SPORK:
-            return mapSporks.count(inv.hash);
         case MSG_MASTERNODE_WINNER:
             if (masternodePayments.mapMasternodePayeeVotes.count(inv.hash)) {
                 masternodeSync.AddedMasternodeWinner(inv.hash);
@@ -5427,15 +5396,6 @@ void static ProcessGetData(CNode *pfrom) {
                         pushed = true;
                     }
                 }
-                if (!pushed && inv.type == MSG_SPORK) {
-                    if (mapSporks.count(inv.hash)) {
-                        CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
-                        ss.reserve(1000);
-                        ss << mapSporks[inv.hash];
-                        pfrom->PushMessage("spork", ss);
-                        pushed = true;
-                    }
-                }
                 if (!pushed && inv.type == MSG_MASTERNODE_WINNER) {
                     if (masternodePayments.mapMasternodePayeeVotes.count(inv.hash)) {
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
@@ -5546,8 +5506,6 @@ void static ProcessGetData(CNode *pfrom) {
     }
 }
 
-bool fRequestedSporksIDB = false;
-
 bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, int64_t nTimeReceived) {
     RandAddSeedPerfmon();
     if (fDebug)
@@ -5562,16 +5520,6 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
             pfrom->PushMessage("reject", strCommand, REJECT_DUPLICATE, string("Duplicate version message"));
             Misbehaving(pfrom->GetId(), 1);
             return false;
-        }
-
-        // DAPScoin: We use certain sporks during IBD, so check to see if they are
-        // available. If not, ask the first peer connected for them.
-        bool fMissingSporks = !pSporkDB->SporkExists(SPORK_14_NEW_PROTOCOL_ENFORCEMENT) &&
-                              !pSporkDB->SporkExists(SPORK_15_NEW_PROTOCOL_ENFORCEMENT_2);
-
-        if (fMissingSporks || !fRequestedSporksIDB) {
-            pfrom->PushMessage("getsporks");
-            fRequestedSporksIDB = true;
         }
 
         int64_t nTime;
@@ -6328,7 +6276,6 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
         budget.ProcessMessage(pfrom, strCommand, vRecv);
         masternodePayments.ProcessMessageMasternodePayments(pfrom, strCommand, vRecv);
         ProcessMessageSwiftTX(pfrom, strCommand, vRecv);
-        ProcessSpork(pfrom, strCommand, vRecv);
         masternodeSync.ProcessMessage(pfrom, strCommand, vRecv);
     }
 
@@ -6337,16 +6284,8 @@ bool static ProcessMessage(CNode *pfrom, string strCommand, CDataStream &vRecv, 
 }
 
 // Note: whenever a protocol update is needed toggle between both implementations (comment out the formerly active one)
-//       so we can leave the existing clients untouched (old SPORK will stay on so they don't see even older clients).
-//       Those old clients won't react to the changes of the other (new) SPORK because at the time of their implementation
 //       it was the one which was commented out
 int ActiveProtocol() {
-
-    // SPORK_15 is used for 70911. Nodes < 70911 don't see it and still get their protocol version via SPORK_14 and their
-    // own ModifierUpgradeBlock()
-
-    if (IsSporkActive(SPORK_15_NEW_PROTOCOL_ENFORCEMENT_2))
-        return MIN_PEER_PROTO_VERSION_AFTER_ENFORCEMENT;
     return MIN_PEER_PROTO_VERSION_BEFORE_ENFORCEMENT;
 }
 

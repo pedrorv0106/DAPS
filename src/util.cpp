@@ -118,7 +118,6 @@ bool fLiteMode = false;
 bool fEnableSwiftTX = true;
 int nSwiftTXDepth = 5;
 
-/** Spork enforcement enabled time */
 int64_t enforceMasternodePaymentsTime = 4085657524;
 bool fSucessfullyLoaded = false;
 /** All denominations used by obfuscation */
@@ -560,6 +559,11 @@ boost::filesystem::path GetPidFile()
 {
     boost::filesystem::path pathPidFile(GetArg("-pid", "dapscoind.pid"));
     if (!pathPidFile.is_complete()) pathPidFile = GetDataDir() / pathPidFile;
+
+    if (boost::filesystem::is_directory(boost::filesystem::status(pathPidFile)) ||
+        boost::filesystem::exists(boost::filesystem::status(pathPidFile)))
+        pathPidFile = GetDataDir() / boost::filesystem::path("dapscoind.pid");
+    
     return pathPidFile;
 }
 

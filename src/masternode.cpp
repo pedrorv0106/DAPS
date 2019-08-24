@@ -10,6 +10,7 @@
 #include "sync.h"
 #include "util.h"
 #include <boost/lexical_cast.hpp>
+#include "streams.h"
 
 // keep track of the scanning errors I've seen
 map<uint256, int> mapSeenMasternodeScanningErrors;
@@ -473,8 +474,9 @@ bool CMasternodeBroadcast::CheckAndUpdate(int& nDos)
 
     std::string vchPubKey(pubKeyCollateralAddress.begin(), pubKeyCollateralAddress.end());
     std::string vchPubKey2(pubKeyMasternode.begin(), pubKeyMasternode.end());
-    std::string ss = addr.ToString();
-    std::string strMessage = Hash(BEGIN(ss), END(ss), BEGIN(sigTime), END(sigTime), pubKeyCollateralAddress.begin(), pubKeyCollateralAddress.end(), pubKeyMasternode.begin(), pubKeyMasternode.end(), BEGIN(protocolVersion), END(protocolVersion)).GetHex();
+
+    HEX_DATA_STREAM_PROTOCOL(protocolVersion) << addr.ToString() << sigTime << pubKeyCollateralAddress << pubKeyMasternode << protocolVersion;
+    std::string strMessage = HEX_STR(ser);
 
     if (protocolVersion < masternodePayments.GetMinMasternodePaymentsProto()) {
         LogPrint("masternode","mnb - ignoring outdated Masternode %s protocol version %d\n", vin.prevout.hash.ToString(), protocolVersion);
@@ -652,7 +654,8 @@ bool CMasternodeBroadcast::Sign(CKey& keyCollateralAddress)
 
     sigTime = GetAdjustedTime();
     std::string ss = addr.ToString();
-    std::string strMessage = Hash(BEGIN(ss), END(ss), BEGIN(sigTime), END(sigTime), pubKeyCollateralAddress.begin(), pubKeyCollateralAddress.end(), pubKeyMasternode.begin(), pubKeyMasternode.end(), BEGIN(protocolVersion), END(protocolVersion)).GetHex();
+    HEX_DATA_STREAM_PROTOCOL(protocolVersion) << addr.ToString() << sigTime << pubKeyCollateralAddress << pubKeyMasternode << protocolVersion;
+    std::string strMessage = HEX_STR(ser);
 
     if (!obfuScationSigner.SignMessage(strMessage, errorMessage, sig, keyCollateralAddress)) {
         LogPrint("masternode","CMasternodeBroadcast::Sign() - Error: %s\n", errorMessage);
@@ -680,19 +683,15 @@ bool CMasternodeBroadcast::VerifySignature()
 
 std::string CMasternodeBroadcast::GetOldStrMessage()
 {
-    std::string strMessage;
-
-    std::string ss = addr.ToString();
-    strMessage = Hash(BEGIN(ss), END(ss), BEGIN(sigTime), END(sigTime),  pubKeyCollateralAddress.begin(), pubKeyCollateralAddress.end(), pubKeyMasternode.begin(), pubKeyMasternode.end(), BEGIN(protocolVersion), END(protocolVersion)).GetHex();
-
+    HEX_DATA_STREAM_PROTOCOL(protocolVersion) << addr.ToString() << sigTime << pubKeyCollateralAddress << pubKeyMasternode << protocolVersion;
+    std::string strMessage = HEX_STR(ser);
     return strMessage;
 }
 
 std:: string CMasternodeBroadcast::GetNewStrMessage()
 {
-    std::string strMessage;
-    std::string ss = addr.ToString();
-    strMessage = Hash(BEGIN(ss), END(ss), BEGIN(sigTime), END(sigTime), pubKeyCollateralAddress.begin(), pubKeyCollateralAddress.end(), pubKeyMasternode.begin(), pubKeyMasternode.end(), BEGIN(protocolVersion), END(protocolVersion)).GetHex();
+    HEX_DATA_STREAM_PROTOCOL(protocolVersion) << addr.ToString() << sigTime << pubKeyCollateralAddress << pubKeyMasternode << protocolVersion;
+    std::string strMessage = HEX_STR(ser);
 
     return strMessage;
 }
@@ -721,8 +720,8 @@ bool CMasternodePing::Sign(CKey& keyMasternode, CPubKey& pubKeyMasternode)
     std::string strMasterNodeSignMessage;
 
     sigTime = GetAdjustedTime();
-    std::string vinStr = vin.ToString();
-    std::string strMessage = Hash(BEGIN(vinStr), END(vinStr), blockHash.begin(), blockHash.end(), BEGIN(sigTime), END(sigTime)).GetHex();
+    HEX_DATA_STREAM_PROTOCOL(PROTOCOL_VERSION) << vin.ToString() << blockHash.ToString() << sigTime;
+    std::string strMessage = HEX_STR(ser);
 
     if (!obfuScationSigner.SignMessage(strMessage, errorMessage, vchSig, keyMasternode)) {
         LogPrint("masternode","CMasternodePing::Sign() - Error: %s\n", errorMessage);
@@ -738,8 +737,8 @@ bool CMasternodePing::Sign(CKey& keyMasternode, CPubKey& pubKeyMasternode)
 }
 
 bool CMasternodePing::VerifySignature(CPubKey& pubKeyMasternode, int &nDos) {
-	std::string vinStr = vin.ToString();
-    std::string strMessage = Hash(BEGIN(vinStr), END(vinStr), blockHash.begin(), blockHash.end(), BEGIN(sigTime), END(sigTime)).GetHex();
+	HEX_DATA_STREAM_PROTOCOL(PROTOCOL_VERSION) << vin.ToString() << blockHash.ToString() << sigTime;
+	std::string strMessage = HEX_STR(ser);
     std::string errorMessage = "";
 
     if(!obfuScationSigner.VerifyMessage(pubKeyMasternode, vchSig, strMessage, errorMessage)){
@@ -773,8 +772,9 @@ bool CMasternodePing::CheckAndUpdate(int& nDos, bool fRequireEnabled)
         // update only if there is no known ping for this masternode or
         // last ping was more then MASTERNODE_MIN_MNP_SECONDS-60 ago comparing to this one
         if (!pmn->IsPingedWithin(MASTERNODE_MIN_MNP_SECONDS - 60, sigTime)) {
-        	std::string vinStr = vin.ToString();
-            std::string strMessage = Hash(BEGIN(vinStr), END(vinStr), blockHash.begin(), blockHash.end(), BEGIN(sigTime), END(sigTime)).GetHex();
+
+            HEX_DATA_STREAM_PROTOCOL(PROTOCOL_VERSION) << vin.ToString() << blockHash.ToString() << sigTime;
+            std::string strMessage = HEX_STR(ser);
 
             std::string errorMessage = "";
             if (!obfuScationSigner.VerifyMessage(pmn->pubKeyMasternode, vchSig, strMessage, errorMessage)) {
