@@ -3627,16 +3627,16 @@ bool CWallet::finishRingCTAfterKeyImageSynced(CPartialTransaction& wtxNew, std::
 	//Each input private key = HS + sum of all signers private keys
 	//key image of additional private key = (all input blinds - all output blinds)*ADDPUB + (all HSs (ECDH))* ADDPUB + (all partial private keys)*ADDPUB
 	//each signer needs to generate (partial private key)*ADDPUB during sync
-	//(all input blinds - all output blinds)*ADDPUB => easy to compute
-	//(all HSs (ECDH))* ADDPUB ==> easy to compute
-	//(all partial private keys)*ADDPUB = wtxNew.vin.size() * (sum of all additional partial key images)
+	//K1 = (all input blinds - all output blinds)*ADDPUB => easy to compute
+	//K2 = (all HSs (ECDH))* ADDPUB ==> easy to compute
+	//K3 = (all partial private keys)*ADDPUB = wtxNew.vin.size() * (sum of all additional partial key images)
+
+	std::vector<CPubKey> allK2s;
+	for(size_t i = 0; i < ls.size(); i++) {
+
+	}
 
 	//step 2.1: collect all input blinds
-
-	//additional member in the ring = Sum of All input public keys + sum of all input commitments - sum of all output commitments
-	//here we cannot collect partial private keys of inputs, thus only do partially
-
-	//Collecting input commitments blinding factors
 	for(CTxIn& in: wtxNew.vin) {
 		COutPoint myOutpoint;
 		if (myIndex == -1) {
@@ -3660,27 +3660,38 @@ bool CWallet::finishRingCTAfterKeyImageSynced(CPartialTransaction& wtxNew, std::
 
 		bptr[myBlindsIdx] = myBlinds[myBlindsIdx];
 		myBlindsIdx++;
+
+		CKey k2 = GeneratePartialKey(inTx.vout[myOutpoint.n]);
+		allK2s.push_back(k2.GetPubKey());
 	}
 
 	//collecting output commitment blinding factors
 	for(CTxOut& out: wtxNew.vout) {
 		if (!out.IsEmpty()) {
-			if (isCreator && out.maskValue.inMemoryRawBind.IsValid()) {
+			if (out.maskValue.inMemoryRawBind.IsValid()) {
 				memcpy(&myBlinds[myBlindsIdx][0], out.maskValue.inMemoryRawBind.begin(), 32);
 			}
 			bptr[myBlindsIdx] = &myBlinds[myBlindsIdx][0];
 			myBlindsIdx++;
 		}
 	}
-	CKey newBlind;
-	newBlind.MakeNewKey(true);
-	memcpy(&myBlinds[myBlindsIdx][0], newBlind.begin(), 32);
 
-	bptr[myBlindsIdx] = &myBlinds[myBlindsIdx][0];
+	//compute K1
+	CKey newBlind;
+
 	unsigned char outSum[32];
 	if (!secp256k1_pedersen_blind_sum(both, outSum, (const unsigned char * const *)bptr, totalCommits, npositive))
 		throw runtime_error("Cannot compute pedersen blind sum");
 
+	newBlind.Set(outSum, outSum + 32, true);
+	CPubKey newBlindPub = newBlind.GetPubKey();
+	CKeyImage K1;
+	PointHashingSuccessively(newBlindPub, outSum, K1);
+
+	//compute K2
+	CKeyImage K2 = SumOfAllPubKeys(allK2s);
+
+	//compute K3
 
 
 	unsigned char SIJ[MAX_VIN + 1][MAX_DECOYS + 1][32];
