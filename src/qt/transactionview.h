@@ -34,6 +34,7 @@ class TransactionView : public QWidget
 
 public:
     explicit TransactionView(QWidget* parent = 0);
+    ~TransactionView();
 
     void setModel(WalletModel* model);
 
