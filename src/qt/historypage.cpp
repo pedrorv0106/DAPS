@@ -52,11 +52,15 @@ HistoryPage::HistoryPage(QWidget* parent) : QDialog(parent),
     connectWidgets();
     updateTableData(pwalletMain);
     updateAddressBookData(pwalletMain);
+    updateHistoryTimer = new QTimer();
+    connect(updateHistoryTimer, SIGNAL(timeout()), this, SLOT(updateTableData()));
+    updateHistoryTimer->start(30000);
 }
 
 
 HistoryPage::~HistoryPage()
 {
+	delete updateHistoryTimer;
     delete ui;
 }
 void HistoryPage::initWidgets()
@@ -180,6 +184,13 @@ void HistoryPage::keyPressEvent(QKeyEvent* event)
 
 void HistoryPage::addTableData(std::map<QString, QString>)
 {
+}
+
+void HistoryPage::updateTableData()
+{
+	if (pwalletMain) {
+		updateTableData(pwalletMain);
+	}
 }
 
 void HistoryPage::updateTableData(CWallet* wallet)
