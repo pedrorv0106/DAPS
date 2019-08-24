@@ -159,7 +159,7 @@ void HistoryPage::on_cellClicked(int row, int column)
         		}
         	}
         }
-        if (!privkeyFound) txdlg.setTxPrivKey(std::string("Not available").c_str());
+        if (!privkeyFound) txdlg.setTxPrivKey(std::string("Request from Sender (if applicable)").c_str());
         
         txdlg.exec();
     }
