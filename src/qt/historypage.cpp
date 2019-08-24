@@ -107,8 +107,12 @@ void HistoryPage::connectWidgets() //add functions to widget signals
 
 void HistoryPage::on_cellClicked(int row, int column) 
 {
+    //1 is column index for type
+    QTableWidgetItem* cell = ui->tableView->item(row, 1);
+    QString type = cell->data(0).toString();
+    std::string stdType = type.trimmed().toStdString();
     //2 is column index for address
-    QTableWidgetItem* cell = ui->tableView->item(row, 2);
+    cell = ui->tableView->item(row, 2);
     QString address = cell->data(0).toString();
     std::string stdAddress = address.trimmed().toStdString();
     if (pwalletMain->addrToTxHashMap.count(stdAddress) == 1) {
@@ -159,17 +163,21 @@ void HistoryPage::on_cellClicked(int row, int column)
         		}
         	}
         }
-        std::string txdlgMsg = "Request from Sender (if applicable)";        
+        std::string txdlgMsg = "Request from Sender (if applicable)";
+        if (stdType == "Minted") {
+            privkeyFound = false;
+            txdlgMsg = "Minted transactions do not have a PrivKey";
+        }    
         if (pwalletMain->IsLocked()) {
             privkeyFound = false;
             txdlgMsg = "Wallet must be unlocked to view PrivKey";
         }
+
         if (!privkeyFound) txdlg.setTxPrivKey(std::string(txdlgMsg).c_str());
         
         txdlg.exec();
     }
 }
-
 
 void HistoryPage::resizeEvent(QResizeEvent* event)
 {
