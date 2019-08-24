@@ -321,6 +321,7 @@ public:
         nLastResend = 0;
         nTimeFirstKey = 0;
         fWalletUnlockAnonymizeOnly = false;
+        walletStakingInProgress = false;
         fBackupMints = false;
 
         // Stake Settings
