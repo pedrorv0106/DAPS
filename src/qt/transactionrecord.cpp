@@ -38,7 +38,6 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
     CAmount nDebit = wtx.GetDebit(ISMINE_ALL);
     CAmount nNet = nCredit - nDebit;
     uint256 hash = wtx.GetHash();
-    std::cout << "Decompsing hash = " << wtx.GetHash().GetHex() << " nCredit = " << nCredit << " nDebit = " << nDebit << std::endl;
     std::map<std::string, std::string> mapValue = wtx.mapValue;
     if (wtx.IsCoinStake()) {
         TransactionRecord sub(hash, nTime);
