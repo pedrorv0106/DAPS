@@ -702,8 +702,6 @@ vector<std::map<QString, QString> > getTXs(CWallet* wallet)
     for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
     	if (tx->second.GetDepthInMainChain() > 0) {
     		txs.push_back(getTx(wallet, tx->second));
-    	} else {
-    	    std::cout << "hash = " << tx->first.GetHex() << std::endl;
     	}
     }
 
