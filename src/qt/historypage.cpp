@@ -159,11 +159,17 @@ void HistoryPage::on_cellClicked(int row, int column)
         		}
         	}
         }
-        if (!privkeyFound) txdlg.setTxPrivKey(std::string("Request from Sender (if applicable)").c_str());
+        std::string txdlgMsg = "Request from Sender (if applicable)";        
+        if (pwalletMain->IsLocked()) {
+            privkeyFound = false;
+            txdlgMsg = "Wallet must be unlocked to view PrivKey";
+        }
+        if (!privkeyFound) txdlg.setTxPrivKey(std::string(txdlgMsg).c_str());
         
         txdlg.exec();
     }
 }
+
 
 void HistoryPage::resizeEvent(QResizeEvent* event)
 {
