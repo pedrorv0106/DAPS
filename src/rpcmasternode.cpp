@@ -119,7 +119,9 @@ Value getpoolinfo(const Array& params, bool fHelp)
             HelpExampleCli("getpoolinfo", "") + HelpExampleRpc("getpoolinfo", ""));
 
     Object obj;
-    obj.push_back(Pair("current_masternode", mnodeman.GetCurrentMasterNode()->addr.ToString()));
+    if (mnodeman.GetCurrentMasterNode() != NULL) {
+    	obj.push_back(Pair("current_masternode", mnodeman.GetCurrentMasterNode()->addr.ToString()));
+    }
     obj.push_back(Pair("state", obfuScationPool.GetState()));
     obj.push_back(Pair("entries", obfuScationPool.GetEntriesCount()));
     obj.push_back(Pair("entries_accepted", obfuScationPool.GetCountEntriesAccepted()));
