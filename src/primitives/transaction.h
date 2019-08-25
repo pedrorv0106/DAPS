@@ -564,6 +564,7 @@ struct CPartialTransaction
     //if N-1/N case, this is the hashes of the hash of the ECDHs between participants
     std::vector<uint256> hashesOfSignedSecrets;
     uint256 selectedUTXOHash;
+    uint256 encodedC_PI;
 
     CPartialTransaction();
     CPartialTransaction(const CTransaction& tx)
@@ -632,6 +633,7 @@ struct CPartialTransaction
         READWRITE(ntxFeeKeyImage);
         READWRITE(hashesOfSignedSecrets);
         READWRITE(selectedUTXOHash);
+        READWRITE(encodedC_PI);
     }
 };
 

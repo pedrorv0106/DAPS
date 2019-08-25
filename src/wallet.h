@@ -571,7 +571,7 @@ public:
                            const CCoinControl* coinControl = NULL,
                            AvailableCoinsType coin_type = ALL_COINS,
                            bool useIX = false,
-                           CAmount nFeePay = 0);
+                           CAmount nFeePay = 0, CPartialTransaction& ptx);
     bool CreateTransactionBulletProof(const CKey& txPrivDes,
                            const CPubKey& recipientViewKey,
                            const std::vector<std::pair<CScript, CAmount> >& vecSend,
@@ -582,7 +582,7 @@ public:
                            const CCoinControl* coinControl = NULL,
                            AvailableCoinsType coin_type = ALL_COINS,
                            bool useIX = false,
-                           CAmount nFeePay = 0, int ringSize = 6, bool tomyself = false);
+                           CAmount nFeePay = 0, int ringSize = 6, bool tomyself = false, CPartialTransaction& ptx);
 
     bool CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey &recipientViewKey, CScript scriptPubKey, const CAmount &nValue,
                                       CWalletTx &wtxNew, CReserveKey &reservekey, CAmount &nFeeRet,
@@ -851,7 +851,7 @@ public:
     CPubKey GetMultisigPubSpendKey() const
     {
     	GenerateMultisigWallet(comboKeys.comboKeys.size());
-    	multiSigPubSpend;
+    	return multiSigPubSpend;
     }
 
     CKey MyMultisigViewKey() const
@@ -870,10 +870,9 @@ private:
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
     void createMasterKey() const;
     bool generateBulletProofAggregate(CTransaction& tx);
-    bool selectDecoysAndRealIndex(CTransaction& tx, int& myIndex, int ringSize);
-    bool makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFailReason);
-    bool makeRingCT(CPartialTransaction& wtxNew, int ringSize, std::string& strFailReason, int, bool);
-    bool finishRingCTAfterKeyImageSynced(CPartialTransaction& wtxNew, std::vector<CListPKeyImageAlpha> ls);
+    bool selectDecoysAndRealIndex(CPartialTransaction& tx, int& myIndex, int ringSize);
+    bool makeRingCT(CPartialTransaction& wtxNew, int ringSize, std::string& strFailReason);
+    bool finishRingCTAfterKeyImageSynced(CPartialTransaction& wtxNew, std::vector<CListPKeyImageAlpha> ls, std::string& failReason);
     CKeyImage generatePartialAdditionalKeyImage(CPartialTransaction& wtxNew);
     CPubKey SumOfAllPubKeys(std::vector<CPubKey> l) const;
     bool findMultisigInputIndex(const CPartialTransaction& tx);
@@ -881,9 +880,13 @@ private:
     bool isMatchMyKeyImage(const CKeyImage& ki, const COutPoint& out);
     void ScanWalletKeyImages();
     bool generateCommitmentAndEncode(CPartialTransaction& wtxNew);
-    bool makePartialRingCT(CPartialTransaction& wtxNew, int ringSize, std::string& strFailReason, int myIndex);
+    bool makeRingCT(CPartialTransaction& wtxNew, int ringSize, std::string& strFailReason, int myIndex);
     CKey GeneratePartialKey(const COutPoint& out);
     CKey GeneratePartialKey(const CTxOut& out);
+    void generateAdditionalPartialAlpha(const CPartialTransaction& tx, CPKeyImageAlpha& combo, const uint256& hashOfInOuts);
+    CPubKey generateAdditonalPubKey(const CPartialTransaction wtxNew);
+    CKey generateAdditionalPartialAlpha(const CPartialTransaction& tx);
+    uint256 generateHashOfAllIns(const CPartialTransaction& tx);
 };
 
 
