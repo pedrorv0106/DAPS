@@ -5012,7 +5012,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 	int ringSize = 11 + secp256k1_rand32() % 4;
 
 	int estimateTxSize = ComputeTxSize(vCoins.size(), 1, ringSize);
-	CAmount nFeeNeeded = max(0, GetMinimumFee(estimateTxSize, nTxConfirmTarget, mempool));
+	CAmount nFeeNeeded = GetMinimumFee(estimateTxSize, nTxConfirmTarget, mempool);
 	nFeeNeeded += BASE_FEE;
 	if (total < nFeeNeeded*2) return false;
 
@@ -5044,7 +5044,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 
 
 
-	CAmount nValue = total - COIN;
+	CAmount nValue = total - nFeeNeeded;
 
 	wtxNew.fTimeReceivedIsTxTime = true;
 	wtxNew.BindWallet(this);
