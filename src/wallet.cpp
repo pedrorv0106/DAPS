@@ -3814,7 +3814,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
 
             //Check whether team rewards should be included in this block
             CBlockIndex* pindexPrev = chainActive.Tip();
-            CAmount blockValue = GetBlockValue(pindexPrev->nHeight);
+            CAmount blockValue = GetBlockValue(pindexPrev);
             if (blockValue > PoSBlockReward()) {
             	CAmount teamReward = blockValue - PoSBlockReward();
 				const std::string foundational = FOUNDATION_WALLET;
@@ -3977,7 +3977,7 @@ bool CWallet::CreateCoinAudit(const CKeyStore& keystore, unsigned int nBits, int
 
             //presstab HyperStake - calculate the total size of our new output including the stake reward so that we can use it to decide whether to split the stake outputs
             const CBlockIndex* pIndex0 = chainActive.Tip();
-            uint64_t nTotalSize = pcoin.first->vout[pcoin.second].nValue + GetBlockValue(pIndex0->nHeight);
+            uint64_t nTotalSize = pcoin.first->vout[pcoin.second].nValue + GetBlockValue(pIndex0);
 
             //presstab HyperStake - if MultiSend is set to send in coinstake we will add our outputs here (values asigned further down)
             if (nTotalSize / 2 > nStakeSplitThreshold * COIN)
@@ -3996,7 +3996,7 @@ bool CWallet::CreateCoinAudit(const CKeyStore& keystore, unsigned int nBits, int
     // Calculate reward
     CAmount nReward;
     const CBlockIndex* pIndex0 = chainActive.Tip();
-    nReward = GetBlockValue(pIndex0->nHeight);
+    nReward = GetBlockValue(pIndex0);
 
     CAmount nMinFee = 0;
     if (txNew.vout.size() == 3) {
