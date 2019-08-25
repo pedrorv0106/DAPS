@@ -307,7 +307,19 @@ bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
         return false;
     }
 
-    if (!bh.IsNull() && againsHash.IsNull()) return true;//receive from mempool
+    if (!bh.IsNull() && againsHash.IsNull()) {
+    	//check if bh is in main chain
+    	// Find the block it claims to be in
+    	BlockMap::iterator mi = mapBlockIndex.find(bh);
+    	if (mi == mapBlockIndex.end())
+    		return false;
+    	CBlockIndex* pindex = (*mi).second;
+    	if (!pindex || !chainActive.Contains(pindex))
+    		return false;
+
+    	//return (chainActive.Height() - pindex->nHeight + 1) > 0;
+    	return true;//receive from mempool
+    }
     if (bh == againsHash) return false;
     /*CBlockIndex* bhIdx = mapBlockIndex[bh];
     CBlockIndex* against = mapBlockIndex[againsHash];
