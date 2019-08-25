@@ -2711,6 +2711,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                     int rsSize = ComputeTxSize(setCoins.size(), 2, ringSize);
                     nBytes = rsSize;
                     CAmount nFeeNeeded = max(nFeePay, GetMinimumFee(nBytes, nTxConfirmTarget, mempool));
+                    nFeeNeeded += BASE_FEE;
                     LogPrintf("\n%s: nFeeNeeded=%d, rsSize=%d\n", __func__, nFeeNeeded, rsSize);
                     if (nFeeNeeded < COIN) nFeeNeeded = COIN;
                     newTxOut.nValue -= nFeeNeeded;
@@ -4999,6 +5000,22 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 
 	if (total < target && vCoins.size() < 30) return false;
 
+	// Generate transaction public key
+	CWalletTx wtxNew;
+	CKey secret;
+	secret.MakeNewKey(true);
+	SetMinVersion(FEATURE_COMPRPUBKEY);
+
+	unsigned char rand_seed[16];
+	memcpy(rand_seed, secret.begin(), 16);
+	secp256k1_rand_seed(rand_seed);
+	int ringSize = 11 + secp256k1_rand32() % 4;
+
+	int estimateTxSize = ComputeTxSize(vCoins.size(), 1, ringSize);
+	CAmount nFeeNeeded = max(0, GetMinimumFee(estimateTxSize, nTxConfirmTarget, mempool));
+	nFeeNeeded += BASE_FEE;
+	if (total < nFeeNeeded*2) return false;
+
 	std::string myAddress;
 	ComputeStealthPublicAddress("masteraccount", myAddress);
 	//Parse stealth address
@@ -5011,11 +5028,6 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 		return false;
 	}
 
-	// Generate transaction public key
-	CWalletTx wtxNew;
-	CKey secret;
-	secret.MakeNewKey(true);
-	SetMinVersion(FEATURE_COMPRPUBKEY);
 	wtxNew.txPrivM.Set(secret.begin(), secret.end(), true);
 
 	wtxNew.hasPaymentID = 0;
@@ -5030,10 +5042,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 
 	CScript scriptPubKey = GetScriptForDestination(stealthDes);
 
-    unsigned char rand_seed[16];
-    memcpy(rand_seed, secret.begin(), 16);
-    secp256k1_rand_seed(rand_seed);
-	int ringSize = 11 + secp256k1_rand32() % 4;
+
 
 	CAmount nValue = total - COIN;
 
@@ -5063,9 +5072,9 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 				ECDHInfo::ComputeSharedSec(wtxNew.txPrivM, pubViewKey, sharedSec);
 				EncodeTxOutAmount(txout, txout.nValue, sharedSec.begin());
 				txNew.vout.push_back(txout);
-				nBytes += ::GetSerializeSize(*(CTxOut*)&txout, SER_NETWORK, PROTOCOL_VERSION);
+				//nBytes += ::GetSerializeSize(*(CTxOut*)&txout, SER_NETWORK, PROTOCOL_VERSION);
 
-				txNew.nTxFee = COIN;//1 DAPS by default
+				txNew.nTxFee = nFeeNeeded;
 
 				//Fill vin
 				for(size_t i = 0; i < vCoins.size(); i++) {
