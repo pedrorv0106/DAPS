@@ -37,7 +37,8 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
     QAction* copyAmountAction = new QAction(tr("Copy amount"), this);
 
     // context menu
-    contextMenu = new QMenu();
+    contextMenu = new QMenu(this);
+    contextMenu->setAttribute(Qt::WA_DeleteOnClose);
     contextMenu->addAction(copyLabelAction);
     contextMenu->addAction(copyMessageAction);
     contextMenu->addAction(copyAmountAction);

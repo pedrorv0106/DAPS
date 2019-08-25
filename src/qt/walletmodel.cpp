@@ -40,9 +40,12 @@ using namespace std;
 WalletModel::WalletModel(CWallet* wallet, OptionsModel* optionsModel, QObject* parent) : QObject(parent), wallet(wallet), optionsModel(optionsModel), addressTableModel(0),
                                                                                          transactionTableModel(0),
                                                                                          recentRequestsTableModel(0),
-                                                                                         cachedBalance(0), cachedUnconfirmedBalance(0), cachedImmatureBalance(0),
+                                                                                         cachedBalance(0), cachedUnconfirmedBalance(0), cachedImmatureBalance(0), cachedWatchOnlyBalance(0),
+                                                                                         cachedWatchUnconfBalance(0), cachedWatchImmatureBalance(0),
                                                                                          cachedEncryptionStatus(Unencrypted),
-                                                                                         cachedNumBlocks(0)
+                                                                                         cachedNumBlocks(0), cachedTxLocks(0),
+                                                                                         txTableModel(0)
+
 {
     fHaveWatchOnly = wallet->HaveWatchOnly();
     fHaveMultiSig = wallet->HaveMultiSig();
