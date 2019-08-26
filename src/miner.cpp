@@ -905,7 +905,7 @@ void GeneratePoADapscoin(CWallet* pwallet, int period)
     minerThreads->create_thread(boost::bind(&ThreadDapscoinMiner, pwallet));
 }
 
-void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads)
+void GenerateDapscoins(bool fGenerate, CWallet* pwallet, int nThreads)
 {
     static boost::thread_group* minerThreads = NULL;
     fGenerateDapscoins = fGenerate;
