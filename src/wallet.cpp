@@ -1518,7 +1518,7 @@ CPubKey CWallet::computeDestination(const COutPoint& out) const
 	if (mapWallet.count(out.hash) < 1) throw runtime_error("Outpoint not found");
 	return computeDestination(mapWallet[out.hash].vout[out.n]);
 }
-CPubKey CWallet::computeDestination(const CTxOut& out)
+CPubKey CWallet::computeDestination(const CTxOut& out) const
 {
 	CPubKey txPub(out.txPub);
 	CPubKey pubSpendKey = GetMultisigPubSpendKey();
@@ -2725,17 +2725,17 @@ bool CWallet::CreateCommitment(const unsigned char* blind, CAmount val, std::vec
     return true;
 }
 
-bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey &recipientViewKey, CScript scriptPubKey, const CAmount &nValue,
+bool CWallet::CreateTransactionBulletProof(CPartialTransaction& ptx, const CKey& txPrivDes, const CPubKey &recipientViewKey, CScript scriptPubKey, const CAmount &nValue,
                                            CWalletTx &wtxNew, CReserveKey &reservekey, CAmount &nFeeRet,
                                            std::string &strFailReason, const CCoinControl *coinControl,
                                            AvailableCoinsType coin_type, bool useIX,
-                                           CAmount nFeePay, int ringSize, bool sendtoMyself, CPartialTransaction& ptx) {
+                                           CAmount nFeePay, int ringSize, bool sendtoMyself) {
     vector<pair<CScript, CAmount> > vecSend;
     vecSend.push_back(make_pair(scriptPubKey, nValue));
-    return CreateTransactionBulletProof(txPrivDes, recipientViewKey, vecSend, wtxNew, reservekey, nFeeRet, strFailReason, coinControl, coin_type, useIX, nFeePay, ringSize, sendtoMyself, ptx);
+    return CreateTransactionBulletProof(ptx, txPrivDes, recipientViewKey, vecSend, wtxNew, reservekey, nFeeRet, strFailReason, coinControl, coin_type, useIX, nFeePay, ringSize, sendtoMyself);
 }
 
-bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey& recipientViewKey, const std::vector<std::pair<CScript, CAmount> >& vecSend,
+bool CWallet::CreateTransactionBulletProof(CPartialTransaction& ptx, const CKey& txPrivDes, const CPubKey& recipientViewKey, const std::vector<std::pair<CScript, CAmount> >& vecSend,
                                   CWalletTx& wtxNew,
                                   CReserveKey& reservekey,
                                   CAmount& nFeeRet,
@@ -2743,7 +2743,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                                   const CCoinControl* coinControl,
                                   AvailableCoinsType coin_type,
                                   bool useIX,
-                                  CAmount nFeePay, int ringSize, bool tomyself, CPartialTransaction& ptx)
+                                  CAmount nFeePay, int ringSize, bool tomyself)
 {
     if (useIX && nFeePay < CENT) nFeePay = CENT;
 
@@ -2886,15 +2886,17 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
             }
         }
     }
-    if (!makeRingCT(wtxNew, ringSize, strFailReason)) {
+    CPartialTransaction ptxNew(wtxNew);
+    if (!makeRingCT(ptxNew, ringSize, strFailReason)) {
     	strFailReason = _("Failed to generate RingCT");
     	return false;
     }
 
-    if (!generateBulletProofAggregate(wtxNew)) {
+    if (!generateBulletProofAggregate(ptxNew)) {
     	strFailReason = _("Failed to generate bulletproof");
     	return false;
     }
+    ptx.copyFrom(ptxNew);
 
     //check whether this is a reveal amount transaction
     //only create transaction with reveal amount if it is a masternode collateral transaction
@@ -3119,7 +3121,7 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
     return true;
 }
 
-bool CWallet::generateBulletProofAggregate(CTransaction& tx)
+bool CWallet::generateBulletProofAggregate(CPartialTransaction& tx)
 {
 	unsigned char proof[2000];
 	size_t len = 2000;
@@ -3286,13 +3288,14 @@ CPubKey CWallet::SumOfAllPubKeys(std::vector<CPubKey>& l) const
 	secp256k1_pedersen_commitment commitments[l.size()];
 	const secp256k1_pedersen_commitment *pointers[l.size()];
 	for(size_t i = 0; i < l.size(); i++) {
-		secp256k1_pedersen_serialized_pubkey_to_commitment(l[i].begin(), &commitments[i]);
+		secp256k1_pedersen_serialized_pubkey_to_commitment(l[i].begin(), 33, &commitments[i]);
 		pointers[i] = &commitments[i];
 	}
 	secp256k1_pedersen_commitment out;
 	secp256k1_pedersen_commitment_sum_pos(GetContext(), pointers, l.size(), &out);
 	unsigned char serializedPub[33];
-	secp256k1_pedersen_commitment_to_serialized_pubkey(&out, serializedPub);
+	size_t length;
+	secp256k1_pedersen_commitment_to_serialized_pubkey(&out, serializedPub, &length);
 	CPubKey ret(serializedPub, serializedPub + 33);
 	return ret;
 }
@@ -3317,15 +3320,15 @@ CPubKey CWallet::generateAdditonalPubKey(const CPartialTransaction wtxNew)
 	}
 
 	int PI = myRealIndex;
-
+	CPubKey null;
 	//computing additional key image:
 	//collecting all output commimtments including transaction fees with commitment with 0 blind
 	secp256k1_pedersen_commitment allOutCommitmentsPacked[MAX_VOUT + 1]; //+1 for tx fee
 	for (size_t i = 0; i < wtxNew.vout.size(); i++) {
 		memcpy(&(allOutCommitments[i][0]), &(wtxNew.vout[i].commitment[0]), 33);
 		if (!secp256k1_pedersen_commitment_parse(both, &allOutCommitmentsPacked[i], allOutCommitments[i])) {
-			strFailReason = _("Cannot parse the commitment for inputs");
-			return false;
+			//strFailReason = _("Cannot parse the commitment for inputs");
+			return null;
 		}
 	}
 
@@ -3333,8 +3336,8 @@ CPubKey CWallet::generateAdditonalPubKey(const CPartialTransaction wtxNew)
 	unsigned char txFeeBlind[32];
 	memset(txFeeBlind, 0, 32);
 	if (!secp256k1_pedersen_commit(both, &allOutCommitmentsPacked[wtxNew.vout.size()], txFeeBlind, wtxNew.nTxFee, &secp256k1_generator_const_h, &secp256k1_generator_const_g)) {
-		strFailReason = _("Cannot parse the commitment for transaction fee");
-		return false;
+		//strFailReason = _("Cannot parse the commitment for transaction fee");
+		return null;
 	}
 
 	//filling the additional pubkey elements for decoys: allInPubKeys[wtxNew.vin.size()][..]
@@ -3371,12 +3374,12 @@ CPubKey CWallet::generateAdditonalPubKey(const CPartialTransaction wtxNew)
 				CTransaction txPrev;
 				uint256 hashBlock;
 				if (!GetTransaction(decoysForIn[j].hash, txPrev, hashBlock)) {
-					return false;
+					return null;
 				}
 				CPubKey extractedPub;
 				if (!ExtractPubKey(txPrev.vout[decoysForIn[j].n].scriptPubKey, extractedPub)) {
-					strFailReason = _("Cannot extract public key from script pubkey");
-					return false;
+					//strFailReason = _("Cannot extract public key from script pubkey");
+					return null;
 				}
 				memcpy(allInPubKeys[i][j], extractedPub.begin(), 33);
 				memcpy(allInCommitments[i][j], &(txPrev.vout[decoysForIn[j].n].commitment[0]), 33);
@@ -3398,8 +3401,8 @@ CPubKey CWallet::generateAdditonalPubKey(const CPartialTransaction wtxNew)
 	const secp256k1_pedersen_commitment *inCptr[MAX_VIN * 2];
 	for (int k = 0; k < (int)wtxNew.vin.size(); k++) {
 		if (!secp256k1_pedersen_commitment_parse(both, &allInCommitmentsPacked[k][j], allInCommitments[k][j])) {
-			strFailReason = _("Cannot parse the commitment for inputs");
-			return false;
+			//strFailReason = _("Cannot parse the commitment for inputs");
+			return null;
 		}
 		inCptr[k] = &allInCommitmentsPacked[k][j];
 	}
@@ -3672,8 +3675,9 @@ bool CWallet::finishRingCTAfterKeyImageSynced(CPartialTransaction& wtxNew, std::
 	newBlind.Set(outSum, outSum + 32, true);
 	CPubKey newBlindPub = newBlind.GetPubKey();
 	CKeyImage K1;
-	PointHashingSuccessively(newBlindPub, outSum, K1);
-
+	unsigned char K1data[33];
+	PointHashingSuccessively(newBlindPub, outSum, K1data);
+	K1.Set(K1data, K1data + 33);
 	//compute K2
 	CKeyImage K2 = SumOfAllPubKeys(allK2s);
 
@@ -3694,7 +3698,8 @@ bool CWallet::finishRingCTAfterKeyImageSynced(CPartialTransaction& wtxNew, std::
 	k1k2k3.push_back(K1);
 	k1k2k3.push_back(K2);
 	k1k2k3.push_back(K3);
-	allKeyImages[wtxNew.vin.size()] = SumOfAllPubKeys(k1k2k3);
+	CPubKey sum = SumOfAllPubKeys(k1k2k3);
+	memcpy(allKeyImages[wtxNew.vin.size()], sum.begin(), 33);
 
 
 	unsigned char SIJ[MAX_VIN + 1][MAX_DECOYS + 1][32];
@@ -3933,7 +3938,7 @@ bool CWallet::CoSignPartialTransaction(CPartialTransaction& tx)
 		throw runtime_error("Cannot compute pedersen blind sum");
 
 	secp256k1_ec_privkey_tweak_add(SIJ[tx.vin.size()][PI], s);
-	memcpy(tx.S[PI][tx.vin.size()].begin(), SIJ[j][PI], 32);
+	memcpy(tx.S[PI][tx.vin.size()].begin(), SIJ[tx.vin.size()][PI], 32);
 
 	return true;
 }
@@ -6033,7 +6038,7 @@ bool CWallet::GenerateAddress(CPubKey& pub, CPubKey& txPub, CKey& txPriv) const 
     return computeStealthDestination(txPriv, view.GetPubKey(), spend.GetPubKey(), pub);
 }
 
-bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount nValue, CWalletTx& wtxNew, bool fUseIX, int ringSize) {
+bool CWallet::SendToStealthAddress(CPartialTransaction& ptx, const std::string& stealthAddr, const CAmount nValue, CWalletTx& wtxNew, bool fUseIX, int ringSize) {
     // Check amount
     if (nValue <= 0)
         throw runtime_error("Invalid amount");
@@ -6087,7 +6092,7 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
     control.receiver = changeDes;
     control.txPriv = secretChange;
     CAmount nFeeRequired;
-    if (!pwalletMain->CreateTransactionBulletProof(secret, pubViewKey, scriptPubKey, nValue, wtxNew, reservekey,
+    if (!pwalletMain->CreateTransactionBulletProof(ptx, secret, pubViewKey, scriptPubKey, nValue, wtxNew, reservekey,
                                                    nFeeRequired, strError, &control, ALL_COINS, fUseIX, (CAmount)0, 6, tomyself)) {
         if (nValue + nFeeRequired > pwalletMain->GetBalance())
             strError = strprintf("Error: This transaction requires a transaction fee of at least %s because of its amount, complexity, or use of recently received funds!, nfee=%d, nValue=%d", FormatMoney(nFeeRequired), nFeeRequired, nValue);

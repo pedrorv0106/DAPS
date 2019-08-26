@@ -2599,8 +2599,8 @@ Value sendtostealthaddress(const Array& params, bool fHelp)
     CWalletTx wtx;
 
     EnsureWalletIsUnlocked();
-
-    if (!pwalletMain->SendToStealthAddress(stealthAddr, nAmount, wtx)) {
+    CPartialTransaction ptx;
+    if (!pwalletMain->SendToStealthAddress(ptx, stealthAddr, nAmount, wtx)) {
         throw JSONRPCError(RPC_WALLET_ERROR,
                            "Cannot create transaction.");
     }

@@ -548,7 +548,6 @@ struct CPartialTransaction
     std::vector<CTxOut> vout;
     uint32_t nLockTime;
     //For stealth transactions
-    CKey txPrivM;
     char hasPaymentID;
     uint64_t paymentID;
     uint32_t txType;
@@ -566,14 +565,13 @@ struct CPartialTransaction
     uint256 selectedUTXOHash;
     uint256 encodedC_PI;
 
-    CPartialTransaction();
+    CPartialTransaction() {};
     CPartialTransaction(const CTransaction& tx)
     {
     	*const_cast<int*>(&nVersion) = tx.nVersion;
     	*const_cast<std::vector<CTxIn>*>(&vin) = tx.vin;
     	*const_cast<std::vector<CTxOut>*>(&vout) = tx.vout;
     	*const_cast<unsigned int*>(&nLockTime) = tx.nLockTime;
-    	*const_cast<CKey*>(&txPrivM) = tx.txPrivM;
     	*const_cast<char*>(&hasPaymentID) = tx.hasPaymentID;
     	*const_cast<uint64_t*>(&paymentID) = tx.paymentID;
     	*const_cast<uint32_t*>(&txType) = tx.txType;
@@ -592,7 +590,6 @@ struct CPartialTransaction
     	*const_cast<std::vector<CTxIn>*>(&tx.vin) = vin;
     	*const_cast<std::vector<CTxOut>*>(&tx.vout) = vout;
     	*const_cast<unsigned int*>(&tx.nLockTime) = nLockTime;
-    	*const_cast<CKey*>(&tx.txPrivM) = txPrivM;
     	*const_cast<char*>(&tx.hasPaymentID) = hasPaymentID;
     	*const_cast<uint64_t*>(&tx.paymentID) = paymentID;
     	*const_cast<uint32_t*>(&tx.txType) = txType;
@@ -614,10 +611,7 @@ struct CPartialTransaction
         nVersion = this->nVersion;
         READWRITE(vin);
         READWRITE(vout);
-        //serialize transaction private key for other signers to decode blinds for outputs
-        for(int i = 0; i < vout.size(); i++) {
-        	READWRITE(vout[i].maskValue.inMemoryRawBind);
-        }
+
         READWRITE(nLockTime);
         READWRITE(hasPaymentID);
         if (hasPaymentID != 0) {
@@ -634,6 +628,24 @@ struct CPartialTransaction
         READWRITE(hashesOfSignedSecrets);
         READWRITE(selectedUTXOHash);
         READWRITE(encodedC_PI);
+    }
+
+    void copyFrom(const CPartialTransaction& ptx) {
+    	this->nVersion = ptx.nVersion;
+    	this->vin = ptx.vin;
+    	this->vout = ptx.vout;
+    	this->nLockTime = ptx.nLockTime;
+    	this->hasPaymentID = ptx.hasPaymentID;
+    	this->paymentID = ptx.paymentID;
+    	this->txType = ptx.txType;
+    	this->bulletproofs = ptx.bulletproofs;
+    	this->nTxFee = ptx.nTxFee;
+    	this->c = ptx.c;
+    	this->S = ptx.S;
+    	this->ntxFeeKeyImage = ptx.ntxFeeKeyImage;
+    	this->hashesOfSignedSecrets = ptx.hashesOfSignedSecrets;
+    	this->selectedUTXOHash = ptx.selectedUTXOHash;
+    	this->encodedC_PI = ptx.encodedC_PI;
     }
 };
 

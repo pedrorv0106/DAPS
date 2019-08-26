@@ -141,11 +141,12 @@ void SendCoinsDialog::on_sendButton_clicked(){
     }
 }
 
-void SendCoinsDialog::sendTx() {
+CPartialTransaction SendCoinsDialog::sendTx() {
     CWalletTx resultTx; 
+    CPartialTransaction ptx;
     bool success = false;
     try {
-        success = pwalletMain->SendToStealthAddress(
+        success = pwalletMain->SendToStealthAddress(ptx,
             send_address.toStdString(),
             send_amount,
             resultTx,
@@ -153,7 +154,7 @@ void SendCoinsDialog::sendTx() {
         );
     } catch (const std::exception& err) {
         QMessageBox::warning(this, "Could not send", QString(err.what()));
-        return;
+        return ptx;
     }
 
     if (success){
@@ -165,6 +166,7 @@ void SendCoinsDialog::sendTx() {
         txcomplete.exec();
         WalletUtil::getTx(pwalletMain, resultTx.GetHash());
     }
+    return ptx;
 }
 
 void SendCoinsDialog::dialogIsFinished(int result) {

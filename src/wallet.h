@@ -571,8 +571,8 @@ public:
                            const CCoinControl* coinControl = NULL,
                            AvailableCoinsType coin_type = ALL_COINS,
                            bool useIX = false,
-                           CAmount nFeePay = 0, CPartialTransaction& ptx);
-    bool CreateTransactionBulletProof(const CKey& txPrivDes,
+                           CAmount nFeePay = 0);
+    bool CreateTransactionBulletProof(CPartialTransaction& ptx, const CKey& txPrivDes,
                            const CPubKey& recipientViewKey,
                            const std::vector<std::pair<CScript, CAmount> >& vecSend,
                            CWalletTx& wtxNew,
@@ -582,9 +582,9 @@ public:
                            const CCoinControl* coinControl = NULL,
                            AvailableCoinsType coin_type = ALL_COINS,
                            bool useIX = false,
-                           CAmount nFeePay = 0, int ringSize = 6, bool tomyself = false, CPartialTransaction& ptx);
+                           CAmount nFeePay = 0, int ringSize = 6, bool tomyself = false);
 
-    bool CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey &recipientViewKey, CScript scriptPubKey, const CAmount &nValue,
+    bool CreateTransactionBulletProof(CPartialTransaction& ptx, const CKey& txPrivDes, const CPubKey &recipientViewKey, CScript scriptPubKey, const CAmount &nValue,
                                       CWalletTx &wtxNew, CReserveKey &reservekey, CAmount &nFeeRet,
                                       std::string &strFailReason, const CCoinControl *coinControl = NULL,
                                       AvailableCoinsType coin_type = ALL_COINS, bool useIX = false,
@@ -762,7 +762,7 @@ public:
     bool EncodeStealthPublicAddress(const CPubKey& pubViewKey, const CPubKey& pubSpendKey, std::string& pubAddr);
     static bool DecodeStealthAddress(const std::string& stealth, CPubKey& pubViewKey, CPubKey& pubSpendKey, bool& hasPaymentID, uint64_t& paymentID);
     static bool ComputeStealthDestination(const CKey& secret, const CPubKey& pubViewKey, const CPubKey& pubSpendKey, CPubKey& des);
-    bool SendToStealthAddress(const std::string& stealthAddr, CAmount nValue, CWalletTx& wtxNew, bool fUseIX = false, int ringSize = 5);
+    bool SendToStealthAddress(CPartialTransaction& ptx, const std::string& stealthAddr, CAmount nValue, CWalletTx& wtxNew, bool fUseIX = false, int ringSize = 5);
     bool GenerateAddress(CPubKey& pub, CPubKey& txPub, CKey& txPriv) const;
     bool IsTransactionForMe(const CTransaction& tx);
     bool ReadAccountList(std::string& accountList);
@@ -793,7 +793,7 @@ public:
     CKeyImage GeneratePartialKeyImage(const CTxOut& out) const;
     CKeyImage GeneratePartialKeyImage(const COutPoint& out) const;
     CPubKey computeDestination(const COutPoint& out) const;
-    CPubKey computeDestination(const CTxOut& out);
+    CPubKey computeDestination(const CTxOut& out) const;
     bool GeneratePartialKeyImages(const std::vector<CTxOut>& outputs, std::vector<CKeyImage>& out);
     bool GeneratePartialKeyImages(const std::vector<COutPoint>& outpoints, std::vector<CKeyImage>& out);
     bool GenerateAllPartialImages(std::vector<CKeyImage>& out);
@@ -869,12 +869,12 @@ private:
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
     void createMasterKey() const;
-    bool generateBulletProofAggregate(CTransaction& tx);
+    bool generateBulletProofAggregate(CPartialTransaction& tx);
     bool selectDecoysAndRealIndex(CPartialTransaction& tx, int& myIndex, int ringSize);
     bool makeRingCT(CPartialTransaction& wtxNew, int ringSize, std::string& strFailReason);
     bool finishRingCTAfterKeyImageSynced(CPartialTransaction& wtxNew, std::vector<CListPKeyImageAlpha> ls, std::string& failReason);
-    CKeyImage generatePartialAdditionalKeyImage(CPartialTransaction& wtxNew);
-    CPubKey SumOfAllPubKeys(std::vector<CPubKey> l) const;
+    CKeyImage generatePartialAdditionalKeyImage(const CPartialTransaction& wtxNew);
+    CPubKey SumOfAllPubKeys(std::vector<CPubKey>& l) const;
     bool findMultisigInputIndex(const CPartialTransaction& tx);
     int walletIdxCache = 0;
     bool isMatchMyKeyImage(const CKeyImage& ki, const COutPoint& out);
