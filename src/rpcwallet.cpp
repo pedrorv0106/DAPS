@@ -2399,9 +2399,9 @@ Value createprivacyaccount(const Array& params, bool fHelp)
         ret.emplace_back(Pair("spendpublickey", spendAccount.vchPubKey.GetHex()));
 
         std::string stealthAddr;
-        pwalletMain->EncodeStealthPublicAddress(viewAccount.vchPubKey, spendAccount.vchPubKey, stealthAddr);
-        ret.emplace_back(Pair("stealthaddress", stealthAddr));
-        //walletdb.AppendStealthAccountList("masteraccount");
+        if (pwalletMain->EncodeStealthPublicAddress(viewAccount.vchPubKey, spendAccount.vchPubKey, stealthAddr)) {
+        	ret.emplace_back(Pair("stealthaddress", stealthAddr));
+        }
         break;
     }
     return ret;
@@ -2515,8 +2515,9 @@ Value createprivacysubaddress(const Array& params, bool fHelp)
     ret.emplace_back(Pair("spendpublickey", account.spendAccount.vchPubKey.GetHex()));
 
     std::string stealthAddr;
-    pwalletMain->EncodeStealthPublicAddress(account.viewAccount.vchPubKey, account.spendAccount.vchPubKey, stealthAddr);
-    ret.emplace_back(Pair("stealthaddress", stealthAddr));
+    if (pwalletMain->EncodeStealthPublicAddress(account.viewAccount.vchPubKey, account.spendAccount.vchPubKey, stealthAddr)) {
+    	ret.emplace_back(Pair("stealthaddress", stealthAddr));
+    }
     return ret;
 }
 

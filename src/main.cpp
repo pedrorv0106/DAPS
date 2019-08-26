@@ -2083,13 +2083,18 @@ CAmount PoSBlockReward() {
 	return 900 * COIN;
 }
 
-CAmount TeamRewards(int nHeight)
+CAmount TeamRewards(const CBlockIndex *ptip)
 {
-	if (!chainActive[nHeight]->IsProofOfAudit()) return 0;
-	CBlockIndex* lastPoABlock = chainActive[nHeight];
+	const CBlockIndex* pForkTip = ptip;
+	if (!ptip) {
+		pForkTip = chainActive.Tip();
+	}
+
+	if (!pForkTip->IsProofOfAudit()) return 0;
+	const CBlockIndex* lastPoABlock = pForkTip;
 	if (lastPoABlock->hashPrevPoABlock.IsNull()) {
 		//pay daps team after the first PoA block
-		return (nHeight - Params().LAST_POW_BLOCK() - 1 + 1 /*+1 for the being created PoS block*/) * 50 * COIN;
+		return (pForkTip->nHeight - Params().LAST_POW_BLOCK() - 1 + 1 /*+1 for the being created PoS block*/) * 50 * COIN;
 	}
 
 	//loop back to find the PoA block right after which the daps team is paid
@@ -2104,19 +2109,23 @@ CAmount TeamRewards(int nHeight)
 	}
 
 	if (!lastPoAHash.IsNull() && numPoABlocks != 0 && numPoABlocks % 24 == 0) {
-		ret = (nHeight - (mapBlockIndex[lastPoAHash]->nHeight + 1) - numPoABlocks + 1 /*+1 for the being created PoS block*/) * 50 * COIN;
+		ret = (pForkTip->nHeight - (mapBlockIndex[lastPoAHash]->nHeight + 1) - numPoABlocks + 1 /*+1 for the being created PoS block*/) * 50 * COIN;
 	}
 	return ret;
 }
 
-int64_t GetBlockValue(int nHeight) {
+int64_t GetBlockValue(const CBlockIndex *ptip) {
     int64_t nSubsidy = 0;
+    const CBlockIndex* pForkTip = ptip;
+    if (!ptip) {
+    	pForkTip = chainActive.Tip();
+    }
 
-	if (nHeight < Params().nLastPOWBlock) {
+	if (pForkTip->nHeight < Params().nLastPOWBlock) {
 		nSubsidy = 300000000 * COIN;
 	} else {
         nSubsidy = PoSBlockReward();
-        nSubsidy += TeamRewards(nHeight);
+        nSubsidy += TeamRewards(pForkTip);
     }
 
     return nSubsidy;
@@ -2934,7 +2943,7 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
 		size_t numUTXO = coinstake.vout.size();
 		CAmount posBlockReward = PoSBlockReward();
 		int thisBlockHeight = mapBlockIndex[block.hashPrevBlock]->nHeight + 1; //avoid potential block disorder during download
-		CAmount blockValue = GetBlockValue(thisBlockHeight - 1);
+		CAmount blockValue = GetBlockValue(mapBlockIndex[block.hashPrevBlock]);
 		if (blockValue > posBlockReward) {
 			//numUTXO - 1 is team rewards, numUTXO - 2 is masternode reward
 			const CTxOut& mnOut = coinstake.vout[numUTXO - 2];
@@ -2975,7 +2984,7 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
              nInputs <= 1 ? 0 : 0.001 * (nTime1 - nTimeStart) / (nInputs - 1), nTimeConnect * 0.000001);
 
     //PoW phase redistributed fees to miner. PoS stage destroys fees.
-    CAmount nExpectedMint = GetBlockValue(pindex->pprev->nHeight);
+    CAmount nExpectedMint = GetBlockValue(pindex->pprev);
     nExpectedMint += nFees;
 
     if (!block.IsPoABlockByVersion() && !IsBlockValueValid(block, nExpectedMint, pindex->nMint)) {

@@ -431,7 +431,6 @@ bool CMasternodePaymentWinner::Sign(CKey& keyMasternode, CPubKey& pubKeyMasterno
     std::string errorMessage;
     std::string strMasterNodeSignMessage;
     std::string payeeString(payee.begin(), payee.end());
-    uint256 hashPrevout = vinMasternode.prevout.GetHash();
     HEX_DATA_STREAM_PROTOCOL(PROTOCOL_VERSION) << vinMasternode.prevout.GetHash() << nBlockHeight << payee;
     std::string strMessage = HEX_STR(ser);
 
@@ -527,7 +526,7 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransaction& txNew)
     std::string strPayeesPossible = "";
     nMasternode_Drift_Count = mnodeman.size() + Params().MasternodeCountDrift();
     CBlockIndex* pindexPrev = chainActive.Tip();
-    CAmount requiredMasternodePayment = GetMasternodePayment(nBlockHeight, GetBlockValue(pindexPrev->nHeight));
+    CAmount requiredMasternodePayment = GetMasternodePayment(nBlockHeight, GetBlockValue(pindexPrev));
 
     //require at least 6 signatures
     BOOST_FOREACH (CMasternodePayee& payee, vecPayments)
