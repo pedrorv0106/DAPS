@@ -2772,7 +2772,6 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
     // Check it again in case a previous version let a bad block in
     if (!fAlreadyChecked && !CheckBlock(block, state, !fJustCheck, !fJustCheck))
         return false;
-
     //move this code from checkBlock to ConnectBlock functions to check for forks
     //Check PoA block time
     if (block.IsPoABlockByVersion() && !CheckPoAblockTime(block)) {
@@ -2903,7 +2902,7 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
                                          REJECT_DUPLICATE, "bad-txns-inputs-spent");
                 }
                 pblocktree->WriteKeyImage(keyImage.GetHex(), bh);
-                if (pwalletMain != NULL) {
+                if (pwalletMain != NULL && !pwalletMain->IsLocked()) {
                     if (pwalletMain->GetDebit(in, ISMINE_ALL)) {
                         pwalletMain->keyImagesSpends[keyImage.GetHex()] = true;
                     }
@@ -2942,6 +2941,9 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
 		const CTransaction coinstake = block.vtx[1];
 		size_t numUTXO = coinstake.vout.size();
 		CAmount posBlockReward = PoSBlockReward();
+		if (mapBlockIndex.count(block.hashPrevBlock) < 1) {
+			return state.DoS(100, error("ConnectBlock() : Previous block not found, received block %s, previous %s, current tip %s", block.GetHash().GetHex(), block.hashPrevBlock.GetHex(), chainActive.Tip()->GetBlockHash().GetHex()));
+		}
 		int thisBlockHeight = mapBlockIndex[block.hashPrevBlock]->nHeight + 1; //avoid potential block disorder during download
 		CAmount blockValue = GetBlockValue(mapBlockIndex[block.hashPrevBlock]);
 		if (blockValue > posBlockReward) {
@@ -2949,21 +2951,21 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
 			const CTxOut& mnOut = coinstake.vout[numUTXO - 2];
 			std::string mnsa(mnOut.masternodeStealthAddress.begin(), mnOut.masternodeStealthAddress.end());
 			if (!VerifyDerivedAddress(mnOut, mnsa))
-				return state.DoS(100, error("CheckBlock() : Incorrect derived address for masternode rewards"));
+				return state.DoS(100, error("ConnectBlock() : Incorrect derived address for masternode rewards"));
 
 			CAmount teamReward = blockValue - posBlockReward;
 			const CTxOut& foundationOut = coinstake.vout[numUTXO - 1];
 			if (foundationOut.nValue != teamReward)
-				return state.DoS(100, error("CheckBlock() : Incorrect amount PoS rewards for foundation, reward = %d while the correct reward = %d", foundationOut.nValue, teamReward));
+				return state.DoS(100, error("ConnectBlock() : Incorrect amount PoS rewards for foundation, reward = %d while the correct reward = %d", foundationOut.nValue, teamReward));
 
 			if (!VerifyDerivedAddress(foundationOut, FOUNDATION_WALLET))
-				return state.DoS(100, error("CheckBlock() : Incorrect derived address PoS rewards for foundation"));
+				return state.DoS(100, error("ConnectBlock() : Incorrect derived address PoS rewards for foundation"));
 		} else {
 			//there is no team rewards in this block
 			const CTxOut& mnOut = coinstake.vout[numUTXO - 1];
 			std::string mnsa(mnOut.masternodeStealthAddress.begin(), mnOut.masternodeStealthAddress.end());
 			if (!VerifyDerivedAddress(mnOut, mnsa))
-				return state.DoS(100, error("CheckBlock() : Incorrect derived address for masternode rewards"));
+				return state.DoS(100, error("ConnectBlock() : Incorrect derived address for masternode rewards"));
 		}
     }
 
