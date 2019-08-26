@@ -119,7 +119,9 @@ Value getpoolinfo(const Array& params, bool fHelp)
             HelpExampleCli("getpoolinfo", "") + HelpExampleRpc("getpoolinfo", ""));
 
     Object obj;
-    obj.push_back(Pair("current_masternode", mnodeman.GetCurrentMasterNode()->addr.ToString()));
+    if (mnodeman.GetCurrentMasterNode() != NULL) {
+    	obj.push_back(Pair("current_masternode", mnodeman.GetCurrentMasterNode()->addr.ToString()));
+    }
     obj.push_back(Pair("state", obfuScationPool.GetState()));
     obj.push_back(Pair("entries", obfuScationPool.GetEntriesCount()));
     obj.push_back(Pair("entries_accepted", obfuScationPool.GetCountEntriesAccepted()));
@@ -933,7 +935,7 @@ Value getcurrentseesawreward (const Array& params, bool fHelp)
     int ipv4 = 0, ipv6 = 0, onion = 0;
     mnodeman.CountNetworks(ActiveProtocol(), ipv4, ipv6, onion);
     int nblockHeight = chainActive.Tip()->nHeight;
-    CAmount nReward = GetBlockValue(nblockHeight);
+    CAmount nReward = GetBlockValue(chainActive.Tip());
 
     CAmount masternodeReward = GetSeeSaw(nReward, 0, nblockHeight);
     CAmount stakingnodeReward = nReward - masternodeReward;
@@ -967,7 +969,7 @@ Value getseesawrewardwithheight (const Array& params, bool fHelp)
     Object obj;
     int ipv4 = 0, ipv6 = 0, onion = 0;
     mnodeman.CountNetworks(ActiveProtocol(), ipv4, ipv6, onion);
-    CAmount nReward = GetBlockValue(nblockHeight);
+    CAmount nReward = GetBlockValue(chainActive[nblockHeight]);
 
     CAmount masternodeReward = GetSeeSaw(nReward, 0, nblockHeight);
     CAmount stakingnodeReward = nReward - masternodeReward;
@@ -998,7 +1000,7 @@ Value getseesawrewardratio (const Array& params, bool fHelp)
     Object obj;
     int ipv4 = 0, ipv6 = 0, onion = 0;
     mnodeman.CountNetworks(ActiveProtocol(), ipv4, ipv6, onion);
-    CAmount nReward = GetBlockValue(nblockHeight);
+    CAmount nReward = GetBlockValue(chainActive[nblockHeight]);
 
     CAmount masternodeReward = GetSeeSaw(nReward, 0, nblockHeight);
     int masternodeRatio = (masternodeReward * 100)/nReward;

@@ -234,11 +234,13 @@ protected:
     {
         // Read at cursor
         Dbt datKey;
+        datKey.set_data(NULL);
         if (fFlags == DB_SET || fFlags == DB_SET_RANGE || fFlags == DB_GET_BOTH || fFlags == DB_GET_BOTH_RANGE) {
             datKey.set_data(&ssKey[0]);
             datKey.set_size(ssKey.size());
         }
         Dbt datValue;
+        datValue.set_data(NULL);
         if (fFlags == DB_GET_BOTH || fFlags == DB_GET_BOTH_RANGE) {
             datValue.set_data(&ssValue[0]);
             datValue.set_size(ssValue.size());
@@ -246,10 +248,22 @@ protected:
         datKey.set_flags(DB_DBT_MALLOC);
         datValue.set_flags(DB_DBT_MALLOC);
         int ret = pcursor->get(&datKey, &datValue, fFlags);
-        if (ret != 0)
+        if (ret != 0) {
+            if (datKey.get_data() != NULL)
+                free(datKey.get_data());
+            if (datValue.get_data() != NULL)
+                free(datValue.get_data());
+
             return ret;
-        else if (datKey.get_data() == NULL || datValue.get_data() == NULL)
+        }
+        else if (datKey.get_data() == NULL || datValue.get_data() == NULL) {
+            if (datKey.get_data() != NULL)
+                free(datKey.get_data());
+            if (datValue.get_data() != NULL)
+                free(datValue.get_data());
+
             return 99999;
+        }
 
         // Convert to streams
         ssKey.SetType(SER_DISK);

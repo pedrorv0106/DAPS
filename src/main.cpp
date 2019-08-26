@@ -1562,6 +1562,8 @@ bool CheckHaveInputs(const CCoinsViewCache& view, const CTransaction& tx)
 bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransaction &tx, bool fLimitFree,
                         bool *pfMissingInputs, bool fRejectInsaneFee, bool ignoreFees) {
     AssertLockHeld(cs_main);
+    if (tx.nTxFee <= BASE_FEE)
+        return state.DoS(100, error("AcceptToMemoryPool: Fee less than base fee 1 DAPS"), REJECT_INVALID, "fee-too-low");
     if (pfMissingInputs)
         *pfMissingInputs = false;
     if (!CheckTransaction(tx, false, true, state))
@@ -2081,13 +2083,18 @@ CAmount PoSBlockReward() {
 	return 900 * COIN;
 }
 
-CAmount TeamRewards(int nHeight)
+CAmount TeamRewards(const CBlockIndex *ptip)
 {
-	if (!chainActive[nHeight]->IsProofOfAudit()) return 0;
-	CBlockIndex* lastPoABlock = chainActive[nHeight];
+	const CBlockIndex* pForkTip = ptip;
+	if (!ptip) {
+		pForkTip = chainActive.Tip();
+	}
+
+	if (!pForkTip->IsProofOfAudit()) return 0;
+	const CBlockIndex* lastPoABlock = pForkTip;
 	if (lastPoABlock->hashPrevPoABlock.IsNull()) {
 		//pay daps team after the first PoA block
-		return (nHeight - Params().LAST_POW_BLOCK() - 1 + 1 /*+1 for the being created PoS block*/) * 50 * COIN;
+		return (pForkTip->nHeight - Params().LAST_POW_BLOCK() - 1 + 1 /*+1 for the being created PoS block*/) * 50 * COIN;
 	}
 
 	//loop back to find the PoA block right after which the daps team is paid
@@ -2102,19 +2109,23 @@ CAmount TeamRewards(int nHeight)
 	}
 
 	if (!lastPoAHash.IsNull() && numPoABlocks != 0 && numPoABlocks % 24 == 0) {
-		ret = (nHeight - (mapBlockIndex[lastPoAHash]->nHeight + 1) - numPoABlocks + 1 /*+1 for the being created PoS block*/) * 50 * COIN;
+		ret = (pForkTip->nHeight - (mapBlockIndex[lastPoAHash]->nHeight + 1) - numPoABlocks + 1 /*+1 for the being created PoS block*/) * 50 * COIN;
 	}
 	return ret;
 }
 
-int64_t GetBlockValue(int nHeight) {
+int64_t GetBlockValue(const CBlockIndex *ptip) {
     int64_t nSubsidy = 0;
+    const CBlockIndex* pForkTip = ptip;
+    if (!ptip) {
+    	pForkTip = chainActive.Tip();
+    }
 
-	if (nHeight < Params().nLastPOWBlock) {
+	if (pForkTip->nHeight < Params().nLastPOWBlock) {
 		nSubsidy = 300000000 * COIN;
 	} else {
         nSubsidy = PoSBlockReward();
-        nSubsidy += TeamRewards(nHeight);
+        nSubsidy += TeamRewards(pForkTip);
     }
 
     return nSubsidy;
@@ -2761,7 +2772,6 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
     // Check it again in case a previous version let a bad block in
     if (!fAlreadyChecked && !CheckBlock(block, state, !fJustCheck, !fJustCheck))
         return false;
-
     //move this code from checkBlock to ConnectBlock functions to check for forks
     //Check PoA block time
     if (block.IsPoABlockByVersion() && !CheckPoAblockTime(block)) {
@@ -2892,7 +2902,7 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
                                          REJECT_DUPLICATE, "bad-txns-inputs-spent");
                 }
                 pblocktree->WriteKeyImage(keyImage.GetHex(), bh);
-                if (pwalletMain != NULL) {
+                if (pwalletMain != NULL && !pwalletMain->IsLocked()) {
                     if (pwalletMain->GetDebit(in, ISMINE_ALL)) {
                         pwalletMain->keyImagesSpends[keyImage.GetHex()] = true;
                     }
@@ -2931,28 +2941,31 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
 		const CTransaction coinstake = block.vtx[1];
 		size_t numUTXO = coinstake.vout.size();
 		CAmount posBlockReward = PoSBlockReward();
+		if (mapBlockIndex.count(block.hashPrevBlock) < 1) {
+			return state.DoS(100, error("ConnectBlock() : Previous block not found, received block %s, previous %s, current tip %s", block.GetHash().GetHex(), block.hashPrevBlock.GetHex(), chainActive.Tip()->GetBlockHash().GetHex()));
+		}
 		int thisBlockHeight = mapBlockIndex[block.hashPrevBlock]->nHeight + 1; //avoid potential block disorder during download
-		CAmount blockValue = GetBlockValue(thisBlockHeight - 1);
+		CAmount blockValue = GetBlockValue(mapBlockIndex[block.hashPrevBlock]);
 		if (blockValue > posBlockReward) {
 			//numUTXO - 1 is team rewards, numUTXO - 2 is masternode reward
 			const CTxOut& mnOut = coinstake.vout[numUTXO - 2];
 			std::string mnsa(mnOut.masternodeStealthAddress.begin(), mnOut.masternodeStealthAddress.end());
 			if (!VerifyDerivedAddress(mnOut, mnsa))
-				return state.DoS(100, error("CheckBlock() : Incorrect derived address for masternode rewards"));
+				return state.DoS(100, error("ConnectBlock() : Incorrect derived address for masternode rewards"));
 
 			CAmount teamReward = blockValue - posBlockReward;
 			const CTxOut& foundationOut = coinstake.vout[numUTXO - 1];
 			if (foundationOut.nValue != teamReward)
-				return state.DoS(100, error("CheckBlock() : Incorrect amount PoS rewards for foundation, reward = %d while the correct reward = %d", foundationOut.nValue, teamReward));
+				return state.DoS(100, error("ConnectBlock() : Incorrect amount PoS rewards for foundation, reward = %d while the correct reward = %d", foundationOut.nValue, teamReward));
 
 			if (!VerifyDerivedAddress(foundationOut, FOUNDATION_WALLET))
-				return state.DoS(100, error("CheckBlock() : Incorrect derived address PoS rewards for foundation"));
+				return state.DoS(100, error("ConnectBlock() : Incorrect derived address PoS rewards for foundation"));
 		} else {
 			//there is no team rewards in this block
 			const CTxOut& mnOut = coinstake.vout[numUTXO - 1];
 			std::string mnsa(mnOut.masternodeStealthAddress.begin(), mnOut.masternodeStealthAddress.end());
 			if (!VerifyDerivedAddress(mnOut, mnsa))
-				return state.DoS(100, error("CheckBlock() : Incorrect derived address for masternode rewards"));
+				return state.DoS(100, error("ConnectBlock() : Incorrect derived address for masternode rewards"));
 		}
     }
 
@@ -2973,7 +2986,7 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
              nInputs <= 1 ? 0 : 0.001 * (nTime1 - nTimeStart) / (nInputs - 1), nTimeConnect * 0.000001);
 
     //PoW phase redistributed fees to miner. PoS stage destroys fees.
-    CAmount nExpectedMint = GetBlockValue(pindex->pprev->nHeight);
+    CAmount nExpectedMint = GetBlockValue(pindex->pprev);
     nExpectedMint += nFees;
 
     if (!block.IsPoABlockByVersion() && !IsBlockValueValid(block, nExpectedMint, pindex->nMint)) {

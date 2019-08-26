@@ -273,6 +273,8 @@ RPCConsole::~RPCConsole()
 {
     GUIUtil::saveWindowGeometry("nRPCConsoleWindow", this);
     emit stopExecutor();
+    delete peersTableContextMenu;
+    delete banTableContextMenu;
     delete ui;
 }
 

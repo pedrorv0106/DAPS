@@ -248,7 +248,8 @@ public:
     bool IsCollateralAmount(CAmount nInputAmount) const;
     int CountInputsWithAmount(CAmount nInputAmount);
     COutPoint findMyOutPoint(const CTxIn& txin) const;
-    bool SelectCoinsCollateral(std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet) ;
+    bool SelectCoinsCollateral(std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet);
+    static int ComputeTxSize(size_t numIn, size_t numOut, size_t ringSize);
 
     /*
      * Main wallet lock.
@@ -321,6 +322,7 @@ public:
         nLastResend = 0;
         nTimeFirstKey = 0;
         fWalletUnlockAnonymizeOnly = false;
+        walletStakingInProgress = false;
         fBackupMints = false;
 
         // Stake Settings

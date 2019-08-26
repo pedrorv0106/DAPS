@@ -130,7 +130,7 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
 
     initSyncCircle(.8);
 
-    QTimer* timerBlockHeightLabel = new QTimer();
+    QTimer* timerBlockHeightLabel = new QTimer(this);
     connect(timerBlockHeightLabel, SIGNAL(timeout()), this, SLOT(showBlockCurrentHeight()));
     timerBlockHeightLabel->start(10000);
 
@@ -147,6 +147,7 @@ void OverviewPage::handleTransactionClicked(const QModelIndex& index)
 
 OverviewPage::~OverviewPage()
 {
+    delete animClock;
     delete ui;
 }
 
@@ -234,7 +235,7 @@ void OverviewPage::setWalletModel(WalletModel* model)
     if (model && model->getOptionsModel()) {
         // Set up transaction list
         LogPrintf("\n%s:setWalletModel\n", __func__);
-        filter = new TransactionFilterProxy();
+        filter = new TransactionFilterProxy(this);
         filter->setSourceModel(model->getTransactionTableModel());
         filter->setLimit(NUM_ITEMS);
         filter->setDynamicSortFilter(true);
