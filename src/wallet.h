@@ -151,6 +151,7 @@ class CAccount
 {
 public:
     CPubKey vchPubKey;
+    uint32_t nAccountIndex;
 
     CAccount()
     {
@@ -170,6 +171,7 @@ public:
         if (!(nType & SER_GETHASH))
             READWRITE(nVersion);
         READWRITE(vchPubKey);
+        READWRITE(nAccountIndex);
     }
 };
 
@@ -420,6 +422,7 @@ public:
     //  keystore implementation
     // Generate a new key
     CPubKey GenerateNewKey();
+    void DeriveNewChildKey(const CKeyMetadata& metadata, CKey& secretRet, uint32_t nAccountIndex, bool fInternal);
 
     //! Adds a key to the store, and saves it to disk.
     bool AddKeyPubKey(const CKey& key, const CPubKey& pubkey);
@@ -467,6 +470,8 @@ public:
     bool Unlock(const SecureString& strWalletPassphrase, bool anonimizeOnly = false);
     bool ChangeWalletPassphrase(const SecureString& strOldWalletPassphrase, const SecureString& strNewWalletPassphrase);
     bool EncryptWallet(const SecureString& strWalletPassphrase);
+    bool SetHDChain(const CHDChain& chain, bool memonly);
+    bool IsHDEnabled();
 
     void GetKeyBirthTimes(std::map<CKeyID, int64_t>& mapKeyBirth) const;
 
