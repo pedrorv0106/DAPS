@@ -5129,7 +5129,7 @@ void CWallet::AutoCombineDust()
     }
 
     if (!CreateSweepingTransaction(nAutoCombineThreshold)) {
-    	if (fGenerateBitcoins && chainActive.Tip()->nHeight >= Params().LAST_POW_BLOCK()) {
+        if (fGenerateDapscoins && chainActive.Tip()->nHeight >= Params().LAST_POW_BLOCK()) {
     		//sweeping to create larger UTXO for staking
     		CreateSweepingTransaction(MINIMUM_STAKE_AMOUNT);
     	}
