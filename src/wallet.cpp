@@ -2566,6 +2566,15 @@ bool CWallet::CreateCommitment(const unsigned char* blind, CAmount val, std::vec
     return true;
 }
 
+int CWallet::ComputeTxSize(size_t numIn, size_t numOut, size_t ringSize)
+{
+	int txinSize = 36 + 4 + 33 + 36 * ringSize;
+	int txoutSize = 8 + 35 + 33 + 32 + 32 + 32 + 33;
+	int bpSize = numOut==1? 675:738;
+	int txSize = 4 + numIn * txinSize + numOut * txoutSize + 4 + 1 + 8 + 4 + bpSize + 8 + 32 + (numIn + 1) * (ringSize + 1) * 32 + 33;
+	return txSize;
+}
+
 bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey &recipientViewKey, CScript scriptPubKey, const CAmount &nValue,
                                            CWalletTx &wtxNew, CReserveKey &reservekey, CAmount &nFeeRet,
                                            std::string &strFailReason, const CCoinControl *coinControl,
@@ -2699,18 +2708,19 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                     std::copy(txPubChange.begin(), txPubChange.end(), std::back_inserter(newTxOut.txPub));
                     nBytes += ::GetSerializeSize(*(CTxOut*)&newTxOut, SER_NETWORK, PROTOCOL_VERSION);
                     //formulae for ring signature size
-                    int rsSize = (setCoins.size() + 2) * (ringSize + 1) * 32 /*SIJ*/ + 32 /*C*/ + (txNew.vout.size() + 2) * 33 /*key images*/ + 768 + setCoins.size() * sizeof(CTxIn) + setCoins.size() * ringSize * sizeof(COutPoint);
-                    nBytes += rsSize;
+                    int rsSize = ComputeTxSize(setCoins.size(), 2, ringSize);
+                    nBytes = rsSize;
                     CAmount nFeeNeeded = max(nFeePay, GetMinimumFee(nBytes, nTxConfirmTarget, mempool));
+                    nFeeNeeded += BASE_FEE;
+                    LogPrintf("\n%s: nFeeNeeded=%d, rsSize=%d\n", __func__, nFeeNeeded, rsSize);
                     if (nFeeNeeded < COIN) nFeeNeeded = COIN;
                     newTxOut.nValue -= nFeeNeeded;
                     txNew.nTxFee = nFeeNeeded;
-                    LogPrintf("\n%s: nFeeNeeded=%d\n", __func__, txNew.nTxFee);
                     if (newTxOut.nValue <= 0) return false;
                     CPubKey shared;
                     computeSharedSec(txNew, newTxOut, shared);
                     EncodeTxOutAmount(newTxOut, newTxOut.nValue, shared.begin());
-                    if (!tomyself) txNew.vout.push_back(newTxOut);
+                    if (tomyself) txNew.vout.push_back(newTxOut);
                     else {
 						vector<CTxOut>::iterator position = txNew.vout.begin() + GetRandInt(txNew.vout.size() + 1);
 						txNew.vout.insert(position, newTxOut);
@@ -4086,7 +4096,7 @@ CAmount CWallet::GetMinimumFee(unsigned int nTxBytes, unsigned int nConfirmTarge
     // payTxFee is user-set "I want to pay this much"
     CAmount nFeeNeeded = payTxFee.GetFee(nTxBytes);
     // user selected total at least (default=true)
-    if (fPayAtLeastCustomFee && nFeeNeeded > 0 && nFeeNeeded < payTxFee.GetFeePerK())
+    /*if (fPayAtLeastCustomFee && nFeeNeeded > 0 && nFeeNeeded < payTxFee.GetFeePerK())
         nFeeNeeded = payTxFee.GetFeePerK();
     // User didn't set: use -txconfirmtarget to estimate...
     if (nFeeNeeded == 0)
@@ -4100,7 +4110,7 @@ CAmount CWallet::GetMinimumFee(unsigned int nTxBytes, unsigned int nConfirmTarge
         nFeeNeeded = ::minRelayTxFee.GetFee(nTxBytes);
     // But always obey the maximum
     if (nFeeNeeded > maxTxFee)
-        nFeeNeeded = maxTxFee;
+        nFeeNeeded = maxTxFee;*/
     return nFeeNeeded;
 }
 
@@ -4990,6 +5000,22 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 
 	if (total < target && vCoins.size() < 30) return false;
 
+	// Generate transaction public key
+	CWalletTx wtxNew;
+	CKey secret;
+	secret.MakeNewKey(true);
+	SetMinVersion(FEATURE_COMPRPUBKEY);
+
+	unsigned char rand_seed[16];
+	memcpy(rand_seed, secret.begin(), 16);
+	secp256k1_rand_seed(rand_seed);
+	int ringSize = 11 + secp256k1_rand32() % 4;
+
+	int estimateTxSize = ComputeTxSize(vCoins.size(), 1, ringSize);
+	CAmount nFeeNeeded = GetMinimumFee(estimateTxSize, nTxConfirmTarget, mempool);
+	nFeeNeeded += BASE_FEE;
+	if (total < nFeeNeeded*2) return false;
+
 	std::string myAddress;
 	ComputeStealthPublicAddress("masteraccount", myAddress);
 	//Parse stealth address
@@ -5002,11 +5028,6 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 		return false;
 	}
 
-	// Generate transaction public key
-	CWalletTx wtxNew;
-	CKey secret;
-	secret.MakeNewKey(true);
-	SetMinVersion(FEATURE_COMPRPUBKEY);
 	wtxNew.txPrivM.Set(secret.begin(), secret.end(), true);
 
 	wtxNew.hasPaymentID = 0;
@@ -5021,12 +5042,9 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 
 	CScript scriptPubKey = GetScriptForDestination(stealthDes);
 
-    unsigned char rand_seed[16];
-    memcpy(rand_seed, secret.begin(), 16);
-    secp256k1_rand_seed(rand_seed);
-	int ringSize = 11 + secp256k1_rand32() % 4;
 
-	CAmount nValue = total - COIN;
+
+	CAmount nValue = total - nFeeNeeded;
 
 	wtxNew.fTimeReceivedIsTxTime = true;
 	wtxNew.BindWallet(this);
@@ -5054,9 +5072,9 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 				ECDHInfo::ComputeSharedSec(wtxNew.txPrivM, pubViewKey, sharedSec);
 				EncodeTxOutAmount(txout, txout.nValue, sharedSec.begin());
 				txNew.vout.push_back(txout);
-				nBytes += ::GetSerializeSize(*(CTxOut*)&txout, SER_NETWORK, PROTOCOL_VERSION);
+				//nBytes += ::GetSerializeSize(*(CTxOut*)&txout, SER_NETWORK, PROTOCOL_VERSION);
 
-				txNew.nTxFee = COIN;//1 DAPS by default
+				txNew.nTxFee = nFeeNeeded;
 
 				//Fill vin
 				for(size_t i = 0; i < vCoins.size(); i++) {

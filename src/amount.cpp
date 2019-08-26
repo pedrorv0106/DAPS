@@ -18,6 +18,7 @@ CFeeRate::CFeeRate(const CAmount& nFeePaid, size_t nSize)
 CAmount CFeeRate::GetFee(size_t nSize) const
 {
     CAmount nFee = nSatoshisPerK * nSize / 1000;
+    std::cout << "nSatoshisPerK = " << nSatoshisPerK << std::endl;
 
     if (nFee == 0 && nSatoshisPerK > 0)
         nFee = nSatoshisPerK;
