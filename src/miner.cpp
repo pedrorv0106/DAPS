@@ -755,7 +755,7 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake, MineType mineType)
         //Stake miner main
         if (fProofOfStake) {
             LogPrintf("CPUMiner : proof-of-stake block found %s \n", pblock->GetHash().ToString().c_str());
-
+            pwallet->AddComputedPrivateKey(pblock->vtx[1].vout[1]);
             if (!pblock->SignBlock(*pwallet)) {
                 LogPrintf("BitcoinMiner(): Signing new block failed \n");
                 continue;
