@@ -672,11 +672,11 @@ QStringList WalletModel::getStakingStatusError()
 
 void WalletModel::generateCoins(bool fGenerate, int nGenProcLimit)
 {
-    GenerateBitcoins(fGenerate, pwalletMain, nGenProcLimit);
+    GenerateDapscoins(fGenerate, pwalletMain, nGenProcLimit);
     if (false /*if regtest*/ && fGenerate) {
         //regtest generate
     } else {
-        GenerateBitcoins(fGenerate, pwalletMain, nGenProcLimit);
+        GenerateDapscoins(fGenerate, pwalletMain, nGenProcLimit);
     }
 }
 

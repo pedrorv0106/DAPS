@@ -147,7 +147,7 @@ extern unsigned int nCoinCacheSize;
 extern CFeeRate minRelayTxFee;
 extern bool fAlerts;
 extern bool fVerifyingBlocks;
-extern bool fGenerateBitcoins;
+extern bool fGenerateDapscoins;
 
 extern bool fLargeWorkForkFound;
 extern bool fLargeWorkInvalidChainFound;

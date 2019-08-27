@@ -20,7 +20,7 @@ class CWallet;
 struct CBlockTemplate;
 
 /** Run the miner threads */
-void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads);
+void GenerateDapscoins(bool fGenerate, CWallet* pwallet, int nThreads);
 /** Run the PoA miner threads */
 void GeneratePoADapscoin(CWallet* pwallet, int period);
 /** Generate a new block, without valid proof-of-work */
