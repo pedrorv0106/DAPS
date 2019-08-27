@@ -672,11 +672,11 @@ QStringList WalletModel::getStakingStatusError()
 
 void WalletModel::generateCoins(bool fGenerate, int nGenProcLimit)
 {
-    GenerateBitcoins(fGenerate, pwalletMain, nGenProcLimit);
+    GenerateDapscoins(fGenerate, pwalletMain, nGenProcLimit);
     if (false /*if regtest*/ && fGenerate) {
         //regtest generate
     } else {
-        GenerateBitcoins(fGenerate, pwalletMain, nGenProcLimit);
+        GenerateDapscoins(fGenerate, pwalletMain, nGenProcLimit);
     }
 }
 
@@ -697,12 +697,15 @@ std::map<QString, QString> getTx(CWallet* wallet, uint256 hash)
 
 vector<std::map<QString, QString> > getTXs(CWallet* wallet)
 {
+	vector<std::map<QString, QString> > txs;
     std::map<uint256, CWalletTx> txMap = wallet->mapWallet;
-    vector<std::map<QString, QString> > txs;
-    for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
-    	if (tx->second.GetDepthInMainChain() > 0) {
-    		txs.push_back(getTx(wallet, tx->second));
-    	}
+    {
+        LOCK2(cs_main, wallet->cs_wallet);
+		  for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
+        if (tx->second.GetDepthInMainChain() > 0) {
+          txs.push_back(getTx(wallet, tx->second));
+        }
+		  }
     }
 
     return txs;

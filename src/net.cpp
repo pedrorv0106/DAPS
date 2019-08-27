@@ -1752,7 +1752,7 @@ void StartNode(boost::thread_group &threadGroup, CScheduler &scheduler) {
     if (pwalletMain) 
         storedStakingStatus = pwalletMain->ReadStakingStatus();
     if (GetBoolArg("-staking", true) || storedStakingStatus) {
-    	fGenerateBitcoins = true;
+    	fGenerateDapscoins = true;
         LogPrintf("Starting staking\n");
         threadGroup.create_thread(boost::bind(&TraceThread<void (*)()>, "stakemint", &ThreadStakeMinter));
     }
