@@ -375,7 +375,7 @@ bool CCryptoKeyStore::EncryptHDChain(const CKeyingMaterial& vMasterKeyIn)
     if (!EncryptSecret(vMasterKeyIn, hdChain.GetSeed(), hdChain.GetID(), vchCryptedSeed))
         return false;
 
-    hdChain.Debug(__func__);
+    // hdChain.Debug(__func__);
     cryptedHDChain = hdChain;
     cryptedHDChain.SetCrypted(true);
 
@@ -408,7 +408,7 @@ bool CCryptoKeyStore::EncryptHDChain(const CKeyingMaterial& vMasterKeyIn)
     return true;
 }
 
-bool CCryptoKeyStore::DecryptHDChain(CHDChain& hdChainRet) const
+bool CCryptoKeyStore::DecryptHDChain(CHDChain& hdChainRet)
 {
     if (!IsCrypted())
         return true;
@@ -454,7 +454,7 @@ bool CCryptoKeyStore::DecryptHDChain(CHDChain& hdChainRet) const
     }
 
     hdChainRet.SetCrypted(false);
-    hdChainRet.Debug(__func__);
+    // hdChainRet.Debug(__func__);
 
     return true;
 }
@@ -483,7 +483,7 @@ bool CCryptoKeyStore::SetCryptedHDChain(const CHDChain& chain)
     return true;
 }
 
-bool CCryptoKeyStore::GetHDChain(CHDChain& hdChainRet) const
+bool CCryptoKeyStore::GetHDChain(CHDChain& hdChainRet)
 {
     if(IsCrypted()) {
         hdChainRet = cryptedHDChain;

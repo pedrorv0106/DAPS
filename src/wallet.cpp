@@ -230,12 +230,9 @@ void CWallet::GenerateNewHDChain()
     if (!newHdChain.SetMnemonic(vchMnemonic, vchMnemonicPassphrase, true))
         throw std::runtime_error(std::string(__func__) + ": SetMnemonic failed");
 
+    newHdChain.Debug(__func__);
     if (!SetHDChain(newHdChain, false))
         throw std::runtime_error(std::string(__func__) + ": SetHDChain failed");
-
-    // clean up
-    ForceRemoveArg("-mnemonic");
-    ForceRemoveArg("-mnemonicpassphrase");
 }
 
 bool CWallet::IsHDEnabled()
@@ -4479,7 +4476,7 @@ void GetAccountAddress(CWallet* pwalletMain, string strAccount, bool bForceNew =
     if (!account.vchPubKey.IsValid() || bForceNew || bKeyUsed) {
         // pwalletMain->GetKeyFromPool(account.vchPubKey);
         CKey newKey;
-        DeriveNewChildKey(account.nAccountIndex, newKey);
+        pwalletMain->DeriveNewChildKey(account.nAccountIndex, newKey);
         account.vchPubKey = newKey.GetPubKey();
 
         pwalletMain->SetAddressBook(account.vchPubKey.GetID(), strAccount, "receive");
@@ -5864,7 +5861,7 @@ CBitcoinAddress GetAccountAddress(uint32_t nAccountIndex, string strAccount, CWa
     // if (!pwalletMain->GetKeyFromPool(account.vchPubKey))
     //     throw runtime_error("Error: Keypool ran out, please call keypoolrefill first");
     CKey newKey;
-    DeriveNewChildKey(nAccountIndex, newKey);
+    pwalletMain->DeriveNewChildKey(nAccountIndex, newKey);
     account.vchPubKey = newKey.GetPubKey();
     account.nAccountIndex = nAccountIndex;
 

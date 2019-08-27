@@ -21,9 +21,6 @@ private:
     SecureVector vchMnemonic;
     SecureVector vchMnemonicPassphrase;
 
-    // critical section to protect mapAccounts
-    mutable CCriticalSection cs_accounts;
-
 public:
 
     CHDChain() { SetNull(); }
@@ -33,22 +30,19 @@ public:
         fCrypted(other.fCrypted),
         vchSeed(other.vchSeed),
         vchMnemonic(other.vchMnemonic),
-        vchMnemonicPassphrase(other.vchMnemonicPassphrase),
-        mapAccounts(other.mapAccounts)
+        vchMnemonicPassphrase(other.vchMnemonicPassphrase)
         {}
 
     ADD_SERIALIZE_METHODS;
     template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action)
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion)
     {
-        LOCK(cs_accounts);
         READWRITE(this->nVersion);
         READWRITE(id);
         READWRITE(fCrypted);
         READWRITE(vchSeed);
         READWRITE(vchMnemonic);
         READWRITE(vchMnemonicPassphrase);
-        READWRITE(mapAccounts);
     }
 
     void swap(CHDChain& first, CHDChain& second) // nothrow
@@ -64,7 +58,6 @@ public:
         swap(first.vchSeed, second.vchSeed);
         swap(first.vchMnemonic, second.vchMnemonic);
         swap(first.vchMnemonicPassphrase, second.vchMnemonicPassphrase);
-        swap(first.mapAccounts, second.mapAccounts);
     }
     CHDChain& operator=(CHDChain from)
     {

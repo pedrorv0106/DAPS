@@ -139,9 +139,10 @@ protected:
     //! will encrypt previously unencrypted keys
     bool EncryptKeys(CKeyingMaterial& vMasterKeyIn);
     bool EncryptHDChain(const CKeyingMaterial& vMasterKeyIn);
-    bool DecryptHDChain(CHDChain& hdChainRet) const;
+    bool DecryptHDChain(CHDChain& hdChainRet);
     bool SetHDChain(const CHDChain& chain);
     bool SetCryptedHDChain(const CHDChain& chain);
+    bool GetHDChain(CHDChain& hdChainRet);
 
     bool Unlock(const CKeyingMaterial& vMasterKeyIn);
 

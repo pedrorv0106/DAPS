@@ -5,7 +5,7 @@
 #ifndef BITCOIN_BIP39_H
 #define BITCOIN_BIP39_H
 
-#include "allocator.h"
+#include "allocators.h"
 
 class CMnemonic
 {
