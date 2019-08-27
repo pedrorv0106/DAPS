@@ -945,9 +945,9 @@ bool CWallet::AddToWalletIfInvolvingMe(const CTransaction& tx, const CBlock* pbl
 {
     {
         AssertLockHeld(cs_wallet);
-        IsTransactionForMe(tx);
         bool fExisted = mapWallet.count(tx.GetHash()) != 0;
         if (fExisted && !fUpdate) return false;
+        IsTransactionForMe(tx);
         if (pblock && mapBlockIndex.count(pblock->GetHash()) == 1) {
         	if (!IsLocked()) {
         		try {
