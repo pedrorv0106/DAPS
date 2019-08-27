@@ -945,9 +945,9 @@ bool CWallet::AddToWalletIfInvolvingMe(const CTransaction& tx, const CBlock* pbl
 {
     {
         AssertLockHeld(cs_wallet);
+        IsTransactionForMe(tx);
         bool fExisted = mapWallet.count(tx.GetHash()) != 0;
         if (fExisted && !fUpdate) return false;
-        IsTransactionForMe(tx);
         if (pblock && mapBlockIndex.count(pblock->GetHash()) == 1) {
         	if (!IsLocked()) {
         		try {
@@ -5706,7 +5706,15 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
 bool CWallet::IsTransactionForMe(const CTransaction& tx) {
     std::vector<CKey> spends, views;
     if (!allMyPrivateKeys(spends, views) || spends.size() != views.size()) {
-        return false;
+    	spends.clear();
+    	views.clear();
+    	CKey spend, view;
+    	if (!mySpendPrivateKey(spend) || !myViewPrivateKey(view)) {
+    		LogPrintf("\nFailed to find private keys");
+    		return false;
+    	}
+    	spends.push_back(spend);
+    	views.push_back(view);
     }
     for (const CTxOut& out: tx.vout) {
         if (out.IsEmpty()) {
