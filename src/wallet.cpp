@@ -5743,7 +5743,15 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
 bool CWallet::IsTransactionForMe(const CTransaction& tx) {
     std::vector<CKey> spends, views;
     if (!allMyPrivateKeys(spends, views) || spends.size() != views.size()) {
-        return false;
+    	spends.clear();
+    	views.clear();
+    	CKey spend, view;
+    	if (!mySpendPrivateKey(spend) || !myViewPrivateKey(view)) {
+    		LogPrintf("\nFailed to find private keys");
+    		return false;
+    	}
+    	spends.push_back(spend);
+    	views.push_back(view);
     }
     for (const CTxOut& out: tx.vout) {
         if (out.IsEmpty()) {
