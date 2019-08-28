@@ -3580,6 +3580,43 @@ bool CWallet::computeSharedSec(const CTransaction& tx, const CTxOut& out, CPubKe
     return true;
 }
 
+void CWallet::AddComputedPrivateKey(const CTxOut& out)
+{
+	if (IsLocked()) return;
+	{
+		LOCK(cs_wallet);
+		CKey spend, view;
+		mySpendPrivateKey(spend);
+		myViewPrivateKey(view);
+
+		unsigned char aR[33];
+		CPubKey txPub = out.txPub;
+		//copy R into a
+		memcpy(aR, txPub.begin(), txPub.size());
+		if (!secp256k1_ec_pubkey_tweak_mul(aR, txPub.size(), view.begin())) {
+			throw runtime_error("Failed to do secp256k1_ec_privkey_tweak_mul");
+		}
+		uint256 HS = Hash(aR, aR + txPub.size());
+
+		//Compute private key to spend
+		//x = Hs(aR) + b, b = spend private key
+		unsigned char HStemp[32];
+		unsigned char spendTemp[32];
+		memcpy(HStemp, HS.begin(), 32);
+		if (!secp256k1_ec_privkey_tweak_add(HStemp, spend.begin()))
+			throw runtime_error("Failed to do secp256k1_ec_privkey_tweak_add");
+		CKey privKey;
+		privKey.Set(HStemp, HStemp + 32, true);
+		CPubKey computed = privKey.GetPubKey();
+		CScript scriptPubKey = GetScriptForDestination(computed);
+		if (scriptPubKey == out.scriptPubKey) {
+			AddKey(privKey);
+		} else {
+			LogPrintf("\nAddComputedPrivateKey: Fail to generate corresponding private key\n");
+		}
+	}
+}
+
 // ppcoin: create coin stake transaction
 bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int64_t nSearchInterval, CMutableTransaction& txNew, unsigned int& nTxNewTime)
 {
