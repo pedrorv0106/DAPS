@@ -321,6 +321,17 @@ bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
     	return true;//receive from mempool
     }
     if (bh == againsHash) return false;
+
+    //check whether bh and againsHash is in the same fork
+    if (mapBlockIndex.count(bh) < 1) return false;
+    CBlockIndex* pindex = mapBlockIndex[againsHash];
+    CBlockIndex* bhIndex = mapBlockIndex[bh];
+    while (pindex->nHeight >= bhIndex->nHeight) {
+    	pindex = pindex->pprev;
+    }
+
+    if (pindex != bhIndex) return false;
+
     /*CBlockIndex* bhIdx = mapBlockIndex[bh];
     CBlockIndex* against = mapBlockIndex[againsHash];
 

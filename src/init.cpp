@@ -1708,12 +1708,20 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     uiInterface.InitMessage(_("Done loading"));
 
 #ifdef ENABLE_WALLET
+    bool storedStakingStatus = false;
     if (pwalletMain) {
         // Add wallet transactions that aren't already in a block to mapTransactions
         pwalletMain->ReacceptWalletTransactions();
 
         // Run a thread to flush wallet periodically
         threadGroup.create_thread(boost::bind(&ThreadFlushWalletDB, boost::ref(pwalletMain->strWalletFile)));
+		
+        storedStakingStatus = pwalletMain->ReadStakingStatus();
+        if (GetBoolArg("-staking", true) || storedStakingStatus) {
+            fGenerateDapscoins = true;
+            LogPrintf("Starting staking\n");
+            threadGroup.create_thread(boost::bind(&TraceThread<void (*)()>, "stakemint", &ThreadStakeMinter));
+        }
     }
 #endif
 

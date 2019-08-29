@@ -880,6 +880,7 @@ public:
     bool CoSignTransaction(CPartialTransaction& partial);
     bool CoSignPartialTransaction(CPartialTransaction& tx);
     bool generatePKeyImageAlphaListFromPartialTx(const CPartialTransaction& tx, CListPKeyImageAlpha& l);
+    void AddComputedPrivateKey(const CTxOut& out);
 private:
     void GeneratePKeyImageAlpha(const COutPoint& op, CPKeyImageAlpha&) const;
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);

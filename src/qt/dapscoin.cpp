@@ -490,6 +490,15 @@ void BitcoinApplication::initializeResult(int retval)
         connect(paymentServer, SIGNAL(message(QString, QString, unsigned int)),
             window, SLOT(message(QString, QString, unsigned int)));
         QTimer::singleShot(100, paymentServer, SLOT(uiReady()));
+        if (pwalletMain) {
+        	if (walletModel->getEncryptionStatus() == WalletModel::Unencrypted) {
+        		EncryptDialog dlg;
+        		dlg.setModel(walletModel);
+        		dlg.setWindowTitle("Encrypt Wallet");
+        		dlg.setStyleSheet(GUIUtil::loadStyleSheet());
+        		dlg.exec();
+        	}
+        }
 #endif
     } else {
         quit(); // Exit main loop
