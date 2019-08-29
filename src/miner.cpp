@@ -935,4 +935,20 @@ void GenerateDapscoins(bool fGenerate, CWallet* pwallet, int nThreads)
         minerThreads->create_thread(boost::bind(&ThreadBitcoinMiner, pwallet));
 }
 
+// ppcoin: stake minter thread
+void static ThreadStakeMinter() {
+    boost::this_thread::interruption_point();
+    LogPrintf("ThreadStakeMinter started\n");
+    CWallet *pwallet = pwalletMain;
+    try {
+        BitcoinMiner(pwallet, true);
+        boost::this_thread::interruption_point();
+    } catch (std::exception &e) {
+        LogPrintf("ThreadStakeMinter() exception \n");
+    } catch (...) {
+        LogPrintf("ThreadStakeMinter() error \n");
+    }
+    LogPrintf("ThreadStakeMinter exiting,\n");
+}
+
 #endif // ENABLE_WALLET
