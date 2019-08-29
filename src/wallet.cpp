@@ -4508,7 +4508,7 @@ bool CWallet::NewKeyPool()
 }
 
 
-void GetAccountAddress(CWallet* pwalletMain, string strAccount, bool bForceNew = false)
+void GetAccountAddress(CWallet* pwalletMain, string strAccount, int nAccountIndex, bool bForceNew = false)
 {
     CWalletDB walletdb(pwalletMain->strWalletFile);
 
@@ -4534,8 +4534,9 @@ void GetAccountAddress(CWallet* pwalletMain, string strAccount, bool bForceNew =
     if (!account.vchPubKey.IsValid() || bForceNew || bKeyUsed) {
         // pwalletMain->GetKeyFromPool(account.vchPubKey);
         CKey newKey;
-        pwalletMain->DeriveNewChildKey(account.nAccountIndex, newKey);
+        pwalletMain->DeriveNewChildKey(nAccountIndex, newKey);
         account.vchPubKey = newKey.GetPubKey();
+        account.nAccountIndex = nAccountIndex;
 
         pwalletMain->SetAddressBook(account.vchPubKey.GetID(), strAccount, "receive");
         walletdb.WriteAccount(strAccount, account);
@@ -4619,12 +4620,12 @@ void CWallet::CreatePrivacyAccount() {
             CAccount viewAccount;
             walletdb.ReadAccount(viewAccountLabel, viewAccount);
             if (!viewAccount.vchPubKey.IsValid()) {
-                GetAccountAddress(this, viewAccountLabel);
+                GetAccountAddress(this, viewAccountLabel, 0);
             }
             CAccount spendAccount;
             walletdb.ReadAccount(spendAccountLabel, spendAccount);
             if (!spendAccount.vchPubKey.IsValid()) {
-                GetAccountAddress(this, spendAccountLabel);
+                GetAccountAddress(this, spendAccountLabel, 1);
             }
             if (viewAccount.vchPubKey.GetHex() == "" || spendAccount.vchPubKey.GetHex() == "") {
                 i++;
@@ -5966,6 +5967,7 @@ void CWallet::createMasterKey() const {
     {   
         LOCK(cs_wallet);
         while (i < 10) {
+            printf("!!!!!!!!\n");
             std::string viewAccountLabel = "viewaccount";
             std::string spendAccountLabel = "spendaccount";
 
