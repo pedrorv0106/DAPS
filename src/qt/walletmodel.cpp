@@ -380,6 +380,11 @@ WalletModel::EncryptionStatus WalletModel::getEncryptionStatus() const
     }
 }
 
+bool WalletModel::isMultiSigSetup() const
+{
+	return wallet->IsMultisigSetup();
+}
+
 bool WalletModel::setWalletEncrypted(bool encrypted, const SecureString& passphrase)
 {
     if (encrypted) {

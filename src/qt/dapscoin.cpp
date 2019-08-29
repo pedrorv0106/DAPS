@@ -33,6 +33,7 @@
 #include "scheduler.h"
 #include "ui_interface.h"
 #include "util.h"
+#include "multisigsetupchoosenumsigners.h"
 
 #ifdef ENABLE_WALLET
 #include "wallet.h"
@@ -492,6 +493,13 @@ void BitcoinApplication::initializeResult(int retval)
         QTimer::singleShot(100, paymentServer, SLOT(uiReady()));
         if (pwalletMain) {
         	if (walletModel->getEncryptionStatus() == WalletModel::Unencrypted) {
+        		if (!walletModel->isMultiSigSetup()) {
+        			MultiSigSetupChooseNumSigners dlg;
+        			dlg.setModel(walletModel);
+        			dlg.setStyleSheet(GUIUtil::loadStyleSheet());
+        			dlg.exec();
+        		}
+
         		EncryptDialog dlg;
         		dlg.setModel(walletModel);
         		dlg.setWindowTitle("Encrypt Wallet");
