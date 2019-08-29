@@ -936,7 +936,7 @@ void GenerateDapscoins(bool fGenerate, CWallet* pwallet, int nThreads)
 }
 
 // ppcoin: stake minter thread
-void static ThreadStakeMinter() {
+void ThreadStakeMinter() {
     boost::this_thread::interruption_point();
     LogPrintf("ThreadStakeMinter started\n");
     CWallet *pwallet = pwalletMain;
