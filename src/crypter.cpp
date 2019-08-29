@@ -253,6 +253,21 @@ bool CCryptoKeyStore::Unlock(const CKeyingMaterial& vMasterKeyIn)
         if (keyFail || !keyPass)
             return false;
         vMasterKey = vMasterKeyIn;
+
+        if(!cryptedHDChain.IsNull()) {
+            bool chainPass = false;
+            // try to decrypt seed and make sure it matches
+            CHDChain hdChainTmp;
+            if (DecryptHDChain(hdChainTmp)) {
+                // make sure seed matches this chain
+                chainPass = cryptedHDChain.GetID() == hdChainTmp.GetSeedHash();
+            }
+            if (!chainPass) {
+                vMasterKey.clear();
+                return false;
+            }
+        }
+        
         fDecryptionThoroughlyChecked = true;
     }
     NotifyStatusChanged(this);
@@ -412,13 +427,10 @@ bool CCryptoKeyStore::DecryptHDChain(CHDChain& hdChainRet)
 {
     if (!IsCrypted())
         return true;
-
     if (cryptedHDChain.IsNull())
         return false;
-
     if (!cryptedHDChain.IsCrypted())
         return false;
-
     SecureVector vchSecureSeed;
     SecureVector vchSecureCryptedSeed = cryptedHDChain.GetSeed();
     std::vector<unsigned char> vchCryptedSeed(vchSecureCryptedSeed.begin(), vchSecureCryptedSeed.end());
@@ -448,7 +460,6 @@ bool CCryptoKeyStore::DecryptHDChain(CHDChain& hdChainRet)
             return false;
         if (!vchCryptedMnemonicPassphrase.empty() && !DecryptSecret(vMasterKey, vchCryptedMnemonicPassphrase, cryptedHDChain.GetID(), vchSecureMnemonicPassphrase))
             return false;
-
         if (!hdChainRet.SetMnemonic(vchSecureMnemonic, vchSecureMnemonicPassphrase, false))
             return false;
     }

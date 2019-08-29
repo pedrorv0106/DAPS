@@ -424,6 +424,11 @@ public:
     CPubKey GenerateNewKey();
     void DeriveNewChildKey(uint32_t nAccountIndex, CKey& secretRet);
     void GenerateNewHDChain();
+     /* Set the HD chain model (chain child index counters) */
+    bool SetHDChain(const CHDChain& chain, bool memonly);
+    bool SetCryptedHDChain(const CHDChain& chain, bool memonly);
+    bool GetDecryptedHDChain(CHDChain& hdChainRet);
+    bool IsHDEnabled();
 
     //! Adds a key to the store, and saves it to disk.
     bool AddKeyPubKey(const CKey& key, const CPubKey& pubkey);
@@ -471,8 +476,6 @@ public:
     bool Unlock(const SecureString& strWalletPassphrase, bool anonimizeOnly = false);
     bool ChangeWalletPassphrase(const SecureString& strOldWalletPassphrase, const SecureString& strNewWalletPassphrase);
     bool EncryptWallet(const SecureString& strWalletPassphrase);
-    bool SetHDChain(const CHDChain& chain, bool memonly);
-    bool IsHDEnabled();
 
     void GetKeyBirthTimes(std::map<CKeyID, int64_t>& mapKeyBirth) const;
 
