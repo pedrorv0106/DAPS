@@ -21,6 +21,7 @@ ToggleButton::ToggleButton(QWidget* parent) : QWidget(parent),
     ui->pushButton1->setCheckable(true);
     connect(ui->pushButton0, SIGNAL(clicked()), this, SLOT(toggle()));
     connect(ui->pushButton1, SIGNAL(clicked()), this, SLOT(toggle()));
+    state = false;
 
     update();
 }

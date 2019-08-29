@@ -3,6 +3,7 @@
 #include "guiutil.h"
 #include "guiconstants.h"
 #include "bitcoingui.h"
+#include "zxcvbn.h"
 
 #include <QMessageBox>
 #include <QCloseEvent>
@@ -67,6 +68,20 @@ void EncryptDialog::on_acceptPassphrase() {
     }
     
     if (newPass == newPass2) {
+        if (newPass.length() < 10) {
+            QMessageBox::critical(this, tr("Wallet encryption failed"),
+                    tr("The passphrase's length has to be more than 10. Please try again."));
+            return;
+        }
+
+        double guesses;
+        int ret = zxcvbn_password_strength(newPass.c_str(), NULL, &guesses, NULL);
+        if (ret < 0 || guesses < 10000) {
+            QMessageBox::critical(this, tr("Wallet encryption failed"),
+                    tr("The passphrase is weakness."));
+            return;
+        }
+
         if (model->setWalletEncrypted(true, newPass))
             QMessageBox::information(this, tr("Wallet encryption successful"),
                     tr("Wallet passphrase was successfully set. Please remember your passphrase as there is no way to recover it."));

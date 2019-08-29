@@ -6,7 +6,8 @@
 
 #include "overviewpage.h"
 #include "ui_overviewpage.h"
-
+#include "unlockdialog.h"
+#include "lockdialog.h"
 #include "bitcoinunits.h"
 #include "clientmodel.h"
 #include "guiconstants.h"
@@ -129,9 +130,11 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
 
     initSyncCircle(.8);
 
-    QTimer* timerBlockHeightLabel = new QTimer();
+    QTimer* timerBlockHeightLabel = new QTimer(this);
     connect(timerBlockHeightLabel, SIGNAL(timeout()), this, SLOT(showBlockCurrentHeight()));
     timerBlockHeightLabel->start(10000);
+
+    connect(ui->btnLockUnlock, SIGNAL(clicked()), this, SLOT(on_lockUnlock()));
 
     updateRecentTransactions();
 }
@@ -144,6 +147,7 @@ void OverviewPage::handleTransactionClicked(const QModelIndex& index)
 
 OverviewPage::~OverviewPage()
 {
+    delete animClock;
     delete ui;
 }
 
@@ -231,7 +235,7 @@ void OverviewPage::setWalletModel(WalletModel* model)
     if (model && model->getOptionsModel()) {
         // Set up transaction list
         LogPrintf("\n%s:setWalletModel\n", __func__);
-        filter = new TransactionFilterProxy();
+        filter = new TransactionFilterProxy(this);
         filter->setSourceModel(model->getTransactionTableModel());
         filter->setLimit(NUM_ITEMS);
         filter->setDynamicSortFilter(true);
@@ -247,6 +251,10 @@ void OverviewPage::setWalletModel(WalletModel* model)
                          SLOT(setBalance(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)));
         connect(model, SIGNAL(stakingStatusChanged(bool)), this, 
                          SLOT(setSpendableBalance(bool)));
+        connect(model, SIGNAL(WalletUnlocked()), this,
+                                 SLOT(refreshRecentTransactions()));
+        connect(model, SIGNAL(WalletUnlocked()), this,
+                                         SLOT(updateBalance()));
         
         connect(model->getOptionsModel(), SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit()));
 
@@ -258,6 +266,20 @@ void OverviewPage::setWalletModel(WalletModel* model)
 
     // update the display unit, to not use the default ("DAPS")
     updateDisplayUnit();
+
+    // update wallet state
+    // if (walletModel->getEncryptionStatus() == WalletModel::Locked || walletModel->getEncryptionStatus() == WalletModel::UnlockedForAnonymizationOnly)
+        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/lock) 0 0 0 0 stretch stretch;");
+    // else
+        // ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/unlock) 0 0 0 0 stretch stretch;");
+}
+
+void OverviewPage::updateBalance()
+{
+	WalletModel* model = this->walletModel;
+	setBalance(model->getBalance(), model->getUnconfirmedBalance(), model->getImmatureBalance(),
+			0, 0, 0,
+			model->getWatchBalance(), model->getWatchUnconfirmedBalance(), model->getWatchImmatureBalance());
 }
 
 void OverviewPage::updateDisplayUnit()
@@ -451,7 +473,7 @@ void OverviewPage::updateRecentTransactions(){
             }
         }
 
-        ui->label_4->setVisible(txs.size());
+        ui->label_4->setVisible(true);
     } else {
         LogPrintf("\npwalletMain has not been initialized\n");
     }
@@ -460,4 +482,36 @@ void OverviewPage::updateRecentTransactions(){
 void OverviewPage::refreshRecentTransactions() {
 	LogPrintf("\n: Refreshing history\n");
 	updateRecentTransactions();
+}
+
+void OverviewPage::on_lockUnlock() {
+    if (walletModel->getEncryptionStatus() == WalletModel::Locked || walletModel->getEncryptionStatus() == WalletModel::UnlockedForAnonymizationOnly) {
+        UnlockDialog unlockdlg;
+        unlockdlg.setWindowTitle("Unlock Keychain Wallet");
+        unlockdlg.setModel(walletModel);
+        unlockdlg.setStyleSheet(GUIUtil::loadStyleSheet());
+        connect(&unlockdlg, SIGNAL(finished (int)), this, SLOT(unlockDialogIsFinished(int)));
+        unlockdlg.exec();
+    }
+    else {
+        LockDialog lockdlg;
+        lockdlg.setWindowTitle("Lock Keychain Wallet");
+        lockdlg.setModel(walletModel);
+        lockdlg.setStyleSheet(GUIUtil::loadStyleSheet());
+        connect(&lockdlg, SIGNAL(finished (int)), this, SLOT(lockDialogIsFinished(int)));
+        lockdlg.exec();   
+    }
+}
+
+
+void OverviewPage::unlockDialogIsFinished(int result) {
+    if(result == QDialog::Accepted){
+        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/unlock) 0 0 0 0 stretch stretch;");
+    }
+}
+
+void OverviewPage::lockDialogIsFinished(int result) {
+    if(result == QDialog::Accepted){
+        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/lock) 0 0 0 0 stretch stretch;");
+    }
 }

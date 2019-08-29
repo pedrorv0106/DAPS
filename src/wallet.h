@@ -296,7 +296,8 @@ public:
     bool IsCollateralAmount(CAmount nInputAmount) const;
     int CountInputsWithAmount(CAmount nInputAmount);
     COutPoint findMyOutPoint(const CTxIn& txin) const;
-    bool SelectCoinsCollateral(std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet) ;
+    bool SelectCoinsCollateral(std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet);
+    static int ComputeTxSize(size_t numIn, size_t numOut, size_t ringSize);
 
     /*
      * Main wallet lock.
@@ -324,6 +325,7 @@ public:
     unsigned int nHashInterval;
     uint64_t nStakeSplitThreshold;
     int nStakeSetUpdateTime;
+    int walletUnlockCountStatus = 0;
 
     //MultiSend
     std::vector<std::pair<std::string, int> > vMultiSend;
@@ -368,6 +370,7 @@ public:
         nLastResend = 0;
         nTimeFirstKey = 0;
         fWalletUnlockAnonymizeOnly = false;
+        walletStakingInProgress = false;
         fBackupMints = false;
 
         // Stake Settings
@@ -386,7 +389,7 @@ public:
         vDisabledAddresses.clear();
 
         //Auto Combine Dust
-        fCombineDust = true;
+        fCombineDust = false;
         nAutoCombineThreshold = 300 * COIN;
     }
 

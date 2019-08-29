@@ -164,7 +164,7 @@ vector<unsigned char> ParseHexO(const UniValue& o, string strKey)
 int ParseInt(const UniValue& o, string strKey)
 {
     const UniValue& v = find_value(o, strKey);
-    if (v.isNum())
+    if (!v.isNum())
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, " + strKey + "is not an int");
 
     return v.get_int();
@@ -173,7 +173,7 @@ int ParseInt(const UniValue& o, string strKey)
 bool ParseBool(const UniValue& o, string strKey)
 {
     const UniValue& v = find_value(o, strKey);
-    if (v.isBool())
+    if (!v.isBool())
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, " + strKey + "is not a bool");
 
     return v.get_bool();
@@ -383,7 +383,6 @@ static const CRPCCommand vRPCCommands[] =
         {"dapscoin", "mnfinalbudget", &mnfinalbudget, true, true, false},
         {"dapscoin", "checkbudgets", &checkbudgets, true, true, false},
         {"dapscoin", "mnsync", &mnsync, true, true, false},
-        {"dapscoin", "spork", &spork, true, true, false},
         {"dapscoin", "getpoolinfo", &getpoolinfo, true, true, false},
 
 #ifdef ENABLE_WALLET

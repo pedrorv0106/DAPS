@@ -11,7 +11,6 @@
 #include "net.h"
 #include "obfuscation.h"
 #include "protocol.h"
-#include "spork.h"
 #include "sync.h"
 #include "util.h"
 #include <boost/lexical_cast.hpp>
@@ -37,7 +36,6 @@ int nCompleteTXLocks;
 void ProcessMessageSwiftTX(CNode* pfrom, std::string& strCommand, CDataStream& vRecv)
 {
     if (fLiteMode) return; //disable all obfuscation/masternode related functionality
-    if (!IsSporkActive(SPORK_2_SWIFTTX)) return;
     if (!masternodeSync.IsBlockchainSynced()) return;
 
     if (strCommand == "ix") {
@@ -112,7 +110,6 @@ void ProcessMessageSwiftTX(CNode* pfrom, std::string& strCommand, CDataStream& v
                         LogPrintf("ProcessMessageSwiftTX::ix - Found Existing Complete IX Lock\n");
 
                         //reprocess the last 15 blocks
-                        ReprocessBlocks(15);
                         mapTxLockReq.insert(make_pair(tx.GetHash(), tx));
                     }
                 }
@@ -185,11 +182,6 @@ bool IsIXTXValid(const CTransaction& txCollateral)
         } else {
             missingTx = true;
         }
-    }
-
-    if (nValueOut > GetSporkValue(SPORK_5_MAX_VALUE) * COIN) {
-        LogPrint("swiftx", "IsIXTXValid - Transaction value too high - %s\n", txCollateral.ToString().c_str());
-        return false;
     }
 
     if (missingTx) {
@@ -369,7 +361,6 @@ bool ProcessConsensusVote(CNode* pnode, CConsensusVote& ctx)
                 //if this tx lock was rejected, we need to remove the conflicting blocks
                 if (mapTxLockReqRejected.count((*i).second.txHash)) {
                     //reprocess the last 15 blocks
-                    ReprocessBlocks(15);
                 }
             }
         }
@@ -457,7 +448,7 @@ uint256 CConsensusVote::GetHash() const
 bool CConsensusVote::SignatureValid()
 {
     std::string errorMessage;
-    std::string strMessage = txHash.ToString().c_str() + boost::lexical_cast<std::string>(nBlockHeight);
+    std::string strMessage = Hash(txHash.begin(), txHash.end(), BEGIN(nBlockHeight), END(nBlockHeight)).ToString();
 
     CMasternode* pmn = mnodeman.Find(vinMasternode);
 
@@ -480,7 +471,7 @@ bool CConsensusVote::Sign()
 
     CKey key2;
     CPubKey pubkey2;
-    std::string strMessage = txHash.ToString().c_str() + boost::lexical_cast<std::string>(nBlockHeight);
+    std::string strMessage = Hash(txHash.begin(), txHash.end(), BEGIN(nBlockHeight), END(nBlockHeight)).GetHex();
 
     if (!obfuScationSigner.SetKey(strMasterNodePrivKey, errorMessage, key2, pubkey2)) {
         LogPrintf("CConsensusVote::Sign() - ERROR: Invalid masternodeprivkey: '%s'\n", errorMessage.c_str());

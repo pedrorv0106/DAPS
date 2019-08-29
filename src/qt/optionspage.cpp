@@ -17,6 +17,7 @@
 #include "walletmodel.h"
 #include "2faqrdialog.h"
 #include "2fadialog.h"
+#include "zxcvbn.h"
 
 #include <QAction>
 #include <QCursor>
@@ -169,10 +170,25 @@ void OptionsPage::on_pushButtonPassword_clicked()
     bool success = false;
 
     if (newPass == newPass2) {
-    	if (model->changePassphrase(oldPass, newPass))
+        double guesses;
+
+        if (oldPass == newPass) {
+            QMessageBox::critical(this, tr("Wallet encryption failed"),
+                    tr("The passphrases entered for wallet encryption is older. Please try again."));
+        }
+        else if (newPass.length() < 10) {
+            QMessageBox::critical(this, tr("Wallet encryption failed"),
+                    tr("The passphrase's length has to be more than 10. Please try again."));
+        }
+        else if (zxcvbn_password_strength(newPass.c_str(), NULL, &guesses, NULL) < 0 || guesses < 10000) {
+            QMessageBox::critical(this, tr("Wallet encryption failed"),
+                    tr("The passphrase is weakness."));
+        }
+    	else if (model->changePassphrase(oldPass, newPass)) {
     		QMessageBox::information(this, tr("Passphrase change successful"),
                     tr("Wallet passphrase was successfully changed. Please remember your passphrase as there is no way to recover it."));
     		success = true;
+        }
     } else {
     		QMessageBox::critical(this, tr("Wallet encryption failed"),
     				tr("The passphrases entered for wallet encryption do not match. Please try again."));

@@ -21,6 +21,10 @@
 #include <utility>
 #include <vector>
 
+#define HEX_DATA_STREAM CDataStream ser(SER_NETWORK, PROTOCOL_VERSION); ser
+#define HEX_DATA_STREAM_PROTOCOL(protocolVersion) CDataStream ser(SER_NETWORK, protocolVersion); ser
+#define HEX_STR(a)	HexStr(a.begin(), a.end())
+
 /** Double ended buffer combining vector and stream-like interfaces.
  *
  * >> and << read and write unformatted data using the above serialization templates.
@@ -366,6 +370,20 @@ public:
         if (fread(pch, 1, nSize, file) != nSize)
             throw std::ios_base::failure(feof(file) ? "CAutoFile::read : end of file" : "CAutoFile::read : fread failed");
         return (*this);
+    }
+
+    CAutoFile& ignore(size_t nSize)
+    {
+    	if (!file)
+    		throw std::ios_base::failure("CAutoFile::ignore: file handle is NULL");
+    	unsigned char data[4096];
+    	while (nSize > 0) {
+    		size_t nNow = std::min<size_t>(nSize, sizeof(data));
+    		if (fread(data, 1, nNow, file) != nNow)
+    			throw std::ios_base::failure(feof(file) ? "CAutoFile::ignore: end of file" : "CAutoFile::read: fread failed");
+    		nSize -= nNow;
+    	}
+    	return (*this);
     }
 
     CAutoFile& write(const char* pch, size_t nSize)

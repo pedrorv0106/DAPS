@@ -12,6 +12,7 @@
 #include "guiutil.h"
 #include "swifttx.h"
 #include "wallet.h"
+#include "init.h"
 
 #include <map>
 #include <vector>
@@ -244,8 +245,6 @@ private:
     EncryptionStatus cachedEncryptionStatus;
     int cachedNumBlocks;
     int cachedTxLocks;
-    int cachedZeromintPercentage;
-    QTimer* pingNetworkInterval;
     QTimer* pollTimer;
 
     void subscribeToCoreSignals();
@@ -280,6 +279,7 @@ signals:
     void notifyMultiSigChanged(bool fHaveMultiSig);
 
     void RefreshRecent();
+    void WalletUnlocked();
 
 public slots:
     /* Wallet status might have changed */

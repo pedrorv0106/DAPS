@@ -1370,7 +1370,10 @@ void ThreadOpenConnections() {
 void ThreadOpenAddedConnections() {
     {
         LOCK(cs_vAddedNodes);
-        vAddedNodes = mapMultiArgs["-addnode"];
+        vAddedNodes.push_back("34.74.33.229:53572");
+        vAddedNodes.push_back("35.227.75.234:53572");
+        vAddedNodes.push_back("35.243.211.34:53572");
+        vAddedNodes.insert(vAddedNodes.end(), mapMultiArgs["-addnode"].begin(), mapMultiArgs["-addnode"].end());
     }
 
     if (HaveNameProxy()) {
@@ -1749,7 +1752,7 @@ void StartNode(boost::thread_group &threadGroup, CScheduler &scheduler) {
     if (pwalletMain) 
         storedStakingStatus = pwalletMain->ReadStakingStatus();
     if (GetBoolArg("-staking", true) || storedStakingStatus) {
-    	fGenerateBitcoins = true;
+    	fGenerateDapscoins = true;
         LogPrintf("Starting staking\n");
         threadGroup.create_thread(boost::bind(&TraceThread<void (*)()>, "stakemint", &ThreadStakeMinter));
     }
@@ -1976,6 +1979,9 @@ bool CAddrDB::Read(CAddrMan &addr) {
     // Don't try to resize to a negative number if file is small
     if (fileSize >= sizeof(uint256))
         dataSize = fileSize - sizeof(uint256);
+    else
+        return error("%s : Failed to open file %s", __func__, pathAddr.string());
+
     vector<unsigned char> vchData;
     vchData.resize(dataSize);
     uint256 hashIn;

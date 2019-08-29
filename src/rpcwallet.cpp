@@ -24,7 +24,6 @@
 
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
-#include "spork.h"
 #include <boost/assign/list_of.hpp>
 
 using namespace std;
@@ -260,7 +259,7 @@ Value getaccount(const Array& params, bool fHelp)
     if (mi != pwalletMain->mapAddressBook.end() && !(*mi).second.name.empty())
         strAccount = (*mi).second.name;
     
-    return "";
+    return strAccount;
 }
 
 
@@ -2350,24 +2349,9 @@ Value createprivacywallet(const Array& params, bool fHelp)
                 "\nExamples:\n" +
                 HelpExampleCli("createprivacywallet", "") + HelpExampleCli("createprivacywallet", "\"\"") + HelpExampleCli("createprivacywallet", "\"1234567890\"") + HelpExampleRpc("createprivacywallet", "\"1234567890\""));
 
-    if (pwalletMain) {
-        //privacy wallet is already created
-        throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
-                           "Error: Privacy wallet is alread created.");
-    }
-
-    std::string dataDir = GetDataDir().string();
-
-    std::string filepath = dataDir + std::string("multisig_wallet.dat");
-    std::string password = params[0].get_str();
-    std::string language("english");
-    if (params.size() == 2) {
-        language = params[0].get_str();
-    }
-
-    Object ret;
-
-    return ret;
+    //privacy wallet is already created
+    throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
+                           "Error: RPC unimplemented.");
 }
 
 Value createprivacyaccount(const Array& params, bool fHelp)
@@ -2415,9 +2399,9 @@ Value createprivacyaccount(const Array& params, bool fHelp)
         ret.emplace_back(Pair("spendpublickey", spendAccount.vchPubKey.GetHex()));
 
         std::string stealthAddr;
-        pwalletMain->EncodeStealthPublicAddress(viewAccount.vchPubKey, spendAccount.vchPubKey, stealthAddr);
-        ret.emplace_back(Pair("stealthaddress", stealthAddr));
-        //walletdb.AppendStealthAccountList("masteraccount");
+        if (pwalletMain->EncodeStealthPublicAddress(viewAccount.vchPubKey, spendAccount.vchPubKey, stealthAddr)) {
+        	ret.emplace_back(Pair("stealthaddress", stealthAddr));
+        }
         break;
     }
     return ret;
@@ -2531,8 +2515,9 @@ Value createprivacysubaddress(const Array& params, bool fHelp)
     ret.emplace_back(Pair("spendpublickey", account.spendAccount.vchPubKey.GetHex()));
 
     std::string stealthAddr;
-    pwalletMain->EncodeStealthPublicAddress(account.viewAccount.vchPubKey, account.spendAccount.vchPubKey, stealthAddr);
-    ret.emplace_back(Pair("stealthaddress", stealthAddr));
+    if (pwalletMain->EncodeStealthPublicAddress(account.viewAccount.vchPubKey, account.spendAccount.vchPubKey, stealthAddr)) {
+    	ret.emplace_back(Pair("stealthaddress", stealthAddr));
+    }
     return ret;
 }
 

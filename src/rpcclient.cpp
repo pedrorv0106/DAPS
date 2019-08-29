@@ -104,7 +104,6 @@ static const CRPCConvertParam vRPCConvertParams[] =
         {"prioritisetransaction", 2},
         {"setban", 2},
         {"setban", 3},
-        {"spork", 1},
         {"mnbudget", 3},
         {"mnbudget", 4},
         {"mnbudget", 6},

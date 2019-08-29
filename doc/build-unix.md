@@ -118,6 +118,8 @@ turned off by default.  See the configure options for upnp behavior desired:
 
 To build:
 
+Before you start building, please make sure that your compiler supports C++14.
+
 	tar -xzvf miniupnpc-1.6.tar.gz
 	cd miniupnpc-1.6
 	make

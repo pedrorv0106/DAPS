@@ -513,7 +513,7 @@ bool CBudgetManager::FillBlockPayee(CMutableTransaction& txNew, CAmount nFees, b
         ++it;
     }
 
-    CAmount blockValue = GetBlockValue(pindexPrev->nHeight);
+    CAmount blockValue = GetBlockValue(pindexPrev);
 
     if (fProofOfStake) {
         if (nHighestCount > 0) {
@@ -1684,7 +1684,8 @@ bool CBudgetVote::Sign(CKey& keyMasternode, CPubKey& pubKeyMasternode)
     CKey keyCollateralAddress;
 
     std::string errorMessage;
-    std::string strMessage = vin.prevout.ToStringShort() + nProposalHash.ToString() + boost::lexical_cast<std::string>(nVote) + boost::lexical_cast<std::string>(nTime);
+    HEX_DATA_STREAM << vin.prevout << nProposalHash << nVote << nTime;
+    std::string strMessage = HEX_STR(ser);
 
     if (!obfuScationSigner.SignMessage(strMessage, errorMessage, vchSig, keyMasternode)) {
         LogPrint("masternode","CBudgetVote::Sign - Error upon calling SignMessage");
@@ -1702,7 +1703,8 @@ bool CBudgetVote::Sign(CKey& keyMasternode, CPubKey& pubKeyMasternode)
 bool CBudgetVote::SignatureValid(bool fSignatureCheck)
 {
     std::string errorMessage;
-    std::string strMessage = vin.prevout.ToStringShort() + nProposalHash.ToString() + boost::lexical_cast<std::string>(nVote) + boost::lexical_cast<std::string>(nTime);
+	HEX_DATA_STREAM << vin.prevout << nProposalHash << nVote << nTime;
+	std::string strMessage = HEX_STR(ser);
 
     CMasternode* pmn = mnodeman.Find(vin);
 
@@ -2128,7 +2130,8 @@ bool CFinalizedBudgetVote::Sign(CKey& keyMasternode, CPubKey& pubKeyMasternode)
     CKey keyCollateralAddress;
 
     std::string errorMessage;
-    std::string strMessage = vin.prevout.ToStringShort() + nBudgetHash.ToString() + boost::lexical_cast<std::string>(nTime);
+    HEX_DATA_STREAM_PROTOCOL(PROTOCOL_VERSION) << vin.prevout << nBudgetHash << nTime;
+    std::string strMessage = HEX_STR(ser);
 
     if (!obfuScationSigner.SignMessage(strMessage, errorMessage, vchSig, keyMasternode)) {
         LogPrint("masternode","CFinalizedBudgetVote::Sign - Error upon calling SignMessage");
@@ -2147,7 +2150,8 @@ bool CFinalizedBudgetVote::SignatureValid(bool fSignatureCheck)
 {
     std::string errorMessage;
 
-    std::string strMessage = vin.prevout.ToStringShort() + nBudgetHash.ToString() + boost::lexical_cast<std::string>(nTime);
+    HEX_DATA_STREAM_PROTOCOL(PROTOCOL_VERSION) << vin.prevout << nBudgetHash << nTime;
+    std::string strMessage = HEX_STR(ser);
 
     CMasternode* pmn = mnodeman.Find(vin);
 

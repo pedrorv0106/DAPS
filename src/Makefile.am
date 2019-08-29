@@ -25,6 +25,7 @@ BITCOIN_INCLUDES=-I$(builddir) -I$(builddir)/obj $(BOOST_CPPFLAGS) $(LEVELDB_CPP
 
 BITCOIN_INCLUDES += -I$(srcdir)/secp256k1/include
 BITCOIN_INCLUDES += -I$(srcdir)/secp256k1-mw/include
+BITCOIN_INCLUDES += -I$(srcdir)/zxcvbn
 
 LIBBITCOIN_SERVER=libbitcoin_server.a
 LIBBITCOIN_WALLET=libbitcoin_wallet.a
@@ -60,6 +61,7 @@ endif
 if ENABLE_ZMQ
 EXTRA_LIBRARIES += libbitcoin_zmq.a
 endif
+EXTRA_LIBRARIES += libbitcoin_zxcvbn.a
 
 if BUILD_BITCOIN_LIBS
 lib_LTLIBRARIES = libbitcoinconsensus.la
@@ -151,8 +153,6 @@ BITCOIN_CORE_H = \
   script/standard.h \
   script/script_error.h \
   serialize.h \
-  spork.h \
-  sporkdb.h \
   streams.h \
   sync.h \
   threadsafety.h \
@@ -222,7 +222,6 @@ libbitcoin_server_a_SOURCES = \
   rpcrawtransaction.cpp \
   rpcserver.cpp \
   script/sigcache.cpp \
-  sporkdb.cpp \
   timedata.cpp \
   torcontrol.cpp \
   txdb.cpp \
@@ -241,6 +240,22 @@ libbitcoin_zmq_a_SOURCES = \
   zmq/zmqnotificationinterface.cpp \
   zmq/zmqpublishnotifier.cpp
 endif
+
+LIBBITCOIN_ZXCVBN=libbitcoin_zxcvbn.a
+
+libbitcoin_zxcvbn_a_CPPFLAGS = $(BITCOIN_INCLUDES)
+libbitcoin_zxcvbn_a_CXXFLAGS = $(AM_CXXFLAGS)
+libbitcoin_zxcvbn_a_SOURCES = \
+  zxcvbn/_frequency_lists.cpp \
+  zxcvbn/adjacency_graphs.cpp \
+  zxcvbn/feedback.cpp \
+  zxcvbn/frequency_lists.cpp \
+  zxcvbn/matching.cpp \
+  zxcvbn/scoring.cpp \
+  zxcvbn/time_estimates.cpp \
+  zxcvbn/util.cpp \
+  zxcvbn/zxcvbn.cpp
+
 
 # wallet: shared between dapscoind and dapscoin-qt, but only linked
 # when wallet enabled
@@ -341,8 +356,6 @@ libbitcoin_common_a_SOURCES = \
   script/sign.cpp \
   script/standard.cpp \
   script/script_error.cpp \
-  spork.cpp \
-  sporkdb.cpp \
   $(BITCOIN_CORE_H)
 
 # util: shared between all executables.
@@ -397,7 +410,7 @@ dapscoind_multisig_LDADD += $(LIBBITCOIN_ZMQ) $(ZMQ_LIBS)
 endif
 
 if ENABLE_WALLET
-dapscoind_multisig_LDADD += libbitcoin_wallet.a
+dapscoind_multisig_LDADD += libbitcoin_wallet.a $(LIBBITCOIN_ZXCVBN)
 endif
 dapscoind_multisig_SOURCES = dapscoind.cpp
 #

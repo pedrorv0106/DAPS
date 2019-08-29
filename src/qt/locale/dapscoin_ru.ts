@@ -3502,10 +3502,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Синхронизация мастернод ...</translation>
     </message>
     <message>
-        <source>Synchronizing sporks...</source>
-        <translation>Синхронизация спорков ...</translation>
-    </message>
-    <message>
         <source>This help message</source>
         <translation>Это справочное сообщение</translation>
     </message>

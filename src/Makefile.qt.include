@@ -61,7 +61,9 @@ QT_FORMS_UI = \
   qt/forms/signverifymessagedialog.ui \
   qt/forms/togglebutton.ui \
   qt/forms/transactiondescdialog.ui \
-  qt/forms/txentry.ui 
+  qt/forms/txentry.ui \
+  qt/forms/unlockdialog.ui \
+  qt/forms/lockdialog.ui
   
 QT_MOC_CPP = \
   qt/moc_2fadialog.cpp \
@@ -121,7 +123,9 @@ QT_MOC_CPP = \
   qt/moc_utilitydialog.cpp \
   qt/moc_walletframe.cpp \
   qt/moc_walletmodel.cpp \
-  qt/moc_walletview.cpp 
+  qt/moc_walletview.cpp \
+  qt/moc_unlockdialog.cpp \
+  qt/moc_lockdialog.cpp 
 
 BITCOIN_MM = \
   qt/macdockiconhandler.mm \
@@ -210,7 +214,9 @@ BITCOIN_QT_H = \
   qt/walletmodel.h \
   qt/walletmodeltransaction.h \
   qt/walletview.h \
-  qt/winshutdownmonitor.h 
+  qt/winshutdownmonitor.h \
+  qt/unlockdialog.h \
+  qt/lockdialog.h 
 
 RES_ICONS = \
   qt/res/icons/add.png \
@@ -347,7 +353,9 @@ BITCOIN_QT_CPP += \
   qt/walletframe.cpp \
   qt/walletmodel.cpp \
   qt/walletmodeltransaction.cpp \
-  qt/walletview.cpp 
+  qt/walletview.cpp \
+  qt/unlockdialog.cpp \
+  qt/lockdialog.cpp 
 
 endif
 
@@ -419,7 +427,7 @@ if TARGET_WINDOWS
 endif
 qt_dapscoin_qt_multisig_LDADD = qt/libbitcoinqt.a $(LIBBITCOIN_SERVER) $(LIBSECP256K1) $(LIBSECP256K1_2)
 if ENABLE_WALLET
-qt_dapscoin_qt_multisig_LDADD += $(LIBBITCOIN_UTIL) $(LIBBITCOIN_WALLET)
+qt_dapscoin_qt_multisig_LDADD += $(LIBBITCOIN_UTIL) $(LIBBITCOIN_WALLET) $(LIBBITCOIN_ZXCVBN)
 endif
 if ENABLE_ZMQ
 qt_dapscoin_qt_multisig_LDADD += $(LIBBITCOIN_ZMQ) $(ZMQ_LIBS)

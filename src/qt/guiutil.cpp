@@ -835,7 +835,7 @@ QString loadStyleSheet()
     QSettings settings;
     QVariant theme = settings.value("theme");
     QString cssName = QString(":/css/" + theme.toString());
-    LogPrintf("\nloadStyleSheet: Loading stylesheet %s\n", cssName.toStdString());
+    //LogPrintf("\nloadStyleSheet: Loading stylesheet %s\n", cssName.toStdString());
         // Build-in CSS
     settings.setValue("fCSSexternal", false);
 
@@ -875,6 +875,7 @@ void prompt(QString message){
     errorPrompt->setStyleSheet(GUIUtil::loadStyleSheet());
     errorPrompt->setText(message);
     errorPrompt->exec();
+    errorPrompt->deleteLater();
 }
 
 void colorCalendarWidgetWeekends(QCalendarWidget* widget, QColor color)

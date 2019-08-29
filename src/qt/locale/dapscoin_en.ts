@@ -6028,11 +6028,6 @@ Either mint higher denominations (so fewer inputs are needed) or reduce the amou
         <translation type="unfinished">Distributed under the MIT software license, see the accompanying file COPYING or &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</translation>
     </message>
     <message>
-        <location line="+8"/>
-        <source>Enable spork administration functionality with the appropriate private key.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location line="+2"/>
         <source>Enter regression test mode, which uses a special chain in which blocks can be solved instantly.</source>
         <translation type="unfinished">Enter regression test mode, which uses a special chain in which blocks can be solved instantly.</translation>
@@ -6971,11 +6966,6 @@ for example: alertnotify=echo %%s | mail -s &quot;DAPScoin Alert&quot; admin@foo
     </message>
     <message>
         <location line="+1"/>
-        <source>Loading sporks...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Loading wallet... (%3.2f %%)</source>
         <translation type="unfinished">Loading wallet... (%3.2f %%)</translation>
     </message>
@@ -7426,11 +7416,6 @@ for example: alertnotify=echo %%s | mail -s &quot;DAPScoin Alert&quot; admin@foo
     </message>
     <message>
         <location line="+1"/>
-        <source>Synchronizing sporks...</source>
-        <translation type="unfinished">Synchronizing sporks...</translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>This help message</source>
         <translation type="unfinished">This help message</translation>
     </message>
@@ -7508,11 +7493,6 @@ for example: alertnotify=echo %%s | mail -s &quot;DAPScoin Alert&quot; admin@foo
         <location line="+1"/>
         <source>Unable to bind to %s on this computer (bind returned error %s)</source>
         <translation type="unfinished">Unable to bind to %s on this computer (bind returned error %s)</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Unable to sign spork message, wrong key?</source>
-        <translation type="unfinished">Unable to sign spork message, wrong key?</translation>
     </message>
     <message>
         <location line="+1"/>
