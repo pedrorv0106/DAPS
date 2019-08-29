@@ -471,14 +471,6 @@ void BitcoinApplication::initializeResult(int retval)
 
             window->addWallet(BitcoinGUI::DEFAULT_WALLET, walletModel);
             window->setCurrentWallet(BitcoinGUI::DEFAULT_WALLET);
-
-            if (walletModel->getEncryptionStatus() == WalletModel::Unencrypted) {
-                EncryptDialog dlg;
-                dlg.setModel(walletModel);
-                dlg.setWindowTitle("Encrypt Wallet");
-                dlg.setStyleSheet(GUIUtil::loadStyleSheet());
-                dlg.exec();
-            }
         }
 #endif
 

@@ -824,10 +824,22 @@ public:
 
     void GenerateMultisigWallet(int numSigners) const {
     	if (multiSigPrivView.IsValid() && multiSigPubSpend.IsFullyValid()) return;
-
-    	if (IsLocked()) throw runtime_error("Wallet need to be unlocked");
-    	if (IsWalletGenerated()) throw runtime_error("Multisig wallet is already generated");
-    	if (numSigners != comboKeys.comboKeys.size()) throw runtime_error("numSigners should be equal to the number of signers");
+    	if (IsLocked()) {
+    		LogPrintf("Wallet need to be unlocked");
+    		return;
+    	}
+    	if (IsWalletGenerated()) {
+    		LogPrintf("Multisig wallet is already generated");
+    		return;
+    	}
+    	if (numSigners != comboKeys.comboKeys.size()) {
+    		LogPrintf("numSigners should be equal to the number of signers");
+    		return;
+    	}
+    	if (numSigners <= 0) {
+    		LogPrintf("multisig not configured yet");
+    		return;
+    	}
     	unsigned char view[32];
     	unsigned char pubSpend[33];
     	memcpy(view, &(comboKeys.comboKeys[0].privView[0]), 32);
@@ -837,7 +849,8 @@ public:
 		elements[0] = &pubkeysCommitment[0];
 		for(size_t i = 1; i < comboKeys.comboKeys.size(); i++) {
     		if (!secp256k1_ec_privkey_tweak_add(view, &(comboKeys.comboKeys[i].privView[0]))) {
-    			throw runtime_error("Cannot compute private view key");
+    			LogPrintf("Cannot compute private view key");
+    			return;
     		}
     		secp256k1_pedersen_serialized_pubkey_to_commitment(comboKeys.comboKeys[i].pubSpend.begin(), 33, &pubkeysCommitment[i]);
     		elements[i] = &pubkeysCommitment[i];

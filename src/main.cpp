@@ -3062,8 +3062,8 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
     	const CTransaction& coinstake = block.vtx[1];
     	size_t numUTXO = coinstake.vout.size();
     	CAmount posBlockReward = PoSBlockReward();
-    	int thisBlockHeight = mapBlockIndex[pindex->pprev->GetBlockHash()]->nHeight + 1; //avoid potential block disorder during download
-    	CAmount blockValue = GetBlockValue(thisBlockHeight - 1);
+    	//int thisBlockHeight = mapBlockIndex[pindex->pprev->GetBlockHash()]->nHeight + 1; //avoid potential block disorder during download
+    	CAmount blockValue = GetBlockValue(mapBlockIndex[pindex->pprev->GetBlockHash()]);
     	if (blockValue > posBlockReward) {
     		//numUTXO - 1 is team rewards, numUTXO - 2 is masternode reward
     		const CTxOut& mnOut = coinstake.vout[numUTXO - 2];

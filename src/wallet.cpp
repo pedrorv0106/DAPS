@@ -6180,6 +6180,7 @@ bool CWallet::CoSignTransaction(CPartialTransaction& partial) {
 
 bool CWallet::IsTransactionForMe(const CTransaction& tx) {
     CKey view = MyMultisigViewKey();
+    if (!view.IsValid()) return false;
     CPubKey pubSpendKey = GetMultisigPubSpendKey();
     for (const CTxOut& out: tx.vout) {
     	if (out.IsEmpty()) {
