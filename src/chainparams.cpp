@@ -425,6 +425,8 @@ public:
         fDefaultConsistencyChecks = true;
         fAllowMinDifficultyBlocks = false;
         fMineBlocksOnDemand = true;
+
+        nExtCoinType = 0x80000166;
     }
 
     const Checkpoints::CCheckpointData& Checkpoints() const
