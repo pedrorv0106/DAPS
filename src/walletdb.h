@@ -95,6 +95,10 @@ public:
     bool WriteStakingStatus(bool status);
     bool ReadStakingStatus();
 
+    bool WriteNumSigners(int numSigners);
+
+    int ReadNumSigners();
+
     bool WriteScannedBlockHeight(int height);
     bool ReadScannedBlockHeight(int& height);
 

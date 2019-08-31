@@ -33,13 +33,15 @@
 #include "scheduler.h"
 #include "ui_interface.h"
 #include "util.h"
-#include "multisigsetupchoosenumsigners.h"
 
 #ifdef ENABLE_WALLET
 #include "wallet.h"
 #endif
 
 #include "encryptdialog.h"
+#include "multisigsetupchoosenumsigners.h"
+#include "multisigsetupaddsigner.h"
+#include "multisigsetupfinish.h"
 
 #include <stdint.h>
 
@@ -494,10 +496,26 @@ void BitcoinApplication::initializeResult(int retval)
         if (pwalletMain) {
         	if (walletModel->getEncryptionStatus() == WalletModel::Unencrypted) {
         		if (!walletModel->isMultiSigSetup()) {
-        			MultiSigSetupChooseNumSigners dlg;
-        			dlg.setModel(walletModel);
-        			dlg.setStyleSheet(GUIUtil::loadStyleSheet());
-        			dlg.exec();
+        			while(!pwalletMain->isMultisigSetupFinished) {
+        				if (pwalletMain->screenIndex == 0) {
+        					MultiSigSetupChooseNumSigners dlg;
+        					dlg.setModel(walletModel);
+        					dlg.setStyleSheet(GUIUtil::loadStyleSheet());
+        					dlg.exec();
+        				} else if (pwalletMain->screenIndex <= pwalletMain->ReadNumSigners()) {
+        					//add combo key of signers
+        					MultiSigSetupAddSigner dlg;
+        					dlg.setModel(walletModel);
+        					dlg.setStyleSheet(GUIUtil::loadStyleSheet());
+        					dlg.exec();
+        				} else {
+        					//finish
+        					MultiSigSetupFinish dlg;
+        					dlg.setModel(walletModel);
+        					dlg.setStyleSheet(GUIUtil::loadStyleSheet());
+        					dlg.exec();
+        				}
+        			}
         		}
 
         		EncryptDialog dlg;

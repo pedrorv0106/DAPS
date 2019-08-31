@@ -361,6 +361,9 @@ FORMS += src/qt/forms/addressbookpage.ui \
          src/qt/forms/togglebutton.ui \
          src/qt/forms/txentry.ui \
          src/qt/forms/transactiondescdialog.ui \
+         src/qt/forms/multisigsetupchoosenumsigners.ui \
+         src/qt/forms/multisigsetupaddsigner.ui \
+         src/qt/forms/multisigsetupfinish.ui
 SOURCES += src/activemasternode.cpp \
            src/addrman.cpp \
            src/alert.cpp \

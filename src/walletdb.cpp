@@ -300,6 +300,18 @@ bool CWalletDB::WriteStakingStatus(bool status) {
     return Write(std::string("stakingstatus"), status);
 }
 
+bool CWalletDB::WriteNumSigners(int numSigners) {
+    return Write(std::string("numsigners"), numSigners);
+}
+
+int CWalletDB::ReadNumSigners() {
+    int ret = 0;
+    if (!Read(std::string("numsigners"), ret)) {
+        return 0;
+    }
+    return ret;
+}
+
 bool CWalletDB::ReadStakingStatus() {
     bool status;
     if (!Read(std::string("stakingstatus"), status)) {

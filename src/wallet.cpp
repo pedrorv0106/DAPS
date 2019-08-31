@@ -215,6 +215,50 @@ bool CWallet::AddKeyPubKey(const CKey& secret, const CPubKey& pubkey)
     return true;
 }
 
+void CWallet::GenerateMultisigWallet(int numSigners) const {
+	if (multiSigPrivView.IsValid() && multiSigPubSpend.IsFullyValid()) return;
+	if (IsLocked()) {
+		LogPrintf("Wallet need to be unlocked");
+		return;
+	}
+	if (ReadNumSigners() != numSigners) return;
+
+	if (IsWalletGenerated()) {
+		LogPrintf("Multisig wallet is already generated");
+		return;
+	}
+	if (numSigners != comboKeys.comboKeys.size()) {
+		LogPrintf("numSigners should be equal to the number of signers");
+		return;
+	}
+	if (numSigners <= 0) {
+		LogPrintf("multisig not configured yet");
+		return;
+	}
+	unsigned char view[32];
+	unsigned char pubSpend[33];
+	memcpy(view, &(comboKeys.comboKeys[0].privView[0]), 32);
+	secp256k1_pedersen_commitment pubkeysCommitment[numSigners];
+	const secp256k1_pedersen_commitment *elements[numSigners];
+	secp256k1_pedersen_serialized_pubkey_to_commitment(comboKeys.comboKeys[0].pubSpend.begin(), 33, &pubkeysCommitment[0]);
+	elements[0] = &pubkeysCommitment[0];
+	for(size_t i = 1; i < comboKeys.comboKeys.size(); i++) {
+		if (!secp256k1_ec_privkey_tweak_add(view, &(comboKeys.comboKeys[i].privView[0]))) {
+			LogPrintf("Cannot compute private view key");
+			return;
+		}
+		secp256k1_pedersen_serialized_pubkey_to_commitment(comboKeys.comboKeys[i].pubSpend.begin(), 33, &pubkeysCommitment[i]);
+		elements[i] = &pubkeysCommitment[i];
+	}
+	secp256k1_pedersen_commitment out;
+	secp256k1_pedersen_commitment_sum_pos(GetContext(), elements, numSigners, &out);
+	size_t length;
+	secp256k1_pedersen_commitment_to_serialized_pubkey(&out, pubSpend, &length);
+
+	multiSigPrivView.Set(view, view + 32, true);
+	multiSigPubSpend.Set(pubSpend, pubSpend + 33);
+}
+
 bool CWallet::WriteStakingStatus(bool status)
 {
 	walletStakingInProgress = true;
@@ -223,6 +267,16 @@ bool CWallet::WriteStakingStatus(bool status)
 bool CWallet::ReadStakingStatus()
 {
     return CWalletDB(strWalletFile).ReadStakingStatus();
+}
+
+void CWallet::SetNumSigners(int numSigners)
+{
+	CWalletDB(strWalletFile).WriteNumSigners(numSigners);
+}
+
+int CWallet::ReadNumSigners() const
+{
+	return CWalletDB(strWalletFile).ReadNumSigners();
 }
 
 bool CWallet::AddCryptedKey(const CPubKey& vchPubKey,
@@ -6082,6 +6136,17 @@ bool computeStealthDestination(const CKey& secret, const CPubKey& pubViewKey, co
     	throw runtime_error("Cannot compute stealth destination");
     des.Set(B, B + pubSpendKey.size());
     return true;
+}
+
+std::string CWallet::MyMultisigPubAddress()
+{
+	if (!IsMultisigSetup()) GenerateMultisigWallet(comboKeys.comboKeys.size());
+	if (IsMultisigSetup()) {
+		std::string ret;
+		EncodeStealthPublicAddress(MyMultisigViewKey().GetPubKey(), GetMultisigPubSpendKey(), ret);
+		return ret;
+	}
+	return "";
 }
 
 bool CWallet::ComputeStealthDestination(const CKey& secret, const CPubKey& pubViewKey, const CPubKey& pubSpendKey, CPubKey& des) {
