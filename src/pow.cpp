@@ -198,7 +198,13 @@ bool CheckPoAContainRecentHash(const CBlock& block) {
             }
             CBlockIndex* piterator = mapBlockIndex[lastAuditedPoSHash]->pnext;
             uint32_t idxOfPoSInfo = 0;
-
+            LogPrintf("here1");
+            if (!piterator) {
+                //check whether chainActive has
+            	piterator = chainActive[mapBlockIndex[lastAuditedPoSHash]->nHeight + 1];
+            	if (!piterator)
+            		return error("CheckPoAContainRecentHash() : PoS block %s not found", lastAuditedPoSHash.GetHex());
+            }
             while (piterator->nHeight <= (uint32_t) currentTip->nHeight && idxOfPoSInfo < block.posBlocksAudited.size()) {
                 if (!piterator->GetBlockHeader().IsPoABlockByVersion()
                         && piterator->nHeight > Params().LAST_POW_BLOCK()) {
@@ -214,8 +220,20 @@ bool CheckPoAContainRecentHash(const CBlock& block) {
                         break;
                     }
                 }
+                uint256 h = piterator->GetBlockHash();
                 piterator = piterator->pnext;
+
+                if (!piterator) {
+                	piterator = mapBlockIndex[piterator->GetBlockHash()]->pnext;
+                }
+                if (!piterator) {
+                	piterator = chainActive[mapBlockIndex[h]->nHeight + 1];
+                	if (!piterator)
+                		return error("CheckPoAContainRecentHash() : PoS block %s not found", piterator->GetBlockHash().GetHex());
+                }
             }
+            LogPrintf("here2");
+
             if (idxOfPoSInfo != block.posBlocksAudited.size()) {
                 //Not all PoS Blocks in PoA block have been checked, not satisfied
                 ret = false;
