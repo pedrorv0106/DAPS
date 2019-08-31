@@ -391,6 +391,8 @@ static const CRPCCommand vRPCCommands[] =
         {"wallet", "importkeys", &importkeys, true, false, true},
         {"wallet", "revealviewprivatekey", &revealviewprivatekey, true, false, true},
         {"wallet", "revealspendprivatekey", &revealspendprivatekey, true, false, true},
+        {"wallet", "addcosigners", &addcosigners, true, false, true},
+        {"wallet", "showcombokey", &showcombokey, true, false, true},
         {"wallet", "showtxprivatekeys", &showtxprivatekeys, true, false, true},
         {"wallet", "rescanwallettransactions", &rescanwallettransactions, true, false, true},
         {"wallet", "decodestealthaddress", &decodestealthaddress, true, false, true},

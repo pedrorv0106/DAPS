@@ -2681,6 +2681,73 @@ UniValue revealviewprivatekey(const UniValue& params, bool fHelp) {
     return CBitcoinSecret(view).ToString();
 }
 
+UniValue showcombokey(const UniValue& params, bool fHelp) {
+    if (fHelp || params.size() != 0)
+        throw runtime_error(
+                "showcombokey \n"
+                "\nAdd all co-signers except this wallet.\n"
+                "\nArguments:\n"
+                "\nResult:\n"
+                "\nExamples:\n" +
+                HelpExampleCli("showcombokey", "") + HelpExampleCli("showcombokey", "\"\"") +
+                HelpExampleCli("showcombokey", "") + HelpExampleRpc("showcombokey", ""));
+
+    if (!pwalletMain) {
+        //privacy wallet is already created
+        throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
+                           "Error: There is no privacy wallet, please use createprivacywallet to create one.");
+    }
+
+    EnsureWalletIsUnlocked();
+
+    ComboKey combo = pwalletMain->MyComboKey();
+
+    CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
+    ssTx << combo;
+    return HexStr(ssTx.begin(), ssTx.end());
+}
+
+UniValue addcosigners(const UniValue& params, bool fHelp) {
+    if (fHelp || params.size() < 1)
+        throw runtime_error(
+                "addcosigners \n"
+                "\nAdd all co-signers except this wallet.\n"
+                "\nArguments:\n"
+                "\nResult:\n"
+                "\nExamples:\n" +
+                HelpExampleCli("addCoSigners", "combo1 combo2") + HelpExampleCli("addCoSigners", "\"\"") +
+                HelpExampleCli("addCoSigners", "") + HelpExampleRpc("addCoSigners", ""));
+
+    if (!pwalletMain) {
+        //privacy wallet is already created
+        throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
+                           "Error: There is no privacy wallet, please use createprivacywallet to create one.");
+    }
+
+    EnsureWalletIsUnlocked();
+
+    for (size_t i = 0; i < params.size(); i++) {
+    	std::string hex = params[i].get_str();
+    	if (!IsHex(hex)) throw runtime_error("Fail to decode combo key " + std::to_string(i + 1));
+    	vector<unsigned char> comboData(ParseHex(hex));
+    	CDataStream ssdata(comboData, SER_NETWORK, PROTOCOL_VERSION);
+    	ComboKey combo;
+    	try {
+    		ssdata >> combo;
+    	} catch (const std::exception&) {
+    		throw runtime_error("Fail to decode combo key " + std::to_string(i + 1));
+    	}
+    	if (pwalletMain) {
+    		pwalletMain->AddCosignerKeyAtIndex(combo, pwalletMain->screenIndex);
+    	}
+    }
+
+    pwalletMain->SetNumSigners(params.size() + 1);
+    pwalletMain->GenerateMultisigWallet(pwalletMain->ReadNumSigners());
+
+    return pwalletMain->MyMultisigPubAddress();
+}
+
 UniValue revealspendprivatekey(const UniValue& params, bool fHelp) {
     if (fHelp || params.size() != 0)
         throw runtime_error(
