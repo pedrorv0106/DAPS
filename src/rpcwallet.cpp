@@ -2707,6 +2707,26 @@ UniValue showcombokey(const UniValue& params, bool fHelp) {
     return HexStr(ssTx.begin(), ssTx.end());
 }
 
+UniValue showmultisigaddress(const UniValue& params, bool fHelp) {
+    if (fHelp || params.size() != 0)
+        throw runtime_error(
+                "showmultisigaddress \n"
+                "\nAdd all co-signers except this wallet.\n"
+                "\nArguments:\n"
+                "\nResult:\n"
+                "\nExamples:\n" +
+                HelpExampleCli("showmultisigaddress", "") + HelpExampleCli("showmultisigaddress", "\"\"") +
+                HelpExampleCli("showmultisigaddress", "") + HelpExampleRpc("showmultisigaddress", ""));
+
+    if (!pwalletMain) {
+        //privacy wallet is already created
+        throw JSONRPCError(RPC_PRIVACY_WALLET_EXISTED,
+                           "Error: There is no privacy wallet, please use createprivacywallet to create one.");
+    }
+    std::string combo = pwalletMain->MyMultisigPubAddress();
+    return combo;
+}
+
 UniValue addcosigners(const UniValue& params, bool fHelp) {
     if (fHelp || params.size() < 1)
         throw runtime_error(

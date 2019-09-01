@@ -227,6 +227,7 @@ void WalletView::gotoMasternodePage()
 void WalletView::gotoReceiveCoinsPage()
 {
     setCurrentWidget(receiveCoinsPage);
+    receiveCoinsPage->loadAccount();
 }
 
 void WalletView::gotoOptionsPage()

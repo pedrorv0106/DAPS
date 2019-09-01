@@ -796,10 +796,10 @@ public:
     bool MakeShnorrSignatureTxIn(CTxIn& txin, uint256);
     bool computeSharedSec(const CTransaction& tx, const CTxOut& out, CPubKey& sharedSec, bool hide) const;
     bool GenerateBulletProofForStaking(CTransaction& tx);
-    CKeyImage GeneratePartialKeyImage(const CTxOut& out) const;
-    CKeyImage GeneratePartialKeyImage(const COutPoint& out) const;
-    CPubKey computeDestination(const COutPoint& out) const;
-    CPubKey computeDestination(const CTxOut& out) const;
+    CKeyImage GeneratePartialKeyImage(const CTxOut& out);
+    CKeyImage GeneratePartialKeyImage(const COutPoint& out);
+    CPubKey computeDestination(const COutPoint& out);
+    CPubKey computeDestination(const CTxOut& out);
     bool GeneratePartialKeyImages(const std::vector<CTxOut>& outputs, std::vector<CKeyImage>& out);
     bool GeneratePartialKeyImages(const std::vector<COutPoint>& outpoints, std::vector<CKeyImage>& out);
     bool GenerateAllPartialImages(std::vector<CKeyImage>& out);
@@ -834,9 +834,9 @@ public:
     	}
     }
 
-    void GenerateMultisigWallet(int numSigners) const;
+    void GenerateMultisigWallet(int numSigners);
 
-    CPubKey GetMultisigPubSpendKey() const
+    CPubKey GetMultisigPubSpendKey()
     {
     	GenerateMultisigWallet(comboKeys.comboKeys.size());
     	return multiSigPubSpend;
@@ -844,7 +844,11 @@ public:
 
     CKey MyMultisigViewKey() const
     {
-    	GenerateMultisigWallet(comboKeys.comboKeys.size());
+    	if (multiSigPrivView.IsValid()) return multiSigPrivView;
+    	{
+    		LOCK(cs_wallet);
+    		LoadMultisigKey();
+    	}
     	return multiSigPrivView;
     }
     bool DidISignTheTransaction(const CPartialTransaction& partial);
@@ -854,6 +858,7 @@ public:
     bool generatePKeyImageAlphaListFromPartialTx(const CPartialTransaction& tx, CListPKeyImageAlpha& l);
     void AddComputedPrivateKey(const CTxOut& out);
     bool IsMultisigSetup() const {
+    	MyMultisigViewKey();
     	return multiSigPrivView.IsValid();
     }
 
@@ -861,10 +866,11 @@ public:
     int ReadNumSigners() const;
     std::string MyMultisigPubAddress();
 private:
-    void GeneratePKeyImageAlpha(const COutPoint& op, CPKeyImageAlpha&) const;
+    void GeneratePKeyImageAlpha(const COutPoint& op, CPKeyImageAlpha&) ;
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);
     void createMasterKey() const;
+    bool LoadMultisigKey() const;
     bool generateBulletProofAggregate(CPartialTransaction& tx);
     bool selectDecoysAndRealIndex(CPartialTransaction& tx, int& myIndex, int ringSize);
     bool makeRingCT(CPartialTransaction& wtxNew, int ringSize, std::string& strFailReason);

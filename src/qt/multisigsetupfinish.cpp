@@ -24,6 +24,12 @@ MultiSigSetupFinish::~MultiSigSetupFinish()
 void MultiSigSetupFinish::setModel(WalletModel* model)
 {
     this->model = model;
+    if (pwalletMain) {
+    	std::string multisigAddress = pwalletMain->MyMultisigPubAddress();
+    	pwalletMain->screenIndex++;
+    	ui->textComboKey->setText(QString::fromStdString(multisigAddress));
+    	ui->textComboKey->setReadOnly(true);
+    }
 }
 
 void MultiSigSetupFinish::closeEvent (QCloseEvent *event)
@@ -39,11 +45,6 @@ void MultiSigSetupFinish::closeEvent (QCloseEvent *event)
 
 void MultiSigSetupFinish::on_btnDone()
 {
-	if (pwalletMain) {
-		std::string multisigAddress = pwalletMain->MyMultisigPubAddress();
-		pwalletMain->screenIndex++;
-        ui->textComboKey->setText(QString::fromStdString(multisigAddress));
-	}
 	accept();
 	pwalletMain->isMultisigSetupFinished = true;
 }

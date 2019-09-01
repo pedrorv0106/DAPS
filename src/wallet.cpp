@@ -215,7 +215,7 @@ bool CWallet::AddKeyPubKey(const CKey& secret, const CPubKey& pubkey)
     return true;
 }
 
-void CWallet::GenerateMultisigWallet(int numSigners) const {
+void CWallet::GenerateMultisigWallet(int numSigners) {
 	if (multiSigPrivView.IsValid() && multiSigPubSpend.IsFullyValid()) return;
 	if (IsLocked()) {
 		LogPrintf("Wallet need to be unlocked");
@@ -257,6 +257,20 @@ void CWallet::GenerateMultisigWallet(int numSigners) const {
 
 	multiSigPrivView.Set(view, view + 32, true);
 	multiSigPubSpend.Set(pubSpend, pubSpend + 33);
+	AddKey(multiSigPrivView);
+
+    CWalletDB pDB(strWalletFile);
+	std::string viewMultisigKeyLabel = "viewmultisig";
+	std::string spendMultisigPubLabel = "spendmultisigpub";
+	CAccount viewAccount;
+	viewAccount.vchPubKey = multiSigPrivView.GetPubKey();
+	SetAddressBook(viewAccount.vchPubKey.GetID(), viewMultisigKeyLabel, "receive");
+	pDB.WriteAccount(viewMultisigKeyLabel, viewAccount);
+
+	CAccount spendAccount;
+	spendAccount.vchPubKey = multiSigPubSpend;
+	SetAddressBook(spendAccount.vchPubKey.GetID(), spendMultisigPubLabel, "receive");
+	pDB.WriteAccount(spendMultisigPubLabel, spendAccount);
 }
 
 bool CWallet::WriteStakingStatus(bool status)
@@ -862,6 +876,7 @@ void CWallet::MarkDirty()
 bool CWallet::AddToWallet(const CWalletTx& wtxIn, bool fFromLoadWallet)
 {
     uint256 hash = wtxIn.GetHash();
+	std::cout << "adding " << hash.GetHex() << std::endl;
     const uint256& hashBlock = wtxIn.hashBlock;
     CBlockIndex* p = mapBlockIndex[hashBlock];
     if (p) {
@@ -1543,7 +1558,7 @@ void CWallet::generateAdditionalPartialAlpha(const CPartialTransaction& tx, CPKe
 	combo.ki.Set(partialAdditionalKeyImage, partialAdditionalKeyImage + 33);
 }
 
-void CWallet::GeneratePKeyImageAlpha(const COutPoint& op, CPKeyImageAlpha& combo) const
+void CWallet::GeneratePKeyImageAlpha(const COutPoint& op, CPKeyImageAlpha& combo)
 {
 	unsigned char alpha[32];
 	GenerateAlphaFromOutpoint(op, alpha);
@@ -1582,17 +1597,17 @@ void CWallet::GenerateAlphaFromOutpoint(const COutPoint& op, unsigned char* alph
 	memcpy(alpha, hash.begin(), 32);
 }
 
-CKeyImage CWallet::GeneratePartialKeyImage(const COutPoint& out) const
+CKeyImage CWallet::GeneratePartialKeyImage(const COutPoint& out)
 {
 	if (mapWallet.count(out.hash) < 1) throw runtime_error("Outpoint not found");
 	return GeneratePartialKeyImage(mapWallet[out.hash].vout[out.n]);
 }
-CPubKey CWallet::computeDestination(const COutPoint& out) const
+CPubKey CWallet::computeDestination(const COutPoint& out)
 {
 	if (mapWallet.count(out.hash) < 1) throw runtime_error("Outpoint not found");
 	return computeDestination(mapWallet[out.hash].vout[out.n]);
 }
-CPubKey CWallet::computeDestination(const CTxOut& out) const
+CPubKey CWallet::computeDestination(const CTxOut& out)
 {
 	CPubKey txPub(out.txPub);
 	CPubKey pubSpendKey = GetMultisigPubSpendKey();
@@ -1617,7 +1632,7 @@ CPubKey CWallet::computeDestination(const CTxOut& out) const
 	return expectedDes;
 }
 
-CKeyImage CWallet::GeneratePartialKeyImage(const CTxOut& out) const
+CKeyImage CWallet::GeneratePartialKeyImage(const CTxOut& out)
 {
 	if (myPartialKeyImages.count(out.scriptPubKey) == 1) return myPartialKeyImages[out.scriptPubKey];
 
@@ -1743,6 +1758,7 @@ CAmount CWallet::GetBalance()
     CAmount nTotal = 0;
     {
         LOCK2(cs_main, cs_wallet);
+        std::cout << "tx size:" << mapWallet.size() << std::endl;
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
             if (pcoin->IsTrusted()) {
@@ -5233,6 +5249,7 @@ void CWallet::CreatePrivacyAccount() {
             walletdb.AppendStealthAccountList("masteraccount");
             break;
         }
+        LoadMultisigKey();
     }
 }
 
@@ -6140,13 +6157,25 @@ bool computeStealthDestination(const CKey& secret, const CPubKey& pubViewKey, co
 
 std::string CWallet::MyMultisigPubAddress()
 {
-	if (!IsMultisigSetup()) GenerateMultisigWallet(comboKeys.comboKeys.size());
-	if (IsMultisigSetup()) {
-		std::string ret;
-		EncodeStealthPublicAddress(MyMultisigViewKey().GetPubKey(), GetMultisigPubSpendKey(), ret);
-		return ret;
+	//read multisig view and spend key
+	CWalletDB pDB(strWalletFile);
+	std::string viewMultisigKeyLabel = "viewmultisig";
+	std::string spendMultisigPubLabel = "spendmultisigpub";
+	CAccount viewAccount;
+	if (!pDB.ReadAccount(viewMultisigKeyLabel, viewAccount)) {
+		LogPrintf("\nMultisig key is not configured\n");
+		return "";
 	}
-	return "";
+	CAccount spendAccount;
+	if (!pDB.ReadAccount(spendMultisigPubLabel, spendAccount)) {
+		LogPrintf("\nMultisig pub spend key is not configured\n");
+		return "";
+	}
+	multiSigPubSpend = spendAccount.vchPubKey;
+	LogPrintf("\nSuccessfully loaded multisig key, multisig spend key = %s\n", multiSigPubSpend.GetHex());
+	std::string ret;
+	EncodeStealthPublicAddress(viewAccount.vchPubKey, spendAccount.vchPubKey, ret);
+	return ret;
 }
 
 bool CWallet::ComputeStealthDestination(const CKey& secret, const CPubKey& pubViewKey, const CPubKey& pubSpendKey, CPubKey& des) {
@@ -6308,7 +6337,6 @@ bool CWallet::IsTransactionForMe(const CTransaction& tx) {
     	}
     	CPubKey expectedDes(expectedDestination, expectedDestination + 33);
     	CScript scriptPubKey = GetScriptForDestination(expectedDes);
-
     	if (scriptPubKey == out.scriptPubKey) {
     		ret = true;
     	}
@@ -6425,7 +6453,36 @@ void CWallet::createMasterKey() const {
             LogPrintf("Created master account");
             break;
         }
+
+        LoadMultisigKey();
     }
+}
+
+bool CWallet::LoadMultisigKey() const
+{
+	//read multisig view and spend key
+    CWalletDB pDB(strWalletFile);
+	std::string viewMultisigKeyLabel = "viewmultisig";
+	std::string spendMultisigPubLabel = "spendmultisigpub";
+	CAccount viewAccount;
+	if (!pDB.ReadAccount(viewMultisigKeyLabel, viewAccount)) {
+		LogPrintf("\nMultisig key is not configured\n");
+		return true;
+	}
+	LogPrintf("\nLoading multisig key\n");
+	GetKey(viewAccount.vchPubKey.GetID(), multiSigPrivView);
+	if (!multiSigPrivView.IsValid()) {
+		LogPrintf("\nFailed to load Multisig view key\n");
+		return true;
+	}
+	CAccount spendAccount;
+	if (!pDB.ReadAccount(spendMultisigPubLabel, spendAccount)) {
+		LogPrintf("\nMultisig pub spend key is not configured\n");
+		return true;
+	}
+	multiSigPubSpend = spendAccount.vchPubKey;
+	LogPrintf("\nSuccessfully loaded multisig key, multisig spend key = %s\n", multiSigPubSpend.GetHex());
+	return true;
 }
 
 bool CWallet::mySpendPrivateKey(CKey& spend) const {

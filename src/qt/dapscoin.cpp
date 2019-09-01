@@ -505,6 +505,7 @@ void BitcoinApplication::initializeResult(int retval)
         					dlg.exec();
         				} else {
         					//finish
+        				    pwalletMain->GenerateMultisigWallet(pwalletMain->ReadNumSigners());
         					MultiSigSetupFinish dlg;
         					dlg.setModel(walletModel);
         					dlg.setStyleSheet(GUIUtil::loadStyleSheet());
