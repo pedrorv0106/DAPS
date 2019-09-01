@@ -412,6 +412,7 @@ public:
     }
 
     mutable std::map<uint256, CWalletTx> mapWallet;
+    mutable std::map<uint256, CPartialTransaction> mapPartialTxes;
 
     int64_t nOrderPosNext;
     std::map<uint256, int> mapRequestCount;
@@ -1280,10 +1281,10 @@ public:
 
             if (!pwallet->IsSpent(hashTx, i)) {
                 const CTxOut& txout = vout[i];
-                CAmount cre = pwallet->GetCredit(*this, txout, ISMINE_SPENDABLE);
+                CAmount cre = pwallet->GetCredit(*this, txout, ISMINE_ALL);
                 if (cre == 0 && fCreditCached) {
                     fCreditCached = false;
-                    cre = pwallet->GetCredit(*this, txout, ISMINE_SPENDABLE);
+                    cre = pwallet->GetCredit(*this, txout, ISMINE_ALL);
                 }
                 nCredit += cre;
                 if (!MoneyRange(nCredit))

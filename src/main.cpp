@@ -380,7 +380,7 @@ secp256k1_scratch_space2* GetScratch() {
 
 secp256k1_bulletproof_generators* GetGenerator() {
     static secp256k1_bulletproof_generators *generator;
-    if (!generator) generator = secp256k1_bulletproof_generators_create(GetContext(), &secp256k1_generator_const_g, 256);
+    if (!generator) generator = secp256k1_bulletproof_generators_create(GetContext(), &secp256k1_generator_const_g, 64*1024);
     return generator;
 }
 

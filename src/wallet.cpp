@@ -1758,7 +1758,6 @@ CAmount CWallet::GetBalance()
     CAmount nTotal = 0;
     {
         LOCK2(cs_main, cs_wallet);
-        std::cout << "tx size:" << mapWallet.size() << std::endl;
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
             if (pcoin->IsTrusted()) {
@@ -6256,11 +6255,11 @@ bool CWallet::SendToStealthAddress(CPartialTransaction& ptx, const std::string& 
         LogPrintf("SendToStealthAddress() : Not enough! %s\n", strError);
         throw runtime_error(strError);
     }
-    if (!pwalletMain->CommitTransaction(wtxNew, reservekey, (!fUseIX ? "tx" : "ix"))) {
+    /*if (!pwalletMain->CommitTransaction(wtxNew, reservekey, (!fUseIX ? "tx" : "ix"))) {
     	inSpendQueueOutpointsPerSession.clear();
         throw runtime_error(
                 "Error: The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of multisig_wallet.dat and coins were spent in the copy but not marked as spent here.");
-    }
+    }*/
     for(size_t i = 0; i < inSpendQueueOutpointsPerSession.size(); i++) {
     	inSpendQueueOutpoints[inSpendQueueOutpointsPerSession[i]] = true;
     }
@@ -6273,6 +6272,9 @@ bool CWallet::SendToStealthAddress(CPartialTransaction& ptx, const std::string& 
     	CWalletDB(strWalletFile).WriteTxPrivateKey(key, CBitcoinSecret(txPrivKeys[i]).ToString());
     }
     txPrivKeys.clear();
+
+    uint256 hashOfAllIn = generateHashOfAllIns(ptx);
+    mapPartialTxes[hashOfAllIn] = ptx;
     return true;
 }
 

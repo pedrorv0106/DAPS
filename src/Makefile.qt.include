@@ -59,6 +59,7 @@ QT_FORMS_UI = \
   qt/forms/revealtxdialog.ui \
   qt/forms/rpcconsole.ui \
   qt/forms/sendcoinsdialog.ui \
+  qt/forms/cosigntransaction.ui \
   qt/forms/sendcoinsentry.ui \
   qt/forms/signverifymessagedialog.ui \
   qt/forms/togglebutton.ui \
@@ -114,6 +115,7 @@ QT_MOC_CPP = \
   qt/moc_recentrequeststablemodel.cpp \
   qt/moc_rpcconsole.cpp \
   qt/moc_sendcoinsdialog.cpp \
+  qt/moc_cosigntransaction.cpp \
   qt/moc_sendcoinsentry.cpp \
   qt/moc_signverifymessagedialog.cpp \
   qt/moc_splashscreen.cpp \
@@ -206,6 +208,7 @@ BITCOIN_QT_H = \
   qt/recentrequeststablemodel.h \
   qt/rpcconsole.h \
   qt/sendcoinsdialog.h \
+  qt/cosigntransaction.h \
   qt/sendcoinsentry.h \
   qt/signverifymessagedialog.h \
   qt/splashscreen.h \
@@ -352,6 +355,7 @@ BITCOIN_QT_CPP += \
   qt/revealtxdialog.cpp \
   qt/recentrequeststablemodel.cpp \
   qt/sendcoinsdialog.cpp \
+  qt/cosigntransaction.cpp \
   qt/sendcoinsentry.cpp \
   qt/signverifymessagedialog.cpp \
   qt/togglebutton.cpp \

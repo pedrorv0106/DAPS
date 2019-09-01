@@ -22,6 +22,7 @@
 #include "sendcoinsdialog.h"
 #include "signverifymessagedialog.h"
 #include "transactiontablemodel.h"
+#include "cosigntransaction.h"
 #include "transactionview.h"
 #include "walletmodel.h"
 
@@ -72,6 +73,7 @@ WalletView::WalletView(QWidget* parent) : QStackedWidget(parent),
     sendCoinsPage = new SendCoinsDialog();
     optionsPage = new OptionsPage();
     historyPage = new HistoryPage();
+    cosignPage = new CoSignTransaction();
 
     addWidget(overviewPage);
     addWidget(historyPage);
@@ -136,6 +138,7 @@ void WalletView::setClientModel(ClientModel* clientModel)
 
     overviewPage->setClientModel(clientModel);
     sendCoinsPage->setClientModel(clientModel);
+    cosignPage->setClientModel(clientModel);
     QSettings settings;
     if (settings.value("fShowMasternodesTab").toBool()) {
         masternodeListPage->setClientModel(clientModel);
@@ -226,8 +229,12 @@ void WalletView::gotoMasternodePage()
 
 void WalletView::gotoReceiveCoinsPage()
 {
+	static bool loaded = false;
     setCurrentWidget(receiveCoinsPage);
-    receiveCoinsPage->loadAccount();
+    if (!loaded) {
+    	receiveCoinsPage->loadAccount();
+    	loaded = true;
+    }
 }
 
 void WalletView::gotoOptionsPage()
@@ -238,6 +245,11 @@ void WalletView::gotoOptionsPage()
 void WalletView::gotoSendCoinsPage(QString addr)
 {
     setCurrentWidget(sendCoinsPage);
+}
+
+void WalletView::gotoCoSignPage()
+{
+    setCurrentWidget(cosignPage);
 }
 
 void WalletView::gotoSignMessageTab(QString addr)

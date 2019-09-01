@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SendCoinsDialog</class>
- <widget class="QDialog" name="SendCoinsDialog">
+ <class>CoSignTransaction</class>
+ <widget class="QDialog" name="CoSignTransaction">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -17,15 +17,35 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Send Coins</string>
+   <string>Co-Sign Transaction</string>
   </property>
   <property name="sizeGripEnabled">
    <bool>false</bool>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0,0,0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,1,0,0,0">
    <property name="bottomMargin">
     <number>8</number>
    </property>
+   <item>
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Enter long code of transaction to be signed</string>
+     </property>
+    </widget>
+   </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
@@ -34,17 +54,7 @@
         <number>3</number>
        </property>
        <item>
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
+        <widget class="QTextEdit" name="hexCode"/>
        </item>
        <item>
         <widget class="QLabel" name="label">
@@ -93,10 +103,10 @@
         <x>0</x>
         <y>0</y>
         <width>824</width>
-        <height>286</height>
+        <height>72</height>
        </rect>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0">
+      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0">
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -109,13 +119,6 @@
        <property name="bottomMargin">
         <number>0</number>
        </property>
-       <item>
-        <layout class="QVBoxLayout" name="entries">
-         <property name="spacing">
-          <number>6</number>
-         </property>
-        </layout>
-       </item>
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_4">
          <item>
@@ -157,7 +160,7 @@
               <string>Confirm the send action</string>
              </property>
              <property name="text">
-              <string>Create Transaction</string>
+              <string>Co-Sign Transaction</string>
              </property>
              <property name="autoDefault">
               <bool>false</bool>
@@ -194,12 +197,12 @@
    <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Hex Code generated for the transaction</string>
+      <string>Hex Code Of Signed Transaction</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QTextEdit" name="hexCode"/>
+    <widget class="QTextEdit" name="signedHex"/>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -218,23 +221,6 @@
         </size>
        </property>
       </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="addButton">
-       <property name="toolTip">
-        <string>Send to multiple recipients at once</string>
-       </property>
-       <property name="text">
-        <string>Add &amp;Recipient</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../dapscoin.qrc">
-         <normaloff>:/icons/add</normaloff>:/icons/add</iconset>
-       </property>
-       <property name="autoDefault">
-        <bool>false</bool>
-       </property>
-      </widget>
      </item>
      <item>
       <spacer name="horizontalSpacer_3">
