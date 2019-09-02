@@ -376,6 +376,7 @@ public:
 
     std::set<COutPoint> setLockedCoins;
     bool walletStakingInProgress;
+    std::map<CKeyID, CHDPubKey> mapHdPubKeys; //<! memory map of HD extended pubkeys
 
     int64_t nTimeFirstKey;
 
@@ -430,7 +431,15 @@ public:
     bool SetCryptedHDChain(const CHDChain& chain, bool memonly);
     bool GetDecryptedHDChain(CHDChain& hdChainRet);
     bool IsHDEnabled();
-
+    bool HaveKey(const CKeyID &address) const;
+    //! GetPubKey implementation that also checks the mapHdPubKeys
+    bool GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const;
+    //! GetKey implementation that can derive a HD private key on the fly
+    bool GetKey(const CKeyID &address, CKey& keyOut) const;
+    //! Adds a HDPubKey into the wallet(database)
+    bool AddHDPubKey(const CExtPubKey &extPubKey, bool fInternal);
+    //! loads a HDPubKey into the wallets memory
+    bool LoadHDPubKey(const CHDPubKey &hdPubKey);
     //! Adds a key to the store, and saves it to disk.
     bool AddKeyPubKey(const CKey& key, const CPubKey& pubkey);
     //! Adds a key to the store, without saving it to disk (used by LoadWallet)

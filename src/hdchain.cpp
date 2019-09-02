@@ -167,3 +167,8 @@ void CHDChain::DeriveChildExtKey(uint32_t nAccountIndex, bool fInternal, uint32_
     // derive m/purpose'/coin_type'/account'/change/address_index
     changeKey.Derive(extKeyRet, nChildIndex);
 }
+
+std::string CHDPubKey::GetKeyPath() const
+{
+    return strprintf("m/44'/%d'/%d'/%d/%d", Params().ExtCoinType() & 0xFFF, nAccountIndex, nChangeIndex, extPubKey.nChild);
+}

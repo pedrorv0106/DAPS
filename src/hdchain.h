@@ -5,6 +5,7 @@
 
 #include "key.h"
 #include "sync.h"
+#include "pubkey.h"
 
 /* simple HD chain data model */
 class CHDChain
@@ -85,6 +86,35 @@ public:
 
     uint256 GetSeedHash();
     void DeriveChildExtKey(uint32_t nAccountIndex, bool fInternal, uint32_t nChildIndex, CExtKey& extKeyRet);
+};
+
+/* hd pubkey data model */
+class CHDPubKey
+{
+private:
+    static const int CURRENT_VERSION = 1;
+    int nVersion;
+
+public:
+    CExtPubKey extPubKey;
+    uint256 hdchainID;
+    uint32_t nAccountIndex;
+    uint32_t nChangeIndex;
+
+    CHDPubKey() : nVersion(CHDPubKey::CURRENT_VERSION), nAccountIndex(0), nChangeIndex(0) {}
+
+    ADD_SERIALIZE_METHODS;
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion)
+    {
+        READWRITE(this->nVersion);
+        READWRITE(extPubKey);
+        READWRITE(hdchainID);
+        READWRITE(nAccountIndex);
+        READWRITE(nChangeIndex);
+    }
+
+    std::string GetKeyPath() const;
 };
 
 #endif // BITCOIN_HDCHAIN_H

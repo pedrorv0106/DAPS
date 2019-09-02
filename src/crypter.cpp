@@ -423,7 +423,7 @@ bool CCryptoKeyStore::EncryptHDChain(const CKeyingMaterial& vMasterKeyIn)
     return true;
 }
 
-bool CCryptoKeyStore::DecryptHDChain(CHDChain& hdChainRet)
+bool CCryptoKeyStore::DecryptHDChain(CHDChain& hdChainRet) const
 {
     if (!IsCrypted())
         return true;
@@ -494,7 +494,7 @@ bool CCryptoKeyStore::SetCryptedHDChain(const CHDChain& chain)
     return true;
 }
 
-bool CCryptoKeyStore::GetHDChain(CHDChain& hdChainRet)
+bool CCryptoKeyStore::GetHDChain(CHDChain& hdChainRet) const
 {
     if(IsCrypted()) {
         hdChainRet = cryptedHDChain;

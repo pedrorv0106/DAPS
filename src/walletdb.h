@@ -153,6 +153,7 @@ public:
     bool EraseDestData(const std::string& address, const std::string& key);
     bool WriteHDChain(const CHDChain& chain);
     bool WriteCryptedHDChain(const CHDChain& chain);
+    bool WriteHDPubKey(const CHDPubKey& hdPubKey, const CKeyMetadata& keyMeta);
 
     bool WriteAccountingEntry(const CAccountingEntry& acentry);
     CAmount GetAccountCreditDebit(const std::string& strAccount);

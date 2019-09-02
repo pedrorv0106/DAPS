@@ -6016,6 +6016,91 @@ void CWallet::DeriveNewChildKey(uint32_t nAccountIndex, CKey& secretRet)
     // store metadata
     int64_t nCreationTime = GetTime();
     mapKeyMetadata[pubkey.GetID()] = CKeyMetadata(nCreationTime);
+
+    if (!AddHDPubKey(childKey.Neuter(), false))
+        throw std::runtime_error(std::string(__func__) + ": AddHDPubKey failed");
+}
+
+bool CWallet::GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const
+{
+    LOCK(cs_wallet);
+    std::map<CKeyID, CHDPubKey>::const_iterator mi = mapHdPubKeys.find(address);
+    if (mi != mapHdPubKeys.end())
+    {
+        const CHDPubKey &hdPubKey = (*mi).second;
+        vchPubKeyOut = hdPubKey.extPubKey.pubkey;
+        return true;
+    }
+    else
+        return CCryptoKeyStore::GetPubKey(address, vchPubKeyOut);
+}
+
+bool CWallet::GetKey(const CKeyID &address, CKey& keyOut) const
+{
+    LOCK(cs_wallet);
+    std::map<CKeyID, CHDPubKey>::const_iterator mi = mapHdPubKeys.find(address);
+    if (mi != mapHdPubKeys.end())
+    {
+        // if the key has been found in mapHdPubKeys, derive it on the fly
+        const CHDPubKey &hdPubKey = (*mi).second;
+        CHDChain hdChainCurrent;
+        if (!GetHDChain(hdChainCurrent))
+            throw std::runtime_error(std::string(__func__) + ": GetHDChain failed");
+        if (!DecryptHDChain(hdChainCurrent))
+            throw std::runtime_error(std::string(__func__) + ": DecryptHDChainSeed failed");
+        // make sure seed matches this chain
+        if (hdChainCurrent.GetID() != hdChainCurrent.GetSeedHash())
+            throw std::runtime_error(std::string(__func__) + ": Wrong HD chain!");
+
+        CExtKey extkey;
+        hdChainCurrent.DeriveChildExtKey(hdPubKey.nAccountIndex, hdPubKey.nChangeIndex != 0, hdPubKey.extPubKey.nChild, extkey);
+        keyOut = extkey.key;
+
+        return true;
+    }
+    else {
+        return CCryptoKeyStore::GetKey(address, keyOut);
+    }
+}
+
+bool CWallet::HaveKey(const CKeyID &address) const
+{
+    LOCK(cs_wallet);
+    if (mapHdPubKeys.count(address) > 0)
+        return true;
+    return CCryptoKeyStore::HaveKey(address);
+}
+
+bool CWallet::LoadHDPubKey(const CHDPubKey &hdPubKey)
+{
+    AssertLockHeld(cs_wallet);
+
+    mapHdPubKeys[hdPubKey.extPubKey.pubkey.GetID()] = hdPubKey;
+    return true;
+}
+
+bool CWallet::AddHDPubKey(const CExtPubKey &extPubKey, bool fInternal)
+{
+    AssertLockHeld(cs_wallet);
+
+    CHDChain hdChainCurrent;
+    GetHDChain(hdChainCurrent);
+
+    CHDPubKey hdPubKey;
+    hdPubKey.extPubKey = extPubKey;
+    hdPubKey.hdchainID = hdChainCurrent.GetID();
+    hdPubKey.nChangeIndex = fInternal ? 1 : 0;
+    mapHdPubKeys[extPubKey.pubkey.GetID()] = hdPubKey;
+
+    CScript script;
+    script = GetScriptForDestination(extPubKey.pubkey);
+    if (HaveWatchOnly(script))
+        RemoveWatchOnly(script);
+
+    if (!fFileBacked)
+        return true;
+
+    return CWalletDB(strWalletFile).WriteHDPubKey(hdPubKey, mapKeyMetadata[extPubKey.pubkey.GetID()]);
 }
 
 void CWallet::createMasterKey() const {
