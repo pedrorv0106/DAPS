@@ -60,7 +60,6 @@ Q_SIGNALS:
 
 private:
     QTimer* timer;
-    QTimer* refreshPageTimer = new QTimer();
     Ui::MasternodeList* ui;
     ClientModel* clientModel;
     WalletModel* walletModel;

@@ -21,7 +21,6 @@ static const char* ppszTypeName[] =
         "filtered block",
         "tx lock request",
         "tx lock vote",
-        "spork",
         "mn winner",
         "mn scan error",
         "mn budget vote",

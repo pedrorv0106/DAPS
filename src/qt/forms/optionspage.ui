@@ -36,7 +36,7 @@
      </property>
     </widget>
    </item>
-   <item>
+   <item alignment="Qt::AlignRight">
     <widget class="ToggleButton" name="toggleTheme" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
@@ -48,15 +48,15 @@
       <string>Switch between Dark and Light theme</string>
      </property>
      <property name="layoutDirection">
-      <enum>Qt::RightToLeft</enum>
+      <enum>Qt::LeftToRight</enum>
      </property>
-     <property name="OptionA">
+     <property name="OptionA" stdset="0">
       <string>Dark</string>
      </property>
-     <property name="OptionB">
+     <property name="OptionB" stdset="0">
       <string>Light</string>
      </property>
-     <property name="fixedSize">
+     <property name="fixedSize" stdset="0">
       <size>
        <width>100</width>
        <height>55</height>
@@ -77,8 +77,8 @@
      </property>
     </widget>
    </item>
-   <item>
-    <widget class="ToggleButton" name="toggleStaking" native="false">
+   <item alignment="Qt::AlignRight">
+    <widget class="ToggleButton" name="toggleStaking" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
        <horstretch>0</horstretch>
@@ -89,15 +89,15 @@
       <string>Turn staking on or off</string>
      </property>
      <property name="layoutDirection">
-      <enum>Qt::RightToLeft</enum>
+      <enum>Qt::LeftToRight</enum>
      </property>
-     <property name="OptionA">
+     <property name="OptionA" stdset="0">
       <string>On</string>
      </property>
-     <property name="OptionB">
+     <property name="OptionB" stdset="0">
       <string>Off</string>
      </property>
-     <property name="fixedSize">
+     <property name="fixedSize" stdset="0">
       <size>
        <width>100</width>
        <height>55</height>
@@ -114,7 +114,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>Change my passphrase</string>
+      <string>Change current passphrase</string>
      </property>
     </widget>
    </item>
@@ -149,17 +149,40 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="pushButtonPassword">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <property name="spacing">
+      <number>100</number>
      </property>
-     <property name="text">
-      <string>Submit</string>
+     <property name="leftMargin">
+      <number>0</number>
      </property>
-    </widget>
+     <item>
+      <widget class="QPushButton" name="pushButtonPassword">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Submit</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonPasswordClear">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Clear All</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QLabel" name="label_2">
@@ -178,20 +201,31 @@
     <widget class="QLineEdit" name="lineEditWithhold"/>
    </item>
    <item>
-    <widget class="QPushButton" name="pushButtonSave">
-     <property name="enabled">
-      <bool>true</bool>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <property name="spacing">
+      <number>100</number>
      </property>
-     <property name="maximumSize">
-      <size>
-       <width>917</width>
-       <height>16777215</height>
-      </size>
+     <property name="leftMargin">
+      <number>0</number>
      </property>
-     <property name="text">
-      <string>Save</string>
-     </property>
-    </widget>
+     <item>
+      <widget class="QPushButton" name="pushButtonSave">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Save</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonDisable">
+       <property name="text">
+        <string>Disable</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="Line" name="line">
@@ -203,7 +237,7 @@
    <item>
     <widget class="QLabel" name="labelMneumonicRecovery">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
@@ -219,7 +253,7 @@
    <item>
     <widget class="QLabel" name="labelRecoveryDescription">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
@@ -236,20 +270,37 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="pushButtonRecovery">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Show</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QPushButton" name="pushButtonRecovery">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Show</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="lblMnemonic">
+       <property name="lineWidth">
+        <number>2</number>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="wordWrap">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="Line" name="line_2">
@@ -282,13 +333,13 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="OptionA">
+     <property name="OptionA" stdset="0">
       <string>On</string>
      </property>
-     <property name="OptionB">
+     <property name="OptionB" stdset="0">
       <string>Off</string>
      </property>
-     <property name="fixedSize">
+     <property name="fixedSize" stdset="0">
       <size>
        <width>100</width>
        <height>55</height>
@@ -346,7 +397,7 @@
      <item>
       <widget class="QLabel" name="code_1">
        <property name="text">
-        <string></string>
+        <string/>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -356,7 +407,7 @@
      <item>
       <widget class="QLabel" name="code_2">
        <property name="text">
-        <string></string>
+        <string/>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -366,7 +417,7 @@
      <item>
       <widget class="QLabel" name="code_3">
        <property name="text">
-        <string></string>
+        <string/>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -376,7 +427,7 @@
      <item>
       <widget class="QLabel" name="code_4">
        <property name="text">
-        <string></string>
+        <string/>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -386,7 +437,7 @@
      <item>
       <widget class="QLabel" name="code_5">
        <property name="text">
-        <string></string>
+        <string/>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -396,7 +447,7 @@
      <item>
       <widget class="QLabel" name="code_6">
        <property name="text">
-        <string></string>
+        <string/>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>

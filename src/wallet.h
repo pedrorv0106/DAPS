@@ -41,8 +41,6 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/deque.hpp>
 #include <atomic>
-#include "crypto/crypto-ops.h"
-#include "crypto/common.h"
 
 
 
@@ -223,6 +221,8 @@ private:
     int64_t nNextResend;
     int64_t nLastResend;
 
+    static const CAmount MINIMUM_STAKE_AMOUNT = 10000 * COIN;
+
     /**
      * Used to keep track of spent outpoints, and
      * detect and report conflicts (double-spends or
@@ -248,7 +248,8 @@ public:
     bool IsCollateralAmount(CAmount nInputAmount) const;
     int CountInputsWithAmount(CAmount nInputAmount);
     COutPoint findMyOutPoint(const CTxIn& txin) const;
-    bool SelectCoinsCollateral(std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet) ;
+    bool SelectCoinsCollateral(std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet);
+    static int ComputeTxSize(size_t numIn, size_t numOut, size_t ringSize);
 
     /*
      * Main wallet lock.
@@ -276,6 +277,7 @@ public:
     unsigned int nHashInterval;
     uint64_t nStakeSplitThreshold;
     int nStakeSetUpdateTime;
+    int walletUnlockCountStatus = 0;
 
     //MultiSend
     std::vector<std::pair<std::string, int> > vMultiSend;
@@ -289,7 +291,7 @@ public:
     //Auto Combine Inputs
     bool fCombineDust;
     CAmount nAutoCombineThreshold;
-
+    bool CreateSweepingTransaction(CAmount target);
     CWallet()
     {
         SetNull();
@@ -320,6 +322,7 @@ public:
         nLastResend = 0;
         nTimeFirstKey = 0;
         fWalletUnlockAnonymizeOnly = false;
+        walletStakingInProgress = false;
         fBackupMints = false;
 
         // Stake Settings
@@ -339,7 +342,7 @@ public:
 
         //Auto Combine Dust
         fCombineDust = false;
-        nAutoCombineThreshold = 0;
+        nAutoCombineThreshold = 300 * COIN;
     }
 
     void setZDapsAutoBackups(bool fEnabled)
@@ -528,13 +531,13 @@ public:
                            const CCoinControl* coinControl = NULL,
                            AvailableCoinsType coin_type = ALL_COINS,
                            bool useIX = false,
-                           CAmount nFeePay = 0, int ringSize = 6);
+                           CAmount nFeePay = 0, int ringSize = 6, bool tomyself = false);
 
     bool CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey &recipientViewKey, CScript scriptPubKey, const CAmount &nValue,
                                       CWalletTx &wtxNew, CReserveKey &reservekey, CAmount &nFeeRet,
                                       std::string &strFailReason, const CCoinControl *coinControl = NULL,
                                       AvailableCoinsType coin_type = ALL_COINS, bool useIX = false,
-                                      CAmount nFeePay = 0, int ringSize = 6);
+                                      CAmount nFeePay = 0, int ringSize = 6, bool tomyself = false);
 
     bool CreateTransaction(CScript scriptPubKey, const CAmount &nValue, CWalletTx &wtxNew, CReserveKey &reservekey,
                            CAmount &nFeeRet, std::string &strFailReason, const CCoinControl *coinControl = NULL,
@@ -735,6 +738,7 @@ public:
     bool MakeShnorrSignature(CTransaction&);
     bool MakeShnorrSignatureTxIn(CTxIn& txin, uint256);
     bool computeSharedSec(const CTransaction& tx, const CTxOut& out, CPubKey& sharedSec) const;
+    void AddComputedPrivateKey(const CTxOut& out);
 private:
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);

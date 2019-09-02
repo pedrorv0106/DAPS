@@ -21,6 +21,7 @@
 #include <QMessageBox>
 #include <QScrollBar>
 #include <QTextDocument>
+#include <QStylePainter>
 
 ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
                                                           ui(new Ui::ReceiveCoinsDialog),
@@ -36,7 +37,8 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
     QAction* copyAmountAction = new QAction(tr("Copy amount"), this);
 
     // context menu
-    contextMenu = new QMenu();
+    contextMenu = new QMenu(this);
+    contextMenu->setAttribute(Qt::WA_DeleteOnClose);
     contextMenu->addAction(copyLabelAction);
     contextMenu->addAction(copyMessageAction);
     contextMenu->addAction(copyAmountAction);
@@ -46,30 +48,18 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
     ui->pushButtonCP->setStyleSheet("background:transparent;");
     ui->pushButtonCP->setIcon(QIcon(":/icons/editcopy"));
     connect(ui->pushButtonCP, SIGNAL(clicked()), this, SLOT(copyAddress()));
-    CPubKey temp;
+
+    //Create privacy account (wallet is unlocked first launch so !pwalletMain->IsLocked() works here)
     if (pwalletMain && !pwalletMain->IsLocked()) {
+        CPubKey temp;
         pwalletMain->GetKeyFromPool(temp);
         pwalletMain->CreatePrivacyAccount();
-        std::string pubAddress;
-        pwalletMain->ComputeStealthPublicAddress("masteraccount", pubAddress);
-        ui->lineEditAddress->setText(pubAddress.c_str());
-
-        std::vector<std::string> addrList, accountList;
-        QList<QString> stringsList;
-        accountList.push_back("Master Account");
-        addrList.push_back(pubAddress);
-        for(size_t i = 0; i < addrList.size(); i++) {
-            stringsList.append(QString(accountList[i].c_str()) + " - " + QString(addrList[i].c_str()));
-        }
-
-        ui->reqAddress->addItem(QString(accountList[0].c_str()) + " - " + QString(addrList[0].c_str()));
-    }
+     }
 
     QDoubleValidator *dblVal = new QDoubleValidator(0, Params().MAX_MONEY, 6, ui->reqAmount);
     dblVal->setNotation(QDoubleValidator::StandardNotation);
     dblVal->setLocale(QLocale::C);
     ui->reqAmount->setValidator(dblVal);
-
 }
 
 static inline int64_t roundint64(double d)
@@ -113,11 +103,16 @@ void ReceiveCoinsDialog::loadAccount() {
             }
         }
         if (!isDuplicate) {
-            stringsList.append(QString(accountList[i].c_str()) + " - " + QString(addrList[i].c_str()));
+
+            stringsList.append(QString(accountList[i].c_str()) + " - " + QString(addrList[i].substr(0, 30).c_str()) + "..." + 
+                QString(addrList[i].substr(addrList[i].length() - 30, 30).c_str()));
         }
     }
 
     ui->reqAddress->addItems(stringsList);
+    //Set lineEditAddress to Master Account address for copy to clipboard
+    ui->lineEditAddress->setText(QString(addrList[0].substr(0, 30).c_str()) + "..." + 
+                QString(addrList[0].substr(addrList[0].length() - 30, 30).c_str()));
 }
 
 ReceiveCoinsDialog::~ReceiveCoinsDialog()
@@ -156,7 +151,7 @@ void ReceiveCoinsDialog::on_receiveButton_clicked()
     if ((int)addrList.size() > selectedIdx){
         QString address(addrList[selectedIdx].c_str());
         QString label(accountList[selectedIdx].c_str());
-        QString reqMes = "Request message";
+        QString reqMes = ui->reqID->text();
         QString strPaymentID = ui->reqID->text();
         if (!strPaymentID.trimmed().isEmpty()) {
             quint64 paymentID = strPaymentID.toULongLong();
@@ -204,6 +199,9 @@ void ReceiveCoinsDialog::keyPressEvent(QKeyEvent* event)
 }
 
 void ReceiveCoinsDialog::copyAddress(){
+    std::vector<std::string> addrList, accountList;
     QClipboard *clipboard = QApplication::clipboard();
-    clipboard->setText(ui->lineEditAddress->text());
+    CWallet* wl = model->getCWallet();
+    wl->AllMyPublicAddresses(addrList, accountList);
+    clipboard->setText(QString(addrList[0].c_str()));
 }

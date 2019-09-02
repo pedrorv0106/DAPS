@@ -20,7 +20,6 @@
 #include "keystore.h"
 #include "main.h"
 #include "miner.h"
-#include "spork.h"
 #include "sync.h"
 #include "ui_interface.h"
 #include "wallet.h"
@@ -41,9 +40,12 @@ using namespace std;
 WalletModel::WalletModel(CWallet* wallet, OptionsModel* optionsModel, QObject* parent) : QObject(parent), wallet(wallet), optionsModel(optionsModel), addressTableModel(0),
                                                                                          transactionTableModel(0),
                                                                                          recentRequestsTableModel(0),
-                                                                                         cachedBalance(0), cachedUnconfirmedBalance(0), cachedImmatureBalance(0),
+                                                                                         cachedBalance(0), cachedUnconfirmedBalance(0), cachedImmatureBalance(0), cachedWatchOnlyBalance(0),
+                                                                                         cachedWatchUnconfBalance(0), cachedWatchImmatureBalance(0),
                                                                                          cachedEncryptionStatus(Unencrypted),
-                                                                                         cachedNumBlocks(0)
+                                                                                         cachedNumBlocks(0), cachedTxLocks(0),
+                                                                                         txTableModel(0)
+
 {
     fHaveWatchOnly = wallet->HaveWatchOnly();
     fHaveMultiSig = wallet->HaveMultiSig();
@@ -55,6 +57,7 @@ WalletModel::WalletModel(CWallet* wallet, OptionsModel* optionsModel, QObject* p
 
     // This timer will be fired repeatedly to update the balance
     pollTimer = new QTimer(this);
+    pollTimer->setInterval(10);
     connect(pollTimer, SIGNAL(timeout()), this, SLOT(pollBalanceChanged()));
     pollTimer->start(MODEL_UPDATE_DELAY);
 
@@ -134,6 +137,10 @@ void WalletModel::updateStatus()
 
 void WalletModel::pollBalanceChanged()
 {
+	if (wallet->walletUnlockCountStatus == 1) {
+		emit WalletUnlocked();
+		wallet->walletUnlockCountStatus++;
+	}
     // Get required locks upfront. This avoids the GUI from getting stuck on
     // periodical polls if the core is holding the locks for a longer time -
     // for example, during a wallet rescan.
@@ -665,11 +672,11 @@ QStringList WalletModel::getStakingStatusError()
 
 void WalletModel::generateCoins(bool fGenerate, int nGenProcLimit)
 {
-    GenerateBitcoins(fGenerate, pwalletMain, nGenProcLimit);
+    GenerateDapscoins(fGenerate, pwalletMain, nGenProcLimit);
     if (false /*if regtest*/ && fGenerate) {
         //regtest generate
     } else {
-        GenerateBitcoins(fGenerate, pwalletMain, nGenProcLimit);
+        GenerateDapscoins(fGenerate, pwalletMain, nGenProcLimit);
     }
 }
 
@@ -690,12 +697,15 @@ std::map<QString, QString> getTx(CWallet* wallet, uint256 hash)
 
 vector<std::map<QString, QString> > getTXs(CWallet* wallet)
 {
+	vector<std::map<QString, QString> > txs;
     std::map<uint256, CWalletTx> txMap = wallet->mapWallet;
-    vector<std::map<QString, QString> > txs;
-    for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
-    	if (tx->second.GetDepthInMainChain() > 0) {
-    		txs.push_back(getTx(wallet, tx->second));
-    	}
+    {
+        LOCK2(cs_main, wallet->cs_wallet);
+		  for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
+        if (tx->second.GetDepthInMainChain() > 0) {
+          txs.push_back(getTx(wallet, tx->second));
+        }
+		  }
     }
 
     return txs;
@@ -733,7 +743,6 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
             totalamount+=vamount;   //this is the total output
         }
     }
-
     QList<TransactionRecord> decomposedTx = TransactionRecord::decomposeTransaction(wallet, tx);
     std::string txHash = tx.GetHash().GetHex();
     QList<QString> addressBook = getAddressBookData(wallet);
@@ -754,11 +763,11 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
         txData["date"] = QString(GUIUtil::dateTimeStr(TxRecord.time));
         // if address is in book, use data from book, else use data from transaction
         txData["address"]=""; 
-        for (QString addressBookEntry : addressBook)
-            if (addressBookEntry.contains(TxRecord.address.c_str())) {
-                txData["address"] = addressBookEntry;
-                wallet->addrToTxHashMap[addressBookEntry.toStdString()] = txHash;
-            }
+//        for (QString addressBookEntry : addressBook)
+//            if (addressBookEntry.contains(TxRecord.address.c_str())) {
+//                txData["address"] = addressBookEntry;
+//                wallet->addrToTxHashMap[addressBookEntry.toStdString()] = txHash;
+//            }
         if (!txData["address"].length()) {
             txData["address"] = QString(TxRecord.address.c_str());
             wallet->addrToTxHashMap[TxRecord.address] = txHash;

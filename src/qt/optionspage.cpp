@@ -17,6 +17,7 @@
 #include "walletmodel.h"
 #include "2faqrdialog.h"
 #include "2fadialog.h"
+#include "zxcvbn.h"
 
 #include <QAction>
 #include <QCursor>
@@ -126,6 +127,16 @@ void OptionsPage::on_pushButtonSave_clicked() {
     QMessageBox(QMessageBox::Information, tr("Information"), tr("Reserve balance " + BitcoinUnits::format(0, nReserveBalance).toUtf8() + " is successfully set!"), QMessageBox::Ok).exec();
 }
 
+void OptionsPage::on_pushButtonDisable_clicked() {
+    ui->lineEditWithhold->setText("0");
+    nReserveBalance = getValidatedAmount();
+
+    CWalletDB walletdb(pwalletMain->strWalletFile);
+    walletdb.WriteReserveAmount(nReserveBalance / COIN);
+
+    emit model->stakingStatusChanged(nLastCoinStakeSearchInterval);
+    QMessageBox(QMessageBox::Information, tr("Information"), tr("Reserve balance disabled!"), QMessageBox::Ok).exec();
+}
 
 void OptionsPage::keyPressEvent(QKeyEvent* event)
 {
@@ -139,6 +150,11 @@ void OptionsPage::setMapper()
 
 void OptionsPage::on_pushButtonPassword_clicked()
 {
+    if ( (!ui->lineEditNewPass->text().length()) || (!ui->lineEditNewPassRepeat->text().length()) ) {
+        QMessageBox::critical(this, tr("Wallet encryption failed"),
+                    tr("The passphrase entered for wallet encryption was empty or contained spaces. Please try again."));
+        return;
+    }
     //disable password submit button
     SecureString oldPass = SecureString();
     oldPass.reserve(MAX_PASSPHRASE_SIZE);
@@ -153,22 +169,45 @@ void OptionsPage::on_pushButtonPassword_clicked()
 
     bool success = false;
 
-
     if (newPass == newPass2) {
-    	if (model->changePassphrase(oldPass, newPass)) {
-    		QMessageBox::information(this, tr("Wallet encrypted"),
-    				tr("Wallet passphrase was successfully changed."));
+        double guesses;
+
+        if (oldPass == newPass) {
+            QMessageBox::critical(this, tr("Wallet encryption failed"),
+                    tr("The passphrases entered for wallet encryption is older. Please try again."));
+        }
+        else if (newPass.length() < 10) {
+            QMessageBox::critical(this, tr("Wallet encryption failed"),
+                    tr("The passphrase's length has to be more than 10. Please try again."));
+        }
+        else if (zxcvbn_password_strength(newPass.c_str(), NULL, &guesses, NULL) < 0 || guesses < 10000) {
+            QMessageBox::critical(this, tr("Wallet encryption failed"),
+                    tr("The passphrase is weakness."));
+        }
+    	else if (model->changePassphrase(oldPass, newPass)) {
+    		QMessageBox::information(this, tr("Passphrase change successful"),
+                    tr("Wallet passphrase was successfully changed. Please remember your passphrase as there is no way to recover it."));
     		success = true;
-    	} else {
+        }
+    } else {
     		QMessageBox::critical(this, tr("Wallet encryption failed"),
-    				tr("The passphrase entered for the wallet decryption was incorrect."));
-    	}
+    				tr("The passphrases entered for wallet encryption do not match. Please try again."));
     }
 
     if (success)
         ui->pushButtonPassword->setStyleSheet("border: 2px solid green");
     else ui->pushButtonPassword->setStyleSheet("border: 2px solid red");
     ui->pushButtonPassword->repaint();
+}
+
+void OptionsPage::on_pushButtonPasswordClear_clicked()
+{
+    ui->lineEditOldPass->clear();
+    ui->lineEditNewPass->clear();
+    ui->lineEditNewPassRepeat->clear();
+    ui->lineEditOldPass->setStyleSheet(GUIUtil::loadStyleSheet());
+    ui->lineEditNewPass->setStyleSheet(GUIUtil::loadStyleSheet());
+    ui->lineEditNewPassRepeat->setStyleSheet(GUIUtil::loadStyleSheet());
 }
 
 void OptionsPage::on_pushButtonBackup_clicked(){
@@ -183,7 +222,7 @@ void OptionsPage::on_pushButtonBackup_clicked(){
 
 void OptionsPage::validateNewPass()
 {
-    if ( (ui->lineEditNewPass->text().contains(" ")) || (!ui->lineEditNewPass->text().length()) )
+    if (!ui->lineEditNewPass->text().length())
         ui->lineEditNewPass->setStyleSheet("border-color: red");
     else ui->lineEditNewPass->setStyleSheet(GUIUtil::loadStyleSheet());
     matchNewPasswords();
@@ -293,6 +332,8 @@ void OptionsPage::qrDialogIsFinished(int result) {
 void OptionsPage::dialogIsFinished(int result) {
    if(result == QDialog::Accepted){
         settings.setValue("2FA", "enabled");
+        QDateTime current = QDateTime::currentDateTime();
+        settings.setValue("2FALastTime", current.toTime_t());
         enable2FA();
 
         QMessageBox::information(this, tr("SUCCESS!"),
@@ -308,14 +349,10 @@ void OptionsPage::changeTheme(ToggleButton* widget)
     if (widget->getState())
         settings.setValue("theme", "dark");
     else settings.setValue("theme", "light");
-    // GUIUtil::refreshStyleSheet();
+    	GUIUtil::refreshStyleSheet();
 }
 
 void OptionsPage::disable2FA() {
-    ui->btn_day->setEnabled(false);
-    ui->btn_week->setEnabled(false);
-    ui->btn_month->setEnabled(false);
-
     ui->code_1->setText("");
     ui->code_2->setText("");
     ui->code_3->setText("");
@@ -333,10 +370,6 @@ void OptionsPage::disable2FA() {
 }
 
 void OptionsPage::enable2FA() {
-    ui->btn_day->setEnabled(true);
-    ui->btn_week->setEnabled(true);
-    ui->btn_month->setEnabled(true);
-
     ui->label_3->setEnabled(true);
     ui->label_4->setEnabled(true);
     ui->label->setEnabled(true);
@@ -362,16 +395,16 @@ void OptionsPage::enable2FA() {
      
     int period = settings.value("2FAPeriod").toInt();
     if (period == 1)
-        ui->btn_day->setStyleSheet("border-color: red;");
+        ui->btn_day->setStyleSheet("border-color: green;");
     else if (period == 7)
-        ui->btn_week->setStyleSheet("border-color: red;");
-    else if (period == 31)
-        ui->btn_month->setStyleSheet("border-color: red;");
+        ui->btn_week->setStyleSheet("border-color: green;");
+    else if (period == 30)
+        ui->btn_month->setStyleSheet("border-color: green;");
 }
 
 void OptionsPage::on_day() {
     settings.setValue("2FAPeriod", "1");
-    ui->btn_day->setStyleSheet("border-color: red;");
+    ui->btn_day->setStyleSheet("border-color: green;");
     ui->btn_week->setStyleSheet("border-color: white;");
     ui->btn_month->setStyleSheet("border-color: white;");
 }
@@ -379,13 +412,13 @@ void OptionsPage::on_day() {
 void OptionsPage::on_week() {
     settings.setValue("2FAPeriod", "7");
     ui->btn_day->setStyleSheet("border-color: white;");
-    ui->btn_week->setStyleSheet("border-color: red;");
+    ui->btn_week->setStyleSheet("border-color: green;");
     ui->btn_month->setStyleSheet("border-color: white;");
 }
 
 void OptionsPage::on_month() {
-    settings.setValue("2FAPeriod", "31");
+    settings.setValue("2FAPeriod", "30");
     ui->btn_day->setStyleSheet("border-color: white;");
     ui->btn_week->setStyleSheet("border-color: white;");
-    ui->btn_month->setStyleSheet("border-color: red;");
+    ui->btn_month->setStyleSheet("border-color: green;");
 }

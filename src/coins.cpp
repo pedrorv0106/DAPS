@@ -34,10 +34,12 @@ void CCoins::CalcMaskSize(unsigned int& nBytes, unsigned int& nNonzeroBytes) con
 
 bool CCoins::Spend(const COutPoint& out, CTxInUndo& undo)
 {
-    if (out.n >= vout.size())
+    if (out.n >= vout.size()) {
         return false;
-    if (vout[out.n].IsNull())
+    }
+    if (vout[out.n].IsNull()) {
         return false;
+    }
     undo = CTxInUndo(vout[out.n]);
     vout[out.n].SetNull();
     Cleanup();
@@ -120,6 +122,7 @@ CCoinsModifier CCoinsViewCache::ModifyCoins(const uint256& txid)
             ret.first->second.coins.Clear();
             ret.first->second.flags = CCoinsCacheEntry::FRESH;
         } else if (ret.first->second.coins.IsPruned()) {
+        	std::cout << "Coin is pruned" << std::endl;
             // The parent view only has a pruned entry for this; mark it as fresh.
             ret.first->second.flags = CCoinsCacheEntry::FRESH;
         }
@@ -217,18 +220,6 @@ const CTxOut& CCoinsViewCache::GetOutputFor(const CTxIn& input) const
     return coins->vout[input.prevout.n];
 }
 
-CAmount CCoinsViewCache::GetValueIn(const CTransaction& tx) const
-{
-    if (tx.IsCoinBase())
-        return 0;
-
-    CAmount nResult = 0;
-    //for (unsigned int i = 0; i < tx.vin.size(); i++)
-        //nResult += GetOutputFor(tx.vin[i]).nValue;
-
-    return nResult;
-}
-
 bool CCoinsViewCache::HaveInputs(const CTransaction& tx) const
 {
     if (!tx.IsCoinBase()) {
@@ -242,22 +233,6 @@ bool CCoinsViewCache::HaveInputs(const CTransaction& tx) const
         }
     }
     return true;
-}
-
-double CCoinsViewCache::GetPriority(const CTransaction& tx, int nHeight) const
-{
-    if (tx.IsCoinBase() || tx.IsCoinStake())
-        return 0.0;
-    double dResult = 0.0;
-    /*for (const CTxIn& txin:  tx.vin) {
-        const CCoins* coins = AccessCoins(txin.prevout.hash);
-        assert(coins);
-        if (!coins->IsAvailable(txin.prevout.n)) continue;
-        if (coins->nHeight < nHeight) {
-            dResult += coins->vout[txin.prevout.n].nValue * (nHeight - coins->nHeight);
-        }
-    }*/
-    return tx.ComputePriority(dResult);
 }
 
 CCoinsModifier::CCoinsModifier(CCoinsViewCache& cache_, CCoinsMap::iterator it_) : cache(cache_), it(it_)

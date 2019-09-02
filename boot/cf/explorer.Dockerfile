@@ -6,7 +6,7 @@ ENV SRC_IMG=${SRC_PATH}:${OS_VERSION}
 
 #INSTALL EXPLORER LIBS
 RUN apt-get update && \
-    apt-get install wget nano -y --fix-missing
+    apt-get install wget nano vim -y --fix-missing
 
 #COPY SRC
 RUN mkdir -p /DAPS/

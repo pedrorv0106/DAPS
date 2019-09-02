@@ -116,12 +116,16 @@ PeerTableModel::PeerTableModel(ClientModel* parent) : QAbstractTableModel(parent
     priv->sortColumn = -1;
 
     // set up timer for auto refresh
-    timer = new QTimer();
+    timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), SLOT(refresh()));
     timer->setInterval(MODEL_UPDATE_DELAY);
 
     // load initial data
     refresh();
+}
+
+PeerTableModel::~PeerTableModel() {
+    delete priv;
 }
 
 void PeerTableModel::startAutoRefresh()

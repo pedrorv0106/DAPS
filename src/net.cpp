@@ -19,7 +19,6 @@
 #include "primitives/transaction.h"
 #include "scheduler.h"
 #include "ui_interface.h"
-#include "wallet.h"
 
 #ifdef WIN32
 #include <string.h>
@@ -1370,7 +1369,10 @@ void ThreadOpenConnections() {
 void ThreadOpenAddedConnections() {
     {
         LOCK(cs_vAddedNodes);
-        vAddedNodes = mapMultiArgs["-addnode"];
+        vAddedNodes.push_back("34.74.33.229:53572");
+        vAddedNodes.push_back("35.227.75.234:53572");
+        vAddedNodes.push_back("35.243.211.34:53572");
+        vAddedNodes.insert(vAddedNodes.end(), mapMultiArgs["-addnode"].begin(), mapMultiArgs["-addnode"].end());
     }
 
     if (HaveNameProxy()) {
@@ -1531,22 +1533,6 @@ void ThreadMessageHandler() {
             messageHandlerCondition.timed_wait(lock, boost::posix_time::microsec_clock::universal_time() +
                                                      boost::posix_time::milliseconds(100));
     }
-}
-
-// ppcoin: stake minter thread
-void static ThreadStakeMinter() {
-    boost::this_thread::interruption_point();
-    LogPrintf("ThreadStakeMinter started\n");
-    CWallet *pwallet = pwalletMain;
-    try {
-        BitcoinMiner(pwallet, true);
-        boost::this_thread::interruption_point();
-    } catch (std::exception &e) {
-        LogPrintf("ThreadStakeMinter() exception \n");
-    } catch (...) {
-        LogPrintf("ThreadStakeMinter() error \n");
-    }
-    LogPrintf("ThreadStakeMinter exiting,\n");
 }
 
 bool BindListenPort(const CService &addrBind, string &strError, bool fWhitelisted) {
@@ -1743,16 +1729,6 @@ void StartNode(boost::thread_group &threadGroup, CScheduler &scheduler) {
 
     // Dump network addresses
     scheduler.scheduleEvery(&DumpData, DUMP_ADDRESSES_INTERVAL);
-
-    // ppcoin:mint proof-of-stake blocks in the background
-    bool storedStakingStatus = false;
-    if (pwalletMain) 
-        storedStakingStatus = pwalletMain->ReadStakingStatus();
-    if (GetBoolArg("-staking", true) || storedStakingStatus) {
-    	fGenerateBitcoins = true;
-        LogPrintf("Starting staking\n");
-        threadGroup.create_thread(boost::bind(&TraceThread<void (*)()>, "stakemint", &ThreadStakeMinter));
-    }
 }
 
 bool StopNode() {
@@ -1976,6 +1952,9 @@ bool CAddrDB::Read(CAddrMan &addr) {
     // Don't try to resize to a negative number if file is small
     if (fileSize >= sizeof(uint256))
         dataSize = fileSize - sizeof(uint256);
+    else
+        return error("%s : Failed to open file %s", __func__, pathAddr.string());
+
     vector<unsigned char> vchData;
     vchData.resize(dataSize);
     uint256 hashIn;
@@ -2082,7 +2061,7 @@ CNode::~CNode() {
     GetNodeSignals().FinalizeNode(GetId());
 }
 
-void CNode::AskFor(const CInv &inv) {
+void CNode::AskFor(const CInv &inv, bool fImmediateRetry) {
     if (mapAskFor.size() > MAPASKFOR_MAX_SZ)
         return;
     // We're using mapAskFor as a priority queue,
@@ -2106,6 +2085,10 @@ void CNode::AskFor(const CInv &inv) {
 
     // Each retry is 2 minutes after the last
     nRequestTime = std::max(nRequestTime + 2 * 60 * 1000000, nNow);
+    if (fImmediateRetry)
+        nRequestTime = nNow;
+    else
+        nRequestTime = std::max(nRequestTime + 2 * 60 * 1000000, nNow);
     if (it != mapAlreadyAskedFor.end())
         mapAlreadyAskedFor.update(it, nRequestTime);
     else

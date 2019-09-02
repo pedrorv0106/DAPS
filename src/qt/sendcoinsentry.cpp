@@ -57,11 +57,11 @@ SendCoinsEntry::~SendCoinsEntry()
     delete ui;
 }
 
-void SendCoinsEntry::on_pasteButton_clicked()
+/*void SendCoinsEntry::on_pasteButton_clicked()
 {
     // Paste text from clipboard into recipient field
     ui->payTo->setText(QApplication::clipboard()->text());
-}
+}*/
 
 void SendCoinsEntry::on_addressBookButton_clicked()
 {
@@ -80,6 +80,8 @@ void SendCoinsEntry::on_clearAllButton_clicked()
     ui->payTo->clear();
     ui->addAsLabel->clear();
     ui->payAmount->clear();
+    ui->payTo->setStyleSheet(GUIUtil::loadStyleSheet());
+    ui->payAmount->setStyleSheet(GUIUtil::loadStyleSheet());
 }
 
 void SendCoinsEntry::on_payTo_textChanged(const QString& address)

@@ -342,8 +342,6 @@ BOOST_AUTO_TEST_CASE(AreInputsStandard)
     txTo.vin[4].scriptSig << static_cast<vector<unsigned char> >(fifteenSigops);
 
     BOOST_CHECK(::AreInputsStandard(txTo, coins));
-    // 22 P2SH sigops for all inputs (1 for vin[0], 6 for vin[3], 15 for vin[4]
-    BOOST_CHECK_EQUAL(GetP2SHSigOpCount(txTo, coins), 22U);
 
     // Make sure adding crap to the scriptSigs makes them non-standard:
     for (int i = 0; i < 3; i++)
@@ -364,7 +362,6 @@ BOOST_AUTO_TEST_CASE(AreInputsStandard)
     txToNonStd1.vin[0].scriptSig << static_cast<vector<unsigned char> >(sixteenSigops);
 
     BOOST_CHECK(!::AreInputsStandard(txToNonStd1, coins));
-    BOOST_CHECK_EQUAL(GetP2SHSigOpCount(txToNonStd1, coins), 16U);
 
     CMutableTransaction txToNonStd2;
     txToNonStd2.vout.resize(1);
@@ -376,7 +373,6 @@ BOOST_AUTO_TEST_CASE(AreInputsStandard)
     txToNonStd2.vin[0].scriptSig << static_cast<vector<unsigned char> >(twentySigops);
 
     BOOST_CHECK(!::AreInputsStandard(txToNonStd2, coins));
-    BOOST_CHECK_EQUAL(GetP2SHSigOpCount(txToNonStd2, coins), 20U);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

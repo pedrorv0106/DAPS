@@ -19,6 +19,7 @@
 #include "optionsmodel.h"
 #include "splashscreen.h"
 #include "utilitydialog.h"
+
 #include "winshutdownmonitor.h"
 
 #ifdef ENABLE_WALLET
@@ -37,6 +38,8 @@
 #ifdef ENABLE_WALLET
 #include "wallet.h"
 #endif
+
+#include "encryptdialog.h"
 
 #include <stdint.h>
 
@@ -273,12 +276,6 @@ void BitcoinCore::initialize()
     try {
         qDebug() << __func__ << ": Running AppInit2 in thread";
         int rv = AppInit2(threadGroup, scheduler);
-        if (rv) {
-            /* Start a dummy RPC thread if no RPC thread is active yet
-             * to handle timeouts.
-             */
-            StartDummyRPCThread();
-        }
         emit initializeResult(rv);
     } catch (std::exception& e) {
         handleRunawayException(&e);
@@ -293,7 +290,7 @@ void BitcoinCore::restart(QStringList args)
         execute_restart = false;
         try {
             qDebug() << __func__ << ": Running Restart in thread";
-            threadGroup.interrupt_all();
+            Interrupt(threadGroup);
             threadGroup.join_all();
             PrepareShutdown();
             qDebug() << __func__ << ": Shutdown finished";
@@ -314,7 +311,7 @@ void BitcoinCore::shutdown()
 {
     try {
         qDebug() << __func__ << ": Running Shutdown in thread";
-        threadGroup.interrupt_all();
+        Interrupt(threadGroup);
         threadGroup.join_all();
         Shutdown();
         qDebug() << __func__ << ": Shutdown finished";
@@ -470,8 +467,13 @@ void BitcoinApplication::initializeResult(int retval)
             window->addWallet(BitcoinGUI::DEFAULT_WALLET, walletModel);
             window->setCurrentWallet(BitcoinGUI::DEFAULT_WALLET);
 
-            connect(walletModel, SIGNAL(coinsSent(CWallet*, SendCoinsRecipient, QByteArray)),
-                paymentServer, SLOT(fetchPaymentACK(CWallet*, const SendCoinsRecipient&, QByteArray)));
+            if (walletModel->getEncryptionStatus() == WalletModel::Unencrypted) {
+                EncryptDialog dlg;
+                dlg.setModel(walletModel);
+                dlg.setWindowTitle("Encrypt Wallet");
+                dlg.setStyleSheet(GUIUtil::loadStyleSheet());
+                dlg.exec();
+            }
         }
 #endif
 

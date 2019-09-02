@@ -41,6 +41,7 @@ class HistoryPage : public QDialog
 public:
     explicit HistoryPage(QWidget* parent = 0);
     ~HistoryPage();
+    void setModel(WalletModel* model);
 
 public slots:
     void updateFilter();
@@ -68,9 +69,11 @@ private:
     void addTableData(std::map<QString, QString>);
     void updateTableData(CWallet *wallet);
     void updateAddressBookData(CWallet *wallet);
+    QTimer* updateHistoryTimer;
 
 private slots:
     void on_cellClicked(int row, int column);
+    void updateTableData();
 };
 
 #endif // BITCOIN_QT_HISTORYPAGE_H

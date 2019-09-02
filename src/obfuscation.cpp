@@ -1900,6 +1900,7 @@ bool CObfuScationSigner::VerifyMessage(CPubKey pubkey, vector<unsigned char>& vc
     CPubKey pubkey2;
     if (!pubkey2.RecoverCompact(ss.GetHash(), vchSig)) {
         errorMessage = _("Error recovering public key.");
+        LogPrintf("CObfuScationSigner::VerifyMessage -- Failed to receiver key\n");
         return false;
     }
 
@@ -1912,7 +1913,6 @@ bool CObfuScationSigner::VerifyMessage(CPubKey pubkey, vector<unsigned char>& vc
 bool CObfuscationQueue::Sign()
 {
     if (!fMasterNode) return false;
-
     std::string strMessage = vin.ToString() + boost::lexical_cast<std::string>(nDenom) + boost::lexical_cast<std::string>(time) + boost::lexical_cast<std::string>(ready);
 
     CKey key2;

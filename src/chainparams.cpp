@@ -137,12 +137,12 @@ public:
         genesis.hashPrevBlock = 0;
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
         genesis.nVersion = 1;
-        genesis.nTime = 1558521974;
+        genesis.nTime = 1558521975;
         genesis.nBits = 0x1e0ffff0;
-        genesis.nNonce = 13653769;
+        genesis.nNonce = 16758790;
 
         //change blockhash from 0x00000e9468bba3df97334bfb5015543488a0fb38193c82b101472937590e3037 because of transaction structure change
-        if(genesis.GetHash()!=uint256("0000059f433f00d4ed1aa073e7bdd9b358676cc8e2537d371c354256390122b6"))
+        if(genesis.GetHash()!=uint256("000000c1f997ef7feee72e7aaa24f33fb94666c7c5cb9806a3bc63437b4e3479"))
         {
             printf("Searchingforgenesisblock...\n");
             uint256 hashTarget=uint256().SetCompact(genesis.nBits);
@@ -174,7 +174,7 @@ public:
 
 
         hashGenesisBlock = genesis.GetHash();
-        assert(hashGenesisBlock == uint256("0000059f433f00d4ed1aa073e7bdd9b358676cc8e2537d371c354256390122b6"));
+        assert(hashGenesisBlock == uint256("000000c1f997ef7feee72e7aaa24f33fb94666c7c5cb9806a3bc63437b4e3479"));
         printf("genesis.hashMerkleRoot: %s\n", genesis.hashMerkleRoot.GetHex().c_str());
         assert(genesis.hashMerkleRoot == uint256("03fcb696ffbce2bb8248c65f6286c9948a4927919506331f21992a7021f969ed"));
 
@@ -183,7 +183,7 @@ public:
         vSeeds.push_back(CDNSSeedData("daps-stg-seed2.arcadiaapi.com ", "daps-stg-seed2.arcadiaapi.com"));  // 35.229.54.148   // // Single node address
         vSeeds.push_back(CDNSSeedData("daps-stg-seed3.arcadiaapi.com", "daps-stg-seed3.arcadiaapi.com"));  // 35.227.81.1  // // Single node address
         vSeeds.push_back(CDNSSeedData("daps-stg-seed4.arcadiaapi.com", "daps-stg-seed4.arcadiaapi.com"));  //35.237.184.1   // // Single node address
-
+        vSeeds.push_back(CDNSSeedData("35.227.75.234", "35.227.75.234"));  //35.227.75.234 ip address of stg-ssed1
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 30);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 13);
@@ -206,7 +206,6 @@ public:
         fHeadersFirstSyncingActive = false;
 
         nPoolMaxTransactions = 3;
-        strSporkKey = "04B433E6598390C992F4F022F20D3B4CBBE691652EE7C48243B81701CBDB7CC7D7BF0EE09E154E6FCBF2043D65AF4E9E97B89B5DBAF830D83B9B7F469A6C45A717";
         strObfuscationPoolDummyAddress = "D87q2gC9j6nNrnzCsg4aY6bHMLsT9nUhEw";
         nStartMasternodePayments = 1546809115; //Wed, 25 Jun 2014 20:36:16 GMT
     }
@@ -316,7 +315,6 @@ public:
         fTestnetToBeDeprecatedFieldRPC = true;
 
         nPoolMaxTransactions = 2;
-        strSporkKey = "04348C2F50F90267E64FACC65BFDC9D0EB147D090872FB97ABAE92E9A36E6CA60983E28E741F8E7277B11A7479B626AC115BA31463AC48178A5075C5A9319D4A38";
         strObfuscationPoolDummyAddress = "y57cqfGRkekRyDRNeJiLtYVEbvhXrNbmox";
         nStartMasternodePayments = 1420837558; //Fri, 09 Jan 2015 21:05:58 GMT
         nBudget_Fee_Confirmations = 3; // Number of confirmations for the finalization fee. We have to make this very short
