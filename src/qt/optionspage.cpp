@@ -465,7 +465,7 @@ void OptionsPage::on_day() {
 }
 
 void OptionsPage::on_week() {
-    typeOf2FA = DAY;
+    typeOf2FA = WEEK;
 
     TwoFAConfirmDialog codedlg;
     codedlg.setWindowTitle("2FACode verification");
@@ -475,7 +475,7 @@ void OptionsPage::on_week() {
 }
 
 void OptionsPage::on_month() {
-    typeOf2FA = DAY;
+    typeOf2FA = MONTH;
 
     TwoFAConfirmDialog codedlg;
     codedlg.setWindowTitle("2FACode verification");
