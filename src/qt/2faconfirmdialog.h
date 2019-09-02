@@ -18,6 +18,7 @@ public:
 
 private slots:
     void on_acceptCode();
+    void codeChanged(const QString & txt);
 
 private:
     Ui::TwoFAConfirmDialog *ui;
