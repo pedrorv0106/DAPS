@@ -879,8 +879,9 @@ private:
     bool finishRingCTAfterKeyImageSynced(CPartialTransaction& wtxNew, std::vector<CListPKeyImageAlpha> ls, std::string& failReason);
     CKeyImage generatePartialAdditionalKeyImage(const CPartialTransaction& wtxNew);
     CPubKey SumOfAllPubKeys(std::vector<CPubKey>& l) const;
-    bool findMultisigInputIndex(const CPartialTransaction& tx);
-    bool findMultisigInputIndex(const CTransaction& tx);
+    bool findMultisigInputIndex(const CPartialTransaction& tx) const;
+    bool findMultisigInputIndex(const CTransaction& tx) const;
+    bool findMultisigInputIndex(const CTxIn& txin) const;
     int walletIdxCache = 0;
     bool isMatchMyKeyImage(const CKeyImage& ki, const COutPoint& out);
     void ScanWalletKeyImages();

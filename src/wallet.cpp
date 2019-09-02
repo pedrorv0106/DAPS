@@ -637,6 +637,7 @@ bool CWallet::IsSpent(const uint256& hash, unsigned int n)
 
     std::string outString = outpoint.hash.GetHex() + std::to_string(outpoint.n);
     CKeyImage ki = outpointToKeyImages[outString];
+    if (!ki.IsValid()) return false;
     if (IsKeyImageSpend1(ki.GetHex(), uint256())) {
     	return true;
     }
@@ -897,10 +898,7 @@ bool CWallet::AddToWallet(const CWalletTx& wtxIn, bool fFromLoadWallet)
     		}
     	}
     	if (IsMine(wtxIn.vout[i])) {
-    		if (generateKeyImage(wtxIn.vout[i].scriptPubKey, ki)) {
-    			outpointToKeyImages[outpoint] = ki;
-    			db.WriteKeyImage(outpoint, ki);
-    		}
+    			//outpointToKeyImages[outpoint] = ki;
     	}
     }
 
@@ -1083,54 +1081,15 @@ isminetype CWallet::IsMine(const CTxIn& txin) const
 
 COutPoint CWallet::findMyOutPoint(const CTxIn& txin) const
 {
-	std::string prevout = txin.prevout.hash.GetHex() + std::to_string(txin.prevout.n);
-	if (outpointToKeyImages.count(prevout) == 1 && outpointToKeyImages[prevout] == txin.keyImage) return txin.prevout;
-
-	for(size_t i = 0; i < txin.decoys.size(); i++) {
-		std::string out = txin.decoys[i].hash.GetHex() + std::to_string(txin.decoys[i].n);
-		if (outpointToKeyImages.count(out) == 1 && outpointToKeyImages[out] == txin.keyImage) return txin.decoys[i];
-	}
-
+	int myIndex = findMultisigInputIndex(txin);
 	COutPoint outpoint;
-	{
-		LOCK(cs_wallet);
-		bool ret = false;
-		CWalletTx prev;
-		if (mapWallet.count(txin.prevout.hash))
-			prev = mapWallet[txin.prevout.hash];
-		if (txin.prevout.n < prev.vout.size())
-			ret = IsMine(prev.vout[txin.prevout.n]);
-		if (ret) {
-			CKeyImage ki;
-			if (generateKeyImage(prev.vout[txin.prevout.n].scriptPubKey, ki)) {
-				if (ki == txin.keyImage) {
-					outpoint = txin.prevout;
-					prevout = txin.prevout.hash.GetHex() + std::to_string(txin.prevout.n);
-					outpointToKeyImages[prevout] = ki;
-					return outpoint;
-				}
-			}
-		}
-
-		for (size_t i = 0; i < txin.decoys.size(); i++) {
-			if (mapWallet.count(txin.decoys[i].hash))
-				prev = mapWallet[txin.decoys[i].hash];
-			else continue;
-			if (txin.decoys[i].n < prev.vout.size())
-				ret = IsMine(prev.vout[txin.decoys[i].n]);
-			if (ret) {
-				CKeyImage ki;
-				if (generateKeyImage(prev.vout[txin.decoys[i].n].scriptPubKey, ki)) {
-					if (ki == txin.keyImage) {
-						outpoint = txin.decoys[i];
-						std::string out = txin.decoys[i].hash.GetHex() + std::to_string(txin.decoys[i].n);
-						outpointToKeyImages[out] = ki;
-						return outpoint;
-					}
-				}
-			}
-		}
+	if (myIndex == -1) {
+		outpoint = txin.prevout;
+	} else {
+		outpoint = txin.decoys[myIndex];
 	}
+	std::string prevout = outpoint.hash.GetHex() + std::to_string(outpoint.n);
+	outpointToKeyImages[prevout] = txin.keyImage;
 	return outpoint;
 }
 
@@ -3301,30 +3260,24 @@ bool CWallet::generateCommitmentAndEncode(CPartialTransaction& wtxNew)
     return true;
 }
 
-bool CWallet::findMultisigInputIndex(const CPartialTransaction& tx) {
-	int myIndex = -1;
-	CKey multisigView = MyMultisigViewKey();
-	for(size_t i = 0; i < tx.vin[0].decoys.size(); i++) {
-		uint256 h = tx.vin[0].decoys[i].GetHash();
-		uint256 selectedUTXOHash = Hash(multisigView.begin(), multisigView.end(), h.begin(), h.end());
-		if (selectedUTXOHash == tx.selectedUTXOHash) {
-			myIndex = i;
-			break;
-		}
-	}
-	return myIndex;
+bool CWallet::findMultisigInputIndex(const CPartialTransaction& tx) const {
+	return findMultisigInputIndex(tx.vin[0]);
 }
 
-bool CWallet::findMultisigInputIndex(const CTransaction& tx) {
+bool CWallet::findMultisigInputIndex(const CTransaction& tx) const {
+	return findMultisigInputIndex(tx.vin[0]);
+}
+
+bool CWallet::findMultisigInputIndex(const CTxIn& txin) const {
 	int myIndex = -1;
-	CKey multisigView = MyMultisigViewKey();
-	for(size_t i = 0; i < tx.vin[0].decoys.size(); i++) {
-		uint256 ret;
-		for (size_t j = 0; j < tx.vin.size(); j++) {
-			uint256 opHash = tx.vin[j].decoys[i].GetHash();
-			ret = Hash(ret.begin(), ret.end(), opHash.begin(), opHash.end());
+	int numMatch = 0;
+	for(size_t i = 0; i < txin.decoys.size(); i++) {
+		if (IsMine(txin.decoys[i])) {
+			numMatch++;
+			myIndex = i;
 		}
 	}
+	if (numMatch >= 2) throw runtime_error("Transaction should not select decoys as one of its UTXOs");
 	return myIndex;
 }
 
