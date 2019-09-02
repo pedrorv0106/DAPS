@@ -17,6 +17,7 @@
 #include "walletmodel.h"
 #include "2faqrdialog.h"
 #include "2fadialog.h"
+#include "2faconfirmdialog.h"
 #include "zxcvbn.h"
 
 #include <QAction>
@@ -74,6 +75,14 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
     connect(ui->btn_day, SIGNAL(clicked()), this, SLOT(on_day()));
     connect(ui->btn_week, SIGNAL(clicked()), this, SLOT(on_week()));
     connect(ui->btn_month, SIGNAL(clicked()), this, SLOT(on_month()));
+
+    ui->lblAuthCode->setVisible(false);
+    ui->code_1->setVisible(false);
+    ui->code_2->setVisible(false);
+    ui->code_3->setVisible(false);
+    ui->code_4->setVisible(false);
+    ui->code_5->setVisible(false);
+    ui->code_6->setVisible(false);
 }
 
 void OptionsPage::setModel(WalletModel* model)
@@ -307,11 +316,13 @@ void OptionsPage::on_Enable2FA(ToggleButton* widget)
         connect(&qrdlg, SIGNAL(finished (int)), this, SLOT(qrDialogIsFinished(int)));
         qrdlg.exec();
     } else {
-        settings.setValue("2FA", "disabled");
-        settings.setValue("2FACode", "");
-        settings.setValue("2FAPeriod", 1);
-        settings.setValue("2FALastTime", 0);
-        disable2FA();
+        typeOf2FA = DISABLE;
+
+        TwoFAConfirmDialog codedlg;
+        codedlg.setWindowTitle("2FACode verification");
+        codedlg.setStyleSheet(GUIUtil::loadStyleSheet());
+        connect(&codedlg, SIGNAL(finished (int)), this, SLOT(confirmDialogIsFinished(int)));
+        codedlg.exec();
     }
 }
 
@@ -361,18 +372,25 @@ void OptionsPage::disable2FA() {
     ui->code_6->setText("");
 
     ui->label_3->setEnabled(false);
-    ui->label_4->setEnabled(false);
+    ui->lblAuthCode->setEnabled(false);
     ui->label->setEnabled(false);
+    ui->btn_day->setEnabled(false);
+    ui->btn_week->setEnabled(false);
+    ui->btn_month->setEnabled(false);
 
     ui->btn_day->setStyleSheet("border-color: none;");
     ui->btn_week->setStyleSheet("border-color: none;");
     ui->btn_month->setStyleSheet("border-color: none;");
+    typeOf2FA = NONE;
 }
 
 void OptionsPage::enable2FA() {
     ui->label_3->setEnabled(true);
-    ui->label_4->setEnabled(true);
+    ui->lblAuthCode->setEnabled(true);
     ui->label->setEnabled(true);
+    ui->btn_day->setEnabled(true);
+    ui->btn_week->setEnabled(true);
+    ui->btn_month->setEnabled(true);
 
     QString code = settings.value("2FACode").toString();
     if (code != "") {
@@ -394,31 +412,74 @@ void OptionsPage::enable2FA() {
     }
      
     int period = settings.value("2FAPeriod").toInt();
-    if (period == 1)
+    typeOf2FA = NONE;
+    if (period == 1) {
         ui->btn_day->setStyleSheet("border-color: green;");
-    else if (period == 7)
+        typeOf2FA = DAY;
+    }
+    else if (period == 7) {
         ui->btn_week->setStyleSheet("border-color: green;");
-    else if (period == 30)
+        typeOf2FA = WEEK;
+    }
+    else if (period == 30) {
         ui->btn_month->setStyleSheet("border-color: green;");
+        typeOf2FA = MONTH;
+    }
+}
+
+void OptionsPage::confirmDialogIsFinished(int result) {
+    if(result == QDialog::Accepted){
+        if (typeOf2FA == DAY) {
+            settings.setValue("2FAPeriod", "1");
+            ui->btn_day->setStyleSheet("border-color: green;");
+            ui->btn_week->setStyleSheet("border-color: white;");
+            ui->btn_month->setStyleSheet("border-color: white;");
+        } else if (typeOf2FA == WEEK) {
+            settings.setValue("2FAPeriod", "7");
+            ui->btn_day->setStyleSheet("border-color: white;");
+            ui->btn_week->setStyleSheet("border-color: green;");
+            ui->btn_month->setStyleSheet("border-color: white;");
+        } else if (typeOf2FA == MONTH) {
+            settings.setValue("2FAPeriod", "30");
+            ui->btn_day->setStyleSheet("border-color: white;");
+            ui->btn_week->setStyleSheet("border-color: white;");
+            ui->btn_month->setStyleSheet("border-color: green;");
+        } else if (typeOf2FA == DISABLE) {
+            settings.setValue("2FA", "disabled");
+            settings.setValue("2FACode", "");
+            settings.setValue("2FAPeriod", 0);
+            settings.setValue("2FALastTime", 0);
+            disable2FA();
+        }
+    }
 }
 
 void OptionsPage::on_day() {
-    settings.setValue("2FAPeriod", "1");
-    ui->btn_day->setStyleSheet("border-color: green;");
-    ui->btn_week->setStyleSheet("border-color: white;");
-    ui->btn_month->setStyleSheet("border-color: white;");
+    typeOf2FA = DAY;
+
+    TwoFAConfirmDialog codedlg;
+    codedlg.setWindowTitle("2FACode verification");
+    codedlg.setStyleSheet(GUIUtil::loadStyleSheet());
+    connect(&codedlg, SIGNAL(finished (int)), this, SLOT(confirmDialogIsFinished(int)));
+    codedlg.exec();
 }
 
 void OptionsPage::on_week() {
-    settings.setValue("2FAPeriod", "7");
-    ui->btn_day->setStyleSheet("border-color: white;");
-    ui->btn_week->setStyleSheet("border-color: green;");
-    ui->btn_month->setStyleSheet("border-color: white;");
+    typeOf2FA = DAY;
+
+    TwoFAConfirmDialog codedlg;
+    codedlg.setWindowTitle("2FACode verification");
+    codedlg.setStyleSheet(GUIUtil::loadStyleSheet());
+    connect(&codedlg, SIGNAL(finished (int)), this, SLOT(confirmDialogIsFinished(int)));
+    codedlg.exec();   
 }
 
 void OptionsPage::on_month() {
-    settings.setValue("2FAPeriod", "30");
-    ui->btn_day->setStyleSheet("border-color: white;");
-    ui->btn_week->setStyleSheet("border-color: white;");
-    ui->btn_month->setStyleSheet("border-color: green;");
+    typeOf2FA = DAY;
+
+    TwoFAConfirmDialog codedlg;
+    codedlg.setWindowTitle("2FACode verification");
+    codedlg.setStyleSheet(GUIUtil::loadStyleSheet());
+    connect(&codedlg, SIGNAL(finished (int)), this, SLOT(confirmDialogIsFinished(int)));
+    codedlg.exec();
 }
