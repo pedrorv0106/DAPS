@@ -2799,18 +2799,22 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
      * @todo Audit checkblock
      */
     if (block.IsProofOfAudit()) {
+    	LogPrintf("\nchecking CheckPoAContainRecentHash");
     	//Check PoA consensus rules
     	if (!CheckPoAContainRecentHash(block)) {
     		return state.DoS(100, error("CheckBlock() : PoA block should contain only non-audited recent PoS blocks"));
     	}
+    	LogPrintf("\nchecking CheckNumberOfAuditedPoSBlocks");
 
     	if (!CheckNumberOfAuditedPoSBlocks(block)) {
     		return state.DoS(100, error("CheckBlock() : A PoA block should audit at least 59 PoS blocks"));
     	}
+    	LogPrintf("\nchecking CheckPoABlockNotContainingPoABlockInfo");
 
     	if (!CheckPoABlockNotContainingPoABlockInfo(block)) {
     		return state.DoS(100, error("CheckBlock() : A PoA block should not audit any existing PoA blocks"));
     	}
+    	LogPrintf("\nchecking CheckPoABlockNotContainingPoABlockInfo");
     }
 
     // verify that the view's current state corresponds to the previous block

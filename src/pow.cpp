@@ -198,7 +198,18 @@ bool CheckPoAContainRecentHash(const CBlock& block) {
             }
             CBlockIndex* piterator = mapBlockIndex[lastAuditedPoSHash]->pnext;
             uint32_t idxOfPoSInfo = 0;
-
+            if (!piterator) {
+                //check whether chainActive has
+            	if (mapBlockIndex[lastAuditedPoSHash]->nHeight + 1 > chainActive.Height()) {
+            		return error("CheckPoAContainRecentHash() : PoS block %s not found", lastAuditedPoSHash.GetHex());
+            	}
+            	piterator = chainActive[mapBlockIndex[lastAuditedPoSHash]->nHeight + 1];
+            	if (!piterator)
+            		return error("CheckPoAContainRecentHash() : PoS block %s not found", lastAuditedPoSHash.GetHex());
+            	if (piterator->pprev == NULL || piterator->pprev->GetBlockHash() != lastAuditedPoSHash) {
+            		return error("CheckPoAContainRecentHash() : PoS block %s not found", lastAuditedPoSHash.GetHex());
+            	}
+            }
             while (piterator->nHeight <= (uint32_t) currentTip->nHeight && idxOfPoSInfo < block.posBlocksAudited.size()) {
                 if (!piterator->GetBlockHeader().IsPoABlockByVersion()
                         && piterator->nHeight > Params().LAST_POW_BLOCK()) {
@@ -214,8 +225,22 @@ bool CheckPoAContainRecentHash(const CBlock& block) {
                         break;
                     }
                 }
+                uint256 h = piterator->GetBlockHash();
                 piterator = piterator->pnext;
+
+                if (!piterator) {
+                	if (mapBlockIndex[h]->nHeight + 1 > chainActive.Height()) {
+                		return error("CheckPoAContainRecentHash() : PoS block %s not found", lastAuditedPoSHash.GetHex());
+                	}
+                	piterator = chainActive[mapBlockIndex[h]->nHeight + 1];
+                	if (!piterator)
+                		return error("CheckPoAContainRecentHash() : PoS block %s not found", h.GetHex());
+                	if (piterator->pprev == NULL || piterator->pprev->GetBlockHash() != h) {
+                		return error("CheckPoAContainRecentHash() : PoS block %s not found", h.GetHex());
+                	}
+                }
             }
+
             if (idxOfPoSInfo != block.posBlocksAudited.size()) {
                 //Not all PoS Blocks in PoA block have been checked, not satisfied
                 ret = false;
