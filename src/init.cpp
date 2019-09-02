@@ -1437,6 +1437,11 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
             // Create new keyUser and set as default key
             RandAddSeedPerfmon();
 
+            if (!pwalletMain->IsHDEnabled()) {
+                // generate a new master key
+                pwalletMain->GenerateNewHDChain();
+            }
+
             CPubKey newDefaultKey;
             if (pwalletMain->GetKeyFromPool(newDefaultKey)) {
                 pwalletMain->SetDefaultKey(newDefaultKey);
