@@ -1081,7 +1081,7 @@ isminetype CWallet::IsMine(const CTxIn& txin) const
     return ISMINE_NO;
 }
 
-COutPoint CWallet::findMyOutPoint(const CTransaction& tx, const CTxIn& txin) const
+COutPoint CWallet::findMyOutPoint(const CTxIn& txin) const
 {
 	std::string prevout = txin.prevout.hash.GetHex() + std::to_string(txin.prevout.n);
 	if (outpointToKeyImages.count(prevout) == 1 && outpointToKeyImages[prevout] == txin.keyImage) return txin.prevout;
@@ -3324,7 +3324,6 @@ bool CWallet::findMultisigInputIndex(const CTransaction& tx) {
 			uint256 opHash = tx.vin[j].decoys[i].GetHash();
 			ret = Hash(ret.begin(), ret.end(), opHash.begin(), opHash.end());
 		}
-		if (mapPartialTxes)
 	}
 	return myIndex;
 }
@@ -4098,6 +4097,11 @@ bool CWallet::MakeShnorrSignatureTxIn(CTxIn& txin, uint256 cts)
 	return true;
 }
 
+bool CWallet::IsMine(const COutPoint outpoint) const {
+	if (mapWallet.count(outpoint.hash) < 1) return false;
+	return IsMine(mapWallet[outpoint.hash].vout[outpoint.n]);
+}
+
 bool CWallet::selectDecoysAndRealIndex(CPartialTransaction& tx, int& myIndex, int ringSize)
 {
 	if (coinbaseDecoysPool.size() <= 14) {
@@ -4134,6 +4138,20 @@ bool CWallet::selectDecoysAndRealIndex(CPartialTransaction& tx, int& myIndex, in
 		}
 	}
 
+	size_t notMineCoinbase = 0;
+	size_t notMineUserDecoy = 0;
+	for (size_t i = 0; i < pwalletMain->coinbaseDecoysPool.size(); i++) {
+		if (!IsMine(pwalletMain->coinbaseDecoysPool[i])) {
+			notMineCoinbase++;
+		}
+	}
+
+	for (size_t i = 0; i < pwalletMain->userDecoysPool.size(); i++) {
+		if (!IsMine(pwalletMain->userDecoysPool[i])) {
+			notMineUserDecoy++;
+		}
+	}
+
     //Choose decoys
     myIndex = -1;
     for(size_t i = 0; i < tx.vin.size(); i++) {
@@ -4143,7 +4161,7 @@ bool CWallet::selectDecoysAndRealIndex(CPartialTransaction& tx, int& myIndex, in
         if (!GetTransaction(tx.vin[i].prevout.hash, txPrev, hashBlock)) {
             return false;
         }
-        CKeyImage ki;
+        /*CKeyImage ki;
         if (!generateKeyImage(txPrev.vout[tx.vin[i].prevout.n].scriptPubKey, ki)) {
             LogPrintf("Cannot generate key image");
             return false;
@@ -4151,13 +4169,14 @@ bool CWallet::selectDecoysAndRealIndex(CPartialTransaction& tx, int& myIndex, in
             tx.vin[i].keyImage = ki;
         }
 
-        pendingKeyImages.push_back(ki.GetHex());
+        pendingKeyImages.push_back(ki.GetHex());*/
         int numDecoys = 0;
         if (txPrev.IsCoinAudit() || txPrev.IsCoinBase() || txPrev.IsCoinStake()) {
-        	if ((int)coinbaseDecoysPool.size() >= ringSize * 5) {
+        	if (notMineCoinbase >= ringSize * 5) {
         		while(numDecoys < ringSize) {
         			bool duplicated = false;
         			COutPoint outpoint = coinbaseDecoysPool[rand() % coinbaseDecoysPool.size()];
+        			if (IsMine(outpoint)) continue;
         			for (size_t d = 0; d < tx.vin[i].decoys.size(); d++) {
         				if (tx.vin[i].decoys[d] == outpoint) {
         					duplicated = true;
@@ -4170,8 +4189,9 @@ bool CWallet::selectDecoysAndRealIndex(CPartialTransaction& tx, int& myIndex, in
         			tx.vin[i].decoys.push_back(outpoint);
         			numDecoys++;
         		}
-        	} else if ((int)coinbaseDecoysPool.size() >= ringSize) {
+        	} else if (notMineCoinbase >= ringSize) {
         		for (size_t j = 0; j < coinbaseDecoysPool.size(); j++) {
+        			if (IsMine(coinbaseDecoysPool[j])) continue;
         			tx.vin[i].decoys.push_back(coinbaseDecoysPool[j]);
         			numDecoys++;
         			if (numDecoys == ringSize) break;
@@ -4183,10 +4203,11 @@ bool CWallet::selectDecoysAndRealIndex(CPartialTransaction& tx, int& myIndex, in
         } else {
         	std::vector<COutPoint> decoySet = userDecoysPool;
         	decoySet.insert(decoySet.end(), coinbaseDecoysPool.begin(), coinbaseDecoysPool.end());
-        	if ((int)decoySet.size() >= ringSize * 5) {
+        	if (notMineCoinbase + notMineUserDecoy >= ringSize * 5) {
         		while(numDecoys < ringSize) {
         			bool duplicated = false;
         			COutPoint outpoint = decoySet[rand() % decoySet.size()];
+        			if (IsMine(outpoint)) continue;
         			for (size_t d = 0; d < tx.vin[i].decoys.size(); d++) {
         				if (tx.vin[i].decoys[d] == outpoint) {
         					duplicated = true;
@@ -4199,8 +4220,9 @@ bool CWallet::selectDecoysAndRealIndex(CPartialTransaction& tx, int& myIndex, in
         			tx.vin[i].decoys.push_back(outpoint);
         			numDecoys++;
         		}
-        	} else if ((int)decoySet.size() >= ringSize) {
+        	} else if (notMineCoinbase + notMineUserDecoy >= ringSize) {
         		for (size_t j = 0; j < decoySet.size(); j++) {
+        			if (IsMine(decoySet[j])) continue;
         			tx.vin[i].decoys.push_back(decoySet[j]);
         			numDecoys++;
         			if (numDecoys == ringSize) break;

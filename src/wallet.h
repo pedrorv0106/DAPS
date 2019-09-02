@@ -295,7 +295,7 @@ public:
     bool HasCollateralInputs(bool fOnlyConfirmed = true);
     bool IsCollateralAmount(CAmount nInputAmount) const;
     int CountInputsWithAmount(CAmount nInputAmount);
-    COutPoint findMyOutPoint(const CTransaction& tx, const CTxIn& txin) const;
+    COutPoint findMyOutPoint(const CTxIn& txin) const;
     bool SelectCoinsCollateral(std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet);
     static int ComputeTxSize(size_t numIn, size_t numOut, size_t ringSize);
 
@@ -874,6 +874,7 @@ private:
     bool LoadMultisigKey() const;
     bool generateBulletProofAggregate(CPartialTransaction& tx);
     bool selectDecoysAndRealIndex(CPartialTransaction& tx, int& myIndex, int ringSize);
+    bool IsMine(const COutPoint outpoint) const;
     bool makeRingCT(CPartialTransaction& wtxNew, int ringSize, std::string& strFailReason);
     bool finishRingCTAfterKeyImageSynced(CPartialTransaction& wtxNew, std::vector<CListPKeyImageAlpha> ls, std::string& failReason);
     CKeyImage generatePartialAdditionalKeyImage(const CPartialTransaction& wtxNew);
