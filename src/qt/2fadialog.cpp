@@ -43,6 +43,12 @@ TwoFADialog::TwoFADialog(QWidget *parent) :
 
     connect(ui->btnOK, SIGNAL(clicked()), this, SLOT(on_acceptCode()));
     connect(ui->btnCancel, SIGNAL(clicked()), this, SLOT(reject()));
+    connect(ui->txtcode_1, &QLineEdit::textChanged, this, &TwoFADialog::codeChanged);
+    connect(ui->txtcode_2, &QLineEdit::textChanged, this, &TwoFADialog::codeChanged);
+    connect(ui->txtcode_3, &QLineEdit::textChanged, this, &TwoFADialog::codeChanged);
+    connect(ui->txtcode_4, &QLineEdit::textChanged, this, &TwoFADialog::codeChanged);
+    connect(ui->txtcode_5, &QLineEdit::textChanged, this, &TwoFADialog::codeChanged);
+    connect(ui->txtcode_6, &QLineEdit::textChanged, this, &TwoFADialog::codeChanged);
 
 }
 
@@ -131,4 +137,8 @@ void TwoFADialog::on_acceptCode()
     }
 
     accept();
+}
+
+void TwoFADialog::codeChanged(const QString & txt) {
+    this->focusNextChild();
 }
