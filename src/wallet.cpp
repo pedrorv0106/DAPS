@@ -4565,8 +4565,6 @@ void GetAccountAddress(CWallet* pwalletMain, string strAccount, int nAccountInde
 
     bool bKeyUsed = false;
 
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
-
     // Check if the current key has been used
     if (account.vchPubKey.IsValid()) {
         CScript scriptPubKey = GetScriptForDestination(account.vchPubKey.GetID());
@@ -4580,12 +4578,9 @@ void GetAccountAddress(CWallet* pwalletMain, string strAccount, int nAccountInde
         }
     }
 
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
-
     // Generate a new key
     if (!account.vchPubKey.IsValid() || bForceNew || bKeyUsed) {
         // pwalletMain->GetKeyFromPool(account.vchPubKey);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         CKey newKey;
         pwalletMain->DeriveNewChildKey(nAccountIndex, newKey);
         account.vchPubKey = newKey.GetPubKey();
@@ -4658,7 +4653,6 @@ void CWallet::ReserveKeyFromKeyPool(int64_t& nIndex, CKeyPool& keypool)
 
 void CWallet::CreatePrivacyAccount() {
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
         if (IsCrypted())
             return;//throw runtime_error("Wallet is encrypted, please decrypt it");
@@ -6026,7 +6020,6 @@ void CWallet::DeriveNewChildKey(uint32_t nAccountIndex, CKey& secretRet)
 
 void CWallet::createMasterKey() const {
     int i = 0;
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     CWalletDB pDB(strWalletFile);
     {   
         LOCK(cs_wallet);
@@ -6065,9 +6058,7 @@ bool CWallet::mySpendPrivateKey(CKey& spend) const {
 		std::string spendAccountLabel = "spendaccount";
 		CAccount spendAccount;
 		CWalletDB pDB(strWalletFile);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 		if (!pDB.ReadAccount(spendAccountLabel, spendAccount)) {
-            printf("%s[%d]\n", __FUNCTION__, __LINE__);
 			LogPrintf("Cannot Load Spend private key, now create the master keys");
 			createMasterKey();
 			pDB.ReadAccount(spendAccountLabel, spendAccount);
@@ -6087,9 +6078,7 @@ bool CWallet::myViewPrivateKey(CKey& view) const {
 		std::string viewAccountLabel = "viewaccount";
 		CAccount viewAccount;
 		CWalletDB pDB(strWalletFile);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 		if (!pDB.ReadAccount(viewAccountLabel, viewAccount)) {
-            printf("%s[%d]\n", __FUNCTION__, __LINE__);
 			LogPrintf("Cannot Load view private key, now create the master keys");
 			createMasterKey();
 			pDB.ReadAccount(viewAccountLabel, viewAccount);
