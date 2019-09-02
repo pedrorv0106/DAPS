@@ -175,7 +175,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, const CPubKey& txP
     std::copy(txPriv.begin(), txPriv.end(), std::back_inserter(txNew.vout[0].txPriv));
 
     CBlockIndex* prev = chainActive.Tip();
-    CAmount nValue = GetBlockValue(prev->nHeight);
+    CAmount nValue = GetBlockValue(prev);
     txNew.vout[0].nValue = nValue;
 
     pblock->vtx.push_back(txNew);
@@ -668,7 +668,7 @@ bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
     return true;
 }
 
-bool fGenerateBitcoins = false;
+bool fGenerateDapscoins = false;
 
 // ***TODO*** that part changed in bitcoin, we are using a mix with old one here for now
 
@@ -677,7 +677,7 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake, MineType mineType)
     LogPrintf("DAPScoinMiner started\n");
     SetThreadPriority(THREAD_PRIORITY_LOWEST);
     RenameThread("dapscoin-miner");
-    fGenerateBitcoins = true;
+    fGenerateDapscoins = true;
     // Each thread has its own key and counter
     CReserveKey reservekey(pwallet);
     unsigned int nExtraNonce = 0;
@@ -692,7 +692,7 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake, MineType mineType)
         fMintableCoins = pwallet->MintableCoins();
     }
 
-    while (fGenerateBitcoins || fProofOfStake) {
+    while (fGenerateDapscoins || fProofOfStake) {
     	if (chainActive.Tip()->nHeight >= Params().LAST_POW_BLOCK()) fProofOfStake = true;
         if (fProofOfStake) {
             if (chainActive.Tip()->nHeight < Params().LAST_POW_BLOCK()) {
@@ -710,14 +710,14 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake, MineType mineType)
             		}
             	}
             	MilliSleep(5000);
-            	if (!fGenerateBitcoins) {
+                if (!fGenerateDapscoins) {
             		break;
             	}
-            	if (!fGenerateBitcoins && !fProofOfStake)
+                if (!fGenerateDapscoins && !fProofOfStake)
             		continue;
             }
 
-            if (!fGenerateBitcoins) {
+            if (!fGenerateDapscoins) {
             	LogPrintf("\nStopping staking or mining\n");
             	nLastCoinStakeSearchInterval = 0;
             	break;
@@ -755,10 +755,13 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake, MineType mineType)
         //Stake miner main
         if (fProofOfStake) {
             LogPrintf("CPUMiner : proof-of-stake block found %s \n", pblock->GetHash().ToString().c_str());
-
             if (!pblock->SignBlock(*pwallet)) {
-                LogPrintf("BitcoinMiner(): Signing new block failed \n");
-                continue;
+                LogPrintf("BitcoinMiner(): Signing new block failed, computing private key \n");
+                if (pblock->vtx.size() > 1 && pblock->vtx[1].vout.size() > 1) {
+                    pwallet->AddComputedPrivateKey(pblock->vtx[1].vout[1]);
+                }
+                if (!pblock->SignBlock(*pwallet))
+                	continue;
             }
 
             LogPrintf("CPUMiner : proof-of-stake block was signed %s \n", pblock->GetHash().ToString().c_str());
@@ -905,10 +908,10 @@ void GeneratePoADapscoin(CWallet* pwallet, int period)
     minerThreads->create_thread(boost::bind(&ThreadDapscoinMiner, pwallet));
 }
 
-void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads)
+void GenerateDapscoins(bool fGenerate, CWallet* pwallet, int nThreads)
 {
     static boost::thread_group* minerThreads = NULL;
-    fGenerateBitcoins = fGenerate;
+    fGenerateDapscoins = fGenerate;
 
     if (nThreads < 0) {
         // In regtest threads defaults to 1

@@ -439,3 +439,4 @@ void OptionsPage::onShowMnemonic() {
     
     ui->lblMnemonic->setText(std::string(mnemonic.begin(), mnemonic.end()).c_str());
 }
+

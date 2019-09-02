@@ -250,7 +250,8 @@ public:
     bool IsCollateralAmount(CAmount nInputAmount) const;
     int CountInputsWithAmount(CAmount nInputAmount);
     COutPoint findMyOutPoint(const CTxIn& txin) const;
-    bool SelectCoinsCollateral(std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet) ;
+    bool SelectCoinsCollateral(std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet);
+    static int ComputeTxSize(size_t numIn, size_t numOut, size_t ringSize);
 
     /*
      * Main wallet lock.
@@ -746,6 +747,7 @@ public:
     bool MakeShnorrSignature(CTransaction&);
     bool MakeShnorrSignatureTxIn(CTxIn& txin, uint256);
     bool computeSharedSec(const CTransaction& tx, const CTxOut& out, CPubKey& sharedSec) const;
+    void AddComputedPrivateKey(const CTxOut& out);
 private:
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);

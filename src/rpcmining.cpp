@@ -192,7 +192,7 @@ Value setgenerate(const Array& params, bool fHelp)
     {
         mapArgs["-gen"] = (fGenerate ? "1" : "0");
         mapArgs["-genproclimit"] = itostr(nGenProcLimit);
-        GenerateBitcoins(fGenerate, pwalletMain, nGenProcLimit);
+        GenerateDapscoins(fGenerate, pwalletMain, nGenProcLimit);
     }
 
     return Value::null;
