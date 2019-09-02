@@ -695,11 +695,7 @@ Value getfeeinfo(const Array& params, bool fHelp)
                 nValueIn += txPrev.vout[prevout.n].nValue;
             }
 
-            for (unsigned int j = 0; j < tx.vout.size(); j++) {
-                nValueOut += tx.vout[j].nValue;
-            }
-
-            nFees += nValueIn - nValueOut;
+            nFees += tx.nTxFee;
             nBytes += tx.GetSerializeSize(SER_NETWORK, CLIENT_VERSION);
             nTotal++;
         }

@@ -302,6 +302,8 @@ Value listmasternodes(const Array& params, bool fHelp)
             obj.push_back(Pair("outidx", (uint64_t)oIdx));
             obj.push_back(Pair("status", strStatus));
             obj.push_back(Pair("addr", CBitcoinAddress(mn->pubKeyCollateralAddress.GetID()).ToString()));
+            std::string mnStealth(mn->masternodeStealthAddress.begin(), mn->masternodeStealthAddress.end());
+            obj.push_back(Pair("stealthaddress", mnStealth));
             obj.push_back(Pair("version", mn->protocolVersion));
             obj.push_back(Pair("lastseen", (int64_t)mn->lastPing.sigTime));
             obj.push_back(Pair("activetime", (int64_t)(mn->lastPing.sigTime - mn->sigTime)));
