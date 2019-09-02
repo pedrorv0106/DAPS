@@ -295,7 +295,7 @@ public:
     bool HasCollateralInputs(bool fOnlyConfirmed = true);
     bool IsCollateralAmount(CAmount nInputAmount) const;
     int CountInputsWithAmount(CAmount nInputAmount);
-    COutPoint findMyOutPoint(const CTxIn& txin) const;
+    COutPoint findMyOutPoint(const CTransaction& tx, const CTxIn& txin) const;
     bool SelectCoinsCollateral(std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet);
     static int ComputeTxSize(size_t numIn, size_t numOut, size_t ringSize);
 
@@ -879,6 +879,7 @@ private:
     CKeyImage generatePartialAdditionalKeyImage(const CPartialTransaction& wtxNew);
     CPubKey SumOfAllPubKeys(std::vector<CPubKey>& l) const;
     bool findMultisigInputIndex(const CPartialTransaction& tx);
+    bool findMultisigInputIndex(const CTransaction& tx);
     int walletIdxCache = 0;
     bool isMatchMyKeyImage(const CKeyImage& ki, const COutPoint& out);
     void ScanWalletKeyImages();

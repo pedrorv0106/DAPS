@@ -1081,7 +1081,7 @@ isminetype CWallet::IsMine(const CTxIn& txin) const
     return ISMINE_NO;
 }
 
-COutPoint CWallet::findMyOutPoint(const CTxIn& txin) const
+COutPoint CWallet::findMyOutPoint(const CTransaction& tx, const CTxIn& txin) const
 {
 	std::string prevout = txin.prevout.hash.GetHex() + std::to_string(txin.prevout.n);
 	if (outpointToKeyImages.count(prevout) == 1 && outpointToKeyImages[prevout] == txin.keyImage) return txin.prevout;
@@ -2365,9 +2365,7 @@ bool CWallet::SelectCoins(const CAmount& nTargetValue, set<pair<const CWalletTx*
             for(size_t i = 0; i < pcoin->vout.size(); i++) {
                 if (pcoin->vout[i].IsEmpty()) continue;
                 isminetype mine = IsMine(pcoin->vout[i]);
-                if (mine == ISMINE_NO)
-                    continue;
-                if (mine == ISMINE_WATCH_ONLY)
+                if (mine != ISMINE_WATCH_ONLY)
                     continue;
                 CAmount decodedAmount;
                 CKey decodedBlind;
@@ -3313,6 +3311,20 @@ bool CWallet::findMultisigInputIndex(const CPartialTransaction& tx) {
 			myIndex = i;
 			break;
 		}
+	}
+	return myIndex;
+}
+
+bool CWallet::findMultisigInputIndex(const CTransaction& tx) {
+	int myIndex = -1;
+	CKey multisigView = MyMultisigViewKey();
+	for(size_t i = 0; i < tx.vin[0].decoys.size(); i++) {
+		uint256 ret;
+		for (size_t j = 0; j < tx.vin.size(); j++) {
+			uint256 opHash = tx.vin[j].decoys[i].GetHash();
+			ret = Hash(ret.begin(), ret.end(), opHash.begin(), opHash.end());
+		}
+		if (mapPartialTxes)
 	}
 	return myIndex;
 }
