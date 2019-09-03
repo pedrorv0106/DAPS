@@ -418,7 +418,7 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 	const size_t MAX_DECOYS = 15;	//padding 1 for safety reasons
 	const size_t MAX_VOUT = 5;
 
-	if (tx.vin[0].decoys > MAX_DECOYS) return false;//maximum decoys = 15
+	if (tx.vin[0].decoys.size() > MAX_DECOYS) return false;//maximum decoys = 15
 
 	unsigned char allInPubKeys[MAX_VIN + 1][MAX_DECOYS + 1][33];
 	unsigned char allKeyImages[MAX_VIN + 1][33];

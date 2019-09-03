@@ -3116,14 +3116,26 @@ bool CWallet::makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFai
 		}
 	}
 
-	if (wtxNew.vin.size() >= 30) {
-		strFailReason = _("Failed due to transaction size too large");
+	if (wtxNew.vin.size() >= 30 || wtxNew.vin.size() == 0) {
+		strFailReason = _("Failed due to transaction size too large or the transaction does no have any input");
 		return false;
+	}
+
+	for(size_t i = 0; i < wtxNew.vin.size(); i++) {
+		if (wtxNew.vin[i].decoys.size() != wtxNew.vin[0].decoys.size()) {
+			strFailReason = _("All inputs should have the same number of decoys");
+			return false;
+		}
 	}
 
 	const size_t MAX_VIN = 32;
 	const size_t MAX_DECOYS = 15;	//padding 1 for safety reasons
 	const size_t MAX_VOUT = 5;
+
+	if (wtxNew.vin[0].decoys.size() > MAX_DECOYS) {
+		strFailReason = _("Too many decoys");
+		return false;//maximum decoys = 15
+	}
 
 	std::vector<secp256k1_pedersen_commitment> myInputCommiments;
 	int totalCommits = wtxNew.vin.size() + wtxNew.vout.size();
@@ -5103,7 +5115,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 		return true;
 	}
 
-	if (GetSpendableBalance() < 1 * COIN) {
+	if (GetSpendableBalance() < 5 * COIN) {
 		return false;
 	}
 
