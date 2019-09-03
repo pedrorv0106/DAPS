@@ -2699,7 +2699,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     unsigned char rand_seed[16];
     memcpy(rand_seed, txPrivDes.begin(), 16);
     secp256k1_rand_seed(rand_seed);
-    ringSize = 11 + secp256k1_rand32() % 4;
+    ringSize = 11 + secp256k1_rand32() % 5;
 
     //Currently we only allow transaction with one or two recipients
     //If two, the second recipient is a change output
@@ -3122,7 +3122,7 @@ bool CWallet::makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFai
 	}
 
 	const size_t MAX_VIN = 32;
-	const size_t MAX_DECOYS = 13;	//padding 1 for safety reasons
+	const size_t MAX_DECOYS = 15;	//padding 1 for safety reasons
 	const size_t MAX_VOUT = 5;
 
 	std::vector<secp256k1_pedersen_commitment> myInputCommiments;
