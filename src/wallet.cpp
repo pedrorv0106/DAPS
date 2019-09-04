@@ -2699,7 +2699,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     unsigned char rand_seed[16];
     memcpy(rand_seed, txPrivDes.begin(), 16);
     secp256k1_rand_seed(rand_seed);
-    ringSize = 11 + secp256k1_rand32() % 5;
+	ringSize = MIN_RING_SIZE + secp256k1_rand32() % (MAX_RING_SIZE - MIN_RING_SIZE + 1);
 
     //Currently we only allow transaction with one or two recipients
     //If two, the second recipient is a change output
@@ -3116,6 +3116,10 @@ bool CWallet::makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFai
 		}
 	}
 
+	const size_t MAX_VIN = 32;
+	const size_t MAX_DECOYS = MAX_RING_SIZE;	//padding 1 for safety reasons
+	const size_t MAX_VOUT = 5;
+
 	if (wtxNew.vin.size() >= 30 || wtxNew.vin.size() == 0) {
 		strFailReason = _("Failed due to transaction size too large or the transaction does no have any input");
 		return false;
@@ -3128,11 +3132,7 @@ bool CWallet::makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFai
 		}
 	}
 
-	const size_t MAX_VIN = 32;
-	const size_t MAX_DECOYS = 15;	//padding 1 for safety reasons
-	const size_t MAX_VOUT = 5;
-
-	if (wtxNew.vin[0].decoys.size() > MAX_DECOYS) {
+	if (wtxNew.vin[0].decoys.size() > MAX_DECOYS || wtxNew.vin[0].decoys.size() < MIN_RING_SIZE) {
 		strFailReason = _("Too many decoys");
 		return false;//maximum decoys = 15
 	}
@@ -5156,7 +5156,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 	unsigned char rand_seed[16];
 	memcpy(rand_seed, secret.begin(), 16);
 	secp256k1_rand_seed(rand_seed);
-	int ringSize = 11 + secp256k1_rand32() % 4;
+	int ringSize = MIN_RING_SIZE + secp256k1_rand32() % (MAX_RING_SIZE - MIN_RING_SIZE + 1);
 
 	int estimateTxSize = ComputeTxSize(vCoins.size(), 1, ringSize);
 	CAmount nFeeNeeded = GetMinimumFee(estimateTxSize, nTxConfirmTarget, mempool);
