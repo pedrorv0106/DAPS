@@ -81,6 +81,7 @@ WalletView::WalletView(QWidget* parent) : QStackedWidget(parent),
     addWidget(sendCoinsPage);
     addWidget(optionsPage);
     addWidget(explorerWindow);
+    addWidget(cosignPage);
 
     QSettings settings;
     if (settings.value("fShowMasternodesTab").toBool()) {
@@ -160,6 +161,7 @@ void WalletView::setWalletModel(WalletModel* walletModel)
     receiveCoinsPage->setModel(walletModel);
     sendCoinsPage->setModel(walletModel);
     optionsPage->setModel(walletModel);
+    cosignPage->setModel(walletModel);
 
     if (walletModel) {
         // Receive and pass through messages from wallet model
