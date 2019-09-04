@@ -3356,15 +3356,15 @@ bool CWallet::generateCommitmentAndEncode(CPartialTransaction& wtxNew)
     return true;
 }
 
-bool CWallet::findMultisigInputIndex(const CPartialTransaction& tx) const {
+int CWallet::findMultisigInputIndex(const CPartialTransaction& tx) const {
 	return findMultisigInputIndex(tx.vin[0]);
 }
 
-bool CWallet::findMultisigInputIndex(const CTransaction& tx) const {
+int CWallet::findMultisigInputIndex(const CTransaction& tx) const {
 	return findMultisigInputIndex(tx.vin[0]);
 }
 
-bool CWallet::findMultisigInputIndex(const CTxIn& txin) const {
+int CWallet::findMultisigInputIndex(const CTxIn& txin) const {
 	int myIndex = -1;
 	int numMatch = 0;
 	for(size_t i = 0; i < txin.decoys.size(); i++) {
