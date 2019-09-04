@@ -299,9 +299,9 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     cosignAction->setToolTip(QString());
     cosignAction->setCheckable(true);
 #ifdef Q_OS_MAC
-    cosignAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_3));
+    cosignAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_5));
 #else
-    cosignAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_3));
+    cosignAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
 #endif
     tabGroup->addAction(cosignAction);
 
