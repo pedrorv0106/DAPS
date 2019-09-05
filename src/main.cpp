@@ -76,6 +76,9 @@ bool fAlerts = DEFAULT_ALERTS;
 unsigned int nStakeMinAge = 60 * 60;
 int64_t nReserveBalance = 0;
 
+const int MIN_RING_SIZE = 11;
+const int MAX_RING_SIZE = 15;
+
 /** Fees smaller than this (in duffs) are considered zero fee (for relaying and mining)
  * We are ~100 times smaller then bitcoin now (2015-06-23), set minRelayTxFee only 10 times higher
  * so it's still 10 times lower comparing to bitcoin.
@@ -408,11 +411,17 @@ bool VerifyBulletProofAggregate(const CTransaction& tx)
 
 bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 {
-	if (tx.vin.size() >= 30) return false;
-
 	const size_t MAX_VIN = 32;
-	const size_t MAX_DECOYS = 13;	//padding 1 for safety reasons
+	const size_t MAX_DECOYS = MAX_RING_SIZE;	//padding 1 for safety reasons
 	const size_t MAX_VOUT = 5;
+
+	if (tx.vin.size() >= 30) return false;
+	for(size_t i = 0; i < tx.vin.size(); i++) {
+		if (tx.vin[i].decoys.size() != tx.vin[0].decoys.size()) return false;
+	}
+	if (tx.vin.size() == 0) return false;
+
+	if (tx.vin[0].decoys.size() > MAX_DECOYS || tx.vin[0].decoys.size() < MIN_RING_SIZE) return false;//maximum decoys = 15
 
 	unsigned char allInPubKeys[MAX_VIN + 1][MAX_DECOYS + 1][33];
 	unsigned char allKeyImages[MAX_VIN + 1][33];
