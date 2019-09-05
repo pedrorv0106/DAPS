@@ -82,6 +82,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle* networkStyle, QWidget* parent) : QMai
                                                                             masternodeAction(0),
                                                                             quitAction(0),
                                                                             sendCoinsAction(0),
+																			keyImageSyncAction(0),
                                                                             cosignAction(0),
                                                                             usedSendingAddressesAction(0),
                                                                             usedReceivingAddressesAction(0),
@@ -305,6 +306,16 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
 #endif
     tabGroup->addAction(cosignAction);
 
+    keyImageSyncAction = new QAction(QIcon(":/icons/send"), tr("&   Sync KeyImage"), this);
+    keyImageSyncAction->setToolTip(QString());
+    keyImageSyncAction->setCheckable(true);
+#ifdef Q_OS_MAC
+    keyImageSyncAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_6));
+#else
+    keyImageSyncAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
+#endif
+    tabGroup->addAction(keyImageSyncAction);
+
     receiveCoinsAction = new QAction(QIcon(":/icons/receiving_addresses"), tr("&   Receive"), this);
     receiveCoinsAction->setToolTip(QString());
     receiveCoinsAction->setCheckable(true);
@@ -351,6 +362,8 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     connect(sendCoinsAction, SIGNAL(triggered()), this, SLOT(gotoSendCoinsPage()));
     connect(cosignAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(cosignAction, SIGNAL(triggered()), this, SLOT(gotoCoSignPage()));
+    connect(keyImageSyncAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(keyImageSyncAction, SIGNAL(triggered()), this, SLOT(gotoCoSignPage()));
     connect(receiveCoinsAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(receiveCoinsAction, SIGNAL(triggered()), this, SLOT(gotoReceiveCoinsPage()));
     connect(historyAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
@@ -543,6 +556,7 @@ void BitcoinGUI::createToolBars()
 
         toolbar->addAction(overviewAction);
         toolbar->addAction(sendCoinsAction);
+        toolbar->addAction(keyImageSyncAction);
         toolbar->addAction(cosignAction);
         toolbar->addAction(receiveCoinsAction);
         toolbar->addAction(historyAction);
@@ -676,6 +690,7 @@ void BitcoinGUI::setWalletActionsEnabled(bool enabled)
 {
     overviewAction->setEnabled(enabled);
     sendCoinsAction->setEnabled(enabled);
+    keyImageSyncAction->setEnabled(enabled);
     cosignAction->setEnabled(enabled);
     receiveCoinsAction->setEnabled(enabled);
     historyAction->setEnabled(enabled);
@@ -733,6 +748,7 @@ void BitcoinGUI::createTrayIconMenu()
     trayIconMenu->addAction(toggleHideAction);
     trayIconMenu->addSeparator();
     trayIconMenu->addAction(sendCoinsAction);
+    trayIconMenu->addAction(keyImageSyncAction);
     trayIconMenu->addAction(cosignAction);
     trayIconMenu->addAction(receiveCoinsAction);
     trayIconMenu->addSeparator();
@@ -845,6 +861,12 @@ void BitcoinGUI::gotoCoSignPage()
 {
     cosignAction->setChecked(true);
     if (walletFrame) walletFrame->gotoCoSignPage();
+}
+
+void BitcoinGUI::gotoKeyImageSyncPage()
+{
+    keyImageSyncAction->setChecked(true);
+    if (walletFrame) walletFrame->gotoKeyImageSyncPage();
 }
 
 void BitcoinGUI::gotoSignMessageTab(QString addr)

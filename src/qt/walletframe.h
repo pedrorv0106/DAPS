@@ -58,6 +58,7 @@ public slots:
     void gotoOptionsPage();
     /** Switch to send coins page */
     void gotoSendCoinsPage(QString addr = "");
+    void gotoKeyImageSyncPage();
     /** Switch to explorer page */
     void gotoBlockExplorerPage();
     /** Show Sign/Verify Message dialog and switch to sign message tab */

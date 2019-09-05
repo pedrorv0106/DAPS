@@ -16,6 +16,7 @@ class OverviewPage;
 class HistoryPage;
 class ReceiveCoinsDialog;
 class SendCoinsDialog;
+class KeyImageSync;
 class OptionsPage;
 class SendCoinsRecipient;
 class TransactionView;
@@ -67,6 +68,7 @@ private:
     OptionsPage* optionsPage;
     HistoryPage* historyPage;
     SendCoinsDialog* sendCoinsPage;
+    KeyImageSync* keyImageSyncPage;
     CoSignTransaction* cosignPage;
     BlockExplorer* explorerWindow;
     MasternodeList* masternodeListPage;
@@ -92,7 +94,7 @@ public slots:
     /** Switch to send coins page */
     void gotoSendCoinsPage(QString addr = "");
     void gotoCoSignPage();
-
+    void gotoKeyImageSyncPage();
     /** Show Sign/Verify Message dialog and switch to sign message tab */
     void gotoSignMessageTab(QString addr = "");
     /** Show Sign/Verify Message dialog and switch to verify message tab */
