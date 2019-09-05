@@ -437,7 +437,7 @@ public:
     //! GetKey implementation that can derive a HD private key on the fly
     bool GetKey(const CKeyID &address, CKey& keyOut) const;
     //! Adds a HDPubKey into the wallet(database)
-    bool AddHDPubKey(const CExtPubKey &extPubKey, bool fInternal);
+    bool AddHDPubKey(const CExtPubKey &extPubKey, bool fInternal, uint32_t nAccountIndex);
     //! loads a HDPubKey into the wallets memory
     bool LoadHDPubKey(const CHDPubKey &hdPubKey);
     //! Adds a key to the store, and saves it to disk.

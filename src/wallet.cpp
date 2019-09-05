@@ -6029,7 +6029,7 @@ void CWallet::DeriveNewChildKey(uint32_t nAccountIndex, CKey& secretRet)
     int64_t nCreationTime = GetTime();
     mapKeyMetadata[pubkey.GetID()] = CKeyMetadata(nCreationTime);
 
-    if (!AddHDPubKey(childKey.Neuter(), false))
+    if (!AddHDPubKey(childKey.Neuter(), false, nAccountIndex))
         throw std::runtime_error(std::string(__func__) + ": AddHDPubKey failed");
 }
 
@@ -6091,7 +6091,7 @@ bool CWallet::LoadHDPubKey(const CHDPubKey &hdPubKey)
     return true;
 }
 
-bool CWallet::AddHDPubKey(const CExtPubKey &extPubKey, bool fInternal)
+bool CWallet::AddHDPubKey(const CExtPubKey &extPubKey, bool fInternal, uint32_t nAccountIndex)
 {
     AssertLockHeld(cs_wallet);
 
@@ -6100,6 +6100,7 @@ bool CWallet::AddHDPubKey(const CExtPubKey &extPubKey, bool fInternal)
 
     CHDPubKey hdPubKey;
     hdPubKey.extPubKey = extPubKey;
+    hdPubKey.nAccountIndex = nAccountIndex;
     hdPubKey.hdchainID = hdChainCurrent.GetID();
     hdPubKey.nChangeIndex = fInternal ? 1 : 0;
     mapHdPubKeys[extPubKey.pubkey.GetID()] = hdPubKey;
