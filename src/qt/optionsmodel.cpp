@@ -133,7 +133,7 @@ void OptionsModel::Init()
     if (!settings.contains("2FACode"))
         settings.setValue("2FACode", "");
     if (!settings.contains("2FAPeriod"))
-        settings.setValue("2FAPeriod", 1);
+        settings.setValue("2FAPeriod", 0);
     if (!settings.contains("2FALastTime"))
         settings.setValue("2FALastTime", 0);
     if (!settings.contains("fCSSexternal"))
