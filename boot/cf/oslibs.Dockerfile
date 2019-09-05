@@ -26,18 +26,6 @@ RUN apt-get install g++-5 libcurl4-openssl-dev libjansson-dev -y --fix-missing &
     update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 1 && \
 #
     apt-get update
-
-#USE cpprest-dev
-RUN apt-get install libboost-atomic-dev libboost-thread-dev libboost-system-dev libboost-date-time-dev -y --fix-missing && \
-    apt-get install libboost-regex-dev libboost-filesystem-dev libboost-random-dev libboost-chrono-dev -y --fix-missing && \
-    apt-get install libboost-serialization-dev libwebsocketpp-dev libssl1.0-dev ninja-build cmake -y --fix-missing && \
-    git clone https://github.com/Microsoft/cpprestsdk.git casablanca && \
-    cd casablanca && \
-    mkdir build.debug && \
-    cd build.debug && \
-    cmake -G Ninja .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_SHARED_LIBS=0 && \
-    ninja && \
-    ninja install
 	
 #Cleanup packages
 RUN apt-get autoremove -y
