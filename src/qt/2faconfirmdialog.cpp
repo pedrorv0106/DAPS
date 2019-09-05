@@ -44,6 +44,12 @@ TwoFAConfirmDialog::TwoFAConfirmDialog(QWidget *parent) :
 
     connect(ui->btnOK, SIGNAL(clicked()), this, SLOT(on_acceptCode()));
     connect(ui->btnCancel, SIGNAL(clicked()), this, SLOT(reject()));
+    connect(ui->txtcode_1, &QLineEdit::textChanged, this, &TwoFAConfirmDialog::codeChanged);
+    connect(ui->txtcode_2, &QLineEdit::textChanged, this, &TwoFAConfirmDialog::codeChanged);
+    connect(ui->txtcode_3, &QLineEdit::textChanged, this, &TwoFAConfirmDialog::codeChanged);
+    connect(ui->txtcode_4, &QLineEdit::textChanged, this, &TwoFAConfirmDialog::codeChanged);
+    connect(ui->txtcode_5, &QLineEdit::textChanged, this, &TwoFAConfirmDialog::codeChanged);
+    connect(ui->txtcode_6, &QLineEdit::textChanged, this, &TwoFAConfirmDialog::codeChanged);
 
 }
 
@@ -129,4 +135,8 @@ void TwoFAConfirmDialog::on_acceptCode()
     settings.setValue("2FACode", code);
 
     accept();
+}
+
+void TwoFAConfirmDialog::codeChanged(const QString & txt) {
+    this->focusNextChild();
 }
