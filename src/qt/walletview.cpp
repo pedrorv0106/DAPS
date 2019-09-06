@@ -169,7 +169,6 @@ void WalletView::setWalletModel(WalletModel* walletModel)
     keyImageSyncPage->setModel(walletModel);
     optionsPage->setModel(walletModel);
     cosignPage->setModel(walletModel);
-
     if (walletModel) {
         // Receive and pass through messages from wallet model
         connect(walletModel, SIGNAL(message(QString, QString, unsigned int)), this, SIGNAL(message(QString, QString, unsigned int)));

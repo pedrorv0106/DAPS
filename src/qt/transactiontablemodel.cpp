@@ -72,7 +72,7 @@ public:
      */
     void refreshWallet()
     {
-        qDebug() << "TransactionTablePriv::refreshWallet";
+    	if (wallet->IsLocked()) return;
         cachedWallet.clear();
         {
             LOCK2(cs_main, wallet->cs_wallet);

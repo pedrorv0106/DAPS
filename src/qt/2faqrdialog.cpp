@@ -61,10 +61,8 @@ void TwoFAQRDialog::update()
     for (char c : address.ToString()) {
         if (!std::isdigit(c)) addr += c;
     }
-    QString periodSetting = settings.value("2FAPeriod").toString();
     QString uri;
-    uri.sprintf("otpauth://totp/DAPScoin:QT%20Wallet?secret=%s&issuer=dapscoin&algorithm=SHA1&digits=6&period=", addr.c_str());
-    uri += periodSetting;
+    uri.sprintf("otpauth://totp/DAPScoin:QT%20Wallet?secret=%s&issuer=dapscoin&algorithm=SHA1&digits=6&period=30", addr.c_str());
     ui->lblURI->setText(uri);
 
 #ifdef USE_QRCODE

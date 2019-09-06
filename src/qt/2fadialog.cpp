@@ -43,6 +43,12 @@ TwoFADialog::TwoFADialog(QWidget *parent) :
 
     connect(ui->btnOK, SIGNAL(clicked()), this, SLOT(on_acceptCode()));
     connect(ui->btnCancel, SIGNAL(clicked()), this, SLOT(reject()));
+    connect(ui->txtcode_1, &QLineEdit::textChanged, this, &TwoFADialog::codeChanged);
+    connect(ui->txtcode_2, &QLineEdit::textChanged, this, &TwoFADialog::codeChanged);
+    connect(ui->txtcode_3, &QLineEdit::textChanged, this, &TwoFADialog::codeChanged);
+    connect(ui->txtcode_4, &QLineEdit::textChanged, this, &TwoFADialog::codeChanged);
+    connect(ui->txtcode_5, &QLineEdit::textChanged, this, &TwoFADialog::codeChanged);
+    connect(ui->txtcode_6, &QLineEdit::textChanged, this, &TwoFADialog::codeChanged);
 
 }
 
@@ -108,27 +114,28 @@ void TwoFADialog::on_acceptCode()
 
     code.sprintf("%c%c%c%c%c%c", code1, code2, code3, code4, code5, code6);
 
-    QString codeSetting = settings.value("2FACode").toString();
-    if (codeSetting == "") {
-        QString result = "";
-        CWalletDB walletdb(pwalletMain->strWalletFile);
-        CAccount account;
-        walletdb.ReadAccount("", account);
-        CBitcoinAddress address(account.vchPubKey.GetID());
-        std::string addr = "";
-        for (char c : address.ToString()) {
-            if (!std::isdigit(c)) addr += c;
-        }
-                    
-        QString data;
-        data.sprintf("%s", addr.c_str());
-        result = QGoogleAuth::generatePin(data.toUtf8());
-        
-        if (result != code)
-            return;
-
-        settings.setValue("2FACode", code);
+    QString result = "";
+    CWalletDB walletdb(pwalletMain->strWalletFile);
+    CAccount account;
+    walletdb.ReadAccount("", account);
+    CBitcoinAddress address(account.vchPubKey.GetID());
+    std::string addr = "";
+    for (char c : address.ToString()) {
+        if (!std::isdigit(c)) addr += c;
     }
+                
+    QString data;
+    data.sprintf("%s", addr.c_str());
+    result = QGoogleAuth::generatePin(data.toUtf8());
+    
+    if (result != code)
+        return;
+
+    settings.setValue("2FACode", code);
 
     accept();
+}
+
+void TwoFADialog::codeChanged(const QString & txt) {
+    this->focusNextChild();
 }

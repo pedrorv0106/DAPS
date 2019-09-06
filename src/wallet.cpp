@@ -2901,7 +2901,7 @@ bool CWallet::CreateTransactionBulletProof(CPartialTransaction& ptx, const CKey&
     unsigned char rand_seed[16];
     memcpy(rand_seed, txPrivDes.begin(), 16);
     secp256k1_rand_seed(rand_seed);
-    ringSize = 11 + secp256k1_rand32() % 4;
+	ringSize = MIN_RING_SIZE + secp256k1_rand32() % (MAX_RING_SIZE - MIN_RING_SIZE + 1);
 
     //Currently we only allow transaction with one or two recipients
     //If two, the second recipient is a change output
@@ -3325,6 +3325,27 @@ bool CWallet::makeRingCT(CPartialTransaction& wtxNew, int ringSize, std::string&
     int myIndex;
     if (!selectDecoysAndRealIndex(wtxNew, myIndex, ringSize)) {
         return false;
+    }
+
+    const size_t MAX_VIN = 32;
+    const size_t MAX_DECOYS = MAX_RING_SIZE;	//padding 1 for safety reasons
+    const size_t MAX_VOUT = 5;
+
+    if (wtxNew.vin.size() >= 30 || wtxNew.vin.size() == 0) {
+    	strFailReason = _("Failed due to transaction size too large or the transaction does no have any input");
+    	return false;
+    }
+
+    for(size_t i = 0; i < wtxNew.vin.size(); i++) {
+    	if (wtxNew.vin[i].decoys.size() != wtxNew.vin[0].decoys.size()) {
+    		strFailReason = _("All inputs should have the same number of decoys");
+    		return false;
+    	}
+    }
+
+    if (wtxNew.vin[0].decoys.size() > MAX_DECOYS || wtxNew.vin[0].decoys.size() < MIN_RING_SIZE) {
+    	strFailReason = _("Too many decoys");
+    	return false;//maximum decoys = 15
     }
 
     CPartialTransaction ptx(wtxNew);
@@ -5249,7 +5270,7 @@ bool CWallet::TopUpKeyPool(unsigned int kpSize)
         else
             nTargetSize = max(GetArg("-keypool", 1000), (int64_t)0);
 
-        while (setKeyPool.size() < (nTargetSize + 1)) {
+        /*while (setKeyPool.size() < (nTargetSize + 1)) {
             int64_t nEnd = 1;
             if (!setKeyPool.empty())
                 nEnd = *(--setKeyPool.end()) + 1;
@@ -5260,7 +5281,7 @@ bool CWallet::TopUpKeyPool(unsigned int kpSize)
             double dProgress = 100.f * nEnd / (nTargetSize + 1);
             std::string strMsg = strprintf(_("Loading wallet... (%3.2f %%)"), dProgress);
             uiInterface.InitMessage(strMsg);
-        }
+        }*/
     }
     return true;
 }
@@ -6434,6 +6455,10 @@ bool CWallet::AllMyPublicAddresses(std::vector<std::string>& addresses, std::vec
 {
     std::string labelList;
     if (!ReadAccountList(labelList)) {
+        std::string masterAddr;
+        ComputeStealthPublicAddress("masteraccount", masterAddr);
+        addresses.push_back(masterAddr);
+        accountNames.push_back("Master Account");
         return true;
     }
 
@@ -6536,7 +6561,7 @@ void CWallet::DeriveNewChildKey(uint32_t nAccountIndex, CKey& secretRet)
     int64_t nCreationTime = GetTime();
     mapKeyMetadata[pubkey.GetID()] = CKeyMetadata(nCreationTime);
 
-    if (!AddHDPubKey(childKey.Neuter(), false))
+    if (!AddHDPubKey(childKey.Neuter(), false, nAccountIndex))
         throw std::runtime_error(std::string(__func__) + ": AddHDPubKey failed");
 }
 
@@ -6598,7 +6623,7 @@ bool CWallet::LoadHDPubKey(const CHDPubKey &hdPubKey)
     return true;
 }
 
-bool CWallet::AddHDPubKey(const CExtPubKey &extPubKey, bool fInternal)
+bool CWallet::AddHDPubKey(const CExtPubKey &extPubKey, bool fInternal, uint32_t nAccountIndex)
 {
     AssertLockHeld(cs_wallet);
 
@@ -6607,6 +6632,7 @@ bool CWallet::AddHDPubKey(const CExtPubKey &extPubKey, bool fInternal)
 
     CHDPubKey hdPubKey;
     hdPubKey.extPubKey = extPubKey;
+    hdPubKey.nAccountIndex = nAccountIndex;
     hdPubKey.hdchainID = hdChainCurrent.GetID();
     hdPubKey.nChangeIndex = fInternal ? 1 : 0;
     mapHdPubKeys[extPubKey.pubkey.GetID()] = hdPubKey;

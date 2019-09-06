@@ -1,5 +1,5 @@
 ARG SRC_PATH=r.cfcr.io/hysmagus
-ARG SRC_NAME=build_os_libs
+ARG SRC_NAME=build_os_libs_18
 ARG SRC_TAG=develop
 
 FROM ${SRC_PATH}/${SRC_NAME}:${SRC_TAG}
@@ -60,7 +60,7 @@ RUN su && cd /DAPS/depends &&  \
 #
     elif [ "$BUILD_TARGET" = "mac" ]; \
       then echo "Building dependencies for MacOS cross-compile (x86_64-apple-darwin11)..." && \
-        DEBIAN_FRONTEND=noninteractive apt-get install python-setuptools dpkg-dev libdvdnav-dev libcap-dev cmake libleveldb-dev clang clang++-3.8 libfuse-dev libbz2-dev librsvg2-bin libtiff-tools imagemagick expect libssl1.0-dev -y --fix-missing && \
+        DEBIAN_FRONTEND=noninteractive apt-get install librsvg2-bin libtiff-tools cmake imagemagick libcap-dev libz-dev libbz2-dev -y --fix-missing && \
         #GET MacOS SDK
         mkdir -p SDKs && \
         curl -LO "https://github.com/phracker/MacOSX-SDKs/releases/download/MacOSX10.11.sdk/MacOSX10.11.sdk.tar.xz" && \

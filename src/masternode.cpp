@@ -472,6 +472,12 @@ bool CMasternodeBroadcast::CheckAndUpdate(int& nDos)
         return false;
     }
 
+    // incorrect ping or its sigTime
+    if(lastPing == CMasternodePing() || !lastPing.CheckAndUpdate(nDos, false, true)) {
+        LogPrint("masternode","mnb - Incorrect ping or its sigTime");
+        return false;
+    }
+
     std::string vchPubKey(pubKeyCollateralAddress.begin(), pubKeyCollateralAddress.end());
     std::string vchPubKey2(pubKeyMasternode.begin(), pubKeyMasternode.end());
 
@@ -563,6 +569,9 @@ bool CMasternodeBroadcast::CheckInputsAndAdd(int& nDoS)
     if (fMasterNode && vin.prevout == activeMasternode.vin.prevout && pubKeyMasternode == activeMasternode.pubKeyMasternode)
         return true;
 
+    // incorrect ping or its sigTime
+    if(lastPing == CMasternodePing() || !lastPing.CheckAndUpdate(nDoS, false, true)) return false;
+    
     // search existing Masternode list
     CMasternode* pmn = mnodeman.Find(vin);
 
@@ -748,7 +757,7 @@ bool CMasternodePing::VerifySignature(CPubKey& pubKeyMasternode, int &nDos) {
     return true;
 }
 
-bool CMasternodePing::CheckAndUpdate(int& nDos, bool fRequireEnabled)
+bool CMasternodePing::CheckAndUpdate(int& nDos, bool fRequireEnabled, bool fCheckSigTimeOnly)
 {
     if (sigTime > GetAdjustedTime() + 60 * 60) {
         LogPrint("masternode","CMasternodePing::CheckAndUpdate - Signature rejected, too far into the future %s\n", vin.prevout.hash.ToString());
@@ -760,6 +769,12 @@ bool CMasternodePing::CheckAndUpdate(int& nDos, bool fRequireEnabled)
         LogPrint("masternode","CMasternodePing::CheckAndUpdate - Signature rejected, too far into the past %s - %d %d \n", vin.prevout.hash.ToString(), sigTime, GetAdjustedTime());
         nDos = 1;
         return false;
+    }
+
+    if(fCheckSigTimeOnly) {
+        CMasternode* pmn = mnodeman.Find(vin);
+        if(pmn) return VerifySignature(pmn->pubKeyMasternode, nDos);
+        return true;
     }
 
     LogPrint("masternode","CMasternodePing::CheckAndUpdate - New Ping - %s - %lli\n", blockHash.ToString(), sigTime);

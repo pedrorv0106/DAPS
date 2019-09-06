@@ -125,8 +125,8 @@ public:
         nMaxMoneyOut = MAX_MONEY * COIN;
 
         /** Height or Time Based Activations **/
-        nLastPOWBlock = 200;
-        nStartPOABlock = 300;
+        nLastPOWBlock = 300;
+        nStartPOABlock = 360;
         nModifierUpdateBlock = 615800;
         nPoABlockTime = 30 * 60; //a PoA block every 30 minutes
         nMinNumPoSBlocks = 59;
@@ -192,12 +192,10 @@ public:
         printf("genesis.hashMerkleRoot: %s\n", genesis.hashMerkleRoot.GetHex().c_str());
         assert(genesis.hashMerkleRoot == uint256("03fcb696ffbce2bb8248c65f6286c9948a4927919506331f21992a7021f969ed"));
 
-        vSeeds.push_back(CDNSSeedData("daps-stg-explorer.arcadiaapi.com", "daps-stg-explorer.arcadiaapi.com")); //35.231.98.100        // Single node address
-        vSeeds.push_back(CDNSSeedData("daps-stg-seed1.arcadiaapi.com", "daps-stg-seed1.arcadiaapi.com"));  //104.196.7.250   // Primary DNS Seeder from arcadiaapi
-        vSeeds.push_back(CDNSSeedData("daps-stg-seed2.arcadiaapi.com ", "daps-stg-seed2.arcadiaapi.com"));  // 35.229.54.148   // // Single node address
-        vSeeds.push_back(CDNSSeedData("daps-stg-seed3.arcadiaapi.com", "daps-stg-seed3.arcadiaapi.com"));  // 35.227.81.1  // // Single node address
-        vSeeds.push_back(CDNSSeedData("daps-stg-seed4.arcadiaapi.com", "daps-stg-seed4.arcadiaapi.com"));  //35.237.184.1   // // Single node address
-        vSeeds.push_back(CDNSSeedData("35.227.75.234", "35.227.75.234"));  //35.227.75.234 ip address of stg-ssed1
+        vSeeds.push_back(CDNSSeedData("dev-seed1.dapscoin.com", "dev-seed1.dapscoin.com"));        // Single node address
+        vSeeds.push_back(CDNSSeedData("dev-seed2.dapscoin.com", "dev-seed2.dapscoin.com"));        // Single node address
+        vSeeds.push_back(CDNSSeedData("stg-seed1.dapscoin.com", "stg-seed1.dapscoin.com"));        // Single node address
+        vSeeds.push_back(CDNSSeedData("stg-seed2.dapscoin.com", "stg-seed2.dapscoin.com"));        // Single node address
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 30);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 13);
