@@ -83,7 +83,6 @@ void ReceiveCoinsDialog::setModel(WalletModel* model)
         model->getRecentRequestsTableModel()->sort(RecentRequestsTableModel::Date, Qt::DescendingOrder);
         connect(model->getOptionsModel(), SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit()));
         updateDisplayUnit();
-
         loadAccount();
     }
 }
@@ -108,7 +107,6 @@ void ReceiveCoinsDialog::loadAccount() {
                 QString(addrList[i].substr(addrList[i].length() - 30, 30).c_str()));
         }
     }
-
     ui->reqAddress->addItems(stringsList);
     //Set lineEditAddress to Master Account address for copy to clipboard
     ui->lineEditAddress->setText(QString(addrList[0].substr(0, 30).c_str()) + "..." + 

@@ -301,6 +301,7 @@ double GetPriority(const CTransaction& tx, int nHeight)
 }
 
 bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
+	if (kiHex.empty()) return false;
     uint256 bh;
     if (!pblocktree->ReadKeyImage(kiHex, bh)) {
         //not spent yet because not found in database
@@ -309,6 +310,7 @@ bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
     if (bh.IsNull()) {
         return false;
     }
+
 
     if (!bh.IsNull() && againsHash.IsNull()) {
     	//check if bh is in main chain
@@ -320,10 +322,10 @@ bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
     	if (!pindex || !chainActive.Contains(pindex))
     		return false;
 
-    	LogPrintf("\nKey Image %s is spent in block %s\n", kiHex, againsHash.GetHex());
+    	LogPrintf("\nKey Image %s is spent in block %s\n", kiHex, bh.GetHex());
     	return true;//receive from mempool
     }
-    if (bh == againsHash) return false;
+    if (bh == againsHash && !againsHash.IsNull()) return false;
 
     //check whether bh and againsHash is in the same fork
     if (mapBlockIndex.count(bh) < 1) return false;
@@ -333,8 +335,8 @@ bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
     	CBlockIndex* temp = pindex;
     	pindex = pindex->pprev;
     	if (!pindex) {
-        	LogPrintf("Failed to find previous block for %s", temp->GetBlockHash().GetHex());
-    		throw runtime_error("Failed to find previous block");
+        	LogPrintf("Failed to find previous block in fork for block %s", temp->GetBlockHash().GetHex());
+    		return true;
     	}
     }
 
