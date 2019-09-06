@@ -1,33 +1,17 @@
 ARG SRC_PATH=ubuntu
-ARG OS_VERSION=16.04
+ARG OS_VERSION=18.04
 
 FROM ${SRC_PATH}:${OS_VERSION}
 ENV SRC_IMG=${SRC_PATH}:${OS_VERSION}
 
 #INSTALL COMMON ESSENTIAL
 RUN apt-get update && \
-    apt-get install autotools-dev build-essential autoconf make automake openssl wget nsis -y --fix-missing && \
-    apt-get install gnupg software-properties-common debconf dialog apt-utils gcc-5 bsdmainutils curl git -y --fix-missing
+    apt-get install build-essential libtool autotools-dev automake pkg-config bsdmainutils curl wget nsis libevent-dev python-setuptools patch -y --fix-missing
 
-#INSTALL BC
-RUN add-apt-repository ppa:bitcoin/bitcoin -y && \
-    apt-get update
+#INSTALL POA MINER DEPENDENCIES
+RUN apt-get install libcurl4-openssl-dev libjansson-dev -y --fix-missing
 
-#INSTALL LIBS
-RUN apt-get install libssl-dev libboost-dev libtool  pkg-config libunwind-dev libreoffice -y --fix-missing && \
-    apt-get install libminiupnpc-dev miniupnpc libdb4.8++-dev libdb4.8-dev libqrencode-dev libevent-dev -y --fix-missing && \
-    apt-get install libqt5gui5 libqt5core5a libqt5dbus5 qt5-default qttools5-dev qttools5-dev-tools -y --fix-missing && \
-    apt-get install libprotobuf-dev libboost-all-dev protobuf-compiler -y --fix-missing && \
-    apt-get install libqrencode-dev -y --fix-missing && \
-    apt-get install libfontconfig1 mesa-common-dev libglu1-mesa-dev -y --fix-missing
-
-#USE G++5
-RUN apt-get install g++-5 libcurl4-openssl-dev libjansson-dev -y --fix-missing && \
-    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 1 && \
-#
-    apt-get update
-	
-#Cleanup packages
+#CLEANUP UNUSED PACKAGES
 RUN apt-get autoremove -y
 
 CMD /bin/bash -c "trap: TERM INT; sleep infinity & wait"
