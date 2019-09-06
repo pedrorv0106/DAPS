@@ -435,11 +435,17 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 
 	if (tx.vin.size() >= 30) return false;
 	for(size_t i = 0; i < tx.vin.size(); i++) {
-		if (tx.vin[i].decoys.size() != tx.vin[0].decoys.size()) return false;
+		if (tx.vin[i].decoys.size() != tx.vin[0].decoys.size()) {
+			LogPrintf("\nThe number of decoys not equal for all inputs, input %d has %d decoys but input 0 has only %d\n", i, tx.vin[i].decoys.size(), tx.vin[0].decoys.size());
+			return false;
+		}
 	}
 	if (tx.vin.size() == 0) return false;
 
-	if (tx.vin[0].decoys.size() > MAX_DECOYS || tx.vin[0].decoys.size() < MIN_RING_SIZE) return false;//maximum decoys = 15
+	if (tx.vin[0].decoys.size() > MAX_DECOYS || tx.vin[0].decoys.size() < MIN_RING_SIZE) {
+		LogPrintf("\nThe number of decoys RingSize %d not within range [%d, %d]\n", tx.vin[0].decoys.size(), MIN_RING_SIZE, MAX_RING_SIZE);
+		return false;//maximum decoys = 15
+	}
 
 	unsigned char allInPubKeys[MAX_VIN + 1][MAX_DECOYS + 1][33];
 	unsigned char allKeyImages[MAX_VIN + 1][33];
