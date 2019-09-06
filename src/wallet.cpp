@@ -5927,6 +5927,10 @@ bool CWallet::AllMyPublicAddresses(std::vector<std::string>& addresses, std::vec
 {
     std::string labelList;
     if (!ReadAccountList(labelList)) {
+        std::string masterAddr;
+        ComputeStealthPublicAddress("masteraccount", masterAddr);
+        addresses.push_back(masterAddr);
+        accountNames.push_back("Master Account");
         return true;
     }
 

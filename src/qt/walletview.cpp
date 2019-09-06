@@ -157,7 +157,6 @@ void WalletView::setWalletModel(WalletModel* walletModel)
     receiveCoinsPage->setModel(walletModel);
     sendCoinsPage->setModel(walletModel);
     optionsPage->setModel(walletModel);
-
     if (walletModel) {
         // Receive and pass through messages from wallet model
         connect(walletModel, SIGNAL(message(QString, QString, unsigned int)), this, SIGNAL(message(QString, QString, unsigned int)));
