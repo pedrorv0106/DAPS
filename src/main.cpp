@@ -320,7 +320,7 @@ bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
     	if (!pindex || !chainActive.Contains(pindex))
     		return false;
 
-    	//return (chainActive.Height() - pindex->nHeight + 1) > 0;
+    	LogPrintf("\nKey Image %s is spent in block %s\n", kiHex, againsHash.GetHex());
     	return true;//receive from mempool
     }
     if (bh == againsHash) return false;
@@ -330,10 +330,28 @@ bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
     CBlockIndex* pindex = mapBlockIndex[againsHash];
     CBlockIndex* bhIndex = mapBlockIndex[bh];
     while (pindex->nHeight >= bhIndex->nHeight) {
+    	CBlockIndex* temp = pindex;
     	pindex = pindex->pprev;
+    	if (!pindex) {
+        	LogPrintf("Failed to find previous block for %s", temp->GetBlockHash().GetHex());
+    		throw runtime_error("Failed to find previous block");
+    	}
     }
 
-    if (pindex != bhIndex) return false;
+    if (pindex->GetBlockHash() != bhIndex->GetBlockHash()) {
+    	pindex = mapBlockIndex[againsHash];
+    	bhIndex = mapBlockIndex[bh];
+    	while (bhIndex->nHeight >= pindex->nHeight) {
+        	CBlockIndex* temp = bhIndex;
+    		bhIndex = bhIndex->pprev;
+    		if (!bhIndex) {
+            	LogPrintf("Key Image %s is spent in a stale fork, so consider it as not spent in this fork", kiHex);
+            	return false;
+    		}
+    	}
+        if (pindex->GetBlockHash() != bhIndex->GetBlockHash()) return false;
+    }
+	LogPrintf("\nKey Image %s is spent in block %s and %s\n", kiHex, bh.GetHex(), againsHash.GetHex());
 
     /*CBlockIndex* bhIdx = mapBlockIndex[bh];
     CBlockIndex* against = mapBlockIndex[againsHash];
@@ -2141,8 +2159,8 @@ int64_t GetBlockValue(const CBlockIndex *ptip) {
     	pForkTip = chainActive.Tip();
     }
 
-	if (pForkTip->nHeight < Params().nLastPOWBlock) {
-		nSubsidy = 300000000 * COIN;
+	if (pForkTip->nHeight < Params().LAST_POW_BLOCK()) {
+		nSubsidy = 200000000 * COIN;
 	} else {
         nSubsidy = PoSBlockReward();
         nSubsidy += TeamRewards(pForkTip);
