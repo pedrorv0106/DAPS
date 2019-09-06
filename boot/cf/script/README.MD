@@ -4,4 +4,5 @@ When a command executions are successful or not a determination must be made to 
 The files of focus at this point are listed below:
  
    1 trycatch.sh helper file to mimic a normal try catch block
-   1 test_try.sh is a demonstration 
+   1 prooftest.sh is a demonstration and proof
+   1 deply.sh is the end target deployment script for daemon excution and management.
