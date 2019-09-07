@@ -64,7 +64,6 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
     connect(ui->toggleStaking, SIGNAL(stateChanged(ToggleButton*)), this, SLOT(on_EnableStaking(ToggleButton*)));
 
     connect(ui->pushButtonRecovery, SIGNAL(clicked()), this, SLOT(onShowMnemonic()));
-    ui->lblMnemonic->setText("");
 
     bool twoFAStatus = settings.value("2FA")=="enabled";
     if (twoFAStatus)
@@ -489,7 +488,6 @@ void OptionsPage::on_month() {
 
 void OptionsPage::onShowMnemonic() {
     CHDChain hdChainCurrent;
-    ui->lblMnemonic->setText("");
     if (!pwalletMain->GetDecryptedHDChain(hdChainCurrent))
         return;
 
@@ -498,5 +496,6 @@ void OptionsPage::onShowMnemonic() {
     if (!hdChainCurrent.GetMnemonic(mnemonic, mnemonicPass))
         return;
     
-    ui->lblMnemonic->setText(std::string(mnemonic.begin(), mnemonic.end()).c_str());
+    QMessageBox::information(this, tr("Wallet Mnemonic Phrase"),
+        tr(std::string(mnemonic.begin(), mnemonic.end()).c_str()));
 }
