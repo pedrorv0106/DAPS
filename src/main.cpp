@@ -311,8 +311,7 @@ bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
         return false;
     }
 
-
-    if (!bh.IsNull() && againsHash.IsNull()) {
+    if (againsHash.IsNull()) {
     	//check if bh is in main chain
     	// Find the block it claims to be in
     	BlockMap::iterator mi = mapBlockIndex.find(bh);
@@ -331,62 +330,8 @@ bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
     if (mapBlockIndex.count(bh) < 1) return false;
     CBlockIndex* pindex = mapBlockIndex[againsHash];
     CBlockIndex* bhIndex = mapBlockIndex[bh];
-    while (pindex->nHeight >= bhIndex->nHeight) {
-    	CBlockIndex* temp = pindex;
-    	pindex = pindex->pprev;
-    	if (!pindex) {
-        	LogPrintf("Failed to find previous block in fork for block %s", temp->GetBlockHash().GetHex());
-    		return true;
-    	}
-    }
-
-    if (pindex->GetBlockHash() != bhIndex->GetBlockHash()) {
-    	pindex = mapBlockIndex[againsHash];
-    	bhIndex = mapBlockIndex[bh];
-    	while (bhIndex->nHeight >= pindex->nHeight) {
-        	CBlockIndex* temp = bhIndex;
-    		bhIndex = bhIndex->pprev;
-    		if (!bhIndex) {
-            	LogPrintf("Key Image %s is spent in a stale fork, so consider it as not spent in this fork", kiHex);
-            	return false;
-    		}
-    	}
-        if (pindex->GetBlockHash() != bhIndex->GetBlockHash()) return false;
-    }
-	LogPrintf("\nKey Image %s is spent in block %s and %s\n", kiHex, bh.GetHex(), againsHash.GetHex());
-
-    /*CBlockIndex* bhIdx = mapBlockIndex[bh];
-    CBlockIndex* against = mapBlockIndex[againsHash];
-
-    LogPrintf("\n%s: Checking key image spent = %s, bh = %s, agains = %s\n", __func__, kiHex, bh.GetHex(), againsHash.GetHex());
-
-    if (bhIdx != NULL && !againsHash.IsNull() && bh) return true;
-	if (against == NULL) return true;
-
-    if (IsKeyImageSpend2(kiHex, bh) && IsKeyImageSpend2(kiHex, againsHash)) {
-    	if (bhIdx->nHeight < against->nHeight)
-    		return true;
-    }
-
-    /*if (bhIdx == against) return true;
-    if (bhIdx != NULL && against != NULL) {
-        if (bhIdx->nHeight < against->nHeight) {
-        	if ((chainActive[against->nHeight]->GetBlockHash() == againsHash) && IsKeyImageSpend2(kiHex, bh)) {
-        		if (pwalletMain) {
-        			if (pwalletMain->keyImagesSpends.count(kiHex) == 1) {
-        				pwalletMain->keyImagesSpends[kiHex] = 1;
-        			};
-        		}
-                return true;
-        	}
-        }
-    }*/
-    /*LogPrintf("\n%s: Checking key image spent = %s, bh = %s, agains = %s, not spent yet\n", __func__, kiHex, bh.GetHex(), againsHash.GetHex());
-    if (pwalletMain) {
-        pwalletMain->keyImagesSpends[kiHex] = false;
-    }*/
-
-    return true;
+    CBlockIndex* ancestor = pindex->GetAncestor(bhIndex->nHeight);
+    return ancestor == bhIndex;
 }
 
 secp256k1_context2* GetContext() {
@@ -429,20 +374,27 @@ bool VerifyBulletProofAggregate(const CTransaction& tx)
 	return secp256k1_bulletproof_rangeproof_verify(GetContext(), GetScratch(), GetGenerator(), &(tx.bulletproofs[0]), len, NULL, commitments, tx.vout.size(), 64, &secp256k1_generator_const_h, NULL, 0);
 }
 
-bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
+bool VerifyRingSignatureWithTxFee(const CTransaction& tx, CBlockIndex* pindex)
 {
+	LogPrintf("\nStart VerifyRingSignatureWithTxFee\n");
 	const size_t MAX_VIN = 32;
 	const size_t MAX_DECOYS = MAX_RING_SIZE;	//padding 1 for safety reasons
 	const size_t MAX_VOUT = 5;
 
-	if (tx.vin.size() >= 30) return false;
+	if (tx.vin.size() >= 30) {
+		LogPrintf("\nTx input too many\n");
+		return false;
+	}
 	for(size_t i = 0; i < tx.vin.size(); i++) {
 		if (tx.vin[i].decoys.size() != tx.vin[0].decoys.size()) {
 			LogPrintf("\nThe number of decoys not equal for all inputs, input %d has %d decoys but input 0 has only %d\n", i, tx.vin[i].decoys.size(), tx.vin[0].decoys.size());
 			return false;
 		}
 	}
-	if (tx.vin.size() == 0) return false;
+	if (tx.vin.size() == 0) {
+		LogPrintf("\nTransaction %s has no inputs\n", tx.GetHash().GetHex());
+		return false;
+	}
 
 	if (tx.vin[0].decoys.size() > MAX_DECOYS || tx.vin[0].decoys.size() < MIN_RING_SIZE) {
 		LogPrintf("\nThe number of decoys RingSize %d not within range [%d, %d]\n", tx.vin[0].decoys.size(), MIN_RING_SIZE, MAX_RING_SIZE);
@@ -476,10 +428,28 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 			CTransaction txPrev;
 			uint256 hashBlock;
 			if (!GetTransaction(decoysForIn[j].hash, txPrev, hashBlock)) {
+				LogPrintf("\nfailed to find transaction %s\n", decoysForIn[j].hash.GetHex());
 				return false;
 			}
+			CBlockIndex* tip = chainActive.Tip();
+			if (!pindex) tip = pindex;
+
+			uint256 hashTip = tip->GetBlockHash();
+			//verify that tip and hashBlock must be in the same fork
+			CBlockIndex* atTheblock = mapBlockIndex[hashBlock];
+			if (!atTheblock) {
+				LogPrintf("\nDecoy for transactions %s not in the same chain with block %s\n", decoysForIn[j].hash.GetHex(), tip->GetBlockHash().GetHex());
+				return false;
+			} else {
+				CBlockIndex* ancestor = tip->GetAncestor(atTheblock->nHeight);
+				if (ancestor != atTheblock) {
+					LogPrintf("\nDecoy for transactions %s not in the same chain with block %s\n", decoysForIn[j].hash.GetHex(), tip->GetBlockHash().GetHex());
+				}
+			}
+
 			CPubKey extractedPub;
 			if (!ExtractPubKey(txPrev.vout[decoysForIn[j].n].scriptPubKey, extractedPub)) {
+				LogPrintf("\nfailed to extract pubkey\n");
 				return false;
 			}
 			memcpy(allInPubKeys[i][j], extractedPub.begin(), 33);
@@ -502,6 +472,7 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 	for (size_t i = 0; i < tx.vout.size(); i++) {
 		memcpy(allOutCommitments[i], &(tx.vout[i].commitment[0]), 33);
 		if (!secp256k1_pedersen_commitment_parse(both, &allOutCommitmentsPacked[i], allOutCommitments[i])) {
+			LogPrintf("\nfailed to parse commitment\n");
 			return false;
 		}
 	}
@@ -530,6 +501,7 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 		const secp256k1_pedersen_commitment *inCptr[MAX_VIN * 2];
 		for (size_t k = 0; k < tx.vin.size(); k++) {
 			if (!secp256k1_pedersen_commitment_parse(both, &allInCommitmentsPacked[k][j], allInCommitments[k][j])) {
+				LogPrintf("\nfailed to parse commitment\n");
 				return false;
 			}
 			inCptr[k] = &allInCommitmentsPacked[k][j];
@@ -541,9 +513,11 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 		secp256k1_pedersen_commitment out;
 		size_t length;
 		if (!secp256k1_pedersen_commitment_sum(both, inCptr, tx.vin.size() * 2, outCptr, tx.vout.size() + 1, &out)) {
+			LogPrintf("\nfailed to secp256k1_pedersen_commitment_sum\n");
 			return false;
 		}
 		if (!secp256k1_pedersen_commitment_to_serialized_pubkey(&out, allInPubKeys[tx.vin.size()][j], &length)) {
+			LogPrintf("\nfailed to serialized pubkey\n");
 			return false;
 		}
 	}
@@ -558,10 +532,12 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 			unsigned char P[33];
 			memcpy(P, allInPubKeys[i][j], 33);
 			if (!secp256k1_ec_pubkey_tweak_mul(P, 33, C)) {
+				LogPrintf("\nfailed to mul pubkey\n");
 				return false;
 			}
 
 			if (!secp256k1_ec_pubkey_tweak_add(P, 33, SIJ[i][j])) {
+				LogPrintf("\nfailed to add pubkey\n");
 				return false;
 			}
 
@@ -576,6 +552,7 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 			unsigned char ci[33];
 			memcpy(ci, allKeyImages[i], 33);
 			if (!secp256k1_ec_pubkey_tweak_mul(ci, 33, C)) {
+				LogPrintf("\nfailed to mul tweak\n");
 				return false;
 			}
 
@@ -614,7 +591,7 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 		uint256 temppi1 = Hash(tempForHash, tempForHash + 2 * (tx.vin.size() + 1) * 33 + 32);
 		memcpy(C, temppi1.begin(), 32);
 	}
-
+	LogPrintf("\nVerifying\n");
 	return HexStr(tx.c.begin(), tx.c.end()) == HexStr(C, C + 32);
 }
 
@@ -1742,7 +1719,7 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
 
             if (!tx.IsCoinStake() && !tx.IsCoinBase() && !tx.IsCoinAudit()) {
             	if (!tx.IsCoinAudit()) {
-            		if (!VerifyRingSignatureWithTxFee(tx))
+            		if (!VerifyRingSignatureWithTxFee(tx, chainActive.Tip()))
             			return state.DoS(100, error("AcceptToMemoryPool() : Ring Signature check for transaction %s failed",
             					tx.GetHash().ToString()),
             					REJECT_INVALID, "bad-ring-signature");
@@ -2994,7 +2971,7 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
         if (!block.IsPoABlockByVersion() && !tx.IsCoinBase()) {
         	if (!tx.IsCoinStake()) {
         		if (!tx.IsCoinAudit()) {
-        			if (!IsInitialBlockDownload() && !VerifyRingSignatureWithTxFee(tx))
+        			if (!IsInitialBlockDownload() && !VerifyRingSignatureWithTxFee(tx, pindex))
         				return state.DoS(100, error("ConnectBlock() : Ring Signature check for transaction %s failed",
         						tx.GetHash().ToString()),
         						REJECT_INVALID, "bad-ring-signature");

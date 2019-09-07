@@ -4231,15 +4231,10 @@ bool CWallet::selectDecoysAndRealIndex(CPartialTransaction& tx, int& myIndex, in
         if (!GetTransaction(tx.vin[i].prevout.hash, txPrev, hashBlock)) {
             return false;
         }
-        /*CKeyImage ki;
-        if (!generateKeyImage(txPrev.vout[tx.vin[i].prevout.n].scriptPubKey, ki)) {
-            LogPrintf("Cannot generate key image");
-            return false;
-        } else {
-            tx.vin[i].keyImage = ki;
-        }
 
-        pendingKeyImages.push_back(ki.GetHex());*/
+		CBlockIndex* atTheblock = mapBlockIndex[hashBlock];
+		if (!chainActive.Contains(atTheblock)) continue;
+
         int numDecoys = 0;
         if (txPrev.IsCoinAudit() || txPrev.IsCoinBase() || txPrev.IsCoinStake()) {
         	if (notMineCoinbase >= ringSize * 5) {
@@ -6399,7 +6394,7 @@ bool CWallet::DidISignTheTransaction(const CPartialTransaction& partial) {
 bool CWallet::CoSignTransaction(CPartialTransaction& partial) {
 	if (DidISignTheTransaction(partial)) {
 		//check whether the transaction is fully signed
-		if (VerifyRingSignatureWithTxFee(partial.ToTransaction())) return true;
+		if (VerifyRingSignatureWithTxFee(partial.ToTransaction(), chainActive.Tip())) return true;
 	}
 	//sign the transaction
 	return false;
