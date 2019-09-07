@@ -322,6 +322,18 @@ steps:
     no_cf_cache: true
     fail-fast: false
     stage: Deploy
+  DeployStaker2:
+    title: Deploying STAKER2_POD to Cluster
+    type: deploy
+    pullsecret: codefresh-generated-r.cfcr.io-cfcr-default
+    kind: Pod 
+    cluster: standard-cluster-2@DAPS
+    namespace: default
+    file_path: boot/cf/kctl/staker2.yml
+    no_cache: true
+    no_cf_cache: true
+    fail-fast: false
+    stage: Deploy
   DeployExplorer:
     title: Deploying EXPLORER_POD to Cluster
     type: deploy
