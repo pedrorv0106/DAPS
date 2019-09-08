@@ -27,3 +27,13 @@ More information at [dapscoin.org](http://www.dapscoin.org) Visit our ANN thread
 <tr><td>trycatch.sh</td><td>Implement a Try Catch helper script</td></tr>
  <tr><td>ddaps.sh</td><td>Main Script to manage worflow</td></tr> 
 </table>
+
+### BASH 
+   * Bash version: *4.4.20(1)-release*
+   
+### dapscoin-cli
+<table>
+<tr><td>name</td><td>usage</td></tr>
+<tr><td>trycatch.sh</td><td>Implement a Try Catch helper script</td></tr>
+ <tr><td>ddaps.sh</td><td>Main Script to manage worflow</td></tr> 
+</table>
