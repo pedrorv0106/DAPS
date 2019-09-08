@@ -34,7 +34,7 @@ More information at [dapscoin.org](http://www.dapscoin.org) Visit our ANN thread
 ### PID Access
 <table>
 <tr><td>name</td><td>usage</td><td>returns</td></tr>
- <tr><td>pgrep</td><td>prgrep dapscoind</td><td>pID#</td></tr>
+ <tr><td>pgrep</td><td>prgrep dapscoind</td><td>PID#</td></tr>
  <tr><td> </td><td> </td><td> </td></tr>
 </table>
 
