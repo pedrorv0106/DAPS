@@ -76,10 +76,10 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         ./autogen.sh && \
         CONFIG_SITE=$PWD/depends/x86_64-linux-gnu/share/config.site ./configure --prefix=/ && \
         make -j2 && \
-        strip src/dapscoind && \
-        strip src/dapscoin-cli && \
-        strip src/dapscoin-tx && \
-        strip src/qt/dapscoin-qt && \
+        strip src/dapscoind-multisig && \
+        strip src/dapscoin-cli-multisig && \
+        strip src/dapscoin-tx-multisig && \
+        strip src/qt/dapscoin-qt-multisig && \
         make install DESTDIR=/BUILD/ && \
         apt-get install libcurl4-openssl-dev -y && \
         if [ -f assets/cpuminer-2.5.0/build_linux.sh ]; then cd assets/cpuminer-2.5.0; fi && \
@@ -107,8 +107,8 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         make HOST="x86_64-apple-darwin11" -j2 && \
         make deploy && \
         make install HOST="x86_64-apple-darwin11" DESTDIR=/BUILD/ && \
-        mv Dapscoin-Core.dmg DAPScoin-QT.dmg && \
-        cp DAPScoin-QT.dmg /BUILD/bin/; \
+        mv Dapscoin-Core.dmg DAPScoin-QT-multisig.dmg && \
+        cp DAPScoin-QT-multisig.dmg /BUILD/bin/; \
 #
     else echo "Build target not recognized."; \
       exit 127; \
