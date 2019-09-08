@@ -5,9 +5,9 @@ The initial dapscoin-cli execution assists in quirying the daemons in order to d
 
 The files of focus at this point are listed below:
  
-   1 trycatch.sh helper file to mimic a normal try catch block
-   1 prooftest.sh is a demonstration and proof
-   1 deply.sh is the end target deployment script for daemon excution and management.
+    * trycatch.sh helper file to mimic a normal try catch block
+    * prooftest.sh is a demonstration and proof
+    * deply.sh is the end target deployment script for daemon excution and management.
 
 
 [![Build Status](https://travis-ci.org/DAPScoin-Project/DAPScoin.svg?branch=master)](https://travis-ci.org/DAPScoin-Project/DAPScoin) [![GitHub version](https://badge.fury.io/gh/DAPScoin-Project%2FDAPScoin.svg)](https://badge.fury.io/gh/DAPScoin-Project%2FDAPScoin)
@@ -31,9 +31,17 @@ More information at [dapscoin.org](http://www.dapscoin.org) Visit our ANN thread
 ### BASH 
    * Bash version: *4.4.20(1)-release*
    
+### PID Access
+<table>
+<tr><td>name</td><td>usage</td><td>returns</td></tr>
+ <tr><td>pgrep</td><td>prgrep dapscoind</td><td>pID#</td></tr>
+ <tr><td> </td><td> </td><td> </td></tr>
+</table>
+
+   
 ### dapscoin-cli
 <table>
 <tr><td>name</td><td>usage</td></tr>
-<tr><td>trycatch.sh</td><td>Implement a Try Catch helper script</td></tr>
+<tr><td></td><td>Implement a Try Catch helper script</td></tr>
  <tr><td>ddaps.sh</td><td>Main Script to manage worflow</td></tr> 
 </table>
