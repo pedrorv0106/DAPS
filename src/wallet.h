@@ -842,6 +842,7 @@ public:
     	if (IsWalletGenerated()) throw runtime_error("Multisig wallet is already generated");
     	comboKeys.AddKey(MyComboKey());
     	comboKeys.AddKey(combo);
+		CWalletDB(strWalletFile).WriteComboKeys(comboKeys);
     }
 
     void AddCosignerKeyAtIndex(ComboKey combo, int idx) {
@@ -850,6 +851,7 @@ public:
     		AddCoSignerKey(combo);
     	} else {
     		comboKeys.comboKeys[idx] = combo;
+    		CWalletDB(strWalletFile).WriteComboKeys(comboKeys);
     	}
     }
 

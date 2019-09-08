@@ -223,7 +223,7 @@ void CWallet::GenerateMultisigWallet(int numSigners) {
 	}
 	if (ReadNumSigners() != numSigners) return;
 
-	if (IsWalletGenerated()) {
+	if (IsWalletGenerated() && comboKeys.comboKeys.size() == ReadNumSigners()) {
 		LogPrintf("Multisig wallet is already generated");
 		return;
 	}
@@ -6263,6 +6263,9 @@ std::string CWallet::MyMultisigPubAddress()
 	LogPrintf("\nSuccessfully loaded multisig key, multisig spend key = %s\n", multiSigPubSpend.GetHex());
 	std::string ret;
 	EncodeStealthPublicAddress(viewAccount.vchPubKey, spendAccount.vchPubKey, ret);
+
+	//load combokeys
+	CWalletDB(strWalletFile).ReadAllComboKeys(comboKeys);
 	return ret;
 }
 

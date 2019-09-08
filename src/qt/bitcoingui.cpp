@@ -310,9 +310,9 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     keyImageSyncAction->setToolTip(QString());
     keyImageSyncAction->setCheckable(true);
 #ifdef Q_OS_MAC
-    keyImageSyncAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_6));
+    keyImageSyncAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_8));
 #else
-    keyImageSyncAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
+    keyImageSyncAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_8));
 #endif
     tabGroup->addAction(keyImageSyncAction);
 
@@ -363,7 +363,7 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     connect(cosignAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(cosignAction, SIGNAL(triggered()), this, SLOT(gotoCoSignPage()));
     connect(keyImageSyncAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(keyImageSyncAction, SIGNAL(triggered()), this, SLOT(gotoCoSignPage()));
+    connect(keyImageSyncAction, SIGNAL(triggered()), this, SLOT(gotoKeyImageSyncPage()));
     connect(receiveCoinsAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(receiveCoinsAction, SIGNAL(triggered()), this, SLOT(gotoReceiveCoinsPage()));
     connect(historyAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
