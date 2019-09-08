@@ -223,7 +223,7 @@ void CWallet::GenerateMultisigWallet(int numSigners) {
 	}
 	if (ReadNumSigners() != numSigners) return;
 
-	if (IsWalletGenerated() && comboKeys.comboKeys.size() == ReadNumSigners()) {
+	if (IsWalletGenerated()) {
 		LogPrintf("Multisig wallet is already generated");
 		return;
 	}

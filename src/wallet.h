@@ -824,7 +824,8 @@ public:
     bool GenerateAllPartialImages(std::vector<CKeyImage>& out);
     bool IsWalletGenerated() const {
     	ComboKeyList combos;
-    	return CWalletDB(strWalletFile).ReadAllComboKeys(combos);
+    	CWalletDB(strWalletFile).ReadAllComboKeys(combos);
+    	return multiSigPrivView.IsValid() && comboKeys.comboKeys.size() == ReadNumSigners();
     }
     ComboKey MyComboKey() const {
     	if (IsLocked()) throw runtime_error("Wallet need to be unlocked");
