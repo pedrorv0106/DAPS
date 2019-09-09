@@ -36,6 +36,9 @@ public:
     void setModel(WalletModel* model);
     bool fSplitBlock;
 
+private slots:
+    void generateKeyImageHex();
+
 private:
     Ui::KeyImageSync* ui;
     ClientModel* clientModel;

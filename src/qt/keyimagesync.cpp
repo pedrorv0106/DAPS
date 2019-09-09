@@ -40,6 +40,7 @@ KeyImageSync::KeyImageSync(QWidget* parent) : QDialog(parent),
                                                     model(0)
 {
     ui->setupUi(this);
+    connect(ui->syncKeyImageButton, SIGNAL(clicked()), this, SLOT(generateKeyImageHex()));
 }
 
 void KeyImageSync::setClientModel(ClientModel* clientModel)
@@ -57,6 +58,27 @@ void KeyImageSync::setModel(WalletModel* model)
 
 KeyImageSync::~KeyImageSync(){
     delete ui;
+}
+
+void KeyImageSync::generateKeyImageHex()
+{
+	std::string hexCode = ui->hexCode->toPlainText().toStdString();
+	if (!IsHex(hexCode)) return;
+	vector<unsigned char> partialTxHex(ParseHex(hexCode));
+	CDataStream ssdata(partialTxHex, SER_NETWORK, PROTOCOL_VERSION);
+	CPartialTransaction ptx;
+	try {
+		ssdata >> ptx;
+	} catch (const std::exception&) {
+		return;
+	}
+	CListPKeyImageAlpha keyImageAlpha;
+	model->getCWallet()->generatePKeyImageAlphaListFromPartialTx(ptx, keyImageAlpha);
+	CDataStream ssWritedata(SER_NETWORK, PROTOCOL_VERSION);
+	ssWritedata << keyImageAlpha;
+	std::string hex = HexStr(ssWritedata.begin(), ssWritedata.end());
+	ui->signedHex->setText(QString::fromStdString(hex));
+	ui->signedHex->setReadOnly(true);
 }
 
 
