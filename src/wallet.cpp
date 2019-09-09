@@ -1306,13 +1306,6 @@ bool CWallet::IsDenominatedAmount(CAmount nInputAmount) const
 
 bool CWallet::IsChange(const CTxOut& txout) const
 {
-    // TODO: fix handling of 'change' outputs. The assumption is that any
-    // payment to a script that is ours, but is not in the address book
-    // is change. That assumption is likely to break when we implement multisignature
-    // wallets that return change back into a multi-signature-protected address;
-    // a better way of identifying which outputs are 'the send' and which are
-    // 'the change' will need to be implemented (maybe extend CWalletTx to remember
-    // which output, if any, was change).
     if (::IsMine(*this, txout.scriptPubKey)) {
         CTxDestination address;
         if (!ExtractDestination(txout.scriptPubKey, address))
@@ -2569,7 +2562,6 @@ bool CWallet::CreateCollateralTransaction(CMutableTransaction& txCollateral, std
         CPubKey sharedSec;
         CKey view;
         myViewPrivateKey(view);
-        //FIXME: Collateral transaction needs to be confidential?
         EncodeTxOutAmount(vout3, vout3.nValue, 0);
         txCollateral.vout.push_back(vout3);
     }
@@ -2783,21 +2775,9 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
 
                 CAmount nChange = nValueIn - nValue - nFeeRet;
 
-                //over pay for denominated transactions
-                if (coin_type == ONLY_DENOMINATED) {
-                    nFeeRet += nChange;
-                    nChange = 0;
-                    wtxNew.mapValue["DS"] = "1";
-                }
-
                 if (nChange > 0) {
                     // Fill a vout to ourself
-                    // TODO: pass in scriptChange instead of reservekey so
-                    // change transaction isn't always pay-to-dapscoin-address
                     CScript scriptChange;
-
-                    // coin control: send change to custom address
-                    //TODO: change transaction output needs to be stealth as well: add code for stealth transaction here
                     scriptChange = GetScriptForDestination(coinControl->receiver);
 
                     CTxOut newTxOut(nChange, scriptChange);
@@ -2847,8 +2827,6 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     	return false;
     }
 
-    //check whether this is a reveal amount transaction
-    //only create transaction with reveal amount if it is a masternode collateral transaction
     //set transaction output amounts as 0
     for (size_t i = 0; i < wtxNew.vout.size(); i++) {
     	wtxNew.vout[i].nValue = 0;
@@ -6241,7 +6219,6 @@ bool CWallet::RevealTxOutAmount(const CTransaction &tx, const CTxOut &out, CAmou
             }
         }
     }
-    //Do we need to reconstruct the private to spend the tx out put?
     amount = 0;
     return false;
 }

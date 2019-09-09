@@ -132,9 +132,6 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
             parts.last().involvesWatchAddress = false; // maybe pass to TransactionRecord as constructor argument
         } else if (fAllFromMe && fAllToMe) {
             // Payment to self
-            // TODO: this section still not accurate but covers most cases,
-            // might need some additional work however
-
             TransactionRecord sub(hash, nTime);
             // Payment to self by default
             sub.type = TransactionRecord::SendToSelf;
