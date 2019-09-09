@@ -2,6 +2,8 @@
 #include "ui_2faqrdialog.h"
 #include "receiverequestdialog.h"
 #include "guiconstants.h"
+#include "key.h"
+#include "pubkey.h"
 #include <string>
 #include <algorithm>
 
@@ -53,16 +55,14 @@ void TwoFAQRDialog::setModel(WalletModel* model)
 
 void TwoFAQRDialog::update()
 {
-    CWalletDB walletdb(pwalletMain->strWalletFile);
-    CAccount account;
-    walletdb.ReadAccount("", account);
-    CBitcoinAddress address(account.vchPubKey.GetID());
-    std::string addr = "";
-    for (char c : address.ToString()) {
-        if (!std::isdigit(c)) addr += c;
-    }
+    CKey newKey;
+    newKey.MakeNewKey(true);
+
+    CPubKey pubKey;
+    pubKey = newKey.GetPubKey();
+
     QString uri;
-    uri.sprintf("otpauth://totp/DAPScoin:QT%20Wallet?secret=%s&issuer=dapscoin&algorithm=SHA1&digits=6&period=30", addr.c_str());
+    uri.sprintf("otpauth://totp/DAPScoin:QT%20Wallet?secret=%s&issuer=dapscoin&algorithm=SHA1&digits=6&period=30", pubKey.GetHex().c_str());
     ui->lblURI->setText(uri);
 
 #ifdef USE_QRCODE
