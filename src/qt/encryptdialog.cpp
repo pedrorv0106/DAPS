@@ -52,38 +52,6 @@ void EncryptDialog::on_btnCancel()
       }
 }
 
-bool EncryptDialog::checkPassPhraseRule(const char *passphrase) {
-    bool upper = false;
-    bool lower = false;
-    bool digit = false;
-    bool symbol = false;
-    QString pass = QString::fromUtf8(passphrase);
-    for ( const auto& character : pass )
-    {
-        if ( character.isUpper() ) {
-            upper = true;
-            continue;
-        }
-        else if ( character.isLower() ) {
-            lower = true;
-            continue;
-        }
-        else if ( character.isDigit() ) {
-            digit = true;
-            continue;
-        }
-        else if (!symbol) {
-            symbol = true;
-            continue;
-        }
-
-        if (upper && lower && digit && symbol)
-            break;
-    }
-
-    return upper && lower && digit && symbol;
-}
-
 void EncryptDialog::on_acceptPassphrase() {
     SecureString newPass = SecureString();
     newPass.reserve(MAX_PASSPHRASE_SIZE);
@@ -106,7 +74,7 @@ void EncryptDialog::on_acceptPassphrase() {
             return;
         }
 
-        if (!checkPassPhraseRule(newPass.c_str())) {
+        if (!pwalletMain->checkPassPhraseRule(newPass.c_str())) {
             QMessageBox::critical(this, tr("Wallet encryption failed"),
                     tr("The passphrase must contain lower, upper, digit, symbol."));
             return;

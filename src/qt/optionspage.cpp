@@ -148,38 +148,6 @@ void OptionsPage::setMapper()
 {
 }
 
-bool OptionsPage::checkPassPhraseRule(const char *passphrase) {
-    bool upper = false;
-    bool lower = false;
-    bool digit = false;
-    bool symbol = false;
-    QString pass = QString::fromUtf8(passphrase);
-    for ( const auto& character : pass )
-    {
-        if ( character.isUpper() ) {
-            upper = true;
-            continue;
-        }
-        else if ( character.isLower() ) {
-            lower = true;
-            continue;
-        }
-        else if ( character.isDigit() ) {
-            digit = true;
-            continue;
-        }
-        else if (!symbol) {
-            symbol = true;
-            continue;
-        }
-
-        if (upper && lower && digit && symbol)
-            break;
-    }
-
-    return upper && lower && digit && symbol;
-}
-
 void OptionsPage::on_pushButtonPassword_clicked()
 {
     if ( (!ui->lineEditNewPass->text().length()) || (!ui->lineEditNewPassRepeat->text().length()) ) {
@@ -212,7 +180,7 @@ void OptionsPage::on_pushButtonPassword_clicked()
             QMessageBox::critical(this, tr("Wallet encryption failed"),
                     tr("The passphrase's length has to be more than 10. Please try again."));
         }
-        else if (!checkPassPhraseRule(newPass.c_str())) {
+        else if (!pwalletMain->checkPassPhraseRule(newPass.c_str())) {
             QMessageBox::critical(this, tr("Wallet encryption failed"),
                     tr("The passphrase must contain lower, upper, digit, symbol."));
         }

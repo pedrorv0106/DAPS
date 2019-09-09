@@ -64,7 +64,6 @@ private:
     CAmount getValidatedAmount();
     void disable2FA();
     void enable2FA();
-    bool checkPassPhraseRule(const char *passphrase);
 
 private slots:
     void validateNewPass();

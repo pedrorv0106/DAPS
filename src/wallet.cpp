@@ -169,6 +169,38 @@ const CWalletTx* CWallet::GetWalletTx(const uint256& hash) const
     return &(it->second);
 }
 
+bool CWallet::checkPassPhraseRule(const char *pass)
+{
+    bool upper = false;
+    bool lower = false;
+    bool digit = false;
+    bool symbol = false;
+    std::string passphrase(pass);
+    for (int i = 0; i < passphrase.size(); i++)
+    {
+        if ( isupper(passphrase[i]) ) {
+            upper = true;
+            continue;
+        }
+        else if ( islower(passphrase[i]) ) {
+            lower = true;
+            continue;
+        }
+        else if ( isdigit(passphrase[i]) ) {
+            digit = true;
+            continue;
+        }
+        else if (!symbol) {
+            symbol = true;
+            continue;
+        }
+
+        if (upper && lower && digit && symbol)
+            break;
+    }
+
+    return upper && lower && digit && symbol;
+}
 CPubKey CWallet::GenerateNewKey()
 {
     AssertLockHeld(cs_wallet);                                 // mapKeyMetadata

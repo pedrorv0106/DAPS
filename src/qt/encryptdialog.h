@@ -29,7 +29,6 @@ private:
     Ui::EncryptDialog *ui;
     WalletModel* model;
     void closeEvent(QCloseEvent *event);
-    bool checkPassPhraseRule(const char *passphrase);
 };
 
 #endif // ENCRYPTDIALOG_H
