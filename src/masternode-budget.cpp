@@ -1984,17 +1984,8 @@ bool CFinalizedBudget::IsValid(std::string& strError, bool fCheckCollateral)
         }
     }
 
-    //TODO: if N cycles old, invalid, invalid
-
     CBlockIndex* pindexPrev = chainActive.Tip();
     if (pindexPrev == NULL) return true;
-
-// TODO: verify if we can safely remove this
-//
-//    if (nBlockStart < pindexPrev->nHeight - 100) {
-//        strError = "Budget " + strBudgetName + " Older than current blockHeight" ;
-//        return false;
-//    }
 
     return true;
 }
