@@ -3949,8 +3949,11 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             const CBlockIndex* pIndex0 = chainActive.Tip();
             nReward = PoSBlockReward();
             txNew.vout[1].nValue = nCredit;
-
             txNew.vout[2].nValue = nReward;
+
+            if (nCredit + nReward > (MINIMUM_STAKE_AMOUNT + 100000*COIN)*2) {
+            	txNew.vout[1].nValue = (nCredit + nReward)/2;
+            }
 
             // Limit size
             unsigned int nBytes = ::GetSerializeSize(txNew, SER_NETWORK, PROTOCOL_VERSION);
