@@ -4248,24 +4248,7 @@ bool CWallet::CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey, std:
 
 CAmount CWallet::GetMinimumFee(unsigned int nTxBytes, unsigned int nConfirmTarget, const CTxMemPool& pool)
 {
-    // payTxFee is user-set "I want to pay this much"
     CAmount nFeeNeeded = payTxFee.GetFee(nTxBytes);
-    // user selected total at least (default=true)
-    /*if (fPayAtLeastCustomFee && nFeeNeeded > 0 && nFeeNeeded < payTxFee.GetFeePerK())
-        nFeeNeeded = payTxFee.GetFeePerK();
-    // User didn't set: use -txconfirmtarget to estimate...
-    if (nFeeNeeded == 0)
-        nFeeNeeded = pool.estimateFee(nConfirmTarget).GetFee(nTxBytes);
-    // ... unless we don't have enough mempool data, in which case fall
-    // back to a hard-coded fee
-    if (nFeeNeeded == 0)
-        nFeeNeeded = minTxFee.GetFee(nTxBytes);
-    // prevent user from paying a non-sense fee (like 1 satoshi): 0 < fee < minRelayFee
-    if (nFeeNeeded < ::minRelayTxFee.GetFee(nTxBytes))
-        nFeeNeeded = ::minRelayTxFee.GetFee(nTxBytes);
-    // But always obey the maximum
-    if (nFeeNeeded > maxTxFee)
-        nFeeNeeded = maxTxFee;*/
     return nFeeNeeded;
 }
 
@@ -4424,24 +4407,6 @@ void CWallet::ScanWalletKeyImages() {
 	for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
 		const CWalletTx wtxIn = it->second;
 		uint256 hash = wtxIn.GetHash();
-		/*for (size_t i = 0; i < wtxIn.vout.size(); i++) {
-			std::string outpoint = hash.GetHex() + std::to_string(i);
-			if (outpointToKeyImages.count(outpoint) == 1 && outpointToKeyImages[outpoint].IsValid()) continue;
-			CKeyImage ki;
-			if (db.ReadKeyImage(outpoint, ki)) {
-				if (ki.IsValid()) {
-					outpointToKeyImages[outpoint] = ki;
-					continue;
-				}
-			}
-
-			if (IsMine(wtxIn.vout[i])) {
-				if (generateKeyImage(wtxIn.vout[i].scriptPubKey, ki)) {
-					outpointToKeyImages[outpoint] = ki;
-					db.WriteKeyImage(outpoint, ki);
-				}
-			}
-		}*/
 		AddToSpends(hash);
 	}
 }
