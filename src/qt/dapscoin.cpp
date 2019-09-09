@@ -492,12 +492,12 @@ void BitcoinApplication::initializeResult(int retval)
         	if (walletModel->getEncryptionStatus() == WalletModel::Unencrypted) {
         		if (!walletModel->isMultiSigSetup()) {
         			while(!pwalletMain->isMultisigSetupFinished) {
-        				if (pwalletMain->screenIndex == 0) {
+        				if (pwalletMain->ReadScreenIndex() == 0) {
         					MultiSigSetupChooseNumSigners dlg;
         					dlg.setModel(walletModel);
         					dlg.setStyleSheet(GUIUtil::loadStyleSheet());
         					dlg.exec();
-        				} else if (pwalletMain->screenIndex <= pwalletMain->ReadNumSigners()) {
+        				} else if (pwalletMain->ReadScreenIndex() <= pwalletMain->ReadNumSigners()) {
         					//add combo key of signers
         					MultiSigSetupAddSigner dlg;
         					dlg.setModel(walletModel);

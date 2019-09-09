@@ -372,6 +372,15 @@ int CWallet::ReadNumSigners() const
 	return CWalletDB(strWalletFile).ReadNumSigners();
 }
 
+void CWallet::WriteScreenIndex(int index) const
+{
+	CWalletDB(strWalletFile).WriteScreenIndex(index);
+}
+int CWallet::ReadScreenIndex() const
+{
+	return 	CWalletDB(strWalletFile).ReadScreenIndex();
+}
+
 bool CWallet::AddCryptedKey(const CPubKey& vchPubKey,
                             const vector<unsigned char>& vchCryptedSecret)
 {

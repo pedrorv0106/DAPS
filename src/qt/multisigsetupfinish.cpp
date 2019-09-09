@@ -26,7 +26,9 @@ void MultiSigSetupFinish::setModel(WalletModel* model)
     this->model = model;
     if (pwalletMain) {
     	std::string multisigAddress = pwalletMain->MyMultisigPubAddress();
-    	pwalletMain->screenIndex++;
+    	int idx = pwalletMain->ReadScreenIndex();
+    	idx++;
+		pwalletMain->WriteScreenIndex(idx);
     	ui->textComboKey->setText(QString::fromStdString(multisigAddress));
     	ui->textComboKey->setReadOnly(true);
     }

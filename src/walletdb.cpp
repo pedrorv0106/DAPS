@@ -312,6 +312,20 @@ int CWalletDB::ReadNumSigners() {
     return ret;
 }
 
+void CWalletDB::WriteScreenIndex(int index)
+{
+	Write(std::string("screenindex"), index);
+}
+
+int CWalletDB::ReadScreenIndex()
+{
+	int ret = 0;
+	if (!Read(std::string("screenindex"), ret)) {
+		return 0;
+	}
+	return ret;
+}
+
 bool CWalletDB::ReadStakingStatus() {
     bool status;
     if (!Read(std::string("stakingstatus"), status)) {

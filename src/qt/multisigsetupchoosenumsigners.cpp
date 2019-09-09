@@ -59,7 +59,9 @@ void MultiSigSetupChooseNumSigners::on_btnNext()
 	int val = ui->numSignerSlider->value();
 	if (pwalletMain) {
 		pwalletMain->SetNumSigners(val);
-		pwalletMain->screenIndex++;
+		int idx = pwalletMain->ReadScreenIndex();
+		idx++;
+		pwalletMain->WriteScreenIndex(idx);
 	}
 	accept();
 }

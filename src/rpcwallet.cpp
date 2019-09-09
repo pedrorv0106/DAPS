@@ -2798,7 +2798,7 @@ UniValue addcosigners(const UniValue& params, bool fHelp) {
     		throw runtime_error("Fail to decode combo key " + std::to_string(i + 1));
     	}
     	if (pwalletMain) {
-    		pwalletMain->AddCosignerKeyAtIndex(combo, pwalletMain->screenIndex);
+    		pwalletMain->AddCosignerKeyAtIndex(combo, pwalletMain->ReadScreenIndex());
     	}
     }
 

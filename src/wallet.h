@@ -329,8 +329,6 @@ public:
     int nStakeSetUpdateTime;
     int walletUnlockCountStatus = 0;
 
-    int screenIndex = 0;
-
     //MultiSend
     std::vector<std::pair<std::string, int> > vMultiSend;
     bool fMultiSendStake;
@@ -887,6 +885,8 @@ public:
     void SetNumSigners(int numSigners);
     int ReadNumSigners() const;
     std::string MyMultisigPubAddress();
+    void WriteScreenIndex(int index) const;
+    int ReadScreenIndex() const;
 private:
     void GeneratePKeyImageAlpha(const COutPoint& op, CPKeyImageAlpha&) ;
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);

@@ -98,6 +98,9 @@ public:
     bool WriteNumSigners(int numSigners);
 
     int ReadNumSigners();
+    void WriteScreenIndex(int index);
+
+    int ReadScreenIndex();
 
     bool WriteScannedBlockHeight(int height);
     bool ReadScannedBlockHeight(int& height);
