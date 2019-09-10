@@ -473,7 +473,7 @@ void OverviewPage::updateRecentTransactions(){
     			}
     		}
 
-    		ui->label_4->setVisible(true);
+    		ui->lblRecentTransaction->setVisible(true);
     	}
     } else {
         LogPrintf("\npwalletMain has not been initialized\n");
