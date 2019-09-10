@@ -73,7 +73,9 @@ QDialog .QTabWidget QTabBar::tab:selected, QDialog .QTabWidget QTabBar::tab:hove
   color:#FFFFFF;
   }
 
-  
+#lblRecentTransaction {
+  font-size: 18px;
+}
 
 /*************************************************/
 /* Nav Bar CSS */

@@ -31,6 +31,10 @@ QDialog {
   background-color: white;
 }
 
+#lblRecentTransaction {
+  font-size: 18px;
+}
+
 /*************************************************/
 /* Nav Bar CSS */
 #navLayout {
