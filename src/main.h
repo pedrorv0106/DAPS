@@ -45,6 +45,7 @@
 #include "secp256k1_commitment.h"
 #include "secp256k1_generator.h"
 #include "secp256k1.h"
+#include "secp256k1-mw/src/hash_impl.h"
 
 class CBlockIndex;
 class CBlockTreeDB;

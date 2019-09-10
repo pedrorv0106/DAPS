@@ -95,7 +95,6 @@ map <uint256, COrphanTx> mapOrphanTransactions;
 map <uint256, set<uint256>> mapOrphanTransactionsByPrev;
 map <uint256, int64_t> mapRejectedBlocks;
 
-
 void EraseOrphansFor(NodeId peer);
 
 static void CheckBlockIndex();
@@ -4435,14 +4434,14 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
     	if ((int)pblock->vtx.size() > userTxStartIdx) {
     		for (int i = userTxStartIdx; i < (int)pblock->vtx.size(); i++) {
     			for (int j = 0; j < (int)pblock->vtx[i].vout.size(); j++) {
-    				if ((rand() % 100) <= CWallet::PROBABILITY_NEW_COIN_SELECTED) {
+    				if ((secp256k1_rand32() % 100) <= CWallet::PROBABILITY_NEW_COIN_SELECTED) {
     					COutPoint newOutPoint(pblock->vtx[i].GetHash(), j);
     					if(std::find(pwalletMain->userDecoysPool.begin(), pwalletMain->userDecoysPool.end(), newOutPoint) != pwalletMain->userDecoysPool.end()) {
     					    continue;
     					}
     					//add new user transaction to the pool
     					if ((int32_t)pwalletMain->userDecoysPool.size() >= CWallet::MAX_DECOY_POOL) {
-    						int selected = rand() % CWallet::MAX_DECOY_POOL;
+    						int selected = secp256k1_rand32() % CWallet::MAX_DECOY_POOL;
     						pwalletMain->userDecoysPool[selected] = newOutPoint;
     					} else {
     						pwalletMain->userDecoysPool.push_back(newOutPoint);
@@ -4465,14 +4464,14 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
 
     			for (int i = 0; i < (int)coinbase.vout.size(); i++) {
     				if (!coinbase.vout[i].IsNull() && !coinbase.vout[i].IsEmpty()) {
-    					if ((rand() % 100) <= CWallet::PROBABILITY_NEW_COIN_SELECTED) {
+    					if ((secp256k1_rand32() % 100) <= CWallet::PROBABILITY_NEW_COIN_SELECTED) {
     						COutPoint newOutPoint(coinbase.GetHash(), i);
     						if(std::find(pwalletMain->coinbaseDecoysPool.begin(), pwalletMain->coinbaseDecoysPool.end(), newOutPoint) != pwalletMain->coinbaseDecoysPool.end()) {
     							continue;
     						}
     						//add new coinbase transaction to the pool
     						if ((int)pwalletMain->coinbaseDecoysPool.size() >= CWallet::MAX_DECOY_POOL) {
-    							int selected = rand() % CWallet::MAX_DECOY_POOL;
+    							int selected = secp256k1_rand32() % CWallet::MAX_DECOY_POOL;
     							pwalletMain->coinbaseDecoysPool[selected] = newOutPoint;
     						} else {
     							pwalletMain->coinbaseDecoysPool.push_back(newOutPoint);

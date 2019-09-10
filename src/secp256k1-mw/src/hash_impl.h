@@ -270,6 +270,22 @@ static void secp256k1_rfc6979_hmac_sha256_finalize(secp256k1_rfc6979_hmac_sha256
     rng->retry = 0;
 }
 
+static secp256k1_rfc6979_hmac_sha256 secp256k1_test_rng;
+static uint32_t secp256k1_test_rng_precomputed[8];
+static int secp256k1_test_rng_precomputed_used = 8;
+
+SECP256K1_INLINE static void secp256k1_rand_seed(const unsigned char *seed16) {
+    secp256k1_rfc6979_hmac_sha256_initialize(&secp256k1_test_rng, seed16, 16);
+}
+
+SECP256K1_INLINE static uint32_t secp256k1_rand32(void) {
+    if (secp256k1_test_rng_precomputed_used == 8) {
+        secp256k1_rfc6979_hmac_sha256_generate(&secp256k1_test_rng, (unsigned char*)(&secp256k1_test_rng_precomputed[0]), sizeof(secp256k1_test_rng_precomputed));
+        secp256k1_test_rng_precomputed_used = 0;
+    }
+    return secp256k1_test_rng_precomputed[secp256k1_test_rng_precomputed_used++];
+}
+
 #undef BE32
 #undef Round
 #undef sigma1

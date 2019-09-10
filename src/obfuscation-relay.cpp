@@ -83,12 +83,12 @@ bool CObfuScationRelay::VerifyMessage(std::string strSharedKey)
 void CObfuScationRelay::Relay()
 {
     int nCount = std::min(mnodeman.CountEnabled(ActiveProtocol()), 20);
-    int nRank1 = (rand() % nCount) + 1;
-    int nRank2 = (rand() % nCount) + 1;
+    int nRank1 = (secp256k1_rand32() % nCount) + 1;
+    int nRank2 = (secp256k1_rand32() % nCount) + 1;
 
     //keep picking another second number till we get one that doesn't match
     while (nRank1 == nRank2)
-        nRank2 = (rand() % nCount) + 1;
+        nRank2 = (secp256k1_rand32() % nCount) + 1;
 
     //relay this message through 2 separate nodes for redundancy
     RelayThroughNode(nRank1);
