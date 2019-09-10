@@ -74,6 +74,12 @@ void EncryptDialog::on_acceptPassphrase() {
             return;
         }
 
+        if (!pwalletMain->checkPassPhraseRule(newPass.c_str())) {
+            QMessageBox::critical(this, tr("Wallet encryption failed"),
+                    tr("The passphrase must contain lower, upper, digit, symbol."));
+            return;
+        }
+
         double guesses;
         int ret = zxcvbn_password_strength(newPass.c_str(), NULL, &guesses, NULL);
         if (ret < 0 || guesses < 10000) {

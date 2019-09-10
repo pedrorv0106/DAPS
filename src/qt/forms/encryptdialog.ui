@@ -51,8 +51,8 @@
        </property>
        <property name="text">
         <string>Please enter a passphrase to encrypt your wallet. This is required.
-(You must use a minimum passphrase length of 10 characters, and use uppercase letters, 
-lowercase letters, numbers, symbols, etc...) </string>
+(You must use a minimum passphrase length of 10 characters and use uppercase letters, 
+lowercase letters, numbers, symbols) </string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

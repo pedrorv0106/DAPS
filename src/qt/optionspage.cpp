@@ -192,6 +192,10 @@ void OptionsPage::on_pushButtonPassword_clicked()
             QMessageBox::critical(this, tr("Wallet encryption failed"),
                     tr("The passphrase's length has to be more than 10. Please try again."));
         }
+        else if (!pwalletMain->checkPassPhraseRule(newPass.c_str())) {
+            QMessageBox::critical(this, tr("Wallet encryption failed"),
+                    tr("The passphrase must contain lower, upper, digit, symbol."));
+        }
         else if (zxcvbn_password_strength(newPass.c_str(), NULL, &guesses, NULL) < 0 || guesses < 10000) {
             QMessageBox::critical(this, tr("Wallet encryption failed"),
                     tr("The passphrase is weakness."));
