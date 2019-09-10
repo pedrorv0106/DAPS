@@ -714,6 +714,7 @@ std::map<QString, QString> getTx(CWallet* wallet, uint256 hash)
 vector<std::map<QString, QString> > getTXs(CWallet* wallet)
 {
 	vector<std::map<QString, QString> > txs;
+	if (!wallet || wallet->IsLocked()) return txs;
     std::map<uint256, CWalletTx> txMap = wallet->mapWallet;
     {
         LOCK2(cs_main, wallet->cs_wallet);

@@ -209,6 +209,7 @@ void HistoryPage::updateTableData()
 
 void HistoryPage::updateTableData(CWallet* wallet)
 {
+	ui->tableView->setSortingEnabled(false);
 	while (ui->tableView->rowCount() > 0)
 	{
 		ui->tableView->removeRow(0);
@@ -237,6 +238,7 @@ void HistoryPage::updateTableData(CWallet* wallet)
         }
     }
     ui->tableView->setVisible(ui->tableView->rowCount());
+    ui->tableView->setSortingEnabled(true);
 }
 
 void HistoryPage::updateAddressBookData(CWallet* wallet)
