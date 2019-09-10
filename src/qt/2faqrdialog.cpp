@@ -64,8 +64,18 @@ void TwoFAQRDialog::update()
     CPubKey pubKey;
     pubKey = newKey.GetPubKey();
 
+    QString secret;
     QString uri;
-    uri.sprintf("otpauth://totp/DAPScoin:QT%20Wallet?secret=%s&issuer=dapscoin&algorithm=SHA1&digits=6&period=30", pubKey.GetHex().c_str());
+    CBitcoinAddress address(pubKey.GetID());
+    std::string addr = "";
+    for (char c : address.ToString()) {
+        if (!std::isdigit(c)) addr += c;
+    }
+
+    secret.sprintf("%s", addr.c_str());
+    settings.setValue("2FACode", secret);
+
+    uri.sprintf("otpauth://totp/DAPScoin:QT%20Wallet?secret=%s&issuer=dapscoin&algorithm=SHA1&digits=6&period=30", addr.c_str());
     ui->lblURI->setText(uri);
 
 #ifdef USE_QRCODE
