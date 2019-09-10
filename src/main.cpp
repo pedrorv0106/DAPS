@@ -385,7 +385,7 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx, CBlockIndex* pindex)
 		LogPrintf("\nTx input too many\n");
 		return false;
 	}
-	for(size_t i = 0; i < tx.vin.size(); i++) {
+	for(size_t i = 1; i < tx.vin.size(); i++) {
 		if (tx.vin[i].decoys.size() != tx.vin[0].decoys.size()) {
 			LogPrintf("\nThe number of decoys not equal for all inputs, input %d has %d decoys but input 0 has only %d\n", i, tx.vin[i].decoys.size(), tx.vin[0].decoys.size());
 			return false;
