@@ -936,6 +936,7 @@ void BitcoinGUI::setNumBlocks(int count)
 #ifdef ENABLE_WALLET
             if (walletFrame)
                 walletFrame->showSyncStatus(false);
+            // printf("%s[%d]\n", __FUNCTION__, __LINE__);
 #endif // ENABLE_WALLET
         }
 
@@ -973,6 +974,7 @@ void BitcoinGUI::setNumBlocks(int count)
 #ifdef ENABLE_WALLET
         if (walletFrame)
             walletFrame->showSyncStatus(true);
+        // printf("%s[%d]\n", __FUNCTION__, __LINE__);
 #endif // ENABLE_WALLET
 
         tooltip += QString("<br>");

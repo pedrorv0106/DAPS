@@ -40,6 +40,7 @@
 #endif
 
 #include "encryptdialog.h"
+#include "unlockdialog.h"
 
 #include <stdint.h>
 
@@ -460,9 +461,20 @@ void BitcoinApplication::initializeResult(int retval)
         clientModel = new ClientModel(optionsModel);
         window->setClientModel(clientModel);
 
+        bool walletUnlocked = false;
 #ifdef ENABLE_WALLET
         if (pwalletMain) {
             walletModel = new WalletModel(pwalletMain, optionsModel);
+
+            if (walletModel->getEncryptionStatus() == WalletModel::Locked) {  
+                UnlockDialog unlockdlg;
+                unlockdlg.setWindowTitle("Unlock Keychain Wallet");
+                unlockdlg.setModel(walletModel);
+                unlockdlg.setStyleSheet(GUIUtil::loadStyleSheet());
+                if (unlockdlg.exec() != QDialog::Accepted)
+                    QApplication::quit();
+                walletUnlocked = true;
+            }
 
             window->addWallet(BitcoinGUI::DEFAULT_WALLET, walletModel);
             window->setCurrentWallet(BitcoinGUI::DEFAULT_WALLET);
@@ -486,12 +498,14 @@ void BitcoinApplication::initializeResult(int retval)
             window, SLOT(message(QString, QString, unsigned int)));
         QTimer::singleShot(100, paymentServer, SLOT(uiReady()));
         if (pwalletMain) {
-        	if (walletModel->getEncryptionStatus() == WalletModel::Unencrypted) {
+        	if (!walletUnlocked && walletModel->getEncryptionStatus() == WalletModel::Unencrypted) {
         		EncryptDialog dlg;
         		dlg.setModel(walletModel);
         		dlg.setWindowTitle("Encrypt Wallet");
         		dlg.setStyleSheet(GUIUtil::loadStyleSheet());
         		dlg.exec();
+
+                walletModel->updateStatus();
         	}
         }
 #endif
