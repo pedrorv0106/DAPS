@@ -138,6 +138,10 @@ QTableView::selectrows {
   padding: 25px;
 }
 
+#labelRecoveryDescription {
+  font-size: 12px;
+}
+
 /*** Check Boxes and Radio ***/
 .QRadioButton::indicator,
 QCheckBox::indicator {

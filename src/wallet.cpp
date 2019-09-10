@@ -287,9 +287,11 @@ bool CWallet::GetDecryptedHDChain(CHDChain& hdChainRet)
     LOCK(cs_wallet);
 
     CHDChain hdChainTmp;
+
     if (!GetHDChain(hdChainTmp)) {
         return false;
     }
+    
     if (!DecryptHDChain(hdChainTmp))
         return false;
 
