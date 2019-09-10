@@ -456,19 +456,15 @@ void BitcoinApplication::initializeResult(int retval)
         PaymentServer::LoadRootCAs();
         paymentServer->setOptionsModel(optionsModel);
 #endif
-
         clientModel = new ClientModel(optionsModel);
         window->setClientModel(clientModel);
-
 #ifdef ENABLE_WALLET
         if (pwalletMain) {
             walletModel = new WalletModel(pwalletMain, optionsModel);
-
             window->addWallet(BitcoinGUI::DEFAULT_WALLET, walletModel);
             window->setCurrentWallet(BitcoinGUI::DEFAULT_WALLET);
         }
 #endif
-
         // If -min option passed, start window minimized.
         if (GetBoolArg("-min", false)) {
             window->showMinimized();
