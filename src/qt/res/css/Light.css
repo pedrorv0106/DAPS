@@ -34,7 +34,7 @@ QSlider::handle:horizontal:disabled {
 }
 
 #stakingState {
-  font-size: 10px;
+  font-size: 9px;
   padding-left: 34px;
   color: white;
   font-weight: bold;
