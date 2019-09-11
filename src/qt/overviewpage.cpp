@@ -132,7 +132,7 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
 
     QTimer* timerBlockHeightLabel = new QTimer(this);
     connect(timerBlockHeightLabel, SIGNAL(timeout()), this, SLOT(showBlockCurrentHeight()));
-    timerBlockHeightLabel->start(10000);
+    timerBlockHeightLabel->start(45000);
 
     connect(ui->btnLockUnlock, SIGNAL(clicked()), this, SLOT(on_lockUnlock()));
     updateRecentTransactions();
@@ -266,7 +266,7 @@ void OverviewPage::setWalletModel(WalletModel* model)
     updateDisplayUnit();
     // update wallet state
     // if (walletModel->getEncryptionStatus() == WalletModel::Locked || walletModel->getEncryptionStatus() == WalletModel::UnlockedForAnonymizationOnly)
-        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/lock) 0 0 0 0 stretch stretch;");
+        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/lock) 0 0 0 0 stretch stretch; width: 20px;");
     // else
         // ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/unlock) 0 0 0 0 stretch stretch;");
 }
@@ -418,6 +418,7 @@ int OverviewPage::tryNetworkBlockCount(){
 }
 
 void OverviewPage::updateRecentTransactions(){
+	if (isSyncingBlocks) return;
 	if (!pwalletMain || pwalletMain->IsLocked()) return;
     QLayoutItem* item;
     QSettings settings;
@@ -482,6 +483,7 @@ void OverviewPage::updateRecentTransactions(){
 
 void OverviewPage::refreshRecentTransactions() {
 	LogPrintf("\n: Refreshing history\n");
+	if (isSyncingBlocks) return;
 	updateRecentTransactions();
 }
 
@@ -507,12 +509,12 @@ void OverviewPage::on_lockUnlock() {
 
 void OverviewPage::unlockDialogIsFinished(int result) {
     if(result == QDialog::Accepted){
-        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/unlock) 0 0 0 0 stretch stretch;");
+        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/unlock) 0 0 0 0 stretch stretch; width: 30px;");
     }
 }
 
 void OverviewPage::lockDialogIsFinished(int result) {
     if(result == QDialog::Accepted){
-        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/lock) 0 0 0 0 stretch stretch;");
+        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/lock) 0 0 0 0 stretch stretch; width: 20px;");
     }
 }

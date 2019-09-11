@@ -69,6 +69,10 @@ QDialog {
   padding-left: 34px;
   font-weight: bold;
 }
+#connectionCount {
+  font-size: 10px;
+  padding-left: 32px;
+}
 
 QDialog .QTabWidget QTabBar::tab {
   background-color:#FFFFFF;
