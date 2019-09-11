@@ -353,7 +353,7 @@ public:
 
         //Auto Combine Dust
         fCombineDust = true;
-        nAutoCombineThreshold = 300 * COIN;
+        nAutoCombineThreshold = 500 * COIN;
     }
 
     void setZDapsAutoBackups(bool fEnabled)
