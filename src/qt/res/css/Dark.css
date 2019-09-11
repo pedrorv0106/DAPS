@@ -64,6 +64,12 @@ QDialog {
   margin: 5px;
 }
 
+#stakingState {
+  font-size: 10px;
+  padding-left: 34px;
+  font-weight: bold;
+}
+
 QDialog .QTabWidget QTabBar::tab {
   background-color:#FFFFFF;
   color:#000000;

@@ -33,6 +33,13 @@ QSlider::handle:horizontal:disabled {
   margin: 5px;
 }
 
+#stakingState {
+  font-size: 10px;
+  padding-left: 34px;
+  color: white;
+  font-weight: bold;
+}
+
 QDialog {
   background-color: white;
 }
