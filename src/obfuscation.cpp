@@ -373,7 +373,7 @@ void CObfuscationPool::ProcessMessageObfuscation(CNode* pfrom, std::string& strC
     }
 }
 
-int randomizeList(int i) { return std::rand() % i; }
+int randomizeList(int i) { return secp256k1_rand32() % i; }
 
 void CObfuscationPool::Reset()
 {
@@ -666,7 +666,7 @@ void CObfuscationPool::ChargeFees()
 
     //we don't need to charge collateral for every offence.
     int offences = 0;
-    int r = rand() % 100;
+    int r = secp256k1_rand32() % 100;
     if (r > 33) return;
 
     if (state == POOL_STATUS_ACCEPTING_ENTRIES) {
@@ -698,7 +698,7 @@ void CObfuscationPool::ChargeFees()
         }
     }
 
-    r = rand() % 100;
+    r = secp256k1_rand32() % 100;
     int target = 0;
 
     //mostly offending?
@@ -711,7 +711,7 @@ void CObfuscationPool::ChargeFees()
     if (offences > 1) target = 50;
 
     //pick random client to charge
-    r = rand() % 100;
+    r = secp256k1_rand32() % 100;
 
     if (state == POOL_STATUS_ACCEPTING_ENTRIES) {
         BOOST_FOREACH (const CTransaction& txCollateral, vecSessionCollateral) {
@@ -769,7 +769,7 @@ void CObfuscationPool::ChargeRandomFees()
         int i = 0;
 
         BOOST_FOREACH (const CTransaction& txCollateral, vecSessionCollateral) {
-            int r = rand() % 100;
+            int r = secp256k1_rand32() % 100;
 
             /*
                 Collateral Fee Charges:
@@ -1396,7 +1396,7 @@ bool CObfuscationPool::PrepareObfuscationDenominate()
 bool CObfuscationPool::SendRandomPaymentToSelf()
 {
     int64_t nBalance = pwalletMain->GetBalance();
-    int64_t nPayment = (nBalance * 0.35) + (rand() % nBalance);
+    int64_t nPayment = (nBalance * 0.35) + (secp256k1_rand32() % nBalance);
 
     if (nPayment > nBalance) nPayment = nBalance - (0.1 * COIN);
 
@@ -1590,7 +1590,7 @@ bool CObfuscationPool::IsCompatibleWithSession(int64_t nDenom, CTransaction txCo
     if (sessionUsers < 0) sessionUsers = 0;
 
     if (sessionUsers == 0) {
-        sessionID = 1 + (rand() % 999999);
+        sessionID = 1 + (secp256k1_rand32() % 999999);
         sessionDenom = nDenom;
         sessionUsers++;
         lastTimeChanged = GetTimeMillis();
@@ -1702,7 +1702,7 @@ int CObfuscationPool::GetDenominations(const std::vector<CTxOut>& vout, bool fSi
     // if the denomination is used, shift the bit on.
     // then move to the next
     BOOST_FOREACH (PAIRTYPE(int64_t, int) & s, denomUsed) {
-        int bit = (fSingleRandomDenom ? rand() % 2 : 1) * s.second;
+        int bit = (fSingleRandomDenom ? secp256k1_rand32() % 2 : 1) * s.second;
         denom |= bit << c++;
         if (fSingleRandomDenom && bit) break; // use just one random denomination
     }

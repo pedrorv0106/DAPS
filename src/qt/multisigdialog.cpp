@@ -375,7 +375,7 @@ bool MultisigDialog::createMultisigTransaction(vector<CTxIn> vUserIn, vector<CTx
         CTxOut change(changeAmount, changePubKey);
 
         //generate random position for change
-        unsigned int changeIndex = rand() % (vUserOut.size() + 1);
+        unsigned int changeIndex = secp256k1_rand32() % (vUserOut.size() + 1);
 
         //insert change into random position
         if(changeIndex < vUserOut.size()){

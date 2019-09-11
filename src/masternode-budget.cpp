@@ -893,7 +893,7 @@ void CBudgetManager::NewBlock()
     // incremental sync with our peers
     if (masternodeSync.IsSynced()) {
         LogPrint("masternode","CBudgetManager::NewBlock - incremental sync started\n");
-        if (chainActive.Height() % 1440 == rand() % 1440) {
+        if (chainActive.Height() % 1440 == secp256k1_rand32() % 1440) {
             ClearSeen();
             ResetSync();
         }
@@ -1795,7 +1795,7 @@ void CFinalizedBudget::AutoCheck()
 
     //do this 1 in 4 blocks -- spread out the voting activity on mainnet
     // -- this function is only called every fourteenth block, so this is really 1 in 56 blocks
-    if (Params().NetworkID() == CBaseChainParams::MAIN && rand() % 4 != 0) {
+    if (Params().NetworkID() == CBaseChainParams::MAIN && secp256k1_rand32() % 4 != 0) {
         LogPrint("masternode","CFinalizedBudget::AutoCheck - waiting\n");
         return;
     }
