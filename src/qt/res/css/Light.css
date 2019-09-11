@@ -33,6 +33,12 @@ QSlider::handle:horizontal:disabled {
   margin: 5px;
 }
 
+#connectionCount {
+  font-size: 10px;
+  padding-left: 32px;
+  color: white;
+}
+
 QDialog {
   background-color: white;
 }
