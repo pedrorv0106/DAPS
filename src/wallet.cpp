@@ -5241,7 +5241,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 void CWallet::AutoCombineDust()
 {
     if (chainActive.Tip()->nTime < (GetAdjustedTime() - 300) || IsLocked()) {
-    	LogPrintf("Time elapsed for autocombine transaction too short");
+        LogPrintf("Time elapsed for autocombine transaction too short\n");
         return;
     }
 
@@ -5249,6 +5249,7 @@ void CWallet::AutoCombineDust()
         if (fGenerateDapscoins && chainActive.Tip()->nHeight >= Params().LAST_POW_BLOCK()) {
     		//sweeping to create larger UTXO for staking
     		CreateSweepingTransaction(MINIMUM_STAKE_AMOUNT);
+            LogPrintf("Creating a sweeping transaction\n");
     	}
     }
 }
