@@ -418,8 +418,8 @@
         <translation>A&amp;juda</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Send coins to a DAPScoin address</source>
@@ -434,8 +434,8 @@
         <translation>&amp;Masternodes</translation>
     </message>
     <message>
-        <source>&amp;About DAPScoin Core</source>
-        <translation>&amp;Sobre DAPScoin Core</translation>
+        <source>&amp;About DAPScoin</source>
+        <translation>&amp;Sobre DAPScoin</translation>
     </message>
     <message>
         <source>&amp;BIP38 tool</source>
@@ -458,7 +458,7 @@
         <translation>Obre el fitxer de configuració del Masternode</translation>
     </message>
     <message>
-        <source>DAPScoin Core client</source>
+        <source>DAPScoin client</source>
         <translation>Client DAPScoin core</translation>
     </message>
     <message numerus="yes">
@@ -864,16 +864,16 @@
         <translation>versió</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>(%1-bit)</source>
         <translation>(%1-bit)</translation>
     </message>
     <message>
-        <source>About DAPScoin Core</source>
-        <translation>Sobre DAPScoin Core</translation>
+        <source>About DAPScoin</source>
+        <translation>Sobre DAPScoin</translation>
     </message>
     <message>
         <source>Command-line options</source>
@@ -919,12 +919,12 @@
         <translation>Benvingut</translation>
     </message>
     <message>
-        <source>Welcome to DAPScoin Core.</source>
-        <translation>Benvingut a DAPScoin Core.</translation>
+        <source>Welcome to DAPScoin.</source>
+        <translation>Benvingut a DAPScoin.</translation>
     </message>
     <message>
-        <source>As this is the first time the program is launched, you can choose where DAPScoin Core will store its data.</source>
-        <translation>Al ser el primer cop que s'inicia el programa, pots escollir on es desaran les dades del DAPScoin Core.</translation>
+        <source>As this is the first time the program is launched, you can choose where DAPScoin will store its data.</source>
+        <translation>Al ser el primer cop que s'inicia el programa, pots escollir on es desaran les dades del DAPScoin.</translation>
     </message>
     <message>
         <source>Use the default data directory</source>
@@ -935,8 +935,8 @@
         <translation>Usar una carpeta de dades personalitzada:</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Error: Specified data directory "%1" cannot be created.</source>
@@ -1742,8 +1742,8 @@
 <context>
     <name>ShutdownWindow</name>
     <message>
-        <source>DAPScoin Core is shutting down...</source>
-        <translation>DAPScoin Core s'està tancant...</translation>
+        <source>DAPScoin is shutting down...</source>
+        <translation>DAPScoin s'està tancant...</translation>
     </message>
     <message>
         <source>Do not shut down the computer until this window disappears.</source>
@@ -1808,8 +1808,8 @@
 <context>
     <name>SplashScreen</name>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Version %1</source>

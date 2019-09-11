@@ -591,7 +591,7 @@ Syötä salausavain laatikon keskelle. Paina salaa tuottaaksesi salatun yksityis
         <translation>&amp;Apua</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
+        <source>DAPScoin</source>
         <translation>DAPScoin Ydin</translation>
     </message>
     <message>
@@ -611,11 +611,11 @@ Syötä salausavain laatikon keskelle. Paina salaa tuottaaksesi salatun yksityis
         <translation>Selaa masternodeja</translation>
     </message>
     <message>
-        <source>&amp;About DAPScoin Core</source>
-        <translation>DAPScoin Core &amp;ytimestä</translation>
+        <source>&amp;About DAPScoin</source>
+        <translation>DAPScoin &amp;ytimestä</translation>
     </message>
     <message>
-        <source>Show information about DAPScoin Core</source>
+        <source>Show information about DAPScoin</source>
         <translation>Näytä tietoja DAPScoin Ytimestä</translation>
     </message>
     <message>
@@ -671,11 +671,11 @@ Syötä salausavain laatikon keskelle. Paina salaa tuottaaksesi salatun yksityis
         <translation>Lohkon tutkija näkymä</translation>
     </message>
     <message>
-        <source>Show the DAPScoin Core help message to get a list with possible DAPScoin command-line options</source>
+        <source>Show the DAPScoin help message to get a list with possible DAPScoin command-line options</source>
         <translation>Näytä DAPScoin Ydin apuviesti saadaksesi lista mahdollisista DAPScoin komentolinja komennoista.</translation>
     </message>
     <message>
-        <source>DAPScoin Core client</source>
+        <source>DAPScoin client</source>
         <translation>DAPScoin Ydin asiakasohjelma</translation>
     </message>
     <message>
@@ -934,7 +934,7 @@ Syötä salausavain laatikon keskelle. Paina salaa tuottaaksesi salatun yksityis
 <context>
     <name>HelpMessageDialog</name>
     <message>
-        <source>DAPScoin Core</source>
+        <source>DAPScoin</source>
         <translation>DAPScoin Ydin</translation>
     </message>
     <message>
@@ -953,11 +953,11 @@ Syötä salausavain laatikon keskelle. Paina salaa tuottaaksesi salatun yksityis
         <translation>Tervetuloa</translation>
     </message>
     <message>
-        <source>Welcome to DAPScoin Core.</source>
+        <source>Welcome to DAPScoin.</source>
         <translation>Tervetuloa DAPScoin Ytimeen.</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
+        <source>DAPScoin</source>
         <translation>DAPScoin Ydin</translation>
     </message>
     <message>
@@ -1163,7 +1163,7 @@ Please check the address and try again.</source>
     </message>
     <message>
         <source>This option is the quickest and will cost about ~0.025 DAPS to anonymize 10000 DAPS</source>
-        <translation>Tämä vaihtoehto on nopein ja maksaa noin ~0.025 DAPS anonymoidaksesi 10000 DAPScoin</translation>
+        <translation>Tämä vaihtoehto on nopein ja maksaa noin ~0.025 DAPS anonymoidaksesi 10000 DAPScoin</translation>
     </message>
     <message>
         <source>This option is moderately fast and will cost about 0.05 DAPS to anonymize 10000 DAPS</source>
@@ -2083,7 +2083,7 @@ Please check the address and try again.</source>
 <context>
     <name>ShutdownWindow</name>
     <message>
-        <source>DAPScoin Core is shutting down...</source>
+        <source>DAPScoin is shutting down...</source>
         <translation>DAPScoin core sammuu...</translation>
     </message>
     <message>
@@ -2225,7 +2225,7 @@ Please check the address and try again.</source>
 <context>
     <name>SplashScreen</name>
     <message>
-        <source>DAPScoin Core</source>
+        <source>DAPScoin</source>
         <translation>DAPScoin Ydin</translation>
     </message>
     <message>
@@ -2241,7 +2241,7 @@ Please check the address and try again.</source>
         <translation>Dash Core kehittäjät</translation>
     </message>
     <message>
-        <source>The DAPScoin Core developers</source>
+        <source>The DAPScoin developers</source>
         <translation>DAPScoin core kehittäjät</translation>
     </message>
     <message>
@@ -2602,8 +2602,8 @@ Please check the address and try again.</source>
         <translation>Virhe ladattaessa wallet.dat tiedostoa: Lompakko korruptoitunut</translation>
     </message>
     <message>
-        <source>Error loading wallet.dat: Wallet requires newer version of DAPScoin Core</source>
-        <translation>Virhe ladattaessa wallet.dat tiedostoa: Lompakko vaatii uudemman version DAPScoin Coresta</translation>
+        <source>Error loading wallet.dat: Wallet requires newer version of DAPScoin</source>
+        <translation>Virhe ladattaessa wallet.dat tiedostoa: Lompakko vaatii uudemman version DAPScoinsta</translation>
     </message>
     <message>
         <source>Error reading from database, shutting down.</source>

@@ -645,7 +645,7 @@
         <translation>Iloj langeto</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
+        <source>DAPScoin</source>
         <translation>DAPScoin kerno</translation>
     </message>
     <message>
@@ -669,11 +669,11 @@
         <translation>Foliumi mastro-nodo</translation>
     </message>
     <message>
-        <source>&amp;About DAPScoin Core</source>
+        <source>&amp;About DAPScoin</source>
         <translation>&amp;Pri DAPScoin Kerno</translation>
     </message>
     <message>
-        <source>Show information about DAPScoin Core</source>
+        <source>Show information about DAPScoin</source>
         <translation>Montri informon pri DAPScoin Kerno</translation>
     </message>
     <message>
@@ -729,11 +729,11 @@
         <translation>Bloko esplorilo fenestro</translation>
     </message>
     <message>
-        <source>Show the DAPScoin Core help message to get a list with possible DAPScoin command-line options</source>
+        <source>Show the DAPScoin help message to get a list with possible DAPScoin command-line options</source>
         <translation>Montri la DAPScoin Kore help-mesaĝo por havi liston de havebla DAPScoin komandlinion opciojn</translation>
     </message>
     <message>
-        <source>DAPScoin Core client</source>
+        <source>DAPScoin client</source>
         <translation>DAPScoin Kerno kliento</translation>
     </message>
     <message numerus="yes">
@@ -1223,7 +1223,7 @@ Muktisendi: %1</translation>
         <translation>versio</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
+        <source>DAPScoin</source>
         <translation>DAPScoin kerno</translation>
     </message>
     <message>
@@ -1231,7 +1231,7 @@ Muktisendi: %1</translation>
         <translation>(%1-bajto)</translation>
     </message>
     <message>
-        <source>About DAPScoin Core</source>
+        <source>About DAPScoin</source>
         <translation>Pri DAPScoin Kerno</translation>
     </message>
     <message>
@@ -1274,15 +1274,15 @@ Muktisendi: %1</translation>
         <translation>Bonvenon</translation>
     </message>
     <message>
-        <source>Welcome to DAPScoin Core.</source>
+        <source>Welcome to DAPScoin.</source>
         <translation>Bonvenon al la DAPScoin Kerno.</translation>
     </message>
     <message>
-        <source>As this is the first time the program is launched, you can choose where DAPScoin Core will store its data.</source>
+        <source>As this is the first time the program is launched, you can choose where DAPScoin will store its data.</source>
         <translation>Ĉar estas la unuan fojon ke la programo estas lanĉita, vi povas elekti kie DAPScoin kernk storigis sian datumojn. </translation>
     </message>
     <message>
-        <source>DAPScoin Core will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
+        <source>DAPScoin will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
         <translation>DAPScoin kerno elŝutos kaj konservi kopion de la DAPScoin blokĉeno. Almenaŭ %1GB datumoj stokitos en ĉi tiun dosierujo, kaj ĝi kresko kun la tempo. Monujo stokitos en ĉi tiun dosierujo.</translation>
     </message>
     <message>
@@ -1294,7 +1294,7 @@ Muktisendi: %1</translation>
         <translation>Uzi kutimon datumojn dosierujo:</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
+        <source>DAPScoin</source>
         <translation>DAPScoin kerno</translation>
     </message>
     <message>
@@ -2407,7 +2407,7 @@ Nematura: konfirmita, sed malpli ol 1 minto el la samo nomado post ĝin estis mi
 <context>
     <name>ShutdownWindow</name>
     <message>
-        <source>DAPScoin Core is shutting down...</source>
+        <source>DAPScoin is shutting down...</source>
         <translation>DAPScoin kerno fermanta...</translation>
     </message>
     </context>
@@ -2461,7 +2461,7 @@ Nematura: konfirmita, sed malpli ol 1 minto el la samo nomado post ĝin estis mi
 <context>
     <name>SplashScreen</name>
     <message>
-        <source>DAPScoin Core</source>
+        <source>DAPScoin</source>
         <translation>DAPScoin kerno</translation>
     </message>
     <message>
@@ -2473,7 +2473,7 @@ Nematura: konfirmita, sed malpli ol 1 minto el la samo nomado post ĝin estis mi
         <translation>La Dash kerno programistoj</translation>
     </message>
     <message>
-        <source>The DAPScoin Core developers</source>
+        <source>The DAPScoin developers</source>
         <translation>La DAPScoin kerno programistoj</translation>
     </message>
     </context>
