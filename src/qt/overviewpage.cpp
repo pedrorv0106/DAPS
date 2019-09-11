@@ -266,7 +266,7 @@ void OverviewPage::setWalletModel(WalletModel* model)
     updateDisplayUnit();
     // update wallet state
     // if (walletModel->getEncryptionStatus() == WalletModel::Locked || walletModel->getEncryptionStatus() == WalletModel::UnlockedForAnonymizationOnly)
-        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/lock) 0 0 0 0 stretch stretch;");
+        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/lock) 0 0 0 0 stretch stretch; width: 20px;");
     // else
         // ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/unlock) 0 0 0 0 stretch stretch;");
 }
@@ -507,12 +507,12 @@ void OverviewPage::on_lockUnlock() {
 
 void OverviewPage::unlockDialogIsFinished(int result) {
     if(result == QDialog::Accepted){
-        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/unlock) 0 0 0 0 stretch stretch;");
+        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/unlock) 0 0 0 0 stretch stretch; width: 30px;");
     }
 }
 
 void OverviewPage::lockDialogIsFinished(int result) {
     if(result == QDialog::Accepted){
-        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/lock) 0 0 0 0 stretch stretch;");
+        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/lock) 0 0 0 0 stretch stretch; width: 20px;");
     }
 }
