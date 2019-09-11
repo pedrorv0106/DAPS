@@ -4158,23 +4158,27 @@ bool AcceptBlockHeader(const CBlock &block, CValidationState &state, CBlockIndex
     uint256 hash = block.GetHash();
     BlockMap::iterator miSelf = mapBlockIndex.find(hash);
     CBlockIndex *pindex = NULL;
-
+    LogPrintf("\n%s: Block cache", __func__);
     // TODO : ENABLE BLOCK CACHE IN SPECIFIC CASES
     if (miSelf != mapBlockIndex.end()) {
         // Block header is already known.
         pindex = miSelf->second;
         if (ppindex)
             *ppindex = pindex;
+        if (!pindex) {
+        	mapBlockIndex.erase(hash);
+            return state.Invalid(error("%s : block is not found", __func__), 0, "not-found");
+        }
         if (pindex->nStatus & BLOCK_FAILED_MASK)
             return state.Invalid(error("%s : block is marked invalid", __func__), 0, "duplicate");
         return true;
     }
-
+    LogPrintf("\n%s: Block header", __func__);
     if (!CheckBlockHeader(block, state, false)) {
         LogPrintf("AcceptBlockHeader(): CheckBlockHeader failed \n");
         return false;
     }
-
+    LogPrintf("\n%s: get priveous block", __func__);
     // Get prev block index
     CBlockIndex *pindexPrev = NULL;
     if (hash != Params().HashGenesisBlock()) {
@@ -4203,7 +4207,7 @@ bool AcceptBlockHeader(const CBlock &block, CValidationState &state, CBlockIndex
         }
 
     }
-
+    LogPrintf("\n%s: contextual", __func__);
     if (!ContextualCheckBlockHeader(block, state, pindexPrev))
         return false;
 
@@ -4219,7 +4223,7 @@ bool AcceptBlockHeader(const CBlock &block, CValidationState &state, CBlockIndex
 bool AcceptBlock(CBlock &block, CValidationState &state, CBlockIndex **ppindex, CDiskBlockPos *dbp,
                  bool fAlreadyCheckedBlock) {
     AssertLockHeld(cs_main);
-
+    LogPrintf("\nAccepting block");
     CBlockIndex *&pindex = *ppindex;
     // Get prev block index
     CBlockIndex *pindexPrev = NULL;
@@ -4248,7 +4252,7 @@ bool AcceptBlock(CBlock &block, CValidationState &state, CBlockIndex **ppindex, 
     }
     if (block.GetHash() != Params().HashGenesisBlock() && !CheckWork(block, pindexPrev))
         return false;
-
+    LogPrintf("\nAcceptingHeader block");
     if (!AcceptBlockHeader(block, state, &pindex))
         return false;
 
@@ -4347,7 +4351,6 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
     // Preliminary checks
     int64_t nStartTime = GetTimeMillis();
     bool checked = CheckBlock(*pblock, state);
-
     // ppcoin: check proof-of-stake
     // Limited duplicity on stake: prevents block flood attack
     // Duplicate stake allowed only when there is orphan child block
@@ -4360,7 +4363,8 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
     if (pblock->GetHash() != Params().HashGenesisBlock() && pfrom != NULL) {
         //if we get this far, check if the prev block is our prev block, if not then request sync and return false
         BlockMap::iterator mi = mapBlockIndex.find(pblock->hashPrevBlock);
-        if (mi == mapBlockIndex.end()) {
+        if (mi == mapBlockIndex.end() || (mi != mapBlockIndex.end() && mi->second == NULL)) {
+        	mapBlockIndex.erase(pblock->hashPrevBlock);
             pfrom->PushMessage("getblocks", chainActive.GetLocator(), uint256(0));
             return false;
         } else {
