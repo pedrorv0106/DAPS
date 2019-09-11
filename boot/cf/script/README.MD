@@ -5,9 +5,9 @@ The initial dapscoin-cli execution assists in quirying the daemons in order to d
 
 The files of focus at this point are listed below:
  
-    * <del>trycatch.sh helper file to mimic a normal try catch block</del> 
-    * <del>prooftest.sh is a demonstration and proof</del> 
-    * <del>deply.sh is the end target deployment script for daemon excution and manage</del> 
+   * ~~trycatch.sh helper file to mimic a normal try catch block~~ 
+   * ~~prooftest.sh is a demonstration and proof~~ 
+   * ~~deply.sh is the end target deployment script for daemon excution and manage~~ 
 
 
 [![Build Status](https://travis-ci.org/DAPScoin-Project/DAPScoin.svg?branch=master)](https://travis-ci.org/DAPScoin-Project/DAPScoin) [![GitHub version](https://badge.fury.io/gh/DAPScoin-Project%2FDAPScoin.svg)](https://badge.fury.io/gh/DAPScoin-Project%2FDAPScoin)
