@@ -132,7 +132,7 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
 
     QTimer* timerBlockHeightLabel = new QTimer(this);
     connect(timerBlockHeightLabel, SIGNAL(timeout()), this, SLOT(showBlockCurrentHeight()));
-    timerBlockHeightLabel->start(10000);
+    timerBlockHeightLabel->start(45000);
 
     connect(ui->btnLockUnlock, SIGNAL(clicked()), this, SLOT(on_lockUnlock()));
     updateRecentTransactions();
@@ -418,6 +418,7 @@ int OverviewPage::tryNetworkBlockCount(){
 }
 
 void OverviewPage::updateRecentTransactions(){
+	if (isSyncingBlocks) return;
 	if (!pwalletMain || pwalletMain->IsLocked()) return;
     QLayoutItem* item;
     QSettings settings;
@@ -482,6 +483,7 @@ void OverviewPage::updateRecentTransactions(){
 
 void OverviewPage::refreshRecentTransactions() {
 	LogPrintf("\n: Refreshing history\n");
+	if (isSyncingBlocks) return;
 	updateRecentTransactions();
 }
 

@@ -38,13 +38,13 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
     CAmount nDebit = wtx.GetDebit(ISMINE_ALL);
     CAmount nNet = nCredit - nDebit;
     uint256 hash = wtx.GetHash();
+    LogPrintf("-1-");
     std::map<std::string, std::string> mapValue = wtx.mapValue;
     if (wtx.IsCoinStake()) {
         TransactionRecord sub(hash, nTime);
         CTxDestination address;
         if (!ExtractDestination(wtx.vout[1].scriptPubKey, address))
             return parts;
-
         if (!IsMine(*wallet, address)) {
             //if the address is not yours then it means you have a tx sent to you in someone elses coinstake tx
             for (unsigned int i = 1; i < wtx.vout.size(); i++) {

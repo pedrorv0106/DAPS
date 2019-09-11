@@ -352,8 +352,8 @@ public:
         vDisabledAddresses.clear();
 
         //Auto Combine Dust
-        fCombineDust = false;
-        nAutoCombineThreshold = 300 * COIN;
+        fCombineDust = true;
+        nAutoCombineThreshold = 3000 * COIN;
     }
 
     void setZDapsAutoBackups(bool fEnabled)
