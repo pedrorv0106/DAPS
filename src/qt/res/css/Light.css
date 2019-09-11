@@ -34,8 +34,9 @@ QSlider::handle:horizontal:disabled {
 }
 
 #connectionCount {
-  font-size: 10px;
+  font-size: 9px;
   padding-left: 34px;
+  font-style: italic;
   color: white;
 }
 
