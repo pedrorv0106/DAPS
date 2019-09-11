@@ -715,15 +715,15 @@ vector<std::map<QString, QString> > getTXs(CWallet* wallet)
 {
 	vector<std::map<QString, QString> > txs;
 	if (!wallet || wallet->IsLocked()) return txs;
-    std::map<uint256, CWalletTx> txMap = wallet->mapWallet;
-    {
-        LOCK2(cs_main, wallet->cs_wallet);
-		  for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
-        if (tx->second.GetDepthInMainChain() > 0) {
-          txs.push_back(getTx(wallet, tx->second));
-        }
-		  }
-    }
+	std::map<uint256, CWalletTx> txMap = wallet->mapWallet;
+	{
+		LOCK2(cs_main, wallet->cs_wallet);
+		for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
+			if (tx->second.GetDepthInMainChain() > 0) {
+				txs.push_back(getTx(wallet, tx->second));
+			}
+		}
+	}
 
     return txs;
 }
@@ -734,31 +734,35 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
     // get stx amount
     CAmount totalamount = CAmount(0);
     CAmount totalIn = 0;
-    for (CTxIn in: tx.vin) {
-    	COutPoint prevout = wallet->findMyOutPoint(in);
-        map<uint256, CWalletTx>::const_iterator mi = wallet->mapWallet.find(prevout.hash);
-        if (mi != wallet->mapWallet.end()) {
-            const CWalletTx& prev = (*mi).second;
-            if (prevout.n < prev.vout.size()) {
-                if (wallet->IsMine(prev.vout[prevout.n])) {
-                    CAmount decodedAmount = 0;
-                    CKey blind;
-                    pwalletMain->RevealTxOutAmount(prev, prev.vout[prevout.n], decodedAmount, blind);
-                    totalIn += decodedAmount;
-                }
-            }
-        }
+    if (wallet && !wallet->IsLocked()) {
+    	for (CTxIn in: tx.vin) {
+    		COutPoint prevout = wallet->findMyOutPoint(in);
+    		map<uint256, CWalletTx>::const_iterator mi = wallet->mapWallet.find(prevout.hash);
+    		if (mi != wallet->mapWallet.end()) {
+    			const CWalletTx& prev = (*mi).second;
+    			if (prevout.n < prev.vout.size()) {
+    				if (wallet->IsMine(prev.vout[prevout.n])) {
+    					CAmount decodedAmount = 0;
+    					CKey blind;
+    					pwalletMain->RevealTxOutAmount(prev, prev.vout[prevout.n], decodedAmount, blind);
+    					totalIn += decodedAmount;
+    				}
+    			}
+    		}
+    	}
     }
     CAmount firstOut = 0;
-    for (CTxOut out: tx.vout){
-        CAmount vamount;
-        CKey blind;
-        if (wallet->IsMine(out) && wallet->RevealTxOutAmount(tx,out,vamount, blind)) {
-        	if (vamount != 0 && firstOut == 0) {
-        		firstOut = vamount;
-        	}
-            totalamount+=vamount;   //this is the total output
-        }
+    if (wallet && !wallet->IsLocked()) {
+		for (CTxOut out: tx.vout){
+			CAmount vamount;
+			CKey blind;
+			if (wallet->IsMine(out) && wallet->RevealTxOutAmount(tx,out,vamount, blind)) {
+				if (vamount != 0 && firstOut == 0) {
+					firstOut = vamount;
+				}
+				totalamount+=vamount;   //this is the total output
+			}
+		}
     }
     QList<TransactionRecord> decomposedTx = TransactionRecord::decomposeTransaction(wallet, tx);
     std::string txHash = tx.GetHash().GetHex();

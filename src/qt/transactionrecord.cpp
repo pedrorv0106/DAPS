@@ -44,7 +44,6 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
         CTxDestination address;
         if (!ExtractDestination(wtx.vout[1].scriptPubKey, address))
             return parts;
-
         if (!IsMine(*wallet, address)) {
             //if the address is not yours then it means you have a tx sent to you in someone elses coinstake tx
             for (unsigned int i = 1; i < wtx.vout.size(); i++) {
@@ -163,7 +162,8 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
             }
 
             //a sendtoself transaction has second output as change
-            CAmount nChange = pwalletMain->getCTxOutValue(wtx, wtx.vout[1]);
+            CAmount nChange = 0;
+            if (wtx.vout.size() >= 2) nChange = pwalletMain->getCTxOutValue(wtx, wtx.vout[1]);
 
             sub.debit = nCredit - nChange;
             sub.credit = 0;
