@@ -38,7 +38,6 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
     CAmount nDebit = wtx.GetDebit(ISMINE_ALL);
     CAmount nNet = nCredit - nDebit;
     uint256 hash = wtx.GetHash();
-    LogPrintf("-1-");
     std::map<std::string, std::string> mapValue = wtx.mapValue;
     if (wtx.IsCoinStake()) {
         TransactionRecord sub(hash, nTime);
@@ -163,7 +162,8 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
             }
 
             //a sendtoself transaction has second output as change
-            CAmount nChange = pwalletMain->getCTxOutValue(wtx, wtx.vout[1]);
+            CAmount nChange = 0;
+            if (wtx.vout.size() >= 2) nChange = pwalletMain->getCTxOutValue(wtx, wtx.vout[1]);
 
             sub.debit = nCredit - nChange;
             sub.credit = 0;

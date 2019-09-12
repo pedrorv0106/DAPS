@@ -2771,7 +2771,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                 // Choose coins to use
                 set<pair<const CWalletTx*, unsigned int> > setCoins;
                 CAmount nValueIn = 0;
-                nTotalValue += 1 * COIN; //reserver 1 DAPS for transaction fee
+                nTotalValue += 4 * COIN; //reserver 4 DAPS for transaction fees for the largest transaction
                 if (!SelectCoins(nTotalValue, setCoins, nValueIn, coinControl, coin_type, useIX)) {
                     if (coin_type == ALL_COINS) {
                         strFailReason = _("Insufficient funds.");
@@ -5088,33 +5088,81 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 		return false;
 	}
 
-	//select coinsets
 	CAmount total = 0;
 	vector<COutput> vCoins;
+	vCoins.clear();
+
 	{
 		LOCK2(cs_main, cs_wallet);
 		for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
 			const uint256& wtxid = it->first;
 			const CWalletTx* pcoin = &(*it).second;
 
-			int cannotSpend = 0;
-			vector<COutput> lowCoins;
-			AvailableCoins(wtxid, pcoin, lowCoins, 0, true, NULL, false, ALL_COINS, false);
-			for (size_t i = 0; i < lowCoins.size(); i++) {
-				CAmount val = getCOutPutValue(lowCoins[i]);
-				if (val < target) {
-					vCoins.push_back(lowCoins[i]);
-					total += val;
-					if (vCoins.size() == 30) break;
+			int nDepth = pcoin->GetDepthInMainChain(false);
+			if ((pcoin->IsCoinBase() || pcoin->IsCoinStake()) && pcoin->GetBlocksToMaturity() > 0)
+				continue;
+			if (nDepth == 0 && !pcoin->InMempool())
+				continue;
+			for(size_t i = 0; i < pcoin->vout.size(); i++) {
+				if (pcoin->vout[i].IsEmpty()) continue;
+				isminetype mine = IsMine(pcoin->vout[i]);
+				if (mine == ISMINE_NO)
+					continue;
+				if (mine == ISMINE_WATCH_ONLY)
+					continue;
+				CAmount decodedAmount;
+				CKey decodedBlind;
+				RevealTxOutAmount(*pcoin, pcoin->vout[i], decodedAmount, decodedBlind);
+				if (decodedAmount > nAutoCombineThreshold) {
+					continue;
 				}
+
+				std::vector<unsigned char> commitment;
+				if (!decodedBlind.IsValid()) {
+					unsigned char blind[32];
+					CreateCommitmentWithZeroBlind(decodedAmount, blind, commitment);
+				} else {
+					CreateCommitment(decodedBlind.begin(), decodedAmount, commitment);
+				}
+				if (pcoin->vout[i].commitment != commitment) {
+					LogPrintf("\n%s: Commitment not match hash = %s, i = %d, commitment = %s, recomputed = %s, revealed mask = %s", __func__, pcoin->GetHash().GetHex(), i, HexStr(&pcoin->vout[i].commitment[0], &pcoin->vout[i].commitment[0] + 33), HexStr(&commitment[0], &commitment[0] + 33), HexStr(decodedBlind.begin(), decodedBlind.begin() + 32));
+					continue;
+				}
+
+				if (IsSpent(wtxid, i)) continue;
+
+				LOCK(mempool.cs); // protect pool.mapNextTx
+				{
+					COutPoint outpoint(wtxid, i);
+					if (mapTxSpends.count(outpoint)) continue;
+					if (inSpendQueueOutpoints.count(outpoint)) {
+						continue;
+					}
+					if (mempool.mapNextTx.count(outpoint)) {
+						// Disable replacement feature for now
+						continue;
+					}
+					CCoinsView dummy;
+					CCoinsViewCache view(&dummy);
+					CCoinsViewMemPool viewMemPool(pcoinsTip, mempool);
+					view.SetBackend(viewMemPool);
+					const CCoins* coins = view.AccessCoins(wtxid);
+
+					if (!coins || !coins->IsAvailable(i)) {
+						continue;
+					}
+				}
+				vCoins.push_back(COutput(pcoin, i, nDepth, true));
+				total += decodedAmount;
+				if (vCoins.size() == 29) break;
 			}
-			if (vCoins.size() == 30) break;
+			if (vCoins.size() == 29) break;
 		}
 	}
 
 	if (vCoins.empty()) return false;
 
-	if (total < target && vCoins.size() < 30) return false;
+	if (total < target + 4*COIN && vCoins.size() < 30) return false;
 
 	// Generate transaction public key
 	CWalletTx wtxNew;
@@ -5239,11 +5287,12 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 
 void CWallet::AutoCombineDust()
 {
+	//if (IsInitialBlockDownload()) return;
     if (chainActive.Tip()->nTime < (GetAdjustedTime() - 300) || IsLocked()) {
-    	LogPrintf("Time elapsed for autocombine transaction too short");
+        LogPrintf("Time elapsed for autocombine transaction too short\n");
         return;
     }
-
+    LogPrintf("Creating a sweeping transaction\n");
     if (!CreateSweepingTransaction(nAutoCombineThreshold)) {
         if (fGenerateDapscoins && chainActive.Tip()->nHeight >= Params().LAST_POW_BLOCK()) {
     		//sweeping to create larger UTXO for staking
