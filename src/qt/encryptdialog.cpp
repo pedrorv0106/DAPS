@@ -33,7 +33,7 @@ void EncryptDialog::setModel(WalletModel* model)
 void EncryptDialog::closeEvent (QCloseEvent *event)
 {
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::warning(this, "Wallet encryption required", "There was no passphrase entered for the wallet. Wallet encryption is required for the security of your funds. What would you like to do?", QMessageBox::Retry|QMessageBox::Close);
+    reply = QMessageBox::warning(this, "Wallet encryption required", "There was no passphrase entered for the wallet.\n\nWallet encryption is required for the security of your funds.\n\nWhat would you like to do?", QMessageBox::Retry|QMessageBox::Close);
       if (reply == QMessageBox::Retry) {
       event->ignore();
       } else {
@@ -44,7 +44,7 @@ void EncryptDialog::closeEvent (QCloseEvent *event)
 void EncryptDialog::on_btnCancel()
 {
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::warning(this, "Wallet encryption required", "There was no passphrase entered for the wallet. Wallet encryption is required for the security of your funds. What would you like to do?", QMessageBox::Retry|QMessageBox::Close);
+    reply = QMessageBox::warning(this, "Wallet encryption required", "There was no passphrase entered for the wallet.\n\nWallet encryption is required for the security of your funds.\n\nWhat would you like to do?", QMessageBox::Retry|QMessageBox::Close);
       if (reply == QMessageBox::Retry) {
       return;
       } else {
