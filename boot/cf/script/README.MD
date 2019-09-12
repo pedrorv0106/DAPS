@@ -1,9 +1,15 @@
 DAPScoin Core Daemon Management
 =====================================
 
-The initial dapscoin-cli execution assists in quirying the daemons in order to discover current running and a relaunch if required.  When a command executions are successful or not a determination must be made to continue (on success) or recover from an error.
+The strucutre and approach has changed to handle the daemon kick off, exewcution, status (inquire), restart and stop.  The sole bash script is no longer deploy.sh.  Currently, the inspect.sh is repsonsible for the following commands:
 
-The files of focus at this point are listed below:
+   1. Start : Start daemon, if dapscoind is already started script is aborts an displays 
+   2. Restart : Restart daemon : restart if running, we kill it, wait, restart it, wait and report the PID! If not running we start it
+   3. Stop : Stop the daemon
+   4. Status : status pull the PID and launch daspcoin-cli getinfo (responds its repsonsive) if not, then not responsive flag the issue
+   
+   
+~~The files of focus at this point are listed below:~~
  
    * ~~trycatch.sh helper file to mimic a normal try catch block~~ 
    * ~~prooftest.sh is a demonstration and proof~~ 
