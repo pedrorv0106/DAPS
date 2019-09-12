@@ -618,8 +618,8 @@
         <translation>Ferramentas de abas</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Send coins to a DAPScoin address</source>
@@ -642,12 +642,12 @@
         <translation>Procurar masternodes</translation>
     </message>
     <message>
-        <source>&amp;About DAPScoin Core</source>
-        <translation>&amp;Sobre o DAPScoin Core</translation>
+        <source>&amp;About DAPScoin</source>
+        <translation>&amp;Sobre o DAPScoin</translation>
     </message>
     <message>
-        <source>Show information about DAPScoin Core</source>
-        <translation>Mostra informação sobre o DAPScoin Core</translation>
+        <source>Show information about DAPScoin</source>
+        <translation>Mostra informação sobre o DAPScoin</translation>
     </message>
     <message>
         <source>Modify configuration options for DAPScoin</source>
@@ -702,11 +702,11 @@
         <translation>Janela de exploração de blocos</translation>
     </message>
     <message>
-        <source>Show the DAPScoin Core help message to get a list with possible DAPScoin command-line options</source>
-        <translation>Mostra a ajuda da DAPScoin Core para receber uma lista com possíveis opções de linha de comando DAPScoin</translation>
+        <source>Show the DAPScoin help message to get a list with possible DAPScoin command-line options</source>
+        <translation>Mostra a ajuda da DAPScoin para receber uma lista com possíveis opções de linha de comando DAPScoin</translation>
     </message>
     <message>
-        <source>DAPScoin Core client</source>
+        <source>DAPScoin client</source>
         <translation>Cliente Core DAPScoin</translation>
     </message>
     <message>
@@ -1193,16 +1193,16 @@ MultiSend: %1</translation>
         <translation>versão</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>(%1-bit)</source>
         <translation>(%1-bit)</translation>
     </message>
     <message>
-        <source>About DAPScoin Core</source>
-        <translation>Sobre o DAPScoin Core</translation>
+        <source>About DAPScoin</source>
+        <translation>Sobre o DAPScoin</translation>
     </message>
     <message>
         <source>Command-line options</source>
@@ -1244,16 +1244,16 @@ MultiSend: %1</translation>
         <translation>Bem-vindo</translation>
     </message>
     <message>
-        <source>Welcome to DAPScoin Core.</source>
-        <translation>Bem-vindo ao DAPScoin Core.</translation>
+        <source>Welcome to DAPScoin.</source>
+        <translation>Bem-vindo ao DAPScoin.</translation>
     </message>
     <message>
-        <source>As this is the first time the program is launched, you can choose where DAPScoin Core will store its data.</source>
-        <translation>Como essa é a primeira vez que o programa é utilizado, você pode escolher onde DAPScoin Core vai armazenar os seus dados.</translation>
+        <source>As this is the first time the program is launched, you can choose where DAPScoin will store its data.</source>
+        <translation>Como essa é a primeira vez que o programa é utilizado, você pode escolher onde DAPScoin vai armazenar os seus dados.</translation>
     </message>
     <message>
-        <source>DAPScoin Core will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
-        <translation>DAPScoin Core vai baixar e armazenar uma cópia da blockchain DAPScoin. Pelo menos %1GB de informação será armazenado neste diretório e irá aumentar com o tempo. A carteira também será armazenada neste diretório.</translation>
+        <source>DAPScoin will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
+        <translation>DAPScoin vai baixar e armazenar uma cópia da blockchain DAPScoin. Pelo menos %1GB de informação será armazenado neste diretório e irá aumentar com o tempo. A carteira também será armazenada neste diretório.</translation>
     </message>
     <message>
         <source>Use the default data directory</source>
@@ -1264,8 +1264,8 @@ MultiSend: %1</translation>
         <translation>Usar um diretório personalizado de dados:</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Error: Specified data directory "%1" cannot be created.</source>
@@ -2994,8 +2994,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
 <context>
     <name>ShutdownWindow</name>
     <message>
-        <source>DAPScoin Core is shutting down...</source>
-        <translation>DAPScoin Core está desligando...</translation>
+        <source>DAPScoin is shutting down...</source>
+        <translation>DAPScoin está desligando...</translation>
     </message>
     <message>
         <source>Do not shut down the computer until this window disappears.</source>
@@ -3136,8 +3136,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
 <context>
     <name>SplashScreen</name>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Version %1</source>
@@ -3152,8 +3152,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Os desenvolvedores do Dash Core</translation>
     </message>
     <message>
-        <source>The DAPScoin Core developers</source>
-        <translation>Os desenvolvedores do DAPScoin Core</translation>
+        <source>The DAPScoin developers</source>
+        <translation>Os desenvolvedores do DAPScoin</translation>
     </message>
     <message>
         <source>[testnet]</source>
@@ -3789,7 +3789,7 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Aviso: -paytxfee está definido como muito alto! Está e a taxa de transação que você irá pagar se enviar uma transação.</translation>
     </message>
     <message>
-        <source>Warning: Please check that your computer's date and time are correct! If your clock is wrong DAPScoin Core will not work properly.</source>
+        <source>Warning: Please check that your computer's date and time are correct! If your clock is wrong DAPScoin will not work properly.</source>
         <translation>Aviso: Favor verificar se o horário e data de seu computador estão corretos! Se o seu relógio estiver errado o Core DAPScoin não vai funcionar corretamente.</translation>
     </message>
     <message>
@@ -3869,8 +3869,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Todos os direitos reservados (C) 2014-%i aos Desenvolvedores do Dash Core</translation>
     </message>
     <message>
-        <source>Copyright (C) 2015-%i The DAPScoin Core Developers</source>
-        <translation>Todos os direitos reservados (C) 2015-%i aos Desenvolvedores do DAPScoin Core</translation>
+        <source>Copyright (C) 2015-%i The DAPScoin Developers</source>
+        <translation>Todos os direitos reservados (C) 2015-%i aos Desenvolvedores do DAPScoin</translation>
     </message>
     <message>
         <source>Corrupted block database detected</source>
@@ -3929,8 +3929,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Erro no carregamento da wallet.dat: Carteira corrompida</translation>
     </message>
     <message>
-        <source>Error loading wallet.dat: Wallet requires newer version of DAPScoin Core</source>
-        <translation>Erro ao carregar wallet.dat: A Carteira requer uma nova versão da DAPScoin Core</translation>
+        <source>Error loading wallet.dat: Wallet requires newer version of DAPScoin</source>
+        <translation>Erro ao carregar wallet.dat: A Carteira requer uma nova versão da DAPScoin</translation>
     </message>
     <message>
         <source>Error opening block database</source>
@@ -4423,8 +4423,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Carteira está travada.</translation>
     </message>
     <message>
-        <source>Wallet needed to be rewritten: restart DAPScoin Core to complete</source>
-        <translation>A carteira precisa ser reescrita: reinicia o DAPScoin Core para completar</translation>
+        <source>Wallet needed to be rewritten: restart DAPScoin to complete</source>
+        <translation>A carteira precisa ser reescrita: reinicia o DAPScoin para completar</translation>
     </message>
     <message>
         <source>Wallet options:</source>

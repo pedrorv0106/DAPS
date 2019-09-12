@@ -96,7 +96,7 @@ void UpdateTime(CBlockHeader* pblock, const CBlockIndex* pindexPrev)
 uint32_t GetListOfPoSInfo(uint32_t currentHeight, std::vector<PoSBlockSummary>& audits) {
 	//A PoA block should be mined only after at least 59 PoS blocks have not been audited
 	//Look for the previous PoA block
-	int nloopIdx = currentHeight;
+	uint32_t nloopIdx = currentHeight;
 	while (nloopIdx >= Params().START_POA_BLOCK()) {
 		if (chainActive[nloopIdx]->GetBlockHeader().IsPoABlockByVersion()) {
 			break;
@@ -114,7 +114,7 @@ uint32_t GetListOfPoSInfo(uint32_t currentHeight, std::vector<PoSBlockSummary>& 
         }
     } else {
         //Find the previous PoA block
-        int start = nloopIdx;
+        uint32_t start = nloopIdx;
         if (start > Params().START_POA_BLOCK()) {
             CBlockIndex* pblockindex = chainActive[start];
             CBlock block;

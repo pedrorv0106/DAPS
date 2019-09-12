@@ -58,6 +58,17 @@ QDialog {
   border-image: url(':/images/background') 0 0 0 0 stretch stretch;
 }
 
+#line_1, #line_2, #line_3, #line_4 {
+  border-bottom: 1px solid gray;
+  max-height: 5px;
+  margin: 5px;
+}
+
+#connectionCount {
+  font-size: 10px;
+  padding-left: 32px;
+}
+
 QDialog .QTabWidget QTabBar::tab {
   background-color:#FFFFFF;
   color:#000000;
@@ -73,7 +84,9 @@ QDialog .QTabWidget QTabBar::tab:selected, QDialog .QTabWidget QTabBar::tab:hove
   color:#FFFFFF;
   }
 
-  
+#lblRecentTransaction {
+  font-size: 18px;
+}
 
 /*************************************************/
 /* Nav Bar CSS */
@@ -136,6 +149,10 @@ QTableWidgetView::item,
 QHeaderView::item,
 QTableView::selectrows {
   padding: 25px;
+}
+
+#labelRecoveryDescription {
+  font-size: 12px;
 }
 
 /*** Check Boxes and Radio ***/

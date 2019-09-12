@@ -22,7 +22,7 @@
   <property name="sizeGripEnabled">
    <bool>false</bool>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0">
    <item alignment="Qt::AlignRight">
     <widget class="QLabel" name="labelTheme">
      <property name="sizePolicy">
@@ -50,13 +50,13 @@
      <property name="layoutDirection">
       <enum>Qt::LeftToRight</enum>
      </property>
-     <property name="OptionA">
+     <property name="OptionA" stdset="0">
       <string>Dark</string>
      </property>
-     <property name="OptionB">
+     <property name="OptionB" stdset="0">
       <string>Light</string>
      </property>
-     <property name="fixedSize">
+     <property name="fixedSize" stdset="0">
       <size>
        <width>100</width>
        <height>55</height>
@@ -91,17 +91,36 @@
      <property name="layoutDirection">
       <enum>Qt::LeftToRight</enum>
      </property>
-     <property name="OptionA">
+     <property name="OptionA" stdset="0">
       <string>On</string>
      </property>
-     <property name="OptionB">
+     <property name="OptionB" stdset="0">
       <string>Off</string>
      </property>
-     <property name="fixedSize">
+     <property name="fixedSize" stdset="0">
       <size>
        <width>100</width>
        <height>55</height>
       </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="line_1">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>5</height>
+      </size>
+     </property>
+     <property name="text">
+      <string/>
      </property>
     </widget>
    </item>
@@ -185,6 +204,28 @@
     </layout>
    </item>
    <item>
+    <widget class="QLabel" name="line_2">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>5</height>
+      </size>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QLabel" name="label_2">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
@@ -228,9 +269,32 @@
     </layout>
    </item>
    <item>
-    <widget class="Line" name="line">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+    <widget class="QLabel" name="line_3">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>5</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>11</pointsize>
+      </font>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="text">
+      <string/>
      </property>
     </widget>
    </item>
@@ -245,12 +309,17 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="font">
+      <font>
+       <pointsize>11</pointsize>
+      </font>
+     </property>
      <property name="text">
-      <string>Mneumonic Recovery Phrase</string>
+      <string>Mnemonic Recovery Phrase</string>
      </property>
     </widget>
    </item>
-   <item>
+   <item alignment="Qt::AlignLeft">
     <widget class="QLabel" name="labelRecoveryDescription">
      <property name="enabled">
       <bool>true</bool>
@@ -261,51 +330,54 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="text">
       <string>We strongly recommend you only view your mnemonic phrase in a secure environment safe from video cameras or any wandering eyes.</string>
      </property>
      <property name="alignment">
-      <set>Qt::AlignCenter</set>
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+     <property name="margin">
+      <number>10</number>
      </property>
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <widget class="QPushButton" name="pushButtonRecovery">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Show</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="lblMnemonic">
-       <property name="lineWidth">
-        <number>2</number>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="wordWrap">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <widget class="QPushButton" name="pushButtonRecovery">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Show Phrase</string>
+     </property>
+    </widget>
    </item>
    <item>
-    <widget class="Line" name="line_2">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+    <widget class="QLabel" name="line_4">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>5</height>
+      </size>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="text">
+      <string/>
      </property>
     </widget>
    </item>
@@ -333,13 +405,13 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="OptionA">
+     <property name="OptionA" stdset="0">
       <string>On</string>
      </property>
-     <property name="OptionB">
+     <property name="OptionB" stdset="0">
       <string>Off</string>
      </property>
-     <property name="fixedSize">
+     <property name="fixedSize" stdset="0">
       <size>
        <width>100</width>
        <height>55</height>

@@ -25,7 +25,6 @@ public:
     std::string methodName; //! method whose params want conversion
     int paramIdx;           //! 0-based idx of param to convert
 };
-// ***TODO***
 static const CRPCConvertParam vRPCConvertParams[] =
     {
         {"stop", 0},

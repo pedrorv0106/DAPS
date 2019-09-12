@@ -27,8 +27,24 @@ QSlider::handle:horizontal:disabled {
   border: 1px solid rgb(51, 54, 54);
 }
 
+#line_1, #line_2, #line_3, #line_4 {
+  border-bottom: 1px solid gray;
+  max-height: 5px;
+  margin: 5px;
+}
+
+#connectionCount {
+  font-size: 10px;
+  padding-left: 32px;
+  color: white;
+}
+
 QDialog {
   background-color: white;
+}
+
+#lblRecentTransaction {
+  font-size: 18px;
 }
 
 /*************************************************/
@@ -94,6 +110,10 @@ QTableWidgetView::item,
 QHeaderView::item,
 QTableView::selectrows {
   padding: 25px;
+}
+
+#labelRecoveryDescription {
+  font-size: 12px;
 }
 
 /*** Check Boxes and Radio ***/

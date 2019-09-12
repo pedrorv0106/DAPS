@@ -830,7 +830,6 @@ bool PointHashingSuccessively(const CPubKey& pk, const unsigned char* tweak, uns
     return true;
 }
 
-
 bool SetupNetworking()
 {
 #ifdef WIN32

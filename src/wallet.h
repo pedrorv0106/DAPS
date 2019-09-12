@@ -229,6 +229,15 @@ struct CPKeyImageAlpha {
     }
 };
 
+enum StakingStatusError
+{
+	NONE,
+	DEFAULT,
+	UTXO_UNDER_THRESHOLD,
+	RESERVE_TOO_HIGH,
+	RESERVE_TOO_HIGH_AND_UTXO_UNDER_THRESHOLD
+};
+
 //each signer after receive transaction from the initiator, will need to create this and send it back to the initiator
 struct CListPKeyImageAlpha {
 	std::vector<CPKeyImageAlpha> partialAlphas;
@@ -270,8 +279,6 @@ private:
     int64_t nNextResend;
     int64_t nLastResend;
 
-    static const CAmount MINIMUM_STAKE_AMOUNT = 10000 * COIN;
-
     /**
      * Used to keep track of spent outpoints, and
      * detect and report conflicts (double-spends or
@@ -286,6 +293,7 @@ private:
     void GenerateAlphaFromOutpoint(const COutPoint& op, unsigned char*) const;
 
 public:
+    static const CAmount MINIMUM_STAKE_AMOUNT = 400000 * COIN;
     static const int32_t MAX_DECOY_POOL = 500;
     static const int32_t PROBABILITY_NEW_COIN_SELECTED = 70;
     bool RescanAfterUnlock(bool fromBeginning = false);
@@ -297,6 +305,7 @@ public:
     bool HasCollateralInputs(bool fOnlyConfirmed = true);
     bool IsCollateralAmount(CAmount nInputAmount) const;
     int CountInputsWithAmount(CAmount nInputAmount);
+    bool checkPassPhraseRule(const char *pass);
     COutPoint findMyOutPoint(const CTxIn& txin) const;
     bool SelectCoinsCollateral(std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet);
     static int ComputeTxSize(size_t numIn, size_t numOut, size_t ringSize);
@@ -392,7 +401,7 @@ public:
 
         //Auto Combine Dust
         fCombineDust = false;
-        nAutoCombineThreshold = 300 * COIN;
+        nAutoCombineThreshold = 500 * COIN;
     }
 
     void setZDapsAutoBackups(bool fEnabled)

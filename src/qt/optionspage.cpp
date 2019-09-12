@@ -64,7 +64,6 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
     connect(ui->toggleStaking, SIGNAL(stateChanged(ToggleButton*)), this, SLOT(on_EnableStaking(ToggleButton*)));
 
     connect(ui->pushButtonRecovery, SIGNAL(clicked()), this, SLOT(onShowMnemonic()));
-    ui->lblMnemonic->setText("");
 
     bool twoFAStatus = settings.value("2FA")=="enabled";
     if (twoFAStatus)
@@ -86,6 +85,15 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
     ui->code_4->setVisible(false);
     ui->code_5->setVisible(false);
     ui->code_6->setVisible(false);
+
+    timerStakingToggleSync = new QTimer();
+    connect(timerStakingToggleSync, SIGNAL(timeout()), this, SLOT(setStakingStatus()));
+    timerStakingToggleSync->start(20000);
+}
+
+void OptionsPage::setStakingToggle()
+{
+	ui->toggleStaking->setState(fGenerateDapscoins);
 }
 
 void OptionsPage::setModel(WalletModel* model)
@@ -117,6 +125,7 @@ CAmount OptionsPage::getValidatedAmount() {
 
 OptionsPage::~OptionsPage()
 {
+	delete timerStakingToggleSync;
     delete ui;
 }
 
@@ -191,6 +200,10 @@ void OptionsPage::on_pushButtonPassword_clicked()
         else if (newPass.length() < 10) {
             QMessageBox::critical(this, tr("Wallet encryption failed"),
                     tr("The passphrase's length has to be more than 10. Please try again."));
+        }
+        else if (!pwalletMain->checkPassPhraseRule(newPass.c_str())) {
+            QMessageBox::critical(this, tr("Wallet encryption failed"),
+                    tr("The passphrase must contain lower, upper, digit, symbol."));
         }
         else if (zxcvbn_password_strength(newPass.c_str(), NULL, &guesses, NULL) < 0 || guesses < 10000) {
             QMessageBox::critical(this, tr("Wallet encryption failed"),
@@ -275,38 +288,12 @@ bool OptionsPage::matchNewPasswords()
 
 void OptionsPage::on_EnableStaking(ToggleButton* widget)
 {
-    if (chainActive.Height() < Params().LAST_POW_BLOCK()) {
-    	if (widget->getState()) {
-			QString msg("PoW blocks are still being mined!");
-			QStringList l;
-			l.push_back(msg);
-			GUIUtil::prompt(QString("<br><br>")+l.join(QString("<br><br>"))+QString("<br><br>"));
-    	}
-    	widget->setState(false);
-    	pwalletMain->WriteStakingStatus(false);
-    	pwalletMain->walletStakingInProgress = false;
-        return;
-    }
-	if (widget->getState()){
-        QStringList errors = model->getStakingStatusError();
-        if (!errors.length()) {
-            pwalletMain->WriteStakingStatus(true);
-            emit model->stakingStatusChanged(true);
-            model->generateCoins(true, 1);
-        } else {
-            GUIUtil::prompt(QString("<br><br>")+errors.join(QString("<br><br>"))+QString("<br><br>"));
-            widget->setState(false);
-            nLastCoinStakeSearchInterval = 0;
-            emit model->stakingStatusChanged(false);
-            pwalletMain->WriteStakingStatus(false);
-        }
-    } else {
-        nLastCoinStakeSearchInterval = 0;
-        model->generateCoins(false, 0);
-        emit model->stakingStatusChanged(false);
-        pwalletMain->walletStakingInProgress = false;
-        pwalletMain->WriteStakingStatus(false);
-    }
+	//dont support staking in multisig wallet
+	QString msg("Staking is not supported in multisig wallet!");
+	QStringList l;
+	l.push_back(msg);
+	GUIUtil::prompt(QString("<br><br>")+l.join(QString("<br><br>"))+QString("<br><br>"));
+	widget->setState(false);
 }
 
 void OptionsPage::on_Enable2FA(ToggleButton* widget)
@@ -384,7 +371,7 @@ void OptionsPage::disable2FA() {
     ui->btn_day->setStyleSheet("border-color: none;");
     ui->btn_week->setStyleSheet("border-color: none;");
     ui->btn_month->setStyleSheet("border-color: none;");
-    typeOf2FA = NONE;
+    typeOf2FA = NONE2FA;
 }
 
 void OptionsPage::enable2FA() {
@@ -415,7 +402,7 @@ void OptionsPage::enable2FA() {
     }
      
     int period = settings.value("2FAPeriod").toInt();
-    typeOf2FA = NONE;
+    typeOf2FA = NONE2FA;
     if (period == 1) {
         ui->btn_day->setStyleSheet("border-color: green;");
         typeOf2FA = DAY;
@@ -489,7 +476,6 @@ void OptionsPage::on_month() {
 
 void OptionsPage::onShowMnemonic() {
     CHDChain hdChainCurrent;
-    ui->lblMnemonic->setText("");
     if (!pwalletMain->GetDecryptedHDChain(hdChainCurrent))
         return;
 
@@ -498,5 +484,6 @@ void OptionsPage::onShowMnemonic() {
     if (!hdChainCurrent.GetMnemonic(mnemonic, mnemonicPass))
         return;
     
-    ui->lblMnemonic->setText(std::string(mnemonic.begin(), mnemonic.end()).c_str());
+    QMessageBox::information(this, tr("Wallet Mnemonic Phrase"),
+        tr(std::string(mnemonic.begin(), mnemonic.end()).c_str()));
 }
