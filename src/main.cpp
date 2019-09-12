@@ -319,8 +319,6 @@ bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
     	CBlockIndex* pindex = (*mi).second;
     	if (!pindex || !chainActive.Contains(pindex))
     		return false;
-
-    	LogPrintf("\nKey Image %s is spent in block %s\n", kiHex, bh.GetHex());
     	return true;//receive from mempool
     }
     if (bh == againsHash && !againsHash.IsNull()) return false;
