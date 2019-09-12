@@ -550,6 +550,6 @@ void OptionsPage::onShowMnemonic() {
     if (!hdChainCurrent.GetMnemonic(mnemonic, mnemonicPass))
         return;
     
-    QMessageBox::information(this, tr("Wallet Mnemonic Phrase"),
+    QMessageBox::information(this, tr("Mnemonic Recovery Phrase"),
         tr(std::string(mnemonic.begin(), mnemonic.end()).c_str()));
 }
