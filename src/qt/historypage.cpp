@@ -165,6 +165,7 @@ void HistoryPage::on_cellClicked(int row, int column)
         				}
         			}
         		}
+                txdlg.setTxFee(tx.nTxFee);
         	}
         }
         std::string txdlgMsg = "Request from Sender (if applicable)";
@@ -176,7 +177,6 @@ void HistoryPage::on_cellClicked(int row, int column)
             privkeyFound = false;
             txdlgMsg = "Wallet must be unlocked to view PrivKey";
         }
-
         if (!privkeyFound) txdlg.setTxPrivKey(std::string(txdlgMsg).c_str());
         
         txdlg.exec();
