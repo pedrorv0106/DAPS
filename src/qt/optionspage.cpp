@@ -51,17 +51,11 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
     connect(ui->lineEditNewPassRepeat, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPassRepeat()));
     connect(ui->lineEditOldPass, SIGNAL(textChanged(const QString &)), this, SLOT(onOldPassChanged()));
 
-    QDoubleValidator *dblVal = new QDoubleValidator(0, Params().MAX_MONEY, 6, ui->lineEditWithhold);
-    dblVal->setNotation(QDoubleValidator::StandardNotation);
-    dblVal->setLocale(QLocale::C);
-    ui->lineEditWithhold->setValidator(dblVal);
-    ui->lineEditWithhold->setPlaceholderText("DAPS Amount");
-    if (nReserveBalance > 0)
-        ui->lineEditWithhold->setText(BitcoinUnits::format(0, nReserveBalance).toUtf8());
-
-    bool stkStatus = pwalletMain->ReadStakingStatus();
-    ui->toggleStaking->setState(nLastCoinStakeSearchInterval | stkStatus);
-    connect(ui->toggleStaking, SIGNAL(stateChanged(ToggleButton*)), this, SLOT(on_EnableStaking(ToggleButton*)));
+    ui->lineEditWithhold->setVisible(false);
+    ui->labelStaking->setVisible(false);
+    ui->label_2->setVisible(false);
+    ui->pushButtonSave->setVisible(false);
+    ui->pushButtonDisable->setVisible(false);
 
     connect(ui->pushButtonRecovery, SIGNAL(clicked()), this, SLOT(onShowMnemonic()));
 
@@ -86,14 +80,12 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
     ui->code_5->setVisible(false);
     ui->code_6->setVisible(false);
 
-    timerStakingToggleSync = new QTimer();
-    connect(timerStakingToggleSync, SIGNAL(timeout()), this, SLOT(setStakingStatus()));
-    timerStakingToggleSync->start(20000);
+    ui->toggleStaking->setVisible(false);
 }
 
 void OptionsPage::setStakingToggle()
 {
-	ui->toggleStaking->setState(fGenerateDapscoins);
+	//disable in multisig wallet
 }
 
 void OptionsPage::setModel(WalletModel* model)
@@ -135,28 +127,11 @@ void OptionsPage::resizeEvent(QResizeEvent* event)
 }
 
 void OptionsPage::on_pushButtonSave_clicked() {
-    if (ui->lineEditWithhold->text().trimmed().isEmpty()) {
-        QMessageBox(QMessageBox::Information, tr("Information"), tr("DAPS reserve amount should be filled"), QMessageBox::Ok).exec();
-        return;
-    }
-    nReserveBalance = getValidatedAmount();
-
-    CWalletDB walletdb(pwalletMain->strWalletFile);
-    walletdb.WriteReserveAmount(nReserveBalance / COIN);
-
-    emit model->stakingStatusChanged(nLastCoinStakeSearchInterval);
-    QMessageBox(QMessageBox::Information, tr("Information"), tr("Reserve balance " + BitcoinUnits::format(0, nReserveBalance).toUtf8() + " is successfully set!"), QMessageBox::Ok).exec();
+    //disable in multisig wallet
 }
 
 void OptionsPage::on_pushButtonDisable_clicked() {
-    ui->lineEditWithhold->setText("0");
-    nReserveBalance = getValidatedAmount();
-
-    CWalletDB walletdb(pwalletMain->strWalletFile);
-    walletdb.WriteReserveAmount(nReserveBalance / COIN);
-
-    emit model->stakingStatusChanged(nLastCoinStakeSearchInterval);
-    QMessageBox(QMessageBox::Information, tr("Information"), tr("Reserve balance disabled!"), QMessageBox::Ok).exec();
+    //disable in multisig wallet
 }
 
 void OptionsPage::keyPressEvent(QKeyEvent* event)
