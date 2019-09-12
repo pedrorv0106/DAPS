@@ -369,6 +369,9 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     stakingAction->setMenuRole(QAction::NoRole);
     networkAction = new QAction(QIcon(":/icons/options"), tr("&Network"), this);
     networkAction->setMenuRole(QAction::NoRole);
+    networkAction->setText("Network Status");
+    connectionCount = new QLabel(this);
+    connectionCount->setObjectName("connectionCount");
 
     toggleHideAction = new QAction(networkStyle->getAppIcon(), tr("&Show / Hide"), this);
     toggleHideAction->setStatusTip(tr("Show or hide the main Window"));
@@ -548,6 +551,8 @@ void BitcoinGUI::createToolBars()
         bottomToolbar->addAction(optionsAction);
         bottomToolbar->addAction(stakingAction);
         bottomToolbar->addAction(networkAction);
+        bottomToolbar->addWidget(connectionCount);
+        
         bottomToolbar->setObjectName("bottomToolbar");
 
         QHBoxLayout* layout = new QHBoxLayout(this);
@@ -895,7 +900,7 @@ void BitcoinGUI::setNumConnections(int count)
         break;
     }
     
-    networkAction->setText(tr("%n connections", "", count));
+    connectionCount->setText(tr("%n connections", "", count));
     if (count < 1)
         networkAction->setIcon(QIcon(":icons/staking_disabled"));
     else
