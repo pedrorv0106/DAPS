@@ -74,7 +74,7 @@ void MultiSigSetupAddSigner::on_btnBack()
 
 void MultiSigSetupAddSigner::on_btnNext()
 {
-	std::string hexCombo = ui->textComboKey->toPlainText().toStdString();
+	std::string hexCombo = ui->textComboKey->toPlainText().trimmed().toStdString();
 	if (!IsHex(hexCombo)) return;
 	vector<unsigned char> comboData(ParseHex(hexCombo));
 	CDataStream ssdata(comboData, SER_NETWORK, PROTOCOL_VERSION);
