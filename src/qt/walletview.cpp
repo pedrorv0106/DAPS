@@ -228,10 +228,7 @@ void WalletView::gotoBlockExplorerPage()
 
 void WalletView::gotoMasternodePage()
 {
-    QSettings settings;
-    if (settings.value("fShowMasternodesTab").toBool()) {
-        setCurrentWidget(masternodeListPage);
-    }
+    //disabled for multisig wallet
 }
 
 void WalletView::gotoReceiveCoinsPage()

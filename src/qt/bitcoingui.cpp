@@ -79,7 +79,6 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle* networkStyle, QWidget* parent) : QMai
                                                                             appMenuBar(0),
                                                                             overviewAction(0),
                                                                             historyAction(0),
-                                                                            masternodeAction(0),
                                                                             quitAction(0),
                                                                             sendCoinsAction(0),
 																			keyImageSyncAction(0),
@@ -337,23 +336,6 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     tabGroup->addAction(historyAction);
 
 #ifdef ENABLE_WALLET
-
-    QSettings settings;
-    if (settings.value("fShowMasternodesTab").toBool()) {
-        masternodeAction = new QAction(QIcon(":/icons/masternodes"), tr("&   Masternodes"), this);
-        masternodeAction->setStatusTip(tr("Masternodes"));
-        masternodeAction->setToolTip(masternodeAction->statusTip());
-        masternodeAction->setCheckable(true);
-#ifdef Q_OS_MAC
-        masternodeAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_6));
-#else
-        masternodeAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
-#endif
-        tabGroup->addAction(masternodeAction);
-        connect(masternodeAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-        connect(masternodeAction, SIGNAL(triggered()), this, SLOT(gotoMasternodePage()));
-    }
-
     // These showNormalIfMinimized are needed because Send Coins and Receive Coins
     // can be triggered from the tray menu, and need to show the GUI to be useful.
     connect(overviewAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
@@ -563,10 +545,6 @@ void BitcoinGUI::createToolBars()
         toolbar->addAction(cosignAction);
         toolbar->addAction(receiveCoinsAction);
         toolbar->addAction(historyAction);
-        QSettings settings;
-        if (settings.value("fShowMasternodesTab").toBool()) {
-            toolbar->addAction(masternodeAction);
-        }
 
         toolbar->setMovable(false); // remove unused icon in upper left corner
         overviewAction->setChecked(true);
@@ -699,10 +677,6 @@ void BitcoinGUI::setWalletActionsEnabled(bool enabled)
     cosignAction->setEnabled(enabled);
     receiveCoinsAction->setEnabled(enabled);
     historyAction->setEnabled(enabled);
-    QSettings settings;
-    if (settings.value("fShowMasternodesTab").toBool()) {
-        masternodeAction->setEnabled(enabled);
-    }
     encryptWalletAction->setEnabled(enabled);
     backupWalletAction->setEnabled(enabled);
     changePassphraseAction->setEnabled(enabled);
@@ -837,11 +811,7 @@ void BitcoinGUI::gotoHistoryPage()
 
 void BitcoinGUI::gotoMasternodePage()
 {
-    QSettings settings;
-    if (settings.value("fShowMasternodesTab").toBool()) {
-        masternodeAction->setChecked(true);
-        if (walletFrame) walletFrame->gotoMasternodePage();
-    }
+    //disabled for multisig wallet
 }
 
 void BitcoinGUI::gotoReceiveCoinsPage()

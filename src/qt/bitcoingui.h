@@ -92,7 +92,6 @@ private:
     QMenuBar* appMenuBar;
     QAction* overviewAction;
     QAction* historyAction;
-    QAction* masternodeAction;
     QAction* quitAction;
     QAction* sendCoinsAction;
     QAction* keyImageSyncAction;

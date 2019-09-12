@@ -113,9 +113,7 @@ void WalletFrame::gotoHistoryPage()
 
 void WalletFrame::gotoMasternodePage() // Masternode list
 {
-    QMap<QString, WalletView*>::const_iterator i;
-    for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
-        i.value()->gotoMasternodePage();
+    //disabled for multisig wallet
 }
 
 void WalletFrame::gotoBlockExplorerPage()
