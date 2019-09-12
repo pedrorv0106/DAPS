@@ -70,7 +70,7 @@ case $1 in
             messagesleep 7
           else
             echo "dapscoind is executing on process ID: " $PID
-            echo "Start aborting - please try launch.sh restart"     
+            echo "Start aborting - please try inspect.sh restart"     
           fi  
           ;; 
      stop)
@@ -84,7 +84,7 @@ case $1 in
             messagesleep 7
           else
             echo "dapscoind is executing on process ID: " $PID
-            echo "Aborting Start - please try launch.sh restart"     
+            echo "Aborting Start - please try inspect.sh restart"     
           fi   
           ;;     
      *)
