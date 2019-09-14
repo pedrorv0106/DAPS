@@ -42,7 +42,7 @@ void MultiSigSetupAddSigner::setModel(WalletModel* model)
     }
     if (pwalletMain->ReadScreenIndex() == 1) {
         ui->label->setText(QString::fromStdString("My Combo Key (1 of " + std::to_string(pwalletMain->ReadNumSigners())) + ")");
-    	std::string labelText = "This is your combo key, consisting of your multisignature keychain wallet's public spend key, \nand private view key. Send this combo key to your" + std::to_string(pwalletMain->ReadNumSigners()) + " co-signers";
+    	std::string labelText = "This is your combo key, consisting of your multisignature keychain wallet's public spend key, \nand private view key. Send this combo key to your " + std::to_string(pwalletMain->ReadNumSigners() - 1) + " co-signers";
     	ui->label_2->setText(QString::fromStdString(labelText));
     } else {
         ui->label->setText(QString::fromStdString("Add Co-Signer (" + std::to_string(pwalletMain->ReadScreenIndex()) + " of " + std::to_string(pwalletMain->ReadNumSigners())) + ")");
