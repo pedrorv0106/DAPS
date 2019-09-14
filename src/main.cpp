@@ -1,6 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -319,8 +320,6 @@ bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
     	CBlockIndex* pindex = (*mi).second;
     	if (!pindex || !chainActive.Contains(pindex))
     		return false;
-
-    	LogPrintf("\nKey Image %s is spent in block %s\n", kiHex, bh.GetHex());
     	return true;//receive from mempool
     }
     if (bh == againsHash && !againsHash.IsNull()) return false;

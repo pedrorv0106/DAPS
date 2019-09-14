@@ -613,7 +613,7 @@
         <translation>Sekme tablosu</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
+        <source>DAPScoin</source>
         <translation>DAPScoin CORE</translation>
     </message>
     <message>
@@ -637,11 +637,11 @@
         <translation>Masternodları ara</translation>
     </message>
     <message>
-        <source>&amp;About DAPScoin Core</source>
+        <source>&amp;About DAPScoin</source>
         <translation>Pıvx core Hakkında</translation>
     </message>
     <message>
-        <source>Show information about DAPScoin Core</source>
+        <source>Show information about DAPScoin</source>
         <translation>Pıvx Core hakkında bilgi göster</translation>
     </message>
     <message>
@@ -698,12 +698,12 @@
         <translation>Kaşif penceresini engelle</translation>
     </message>
     <message>
-        <source>Show the DAPScoin Core help message to get a list with possible DAPScoin command-line options</source>
-        <translation>Olası DAPScoin komut satırı seçeneklerine sahip bir liste almak için DAPScoin Core yardım mesajını gösterin</translation>
+        <source>Show the DAPScoin help message to get a list with possible DAPScoin command-line options</source>
+        <translation>Olası DAPScoin komut satırı seçeneklerine sahip bir liste almak için DAPScoin yardım mesajını gösterin</translation>
     </message>
     <message>
-        <source>DAPScoin Core client</source>
-        <translation>DAPScoin Core istemci</translation>
+        <source>DAPScoin client</source>
+        <translation>DAPScoin istemci</translation>
     </message>
     <message>
         <source>Synchronizing with network...</source>
@@ -1117,7 +1117,7 @@ Adres: %4</translation>
         <translation>versiyon</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
+        <source>DAPScoin</source>
         <translation>DAPScoin CORE</translation>
     </message>
     <message>
@@ -1140,15 +1140,15 @@ Adres: %4</translation>
         <translation>Hoşgeldiniz</translation>
     </message>
     <message>
-        <source>Welcome to DAPScoin Core.</source>
-        <translation>DAPScoin Core'a hoşgeldiniz.</translation>
+        <source>Welcome to DAPScoin.</source>
+        <translation>DAPScoin'a hoşgeldiniz.</translation>
     </message>
     <message>
         <source>Use the default data directory</source>
         <translation>Varsayılan veri dosyasını kullanınız</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
+        <source>DAPScoin</source>
         <translation>DAPScoin CORE</translation>
     </message>
     <message>
@@ -1594,7 +1594,7 @@ Adres: %4</translation>
 <context>
     <name>SplashScreen</name>
     <message>
-        <source>DAPScoin Core</source>
+        <source>DAPScoin</source>
         <translation>DAPScoin CORE</translation>
     </message>
     </context>

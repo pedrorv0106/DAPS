@@ -136,7 +136,13 @@ void OptionsPage::resizeEvent(QResizeEvent* event)
 
 void OptionsPage::on_pushButtonSave_clicked() {
     if (ui->lineEditWithhold->text().trimmed().isEmpty()) {
-        QMessageBox(QMessageBox::Information, tr("Information"), tr("DAPS reserve amount should be filled"), QMessageBox::Ok).exec();
+        ui->lineEditWithhold->setStyleSheet("border: 2px solid red");
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Reserve Balance Empty");
+        msgBox.setText("DAPS reserve amount is empty and must be a minimum of 1. Click Disable if you would like to turn it off.");
+        msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+        msgBox.setIcon(QMessageBox::Information);
+        msgBox.exec();
         return;
     }
     nReserveBalance = getValidatedAmount();
@@ -145,7 +151,13 @@ void OptionsPage::on_pushButtonSave_clicked() {
     walletdb.WriteReserveAmount(nReserveBalance / COIN);
 
     emit model->stakingStatusChanged(nLastCoinStakeSearchInterval);
-    QMessageBox(QMessageBox::Information, tr("Information"), tr("Reserve balance " + BitcoinUnits::format(0, nReserveBalance).toUtf8() + " is successfully set!"), QMessageBox::Ok).exec();
+    ui->lineEditWithhold->setStyleSheet(GUIUtil::loadStyleSheet());
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("Reserve Balance Set");
+    msgBox.setText("Reserve balance " + BitcoinUnits::format(0, nReserveBalance).toUtf8() + " is successfully set!");
+    msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+    msgBox.setIcon(QMessageBox::Information);
+    msgBox.exec();
 }
 
 void OptionsPage::on_pushButtonDisable_clicked() {
@@ -156,7 +168,12 @@ void OptionsPage::on_pushButtonDisable_clicked() {
     walletdb.WriteReserveAmount(nReserveBalance / COIN);
 
     emit model->stakingStatusChanged(nLastCoinStakeSearchInterval);
-    QMessageBox(QMessageBox::Information, tr("Information"), tr("Reserve balance disabled!"), QMessageBox::Ok).exec();
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("Reserve Balance Disabled");
+    msgBox.setText("Reserve balance disabled!");
+    msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+    msgBox.setIcon(QMessageBox::Information);
+    msgBox.exec();
 }
 
 void OptionsPage::keyPressEvent(QKeyEvent* event)
@@ -238,9 +255,19 @@ void OptionsPage::on_pushButtonPasswordClear_clicked()
 void OptionsPage::on_pushButtonBackup_clicked(){
     if (model->backupWallet(QString("BackupWallet.dat"))) {
         ui->pushButtonBackup->setStyleSheet("border: 2px solid green");
-        QMessageBox(QMessageBox::Information, tr("Information"), tr("Wallet has been successfully backed up to BackupWallet.dat in the current directory."), QMessageBox::Ok).exec();
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Wallet Backup Successful");
+        msgBox.setText("Wallet has been successfully backed up to BackupWallet.dat in the current directory.");
+        msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+        msgBox.setIcon(QMessageBox::Information);
+        msgBox.exec();
     } else { ui->pushButtonBackup->setStyleSheet("border: 2px solid red");
-        QMessageBox::critical(this, tr("Error"),tr("Wallet backup failed. Please try again."));
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Wallet Backup Failed");
+        msgBox.setText("Wallet backup failed. Please try again.");
+        msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
 }
     ui->pushButtonBackup->repaint();
 }
@@ -508,6 +535,9 @@ void OptionsPage::confirmDialogIsFinished(int result) {
             disable2FA();
         }
     }
+
+    if (result == QDialog::Rejected)
+        ui->toggle2FA->setState(true);
 }
 
 void OptionsPage::on_day() {
@@ -557,5 +587,4 @@ void OptionsPage::onShowMnemonic() {
     msgBox.setInformativeText("\n<b>" + mPhrase + "</b>");
     msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
     msgBox.exec();
-
 }
