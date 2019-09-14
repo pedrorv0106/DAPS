@@ -1,6 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -94,7 +95,6 @@ struct COrphanTx {
 map <uint256, COrphanTx> mapOrphanTransactions;
 map <uint256, set<uint256>> mapOrphanTransactionsByPrev;
 map <uint256, int64_t> mapRejectedBlocks;
-
 
 void EraseOrphansFor(NodeId peer);
 
@@ -320,8 +320,6 @@ bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
     	CBlockIndex* pindex = (*mi).second;
     	if (!pindex || !chainActive.Contains(pindex))
     		return false;
-
-    	LogPrintf("\nKey Image %s is spent in block %s\n", kiHex, bh.GetHex());
     	return true;//receive from mempool
     }
     if (bh == againsHash && !againsHash.IsNull()) return false;
@@ -385,7 +383,7 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx, CBlockIndex* pindex)
 		LogPrintf("\nTx input too many\n");
 		return false;
 	}
-	for(size_t i = 0; i < tx.vin.size(); i++) {
+	for(size_t i = 1; i < tx.vin.size(); i++) {
 		if (tx.vin[i].decoys.size() != tx.vin[0].decoys.size()) {
 			LogPrintf("\nThe number of decoys not equal for all inputs, input %d has %d decoys but input 0 has only %d\n", i, tx.vin[i].decoys.size(), tx.vin[0].decoys.size());
 			return false;
@@ -4159,23 +4157,27 @@ bool AcceptBlockHeader(const CBlock &block, CValidationState &state, CBlockIndex
     uint256 hash = block.GetHash();
     BlockMap::iterator miSelf = mapBlockIndex.find(hash);
     CBlockIndex *pindex = NULL;
-
+    LogPrintf("\n%s: Block cache", __func__);
     // TODO : ENABLE BLOCK CACHE IN SPECIFIC CASES
     if (miSelf != mapBlockIndex.end()) {
         // Block header is already known.
         pindex = miSelf->second;
         if (ppindex)
             *ppindex = pindex;
+        if (!pindex) {
+        	mapBlockIndex.erase(hash);
+            return state.Invalid(error("%s : block is not found", __func__), 0, "not-found");
+        }
         if (pindex->nStatus & BLOCK_FAILED_MASK)
             return state.Invalid(error("%s : block is marked invalid", __func__), 0, "duplicate");
         return true;
     }
-
+    LogPrintf("\n%s: Block header", __func__);
     if (!CheckBlockHeader(block, state, false)) {
         LogPrintf("AcceptBlockHeader(): CheckBlockHeader failed \n");
         return false;
     }
-
+    LogPrintf("\n%s: get priveous block", __func__);
     // Get prev block index
     CBlockIndex *pindexPrev = NULL;
     if (hash != Params().HashGenesisBlock()) {
@@ -4204,7 +4206,7 @@ bool AcceptBlockHeader(const CBlock &block, CValidationState &state, CBlockIndex
         }
 
     }
-
+    LogPrintf("\n%s: contextual", __func__);
     if (!ContextualCheckBlockHeader(block, state, pindexPrev))
         return false;
 
@@ -4220,7 +4222,7 @@ bool AcceptBlockHeader(const CBlock &block, CValidationState &state, CBlockIndex
 bool AcceptBlock(CBlock &block, CValidationState &state, CBlockIndex **ppindex, CDiskBlockPos *dbp,
                  bool fAlreadyCheckedBlock) {
     AssertLockHeld(cs_main);
-
+    LogPrintf("\nAccepting block");
     CBlockIndex *&pindex = *ppindex;
     // Get prev block index
     CBlockIndex *pindexPrev = NULL;
@@ -4249,7 +4251,7 @@ bool AcceptBlock(CBlock &block, CValidationState &state, CBlockIndex **ppindex, 
     }
     if (block.GetHash() != Params().HashGenesisBlock() && !CheckWork(block, pindexPrev))
         return false;
-
+    LogPrintf("\nAcceptingHeader block");
     if (!AcceptBlockHeader(block, state, &pindex))
         return false;
 
@@ -4348,7 +4350,6 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
     // Preliminary checks
     int64_t nStartTime = GetTimeMillis();
     bool checked = CheckBlock(*pblock, state);
-
     // ppcoin: check proof-of-stake
     // Limited duplicity on stake: prevents block flood attack
     // Duplicate stake allowed only when there is orphan child block
@@ -4361,7 +4362,8 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
     if (pblock->GetHash() != Params().HashGenesisBlock() && pfrom != NULL) {
         //if we get this far, check if the prev block is our prev block, if not then request sync and return false
         BlockMap::iterator mi = mapBlockIndex.find(pblock->hashPrevBlock);
-        if (mi == mapBlockIndex.end()) {
+        if (mi == mapBlockIndex.end() || (mi != mapBlockIndex.end() && mi->second == NULL)) {
+        	mapBlockIndex.erase(pblock->hashPrevBlock);
             pfrom->PushMessage("getblocks", chainActive.GetLocator(), uint256(0));
             return false;
         } else {
@@ -4435,14 +4437,14 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
     	if ((int)pblock->vtx.size() > userTxStartIdx) {
     		for (int i = userTxStartIdx; i < (int)pblock->vtx.size(); i++) {
     			for (int j = 0; j < (int)pblock->vtx[i].vout.size(); j++) {
-    				if ((rand() % 100) <= CWallet::PROBABILITY_NEW_COIN_SELECTED) {
+    				if ((secp256k1_rand32() % 100) <= CWallet::PROBABILITY_NEW_COIN_SELECTED) {
     					COutPoint newOutPoint(pblock->vtx[i].GetHash(), j);
     					if(std::find(pwalletMain->userDecoysPool.begin(), pwalletMain->userDecoysPool.end(), newOutPoint) != pwalletMain->userDecoysPool.end()) {
     					    continue;
     					}
     					//add new user transaction to the pool
     					if ((int32_t)pwalletMain->userDecoysPool.size() >= CWallet::MAX_DECOY_POOL) {
-    						int selected = rand() % CWallet::MAX_DECOY_POOL;
+    						int selected = secp256k1_rand32() % CWallet::MAX_DECOY_POOL;
     						pwalletMain->userDecoysPool[selected] = newOutPoint;
     					} else {
     						pwalletMain->userDecoysPool.push_back(newOutPoint);
@@ -4465,14 +4467,14 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
 
     			for (int i = 0; i < (int)coinbase.vout.size(); i++) {
     				if (!coinbase.vout[i].IsNull() && !coinbase.vout[i].IsEmpty()) {
-    					if ((rand() % 100) <= CWallet::PROBABILITY_NEW_COIN_SELECTED) {
+    					if ((secp256k1_rand32() % 100) <= CWallet::PROBABILITY_NEW_COIN_SELECTED) {
     						COutPoint newOutPoint(coinbase.GetHash(), i);
     						if(std::find(pwalletMain->coinbaseDecoysPool.begin(), pwalletMain->coinbaseDecoysPool.end(), newOutPoint) != pwalletMain->coinbaseDecoysPool.end()) {
     							continue;
     						}
     						//add new coinbase transaction to the pool
     						if ((int)pwalletMain->coinbaseDecoysPool.size() >= CWallet::MAX_DECOY_POOL) {
-    							int selected = rand() % CWallet::MAX_DECOY_POOL;
+    							int selected = secp256k1_rand32() % CWallet::MAX_DECOY_POOL;
     							pwalletMain->coinbaseDecoysPool[selected] = newOutPoint;
     						} else {
     							pwalletMain->coinbaseDecoysPool.push_back(newOutPoint);

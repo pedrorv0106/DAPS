@@ -1,3 +1,4 @@
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -375,7 +376,7 @@ bool MultisigDialog::createMultisigTransaction(vector<CTxIn> vUserIn, vector<CTx
         CTxOut change(changeAmount, changePubKey);
 
         //generate random position for change
-        unsigned int changeIndex = rand() % (vUserOut.size() + 1);
+        unsigned int changeIndex = secp256k1_rand32() % (vUserOut.size() + 1);
 
         //insert change into random position
         if(changeIndex < vUserOut.size()){

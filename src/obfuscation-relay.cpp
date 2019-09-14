@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -83,12 +84,12 @@ bool CObfuScationRelay::VerifyMessage(std::string strSharedKey)
 void CObfuScationRelay::Relay()
 {
     int nCount = std::min(mnodeman.CountEnabled(ActiveProtocol()), 20);
-    int nRank1 = (rand() % nCount) + 1;
-    int nRank2 = (rand() % nCount) + 1;
+    int nRank1 = (secp256k1_rand32() % nCount) + 1;
+    int nRank2 = (secp256k1_rand32() % nCount) + 1;
 
     //keep picking another second number till we get one that doesn't match
     while (nRank1 == nRank2)
-        nRank2 = (rand() % nCount) + 1;
+        nRank2 = (secp256k1_rand32() % nCount) + 1;
 
     //relay this message through 2 separate nodes for redundancy
     RelayThroughNode(nRank1);

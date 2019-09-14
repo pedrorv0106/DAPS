@@ -1,6 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -202,6 +203,15 @@ public:
     }
 };
 
+enum StakingStatusError
+{
+	NONE,
+	DEFAULT,
+	UTXO_UNDER_THRESHOLD,
+	RESERVE_TOO_HIGH,
+	RESERVE_TOO_HIGH_AND_UTXO_UNDER_THRESHOLD
+};
+
 /**
  * A CWallet is an extension of a keystore, which also maintains a set of transactions and balances,
  * and provides the ability to create new transactions.
@@ -223,8 +233,6 @@ private:
     int64_t nNextResend;
     int64_t nLastResend;
 
-    static const CAmount MINIMUM_STAKE_AMOUNT = 10000 * COIN;
-
     /**
      * Used to keep track of spent outpoints, and
      * detect and report conflicts (double-spends or
@@ -238,6 +246,7 @@ private:
     void SyncMetaData(std::pair<TxSpends::iterator, TxSpends::iterator>);
 
 public:
+    static const CAmount MINIMUM_STAKE_AMOUNT = 400000 * COIN;
     static const int32_t MAX_DECOY_POOL = 500;
     static const int32_t PROBABILITY_NEW_COIN_SELECTED = 70;
     bool RescanAfterUnlock(bool fromBeginning = false);
@@ -249,6 +258,7 @@ public:
     bool HasCollateralInputs(bool fOnlyConfirmed = true);
     bool IsCollateralAmount(CAmount nInputAmount) const;
     int CountInputsWithAmount(CAmount nInputAmount);
+    bool checkPassPhraseRule(const char *pass);
     COutPoint findMyOutPoint(const CTxIn& txin) const;
     bool SelectCoinsCollateral(std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet);
     static int ComputeTxSize(size_t numIn, size_t numOut, size_t ringSize);
@@ -343,8 +353,8 @@ public:
         vDisabledAddresses.clear();
 
         //Auto Combine Dust
-        fCombineDust = false;
-        nAutoCombineThreshold = 300 * COIN;
+        fCombineDust = true;
+        nAutoCombineThreshold = 500 * COIN;
     }
 
     void setZDapsAutoBackups(bool fEnabled)

@@ -33,7 +33,7 @@ void EncryptDialog::setModel(WalletModel* model)
 void EncryptDialog::closeEvent (QCloseEvent *event)
 {
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::warning(this, "Wallet encryption required", "There was no passphrase entered for the wallet. Wallet encryption is required for the security of your funds. What would you like to do?", QMessageBox::Retry|QMessageBox::Close);
+    reply = QMessageBox::warning(this, "Wallet encryption required", "There was no passphrase entered for the wallet.\n\nWallet encryption is required for the security of your funds.\n\nWhat would you like to do?", QMessageBox::Retry|QMessageBox::Close);
       if (reply == QMessageBox::Retry) {
       event->ignore();
       } else {
@@ -44,7 +44,7 @@ void EncryptDialog::closeEvent (QCloseEvent *event)
 void EncryptDialog::on_btnCancel()
 {
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::warning(this, "Wallet encryption required", "There was no passphrase entered for the wallet. Wallet encryption is required for the security of your funds. What would you like to do?", QMessageBox::Retry|QMessageBox::Close);
+    reply = QMessageBox::warning(this, "Wallet encryption required", "There was no passphrase entered for the wallet.\n\nWallet encryption is required for the security of your funds.\n\nWhat would you like to do?", QMessageBox::Retry|QMessageBox::Close);
       if (reply == QMessageBox::Retry) {
       return;
       } else {
@@ -74,6 +74,12 @@ void EncryptDialog::on_acceptPassphrase() {
             return;
         }
 
+        if (!pwalletMain->checkPassPhraseRule(newPass.c_str())) {
+            QMessageBox::critical(this, tr("Wallet encryption failed"),
+                    tr("The passphrase must contain lower, upper, digit, symbol."));
+            return;
+        }
+
         double guesses;
         int ret = zxcvbn_password_strength(newPass.c_str(), NULL, &guesses, NULL);
         if (ret < 0 || guesses < 10000) {
@@ -84,7 +90,7 @@ void EncryptDialog::on_acceptPassphrase() {
 
         if (model->setWalletEncrypted(true, newPass))
             QMessageBox::information(this, tr("Wallet encryption successful"),
-                    tr("Wallet passphrase was successfully set. Please remember your passphrase as there is no way to recover it."));
+                    tr("Wallet passphrase was successfully set.\n Please remember your passphrase as there is no way to recover it."));
         accept();
     } else {
             QMessageBox::critical(this, tr("Wallet encryption failed"),

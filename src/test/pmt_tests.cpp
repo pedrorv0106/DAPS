@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(pmt_test1)
         CBlock block;
         for (unsigned int j=0; j<nTx; j++) {
             CMutableTransaction tx;
-            tx.nLockTime = rand(); // actual transaction data doesn't matter; just make the nLockTime's unique
+            tx.nLockTime = secp256k1_rand32(); // actual transaction data doesn't matter; just make the nLockTime's unique
             block.vtx.push_back(CTransaction(tx));
         }
 
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(pmt_test1)
             std::vector<bool> vMatch(nTx, false);
             std::vector<uint256> vMatchTxid1;
             for (unsigned int j=0; j<nTx; j++) {
-                bool fInclude = (rand() & ((1 << (att/2)) - 1)) == 0;
+                bool fInclude = (secp256k1_rand32() & ((1 << (att/2)) - 1)) == 0;
                 vMatch[j] = fInclude;
                 if (fInclude)
                     vMatchTxid1.push_back(vTxid[j]);

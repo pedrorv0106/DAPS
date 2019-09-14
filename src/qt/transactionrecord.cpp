@@ -1,5 +1,6 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -44,7 +45,6 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
         CTxDestination address;
         if (!ExtractDestination(wtx.vout[1].scriptPubKey, address))
             return parts;
-
         if (!IsMine(*wallet, address)) {
             //if the address is not yours then it means you have a tx sent to you in someone elses coinstake tx
             for (unsigned int i = 1; i < wtx.vout.size(); i++) {
@@ -163,7 +163,8 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
             }
 
             //a sendtoself transaction has second output as change
-            CAmount nChange = pwalletMain->getCTxOutValue(wtx, wtx.vout[1]);
+            CAmount nChange = 0;
+            if (wtx.vout.size() >= 2) nChange = pwalletMain->getCTxOutValue(wtx, wtx.vout[1]);
 
             sub.debit = nCredit - nChange;
             sub.credit = 0;

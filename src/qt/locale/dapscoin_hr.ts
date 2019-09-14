@@ -150,8 +150,8 @@
         <translation>Otvori konfiguracijsku datoteku</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>&amp;Privacy</source>
@@ -162,8 +162,8 @@
         <translation>&amp;BIP38 alat</translation>
     </message>
     <message>
-        <source>DAPScoin Core client</source>
-        <translation>DAPScoin Core klijent</translation>
+        <source>DAPScoin client</source>
+        <translation>DAPScoin klijent</translation>
     </message>
     <message>
         <source>Error</source>
@@ -260,15 +260,15 @@
 <context>
     <name>HelpMessageDialog</name>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     </context>
 <context>
     <name>Intro</name>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Error</source>
@@ -612,8 +612,8 @@
 <context>
     <name>ShutdownWindow</name>
     <message>
-        <source>DAPScoin Core is shutting down...</source>
-        <translation>DAPScoin Core se gasi...</translation>
+        <source>DAPScoin is shutting down...</source>
+        <translation>DAPScoin se gasi...</translation>
     </message>
     </context>
 <context>
@@ -650,8 +650,8 @@
 <context>
     <name>SplashScreen</name>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Version %1</source>
