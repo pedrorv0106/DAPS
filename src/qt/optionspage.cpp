@@ -579,11 +579,12 @@ void OptionsPage::onShowMnemonic() {
     SecureString mnemonicPass;
     if (!hdChainCurrent.GetMnemonic(mnemonic, mnemonicPass))
         return;
+
     QString mPhrase = std::string(mnemonic.begin(), mnemonic.end()).c_str();
     QMessageBox msgBox;
-    msgBox.setWindowTitle("Wallet Mnemonic Phrase");
-    msgBox.setText(mPhrase);
+    msgBox.setWindowTitle("Mnemonic Recovery Phrase");
+    msgBox.setText("Below is your Mnemonic Recovery Phrase, consisting of 24 seed words. Please copy/write these words down in order. We strongly recommend keeping multiple copies in different locations.");
+    msgBox.setInformativeText("\n<b>" + mPhrase + "</b>");
     msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
-    msgBox.setIcon(QMessageBox::Information);
     msgBox.exec();
 }
