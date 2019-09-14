@@ -545,6 +545,7 @@ void BitcoinGUI::createToolBars()
         bottomToolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         bottomToolbar->setOrientation(Qt::Vertical);
         bottomToolbar->addAction(optionsAction);
+
         bottomToolbar->addAction(networkAction);
         bottomToolbar->addWidget(connectionCount);
         

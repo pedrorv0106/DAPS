@@ -3332,15 +3332,14 @@ bool CWallet::makeRingCT(CPartialTransaction& wtxNew, int ringSize, std::string&
     if (!selectDecoysAndRealIndex(wtxNew, myIndex, ringSize)) {
         return false;
     }
+	const size_t MAX_VIN = MAX_TX_INPUTS;
+	const size_t MAX_DECOYS = MAX_RING_SIZE;	//padding 1 for safety reasons
+	const size_t MAX_VOUT = 5;
 
-    const size_t MAX_VIN = 32;
-    const size_t MAX_DECOYS = MAX_RING_SIZE;	//padding 1 for safety reasons
-    const size_t MAX_VOUT = 5;
-
-    if (wtxNew.vin.size() >= 30 || wtxNew.vin.size() == 0) {
-    	strFailReason = _("Failed due to transaction size too large or the transaction does no have any input");
-    	return false;
-    }
+	if (wtxNew.vin.size() > MAX_TX_INPUTS || wtxNew.vin.size() == 0) {
+		strFailReason = _("Failed due to transaction size too large or the transaction does no have any input");
+		return false;
+	}
 
     for(size_t i = 0; i < wtxNew.vin.size(); i++) {
     	if (wtxNew.vin[i].decoys.size() != wtxNew.vin[0].decoys.size()) {
