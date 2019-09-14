@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: daps-master-1
+  name: daps-master-4
 spec:
   ports:
     - port: 53575
@@ -11,17 +11,17 @@ spec:
     - port: 53572
       name: mainnet
   selector:
-    app: daps-master-1
+    app: daps-master-4
   sessionAffinity: None
   type: LoadBalancer
 ---
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: master-1-pv-volume
+  name: master-4-pv-volume
   labels:
     type: local
-spec:
+spec:4
   storageClassName: standard
   capacity:
     storage: 9Gi
@@ -29,17 +29,17 @@ spec:
     - ReadWriteOnce
   claimRef:
     namespace: default
-    name: master-1-pv-claim
+    name: master-4-pv-claim
   gcePersistentDisk:
     fsType: ext4
-    pdName: masternode-1-service
+    pdName: masternode-4-service
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: master-1-pv-claim
+  name: master-4-pv-claim
   labels:
-    app: daps-master-1
+    app: daps-master-4
 spec:
   accessModes:
     - ReadWriteOnce
@@ -50,26 +50,26 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: daps-master-1
+  name: daps-master-4
   labels:
-    app: daps-master-1
+    app: daps-master-4
 spec:
   selector:
     matchLabels:
-      app: daps-master-1
+      app: daps-master-4
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: daps-master-1
+        app: daps-master-4
       annotations:
         test: test
     spec:
       hostAliases:
-      - ip: "10.10.10.101"
+      - ip: "10.10.10.104"
         hostnames:
-        - "master.1"
+        - "master.4"
       terminationGracePeriodSeconds: 3
       containers:
       - image: r.cfcr.io/hysmagus/daps_min:develop
@@ -88,12 +88,12 @@ spec:
         - containerPort: 53572
           name: mainnet
         volumeMounts:
-        - name: master1data
+        - name: master4data
           mountPath: /root/.dapscoin/
       volumes:
-      - name: master1data
+      - name: master4data
         persistentVolumeClaim:
-          claimName: master-1-pv-claim
+          claimName: master-4-pv-claim
       dnsPolicy: ClusterFirst
       imagePullSecrets:
       - name: regcred
