@@ -119,8 +119,11 @@ void TwoFAConfirmDialog::on_acceptCode()
     QString secret = settings.value("2FACode").toString();
     result = QGoogleAuth::generatePin(secret.toUtf8());
     
-    if (result != code)
+    if (result != code) {
+        QMessageBox::critical(this, tr("Wrong 2FA Code"),
+                tr("Incorrect 2FA code entered.\nPlease try again."));
         return;
+    }
 
     accept();
 }

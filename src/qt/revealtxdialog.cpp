@@ -1,5 +1,6 @@
 #include "revealtxdialog.h"
 #include "ui_revealtxdialog.h"
+#include "bitcoinunits.h"
 
 #include <QClipboard>
 
@@ -20,6 +21,10 @@ RevealTxDialog::RevealTxDialog(QWidget *parent) :
     ui->pushButtonCPPrivK->setStyleSheet("background:transparent;");
     ui->pushButtonCPPrivK->setIcon(QIcon(":/icons/editcopy"));
     connect(ui->pushButtonCPPrivK, SIGNAL(clicked()), this, SLOT(copyPrivateKey()));
+
+    ui->pushButtonTxFee->setStyleSheet("background:transparent;");
+    ui->pushButtonTxFee->setIcon(QIcon(":/icons/editcopy"));
+    connect(ui->pushButtonTxFee, SIGNAL(clicked()), this, SLOT(copyTxFee()));
 }
 
 RevealTxDialog::~RevealTxDialog()
@@ -42,6 +47,11 @@ void RevealTxDialog::setTxPrivKey(QString strPrivKey)
 	ui->lblPrivateKey->setText(strPrivKey);
 }
 
+void RevealTxDialog::setTxFee(CAmount fee)
+{
+	ui->lblTxFee->setText(BitcoinUnits::floorHtmlWithUnit(BitcoinUnits::DAPS, fee, false, BitcoinUnits::separatorAlways));
+}
+
 void RevealTxDialog::on_buttonBox_accepted()
 {
 
@@ -60,4 +70,9 @@ void RevealTxDialog::copyAddress(){
 void RevealTxDialog::copyPrivateKey(){
     QClipboard *clipboard = QApplication::clipboard();
     clipboard->setText(ui->lblPrivateKey->text());
+}
+
+void RevealTxDialog::copyTxFee(){
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText(ui->lblTxFee->text());
 }
