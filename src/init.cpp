@@ -1553,8 +1553,6 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
         }
         fVerifyingBlocks = false;
 
-        bool fEnableZDapsBackups = GetBoolArg("-backupzdaps", true);
-        pwalletMain->setZDapsAutoBackups(fEnableZDapsBackups);
     }  // (!fDisableWallet)
 #else  // ENABLE_WALLET
     LogPrintf("No wallet compiled in!\n");

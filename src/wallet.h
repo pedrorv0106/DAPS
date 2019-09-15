@@ -357,11 +357,6 @@ public:
         nAutoCombineThreshold = 500 * COIN;
     }
 
-    void setZDapsAutoBackups(bool fEnabled)
-    {
-        fBackupMints = fEnabled;
-    }
-
     bool isMultiSendEnabled()
     {
         return fMultiSendMasternodeReward || fMultiSendStake;

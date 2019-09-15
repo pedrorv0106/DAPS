@@ -1272,8 +1272,8 @@ qt/qt_dapscoin_qt-dapscoin.o: qt/dapscoin.cpp /usr/include/stdc-predef.h \
  /usr/include/boost/variant/detail/element_index.hpp \
  /usr/include/boost/variant/visitor_ptr.hpp \
  /usr/include/boost/variant/bad_visit.hpp libzerocoin/Params.h \
- libzerocoin/bignum.h /usr/include/openssl/bn.h version.h \
- libzerocoin/ZerocoinDefines.h script/script.h script/standard.h \
+ /usr/include/openssl/bn.h version.h \
+ script/script.h script/standard.h \
  script/interpreter.h script/script_error.h \
  /usr/include/x86_64-linux-gnu/qt5/QtCore/QByteArray \
  /usr/include/x86_64-linux-gnu/qt5/QtCore/qbytearray.h \
@@ -5045,8 +5045,6 @@ libzerocoin/bignum.h:
 /usr/include/openssl/bn.h:
 
 version.h:
-
-libzerocoin/ZerocoinDefines.h:
 
 script/script.h:
 
