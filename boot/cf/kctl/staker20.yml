@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: daps-staker-21
+  name: daps-staker-20
 spec:
   ports:
     - port: 53575
@@ -11,14 +11,14 @@ spec:
     - port: 53572
       name: mainnet
   selector:
-    app: daps-staker-21
+    app: daps-staker-20
   sessionAffinity: None
   type: LoadBalancer
 ---
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: staker-21-pv-volume
+  name: staker-20-pv-volume
   labels:
     type: local
 spec:
@@ -29,17 +29,17 @@ spec:
     - ReadWriteOnce
   claimRef:
     namespace: default
-    name: staker-21-pv-claim
+    name: staker-20-pv-claim
   gcePersistentDisk:
     fsType: ext4
-    pdName: stakingnode-21-service
+    pdName: stakingnode-20-service
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: staker-21-pv-claim
+  name: staker-20-pv-claim
   labels:
-    app: daps-staker-21
+    app: daps-staker-20
 spec:
   accessModes:
     - ReadWriteOnce
@@ -50,24 +50,24 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: daps-staker-21
+  name: daps-staker-20
   labels:
-    app: daps-staker-21
+    app: daps-staker-20
 spec:
   selector:
     matchLabels:
-      app: daps-staker-21
+      app: daps-staker-20
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: daps-staker-21
+        app: daps-staker-20
     spec:
       hostAliases:
       - ip: "10.10.10.70"
         hostnames:
-        - "staker.21  "
+        - "staker.20"
       terminationGracePeriodSeconds: 3
       containers:
       - image: r.cfcr.io/hysmagus/daps_min:develop
@@ -86,12 +86,12 @@ spec:
         - containerPort: 53572
           name: mainnet
         volumeMounts:
-        - name: staker21data
+        - name: staker20data
           mountPath: /root/.dapscoin/
       volumes:
-      - name: staker21data
+      - name: staker20data
         persistentVolumeClaim:
-          claimName: staker-21-pv-claim
+          claimName: staker-20-pv-claim
       dnsPolicy: ClusterFirst
       imagePullSecrets:
       - name: regcred

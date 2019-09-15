@@ -67,7 +67,7 @@ spec:
       hostAliases:
       - ip: "10.10.10.68"
         hostnames:
-        - "staker.18  "
+        - "staker.18"
       terminationGracePeriodSeconds: 3
       containers:
       - image: r.cfcr.io/hysmagus/daps_min:develop
@@ -86,7 +86,7 @@ spec:
         - containerPort: 53572
           name: mainnet
         volumeMounts:
-        - name: staker17data
+        - name: staker18data
           mountPath: /root/.dapscoin/
       volumes:
       - name: staker18data
