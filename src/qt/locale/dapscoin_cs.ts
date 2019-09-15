@@ -426,10 +426,6 @@
         <translation>Procházet historii transakcí</translation>
     </message>
     <message>
-        <source>Privacy Actions for zDAPS</source>
-        <translation>Řešení soukromí pro zDAPS</translation>
-    </message>
-    <message>
         <source>E&amp;xit</source>
         <translation>E&amp;xit</translation>
     </message>

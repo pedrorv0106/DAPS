@@ -544,12 +544,7 @@
         <source>Browse transaction history</source>
         <translation>Browse transaction history</translation>
     </message>
-    <message>
-        <location line="+11"/>
-        <source>Privacy Actions for zDAPS</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
+     <message>
         <location line="+42"/>
         <source>E&amp;xit</source>
         <translation>E&amp;xit</translation>
@@ -2418,27 +2413,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</source
         <translation>Map port using &amp;UPnP</translation>
     </message>
     <message>
-        <location line="-133"/>
-        <source>Percentage of incoming DAPS which get automatically converted to zDAPS via Zerocoin Protocol (min: 10%)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Percentage of autominted zDAPS</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <location line="+16"/>
-        <source>Wait with automatic conversion to Zerocoin until enough DAPS for this denomination is available</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-13"/>
-        <source>Preferred Automint zDAPS Denomination</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location line="+114"/>
         <source>Connect to the DAPScoin network through a SOCKS5 proxy.</source>
         <translation type="unfinished"></translation>
@@ -2710,17 +2684,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</source
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+35"/>
-        <source>zDAPS:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Current percentage of zDAPS.
-If AutoMint is enabled this percentage will settle around the configured AutoMint percentage (default = 10%)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location line="+4"/>
         <location line="+66"/>
         <source>0 %</source>
@@ -2729,7 +2692,7 @@ If AutoMint is enabled this percentage will settle around the configured AutoMin
     <message>
         <location line="-46"/>
         <location line="+13"/>
-        <source>Locked DAPS or Masternode collaterals. These are excluded from zDAPS minting.</source>
+        <source>Locked DAPS or Masternode collaterals.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2749,7 +2712,7 @@ If AutoMint is enabled this percentage will settle around the configured AutoMin
     <message>
         <location line="+7"/>
         <location line="+10"/>
-        <source>Unlocked DAPSs. These can be used for zDAPS minting.</source>
+        <source>Unlocked DAPSs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2758,26 +2721,8 @@ If AutoMint is enabled this percentage will settle around the configured AutoMin
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+77"/>
-        <source>Zerocoin Balance</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <location line="+104"/>
-        <source>Mature: more than 20 confirmation and more than 3 mints of the same denomination after it was minted.
-These zDAPS are spendable.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location line="-100"/>
         <source>Mature:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <location line="+35"/>
-        <source>All available zDAPS, unconfirmed and immature zDAPS included.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2807,11 +2752,6 @@ Immature: confirmed, but less than 3 mints of the same denomination after it was
     </message>
     <message>
         <location line="+93"/>
-        <source>Current percentage of zDAPS.
-If AutoMint is enabled this percentage will settle around the configured AutoMint percentage (default = 10%).
-</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <location line="+4"/>
         <source>AutoMint is currently enabled and set to </source>
@@ -5055,31 +4995,6 @@ To enable AutoMint change &apos;enablezeromint=0&apos; to &apos;enablezeromint=1
     </message>
     <message>
         <location line="+1"/>
-        <source>Received Daps from zDaps</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Zerocoin Mint</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Zerocoin Spend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Zerocoin Spend, Change in zDaps</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Zerocoin Spend to Self</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Other</source>
         <translation>Other</translation>
     </message>
@@ -5812,11 +5727,6 @@ for example: alertnotify=echo %%s | mail -s &quot;DAPScoin Alert&quot; admin@foo
         <translation type="unfinished">Done loading</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Enable automatic Zerocoin minting (0-1, default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location line="+2"/>
         <source>Enable publish hash transaction (locked via SwiftX) in &lt;address&gt;</source>
         <translation type="unfinished"></translation>
@@ -6140,7 +6050,7 @@ for example: alertnotify=echo %%s | mail -s &quot;DAPScoin Alert&quot; admin@foo
     </message>
     <message>
         <location line="+38"/>
-        <source>Disable all DAPScoin specific functionality (Masternodes, Zerocoin, SwiftX, Budgeting) (0-1, default: %u)</source>
+        <source>Disable all DAPScoin specific functionality (Masternodes, SwiftX, Budgeting) (0-1, default: %u)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6166,11 +6076,6 @@ for example: alertnotify=echo %%s | mail -s &quot;DAPScoin Alert&quot; admin@foo
     <message>
         <location line="+3"/>
         <source>Error: Unsupported argument -checklevel found. Checklevel must be level 4.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+58"/>
-        <source>Preferred Denomination for automatically minted Zerocoin  (1/5/10/50/100/500/1000/5000), 0 for no preference. default: %u)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6435,11 +6340,6 @@ for example: alertnotify=echo %%s | mail -s &quot;DAPScoin Alert&quot; admin@foo
     </message>
     <message>
         <location line="+1"/>
-        <source>Percentage of automatically minted Zerocoin  (10-100, default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Preparing for resync...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6522,16 +6422,6 @@ for example: alertnotify=echo %%s | mail -s &quot;DAPScoin Alert&quot; admin@foo
         <location line="+1"/>
         <source>Rescanning...</source>
         <translation type="unfinished">Rescanning...</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>ResetMintZerocoin finished: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>ResetSpentZerocoin finished: </source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -6946,16 +6836,6 @@ for example: alertnotify=echo %%s | mail -s &quot;DAPScoin Alert&quot; admin@foo
     <message>
         <location line="+1"/>
         <source>ZeroMQ notification options:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Zerocoin options:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>failed to validate zerocoin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

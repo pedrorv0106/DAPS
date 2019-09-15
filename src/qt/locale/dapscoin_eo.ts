@@ -433,10 +433,6 @@
         <translation>&amp;Foliumi transakcio historio</translation>
     </message>
     <message>
-        <source>Privacy Actions for zDAPS</source>
-        <translation>Privataj agoj por zDAPS</translation>
-    </message>
-    <message>
         <source>E&amp;xit</source>
         <translation>&amp;Eliri</translation>
     </message>
@@ -1799,10 +1795,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Via aktuala DAPScoin totalo, nekonformita kaj nematurita transakcioj inkluzivita</translation>
     </message>
     <message>
-        <source>zDAPS Balance</source>
-        <translation>zDAPS kvanto</translation>
-    </message>
-    <message>
         <source>Unconfirmed: less than 20 confirmations
 Immature: confirmed, but less than 1 mint of the same denomination after it was minted</source>
         <translation>Malkonfirmita: malpli ol 20 konfirmacioj
@@ -2554,16 +2546,8 @@ Nematura: konfirmita, sed malpli ol 1 minto el la samo nomado post ĝin estis mi
         <translation>Reprovos</translation>
     </message>
     <message>
-        <source>You don't have enough Zerocoins in your wallet</source>
-        <translation>Vi ne havas sufiĉan Zeromonojn en vian monujon</translation>
-    </message>
-    <message>
         <source>Your entries added successfully.</source>
         <translation>Vian enirojn aldonis sukcese.</translation>
-    </message>
-    <message>
-        <source>Zerocoin options:</source>
-        <translation>Zeromono opcioj:</translation>
     </message>
     <message>
         <source>on startup</source>

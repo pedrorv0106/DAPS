@@ -1294,10 +1294,6 @@
         <translation>DAPS:</translation>
     </message>
     <message>
-        <source>zDAPS:</source>
-        <translation>zDAPS:</translation>
-    </message>
-    <message>
         <source>0 %</source>
         <translation>0 %</translation>
     </message>

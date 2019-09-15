@@ -433,10 +433,6 @@
         <translation>Pregled povijesti transakcija</translation>
     </message>
     <message>
-        <source>Privacy Actions for zDAPS</source>
-        <translation>Postavke privatnosti za zDAPS</translation>
-    </message>
-    <message>
         <source>E&amp;xit</source>
         <translation>Izlaz</translation>
     </message>
@@ -1948,30 +1944,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
 </translation>
     </message>
     <message>
-        <source>Enable automatic minting of DAPS units to zDAPS</source>
-        <translation>Omogućite automint DAPS jedinica na zDAPS</translation>
-    </message>
-    <message>
-        <source>Enable zDAPS Automint</source>
-        <translation>Omogući zDAPS Automint</translation>
-    </message>
-    <message>
-        <source>Percentage of incoming DAPS which get automatically converted to zDAPS via Zerocoin Protocol (min: 10%)</source>
-        <translation>Postotak dolaznih DAPS koji se automatski pretvara u zDAPS putem protokola Zerocoin (min: 10%)</translation>
-    </message>
-    <message>
-        <source>Percentage of autominted zDAPS</source>
-        <translation>Postotak automatiziranog zDAPS</translation>
-    </message>
-    <message>
-        <source>Wait with automatic conversion to Zerocoin until enough DAPS for this denomination is available</source>
-        <translation>Pričekajte s automatskom pretvorbom u Zerocoin dok ne bude dostupno dovoljno DAPS za apoen</translation>
-    </message>
-    <message>
-        <source>Preferred Automint zDAPS Denomination</source>
-        <translation>Preferirana Automint zDAPS denominacijad</translation>
-    </message>
-    <message>
         <source>Stake split threshold:</source>
         <translation>Prag razdvajanja Stake-a:</translation>
     </message>
@@ -2159,16 +2131,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Uključena je vaša trenutna bilanca DAPScoin, nepotvrđene i nezrele transakcije</translation>
     </message>
     <message>
-        <source>zDAPS Balance</source>
-        <translation>zDAPS Bilanca</translation>
-    </message>
-    <message>
-        <source>Mature: more than 20 confirmation and more than 1 mint of the same denomination after it was minted.
-These zDAPS are spendable.</source>
-        <translation>Mature: više od 20 potvrda i više od 1 mint od iste denominacije nakon što je mintan.
-Ti zDAPSs se mogu potrošiti.</translation>
-    </message>
-    <message>
         <source>Unconfirmed: less than 20 confirmations
 Immature: confirmed, but less than 1 mint of the same denomination after it was minted</source>
         <translation>Nepotvrđeno: manje od 20 potvrda
@@ -2219,8 +2181,8 @@ Nezreli: potvrđeno, ali manje od 1 minta iste denominacije nakon mintanja</tran
         <translation>Po potrošiti:</translation>
     </message>
     <message>
-        <source>Locked DAPS or Masternode collaterals. These are excluded from zDAPS minting.</source>
-        <translation>Zaključani DAPS ili Masternode kolateral. Oni su isključeni iz zDAPS kovanja.</translation>
+        <source>Locked DAPS or Masternode collaterals.</source>
+        <translation>Zaključani DAPS ili Masternode kolateral. Oni su isključeni kovanja.</translation>
     </message>
     <message>
         <source>Locked:</source>
@@ -2231,24 +2193,12 @@ Nezreli: potvrđeno, ali manje od 1 minta iste denominacije nakon mintanja</tran
         <translation>Nepotvrđeno:</translation>
     </message>
     <message>
-        <source>Your current zDAPS balance, unconfirmed and immature zDAPS included.</source>
-        <translation>Vaša trenutačna zDAPS bilanca, nepotvrđena i nezrela zDAPS.</translation>
-    </message>
-    <message>
         <source>Recent transactions</source>
         <translation>Nedavne transakcije</translation>
     </message>
     <message>
         <source>out of sync</source>
         <translation>nije sinkronizirano</translation>
-    </message>
-    <message>
-        <source>Current percentage of zDAPS.
-If AutoMint is enabled this percentage will settle around the configured AutoMint percentage (default = 10%).
-</source>
-        <translation>Trenutni postotak zDAPS.
-Ako je omogućeno automatsko navođenje, ovaj postotak će se podmiriti oko konfiguriranog postotka automatskog navođenja (zadano = 10%).
-</translation>
     </message>
     <message>
         <source>AutoMint is currently enabled and set to </source>
@@ -2651,10 +2601,6 @@ Da biste omogućili, promjenite postavke AutoMint 'enablezeromint=0' na 'enablez
     <message>
         <source>Custom Backup Path:</source>
         <translation>Put prilagođenog sigurnosnog kopiranja:</translation>
-    </message>
-    <message>
-        <source>Custom zDAPS Backup Path:</source>
-        <translation>Prilagođeni put zDAPS sigurnosne kopije:</translation>
     </message>
     <message>
         <source>Custom Backups Threshold:</source>
@@ -3881,10 +3827,6 @@ Da biste omogućili, promjenite postavke AutoMint 'enablezeromint=0' na 'enablez
         <translation>DAPS Stake</translation>
     </message>
     <message>
-        <source>zDAPS Stake</source>
-        <translation>zDAPS Stake</translation>
-    </message>
-    <message>
         <source>Obfuscation Denominate</source>
         <translation>Zameteni denonimi</translation>
     </message>
@@ -3899,34 +3841,6 @@ Da biste omogućili, promjenite postavke AutoMint 'enablezeromint=0' na 'enablez
     <message>
         <source>Obfuscation Create Denominations</source>
         <translation>Prikrivanje Stvara Denominacije</translation>
-    </message>
-    <message>
-        <source>Converted DAPS to zDAPS</source>
-        <translation>Pretvoreni DAPS u zDAPS</translation>
-    </message>
-    <message>
-        <source>Spent zDAPS</source>
-        <translation>Utrošeni zDAPS</translation>
-    </message>
-    <message>
-        <source>Received DAPS from zDAPS</source>
-        <translation>Primljeni DAPS od zDAPS</translation>
-    </message>
-    <message>
-        <source>Minted Change as zDAPS from zDAPS Spend</source>
-        <translation>Mintana razlika zDAPS od zDAPS Utroška</translation>
-    </message>
-    <message>
-        <source>Converted zDAPS to DAPS</source>
-        <translation>Pretvoreni zDAPS u DAPS</translation>
-    </message>
-    <message>
-        <source>Anonymous (zDAPS Transaction)</source>
-        <translation>Anonimno (zDAPS Transakcija)</translation>
-    </message>
-    <message>
-        <source>Anonymous (zDAPS Stake)</source>
-        <translation>Anonimno (zDAPS Stake)</translation>
     </message>
     <message>
         <source>Sent to</source>
@@ -4040,18 +3954,6 @@ Da biste omogućili, promjenite postavke AutoMint 'enablezeromint=0' na 'enablez
         <translation>Masternode Nagrada</translation>
     </message>
     <message>
-        <source>Zerocoin Mint</source>
-        <translation>Zerocoin Mint</translation>
-    </message>
-    <message>
-        <source>Zerocoin Spend</source>
-        <translation>Zerocoin utrošak</translation>
-    </message>
-    <message>
-        <source>Zerocoin Spend to Self</source>
-        <translation>Zerocoin utrošen na sebe</translation>
-    </message>
-    <message>
         <source>Other</source>
         <translation>Drugi</translation>
     </message>
@@ -4134,14 +4036,6 @@ Da biste omogućili, promjenite postavke AutoMint 'enablezeromint=0' na 'enablez
     <message>
         <source>Exporting Successful</source>
         <translation>Izvoz uspješan</translation>
-    </message>
-    <message>
-        <source>Received DAPS from zDAPS</source>
-        <translation>Primljeni DAPS od zDAPS</translation>
-    </message>
-    <message>
-        <source>Zerocoin Spend, Change in zDAPS</source>
-        <translation>Zerocoin Utrošeno, Razlika (ostatak) u zDAPS</translation>
     </message>
     <message>
         <source>The transaction history was successfully saved to %1.</source>
@@ -4263,16 +4157,8 @@ Da biste omogućili, promjenite postavke AutoMint 'enablezeromint=0' na 'enablez
         <translation>Distribuirano pod MIT softverskom licencom, pogledajte priloženu datoteku COPYING ili &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</translation>
     </message>
     <message>
-        <source>Enable automatic wallet backups triggered after each zDAPS minting (0-1, default: %u)</source>
-        <translation>Omogući automatsko sigurnosno kopiranje novčanika nakon svakog zDAPS mintanja (0-1, default: %u)</translation>
-    </message>
-    <message>
         <source>Enable or disable staking functionality for DAPS inputs (0-1, default: %u)</source>
         <translation>Omogući ili onemogući staking funkcionalnosti za DAPS unose (0-1, default: %u)</translation>
-    </message>
-    <message>
-        <source>Enable or disable staking functionality for zDAPS inputs (0-1, default: %u)</source>
-        <translation>Omogući ili onemogući staking funkcionalnosti za zDAPS unose (0-1, default: %u)</translation>
     </message>
     <message>
         <source>Enter regression test mode, which uses a special chain in which blocks can be solved instantly.</source>
@@ -4632,10 +4518,6 @@ Da biste omogućili, promjenite postavke AutoMint 'enablezeromint=0' na 'enablez
         <translation>Gotovo učitavanje</translation>
     </message>
     <message>
-        <source>Enable automatic Zerocoin minting (0-1, default: %u)</source>
-        <translation>Omogući automatsko Zerocoin stvaranje (0-1, zadano: %u)</translation>
-    </message>
-    <message>
         <source>Enable publish hash transaction (locked via SwiftX) in &lt;address&gt;</source>
         <translation>Omogući objavu hash transakcije (zaključano putem usluge SwiftX) u </translation>
     </message>
@@ -4860,20 +4742,8 @@ Da biste omogućili, promjenite postavke AutoMint 'enablezeromint=0' na 'enablez
         <translation>Otkriven nevažeća skripta.</translation>
     </message>
     <message>
-        <source>Percentage of automatically minted Zerocoin  (1-100, default: %u)</source>
-        <translation>Postotak automatskog kovanog Zerocoina (1-100, zadano: %u)</translation>
-    </message>
-    <message>
-        <source>Reindex the DAPS and zDAPS money supply statistics</source>
-        <translation>Ponovno indeksirati statistiku DAPS i zDAPS ponude novca</translation>
-    </message>
-    <message>
-        <source>Reindexing zerocoin database...</source>
-        <translation>Reindeksiranje zerocoin databaze...</translation>
-    </message>
-    <message>
-        <source>Reindexing zerocoin failed</source>
-        <translation>Reindeksiranje zerocoin neuspjelo</translation>
+        <source>Reindex the DAPS money supply statistics</source>
+        <translation>Ponovno indeksirati statistiku DAPS ponude novca</translation>
     </message>
     <message>
         <source>Selected coins value is less than payment target</source>
@@ -4903,8 +4773,8 @@ Da biste omogućili, promjenite postavke AutoMint 'enablezeromint=0' na 'enablez
         <translation>uklonjene nepotvrđene transakcije</translation>
     </message>
     <message>
-        <source>Disable all DAPScoin specific functionality (Masternodes, Zerocoin, SwiftX, Budgeting) (0-1, default: %u)</source>
-        <translation>Onemogući sve specifične funkcije DAPScoin (Masternodes, Zerocoin, SwiftX, Budgeting) (0-1, zadano: %u)</translation>
+        <source>Disable all DAPScoin specific functionality (Masternodes, SwiftX, Budgeting) (0-1, default: %u)</source>
+        <translation>Onemogući sve specifične funkcije DAPScoin (Masternodes, SwiftX, Budgeting) (0-1, zadano: %u)</translation>
     </message>
     <message>
         <source>Enable SwiftX, show confirmations for locked transactions (bool, default: %s)</source>
@@ -4933,14 +4803,6 @@ Da biste omogućili, promjenite postavke AutoMint 'enablezeromint=0' na 'enablez
     <message>
         <source>In rare cases, a spend with 7 coins exceeds our maximum allowable transaction size, please retry spend using 6 or less coins</source>
         <translation>U rijetkim slučajevima, potrošnja s 7 kovanica premašuje našu maksimalnu dopuštenu veličinu transakcije, pokušajte ponovo pokušati potrošiti 6 ili manje kovanica</translation>
-    </message>
-    <message>
-        <source>Preferred Denomination for automatically minted Zerocoin  (1/5/10/50/100/500/1000/5000), 0 for no preference. default: %u)</source>
-        <translation>Preferirana denominacija za automatski ovjereni Zerocoin (1/5/10/50/100/500/1000/5000), 0 bez preferencije. zadana vrijednost: %u)</translation>
-    </message>
-    <message>
-        <source>Specify custom backup path to add a copy of any automatic zDAPS backup. If set as dir, every backup generates a timestamped file. If set as file, will rewrite to that file every backup. If backuppath is set as well, 4 backups will happen</source>
-        <translation>Navedite put prilagođenog sigurnosnog kopiranja da biste dodali kopiju bilo koje automatske zDAPS sigurnosne kopije. Ako je postavljeno kao dir, svaka sigurnosna kopija generira vremensku datoteku. Ako je postavljen kao datoteka, prepisat će na tu datoteku svaku kopiju. Ako je postavljen backuppath, dogodit će se 4 sigurnosne kopije</translation>
     </message>
     <message>
         <source>Specify custom backup path to add a copy of any wallet backup. If set as dir, every backup generates a timestamped file. If set as file, will rewrite to that file every backup.</source>
@@ -5005,18 +4867,6 @@ Da biste omogućili, promjenite postavke AutoMint 'enablezeromint=0' na 'enablez
     <message>
         <source>Failed to deserialize</source>
         <translation>Deserializiranje nije uspjelo</translation>
-    </message>
-    <message>
-        <source>Failed to find Zerocoins in wallet.dat</source>
-        <translation>Neuspjelo pronalaženje Zerocoina u wallet.dat</translation>
-    </message>
-    <message>
-        <source>Failed to select a zerocoin</source>
-        <translation>Odabir Zerocoina nije uspjelo</translation>
-    </message>
-    <message>
-        <source>Failed to wipe zerocoinDB</source>
-        <translation>Neuspjelo brisanje zerocoinDB</translation>
     </message>
     <message>
         <source>Failed to write coin serial number into wallet</source>
@@ -5267,14 +5117,6 @@ Da biste omogućili, promjenite postavke AutoMint 'enablezeromint=0' na 'enablez
         <translation>Ponovno skeniranje ...</translation>
     </message>
     <message>
-        <source>ResetMintZerocoin finished: </source>
-        <translation>ResetMintZerocoin je završio:</translation>
-    </message>
-    <message>
-        <source>ResetSpentZerocoin finished: </source>
-        <translation>ResetSpentZerocoin završio: </translation>
-    </message>
-    <message>
         <source>Run a thread to flush wallet periodically (default: %u)</source>
         <translation>Pokrenite niti kako biste redovito prigušili novčanik (zadano: %u)</translation>
     </message>
@@ -5431,10 +5273,6 @@ Da biste omogućili, promjenite postavke AutoMint 'enablezeromint=0' na 'enablez
         <translation>Sinkronizacija masternoda...</translation>
     </message>
     <message>
-        <source>Syncing zDAPS wallet...</source>
-        <translation>Sinkronizacija zDAPS novčanika...</translation>
-    </message>
-    <message>
         <source>The coin spend has been used</source>
         <translation>Korištena je potrošnja novčića</translation>
     </message>
@@ -5575,10 +5413,6 @@ Da biste omogućili, promjenite postavke AutoMint 'enablezeromint=0' na 'enablez
         <translation>Korisničko ime za JSON-RPC veze</translation>
     </message>
     <message>
-        <source>Value is below the smallest available denomination (= 1) of zDAPS</source>
-        <translation>Vrijednost je niža od najmanje dostupne denominacije (= 1) zDAPS-a</translation>
-    </message>
-    <message>
         <source>Value more than Obfuscation pool maximum allows.</source>
         <translation>Vrijednost veća od maksimalnog broja Prikrivanja zbirnih sredstava.</translation>
     </message>
@@ -5589,10 +5423,6 @@ Da biste omogućili, promjenite postavke AutoMint 'enablezeromint=0' na 'enablez
     <message>
         <source>Verifying wallet...</source>
         <translation>Provjera novčanika...</translation>
-    </message>
-    <message>
-        <source>Version 1 zDAPS require a security level of 100 to successfully spend.</source>
-        <translation>Verzija 1 zDAPS zahtjeva sigurnosnu razinu 100 da se uspješno utroši.</translation>
     </message>
     <message>
         <source>Wallet %s resides outside data directory %s</source>
@@ -5635,10 +5465,6 @@ Da biste omogućili, promjenite postavke AutoMint 'enablezeromint=0' na 'enablez
         <translation>Ponovno pokušati...</translation>
     </message>
     <message>
-        <source>You don't have enough Zerocoins in your wallet</source>
-        <translation>Nemate dovoljno Zerocoina u novčaniku</translation>
-    </message>
-    <message>
         <source>You need to rebuild the database using -reindex to change -txindex</source>
         <translation>orate obnoviti bazu podataka koristeći -index za promjenu -txindexa</translation>
     </message>
@@ -5657,10 +5483,6 @@ Da biste omogućili, promjenite postavke AutoMint 'enablezeromint=0' na 'enablez
     <message>
         <source>ZeroMQ notification options:</source>
         <translation>Mogućnosti ZeroMQ obavijesti:</translation>
-    </message>
-    <message>
-        <source>Zerocoin options:</source>
-        <translation>Zerocoin mogućnosti:</translation>
     </message>
     <message>
         <source>on startup</source>

@@ -1722,22 +1722,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Port mit &amp;UPnP mappen</translation>
     </message>
     <message>
-        <source>Percentage of incoming DAPS which get automatically converted to zDAPS via Zerocoin Protocol (min: 10%)</source>
-        <translation>Anteil des eingehenden DAPS, welcher automatisch zu zDAPS via Zerocoin Protokoll konvertiert wird (min: 10%)</translation>
-    </message>
-    <message>
-        <source>Percentage of autominted zDAPS</source>
-        <translation>Prozentsatz der automatisierten zDAPS</translation>
-    </message>
-    <message>
-        <source>Wait with automatic conversion to Zerocoin until enough DAPS for this denomination is available</source>
-        <translation>Warte mit automatischer Konvertierung zu Zerocoin, bis genügend DAPS für diese Stückelung verfügbar ist</translation>
-    </message>
-    <message>
-        <source>Preferred Automint zDAPS Denomination</source>
-        <translation>Bevorzugte automatisierte zDAPS Stückelung </translation>
-    </message>
-    <message>
         <source>Connect to the DAPScoin network through a SOCKS5 proxy.</source>
         <translation>Durch einen SOCKS5 Proxy mit dem DAPScoin Netzwerk verbinden.</translation>
     </message>
@@ -1937,20 +1921,12 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>DAPS:</translation>
     </message>
     <message>
-        <source>zDAPS:</source>
-        <translation>zDAPS:</translation>
-    </message>
-    <message>
         <source>0 %</source>
         <translation>0 %</translation>
     </message>
     <message>
         <source>0.000 000 00 DAPS</source>
         <translation>0.000 000 00 DAPS</translation>
-    </message>
-    <message>
-        <source>Zerocoin Balance</source>
-        <translation>Zerocoin Bilanz</translation>
     </message>
     <message>
         <source>Recent transactions</source>
@@ -3468,32 +3444,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Verschleiert</translation>
     </message>
     <message>
-        <source>Converted Daps to zDaps</source>
-        <translation>Umgewandeltes DAPS zu zDAPS</translation>
-    </message>
-    <message>
-        <source>Spent zDaps</source>
-        <translation>Ausgeben zDAPS</translation>
-    </message>
-    <message>
-        <source>Received Daps from zDaps</source>
-        <translation>Empfangene DAPS von zDAPS</translation>
-    </message>
-    <message>
-        <source>Minted Change as zDaps from zDaps Spend</source>
-        <translation>Geprägtes Wechselgeld als zDAPS von zDAPS Ausgabe</translation>
-    </message>
-    <message>
-        <source>Converted zDaps to Daps</source>
-        <translation>Umgewandeltes zDAPS zu DAPS</translation>
-    </message>
-    <message>
         <source>watch-only</source>
         <translation>nur beobachtet</translation>
-    </message>
-    <message>
-        <source>zDaps Accumulator</source>
-        <translation>zDAPS Speicher</translation>
     </message>
     <message>
         <source>(n/a)</source>
@@ -3601,26 +3553,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     <message>
         <source>Masternode Reward</source>
         <translation>Masternode Vergütung</translation>
-    </message>
-    <message>
-        <source>Received Daps from zDaps</source>
-        <translation>Empfangene DAPS von zDAPS</translation>
-    </message>
-    <message>
-        <source>Zerocoin Mint</source>
-        <translation>Zerocoin Prägung</translation>
-    </message>
-    <message>
-        <source>Zerocoin Spend</source>
-        <translation>Zerocoin Ausgabe</translation>
-    </message>
-    <message>
-        <source>Zerocoin Spend, Change in zDaps</source>
-        <translation>Zerocoin Ausgabe, Wechselgeld in zDAPS</translation>
-    </message>
-    <message>
-        <source>Zerocoin Spend to Self</source>
-        <translation>Zerocoin Ausgabe an sich Selbst</translation>
     </message>
     <message>
         <source>Other</source>
@@ -4154,10 +4086,6 @@ Beispiel: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Geladen</translation>
     </message>
     <message>
-        <source>Enable automatic Zerocoin minting (0-1, default: %u)</source>
-        <translation>Automatische Zerocoin-Prägung ermöglichen (0-1, Standard: %u)</translation>
-    </message>
-    <message>
         <source>Enable the client to act as a masternode (0-1, default: %u)</source>
         <translation>Ermögliche dem Client als Masternode zu fungieren (0-1, Standard: %u)</translation>
     </message>
@@ -4406,10 +4334,6 @@ Beispiel: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Fehler: Nicht unterstütztes Argument -checklevel entdeckt. Checklevel muss Level 4 sein.</translation>
     </message>
     <message>
-        <source>Preferred Denomination for automatically minted Zerocoin  (1/5/10/50/100/500/1000/5000), 0 for no preference. default: %u)</source>
-        <translation>Bervorzugte Stückelung für automatisch geprägte Zerocoins (1/5/10/50/100/500/1000/5000), 0 falls keine bestimmte Stückelung präferiert wird. Standard: %u)</translation>
-    </message>
-    <message>
         <source>&lt;category&gt; can be:</source>
         <translation>&lt;category&gt;kann folgendes sein:</translation>
     </message>
@@ -4574,10 +4498,6 @@ Beispiel: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Passwort für JSON-RPC Verbindungen</translation>
     </message>
     <message>
-        <source>Percentage of automatically minted Zerocoin  (10-100, default: %u)</source>
-        <translation>Prozent automatisch geprägter Zerocoins (10-100, Standard: %u)</translation>
-    </message>
-    <message>
         <source>Prepend debug output with timestamp (default: %u)</source>
         <translation>Zeitstempel vor Debug-Ausgabe vermerken (Standard: %u)</translation>
     </message>
@@ -4612,14 +4532,6 @@ Beispiel: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
     <message>
         <source>Rescanning...</source>
         <translation>Neuscannen...</translation>
-    </message>
-    <message>
-        <source>ResetMintZerocoin finished: </source>
-        <translation>ResetMintZerocoin abgeschlossen: </translation>
-    </message>
-    <message>
-        <source>ResetSpentZerocoin finished: </source>
-        <translation>ResetSpentZerocoin abgeschlossen: </translation>
     </message>
     <message>
         <source>Run in the background as a daemon and accept commands</source>
@@ -4924,14 +4836,6 @@ Beispiel: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
     <message>
         <source>ZeroMQ notification options:</source>
         <translation>ZeroMQ Benachrichtigungsoptionen:</translation>
-    </message>
-    <message>
-        <source>Zerocoin options:</source>
-        <translation>Zerocoin Optionen:</translation>
-    </message>
-    <message>
-        <source>failed to validate zerocoin</source>
-        <translation>fehlgeschlagen beim Zerocoin validieren</translation>
     </message>
     <message>
         <source>on startup</source>

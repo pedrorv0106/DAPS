@@ -1731,22 +1731,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Mapear un puerto utilizando &amp;UPnP</translation>
     </message>
     <message>
-        <source>Percentage of incoming DAPS which get automatically converted to zDAPS via Zerocoin Protocol (min: 10%)</source>
-        <translation>Porcentaje de DAPSs entrantes que serán automáticamente convertidos a zDAPS a través del Protocolo Zerocoin (mín: 10%)</translation>
-    </message>
-    <message>
-        <source>Percentage of autominted zDAPS</source>
-        <translation>Porcentaje de zDAPS autogenerados</translation>
-    </message>
-    <message>
-        <source>Wait with automatic conversion to Zerocoin until enough DAPS for this denomination is available</source>
-        <translation>Retrasar la conversión automática a Zerocoin hasta que hayan suficientes DAPS disponibles para este tamaño de billete</translation>
-    </message>
-    <message>
-        <source>Preferred Automint zDAPS Denomination</source>
-        <translation>Tamaño de billete zDAPS preferido en la creación automática de dinero</translation>
-    </message>
-    <message>
         <source>Connect to the DAPScoin network through a SOCKS5 proxy.</source>
         <translation>Conectar a la red DAPScoin mediante un proxy SOCKS5.</translation>
     </message>
@@ -1946,20 +1930,12 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>DAPS:</translation>
     </message>
     <message>
-        <source>zDAPS:</source>
-        <translation>zDAPS:</translation>
-    </message>
-    <message>
         <source>0 %</source>
         <translation>0 %</translation>
     </message>
     <message>
         <source>0.000 000 00 DAPS</source>
         <translation>0.000 000 00 DAPS</translation>
-    </message>
-    <message>
-        <source>Zerocoin Balance</source>
-        <translation>Balance Zerocoin</translation>
     </message>
     <message>
         <source>Recent transactions</source>
@@ -3612,26 +3588,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Recompensa de Nodo Maestro</translation>
     </message>
     <message>
-        <source>Received Daps from zDaps</source>
-        <translation>Daps recibidos desde zDaps</translation>
-    </message>
-    <message>
-        <source>Zerocoin Mint</source>
-        <translation>Creación de moneda Zerocoin</translation>
-    </message>
-    <message>
-        <source>Zerocoin Spend</source>
-        <translation>Gasto de Zerocoin</translation>
-    </message>
-    <message>
-        <source>Zerocoin Spend, Change in zDaps</source>
-        <translation>Gasto de Zerocoin, Cambio en zDaps</translation>
-    </message>
-    <message>
-        <source>Zerocoin Spend to Self</source>
-        <translation>Pago Zerocoin a tí mismo</translation>
-    </message>
-    <message>
         <source>Other</source>
         <translation>Otro</translation>
     </message>
@@ -4219,10 +4175,6 @@ por ejemplo: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Realizando carga</translation>
     </message>
     <message>
-        <source>Enable automatic Zerocoin minting (0-1, default: %u)</source>
-        <translation>Habilitar creación automática de Zerocoin (0-1, por defecto: %u)</translation>
-    </message>
-    <message>
         <source>Enable the client to act as a masternode (0-1, default: %u)</source>
         <translation>Habilitar al cliente para actuar como un nodo maestro (0-1. predeterminado: %u)</translation>
     </message>
@@ -4471,10 +4423,6 @@ por ejemplo: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Error: Se ha especificado un argumento no soportado -checklevel. El Checklevel debe ser siempre 4. </translation>
     </message>
     <message>
-        <source>Preferred Denomination for automatically minted Zerocoin  (1/5/10/50/100/500/1000/5000), 0 for no preference. default: %u)</source>
-        <translation>Tamaño de Billete Zerocoin Preferido para los Zerocoin creados automáticamente (1/5/10/50/100/500/1000/5000), poner 0 si no tiene preferencias. Por defecto: %u) </translation>
-    </message>
-    <message>
         <source>&lt;category&gt; can be:</source>
         <translation>&lt;category&gt;puede ser: </translation>
     </message>
@@ -4679,10 +4627,6 @@ por ejemplo: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Contraseña para conexiones JSON-RPC</translation>
     </message>
     <message>
-        <source>Percentage of automatically minted Zerocoin  (10-100, default: %u)</source>
-        <translation>Porcentaje de Zerocoin creadas automáticamente (10-100, por defecto: %u)</translation>
-    </message>
-    <message>
         <source>Prepend debug output with timestamp (default: %u)</source>
         <translation>Agregar timestamp a la salida de depuración (predeterminado: %u)</translation>
     </message>
@@ -4733,14 +4677,6 @@ por ejemplo: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
     <message>
         <source>Rescanning...</source>
         <translation>Reescaneado...</translation>
-    </message>
-    <message>
-        <source>ResetMintZerocoin finished: </source>
-        <translation>ResetMintZerocoin finalizado:</translation>
-    </message>
-    <message>
-        <source>ResetSpentZerocoin finished: </source>
-        <translation>ResetSpentZerocoin finalizado:</translation>
     </message>
     <message>
         <source>Run a thread to flush wallet periodically (default: %u)</source>
@@ -5065,14 +5001,6 @@ por ejemplo: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
     <message>
         <source>ZeroMQ notification options:</source>
         <translation>Opciones de notificación ZeroMQ:</translation>
-    </message>
-    <message>
-        <source>Zerocoin options:</source>
-        <translation>Opciones Zerocoin:</translation>
-    </message>
-    <message>
-        <source>failed to validate zerocoin</source>
-        <translation>fallo al validar zerocoin</translation>
     </message>
     <message>
         <source>on startup</source>

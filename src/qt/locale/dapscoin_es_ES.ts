@@ -636,10 +636,6 @@
         <translation>Opciones de notificación ZeroMQ:</translation>
     </message>
     <message>
-        <source>Zerocoin options:</source>
-        <translation>Opciones Zerocoin:</translation>
-    </message>
-    <message>
         <source>on startup</source>
         <translation>al inicio</translation>
     </message>

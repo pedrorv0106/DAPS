@@ -1714,22 +1714,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Map poort gebruikt &amp;UPnP</translation>
     </message>
     <message>
-        <source>Percentage of incoming DAPS which get automatically converted to zDAPS via Zerocoin Protocol (min: 10%)</source>
-        <translation>Percentage inkomende DAPS die automatisch wordt omgezet naar zDAPS via Zerocoin Protocol (min: 10%)</translation>
-    </message>
-    <message>
-        <source>Percentage of autominted zDAPS</source>
-        <translation>Percentage autominted zDAPS</translation>
-    </message>
-    <message>
-        <source>Wait with automatic conversion to Zerocoin until enough DAPS for this denomination is available</source>
-        <translation>Wacht met automatische omzetting naar Zerocoin totdat er genoeg DAPS voor deze denominatie beschikbaar is</translation>
-    </message>
-    <message>
-        <source>Preferred Automint zDAPS Denomination</source>
-        <translation>Gewenste Automint zDAPS denominatie</translation>
-    </message>
-    <message>
         <source>Connect to the DAPScoin network through a SOCKS5 proxy.</source>
         <translation>Maak verbinding met het DAPScoin netwerk via een SOCKS5 proxy.</translation>
     </message>
@@ -1929,20 +1913,12 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>DAPS:</translation>
     </message>
     <message>
-        <source>zDAPS:</source>
-        <translation>zDAPS:</translation>
-    </message>
-    <message>
         <source>0 %</source>
         <translation>0 %</translation>
     </message>
     <message>
         <source>0.000 000 00 DAPS</source>
         <translation>0.000 000 00 DAPS</translation>
-    </message>
-    <message>
-        <source>Zerocoin Balance</source>
-        <translation>Zerocoin saldo</translation>
     </message>
     <message>
         <source>Recent transactions</source>
@@ -3595,26 +3571,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Masternode beloning</translation>
     </message>
     <message>
-        <source>Received Daps from zDaps</source>
-        <translation>Verkregen Daps van zDaps</translation>
-    </message>
-    <message>
-        <source>Zerocoin Mint</source>
-        <translation>Zerocoin Mint</translation>
-    </message>
-    <message>
-        <source>Zerocoin Spend</source>
-        <translation>Zerocoin uitgegeven</translation>
-    </message>
-    <message>
-        <source>Zerocoin Spend, Change in zDaps</source>
-        <translation>Zerocoin uitgegeven, wisselgeld in zDaps</translation>
-    </message>
-    <message>
-        <source>Zerocoin Spend to Self</source>
-        <translation>Zerocoin uitgegeven aan jezelf</translation>
-    </message>
-    <message>
         <source>Other</source>
         <translation>Andere</translation>
     </message>
@@ -4202,10 +4158,6 @@ bijvoorbeeld: alertnotify = echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Klaar met laden</translation>
     </message>
     <message>
-        <source>Enable automatic Zerocoin minting (0-1, default: %u)</source>
-        <translation>Zet automatische Zerocoin minting aan (0-1, standaard: %u)</translation>
-    </message>
-    <message>
         <source>Enable the client to act as a masternode (0-1, default: %u)</source>
         <translation>Schakel de client in als masternode (0-1, standaard: %u)</translation>
     </message>
@@ -4454,10 +4406,6 @@ bijvoorbeeld: alertnotify = echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Fout: Niet ondersteund argument -checklevel gevonden. Checklevel moet niveau 4 zijn.</translation>
     </message>
     <message>
-        <source>Preferred Denomination for automatically minted Zerocoin  (1/5/10/50/100/500/1000/5000), 0 for no preference. default: %u)</source>
-        <translation>Voorkeur denominatie voor automatisch minted Zerocoin (1/5/10/50/100/500/1000/5000), 0 voor geen voorkeur. standaard: %u)</translation>
-    </message>
-    <message>
         <source>&lt;category&gt; can be:</source>
         <translation>&lt;category&gt;kan zijn: </translation>
     </message>
@@ -4662,10 +4610,6 @@ bijvoorbeeld: alertnotify = echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Wachtwoord voor JSON-RPC connecties</translation>
     </message>
     <message>
-        <source>Percentage of automatically minted Zerocoin  (10-100, default: %u)</source>
-        <translation>Percentage automatisch geminte Zerocoin (10-100, standaard: %u)</translation>
-    </message>
-    <message>
         <source>Prepend debug output with timestamp (default: %u)</source>
         <translation>Voeg debug output met timestamp toe (standaard: %u)</translation>
     </message>
@@ -4716,14 +4660,6 @@ bijvoorbeeld: alertnotify = echo %%s | mail -s "DAPScoin Alert" admin@foo.com
     <message>
         <source>Rescanning...</source>
         <translation>Opnieuw scannen...</translation>
-    </message>
-    <message>
-        <source>ResetMintZerocoin finished: </source>
-        <translation>ResetMintZerocoin voltooid: </translation>
-    </message>
-    <message>
-        <source>ResetSpentZerocoin finished: </source>
-        <translation>ResetSpentZerocoin voltooid: </translation>
     </message>
     <message>
         <source>Run a thread to flush wallet periodically (default: %u)</source>
@@ -5048,14 +4984,6 @@ bijvoorbeeld: alertnotify = echo %%s | mail -s "DAPScoin Alert" admin@foo.com
     <message>
         <source>ZeroMQ notification options:</source>
         <translation>ZeroMQ notificatie opties:</translation>
-    </message>
-    <message>
-        <source>Zerocoin options:</source>
-        <translation>Zerocoin opties:</translation>
-    </message>
-    <message>
-        <source>failed to validate zerocoin</source>
-        <translation>mislukt om zerocoin te valideren</translation>
     </message>
     <message>
         <source>on startup</source>

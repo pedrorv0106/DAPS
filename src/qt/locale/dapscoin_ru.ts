@@ -1695,18 +1695,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Карта порта, использующего &amp;UPnP</translation>
     </message>
     <message>
-        <source>Percentage of incoming DAPS which get automatically converted to zDAPS via Zerocoin Protocol (min: 10%)</source>
-        <translation>Процент приходящих DAPS, которые автоматически конвертируются в zDAPS благодаря Zerocoin протоколу (min: 10%)</translation>
-    </message>
-    <message>
-        <source>Percentage of autominted zDAPS</source>
-        <translation>Процент  авточеканненых zDAPS</translation>
-    </message>
-    <message>
-        <source>Preferred Automint zDAPS Denomination</source>
-        <translation>Предпочитаемый номинал авточеканной  монеты  zDAPS</translation>
-    </message>
-    <message>
         <source>Connect to the DAPScoin network through a SOCKS5 proxy.</source>
         <translation>Подключиться к сети DAPScoin через SOCKS5 прокси.</translation>
     </message>
@@ -1906,16 +1894,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>DAPS:</translation>
     </message>
     <message>
-        <source>zDAPS:</source>
-        <translation>zDAPS:</translation>
-    </message>
-    <message>
         <source>0 %</source>
         <translation>0 %</translation>
-    </message>
-    <message>
-        <source>Zerocoin Balance</source>
-        <translation>Баланс Zerocoin </translation>
     </message>
     <message>
         <source>Recent transactions</source>

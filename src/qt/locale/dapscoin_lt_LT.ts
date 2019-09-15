@@ -433,10 +433,6 @@
         <translation>Naršyti pavedimų istoriją</translation>
     </message>
     <message>
-        <source>Privacy Actions for zDAPS</source>
-        <translation>zDAPS Saugumo Veiksmai </translation>
-    </message>
-    <message>
         <source>E&amp;xit</source>
         <translation>&amp;Išeiti</translation>
     </message>
@@ -1890,26 +1886,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Įrašyti prievadą naudojant &amp;UPnP</translation>
     </message>
     <message>
-        <source>Enable automatic minting of DAPS units to zDAPS</source>
-        <translation>Įgalinti automatinį konvertavimą iš DAPS į zDAPS</translation>
-    </message>
-    <message>
-        <source>Enable zDAPS Automint</source>
-        <translation>Įgalinti zDAPS Automatinį nukaldinima</translation>
-    </message>
-    <message>
-        <source>Percentage of incoming DAPS which get automatically converted to zDAPS via Zerocoin Protocol (min: 10%)</source>
-        <translation>Procentas gauto DAPS, kuris automatiškai bus konvertuotas į zDAPS naudojant Zerocoin Protokolą (min: 10%)</translation>
-    </message>
-    <message>
-        <source>Percentage of autominted zDAPS</source>
-        <translation>Automatiškai sukurtų zDAPS procentas</translation>
-    </message>
-    <message>
-        <source>Preferred Automint zDAPS Denomination</source>
-        <translation>Pageidautinas zDAPS Automatinio Nukaldinimo Nominalas</translation>
-    </message>
-    <message>
         <source>Connect to the DAPScoin network through a SOCKS5 proxy.</source>
         <translation>Jungtis prie DAPScoin tinklo naudojant SOCKS5 tarpinį serverį.</translation>
     </message>
@@ -2057,16 +2033,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Jūsų dabartinis DAPScoin balansas, įskaitant nepatvirtintus ir nesubrendusius sandorius</translation>
     </message>
     <message>
-        <source>zDAPS Balance</source>
-        <translation>zDAPS Balansas</translation>
-    </message>
-    <message>
-        <source>Mature: more than 20 confirmation and more than 1 mint of the same denomination after it was minted.
-These zDAPS are spendable.</source>
-        <translation>Subrendę: daugiau nei 20 patvirtinimų ir daugiau nei 1 konvertacija to pačio nominalo, kai jis jau buvo konvertuotas.
-Šiuos zDAPS galima išleisti.</translation>
-    </message>
-    <message>
         <source>Unconfirmed: less than 20 confirmations
 Immature: confirmed, but less than 1 mint of the same denomination after it was minted</source>
         <translation>Nepatvirtinta: mažiau nei 20 patvirtinimų
@@ -2117,8 +2083,8 @@ Nesubrendusios: patvirtintos, bet mažiau nei 1 konvertacijos to pačio nominalo
         <translation>Prienamas išleidimui:</translation>
     </message>
     <message>
-        <source>Locked DAPS or Masternode collaterals. These are excluded from zDAPS minting.</source>
-        <translation>Užrakinti DAPS arba Masternode užstatai. Jie yra neįtraukti į zDAPS kalimą.</translation>
+        <source>Locked DAPS or Masternode collaterals.</source>
+        <translation>Užrakinti DAPS arba Masternode užstatai.</translation>
     </message>
     <message>
         <source>Locked:</source>
@@ -3298,10 +3264,6 @@ Nesubrendusios: patvirtintos, bet mažiau nei 1 konvertacijos to pačio nominalo
         <translation>Įspėjimas: nepalaikomas argumentas -debugnet ignored naudokite -debug=net.</translation>
     </message>
     <message>
-        <source>You don't have enough Zerocoins in your wallet</source>
-        <translation>Neturite pakankamai Zerocoin monetų savo piniginėje</translation>
-    </message>
-    <message>
         <source>Your entries added successfully.</source>
         <translation>Jūsų įrašai sėkmingai pridėti.</translation>
     </message>
@@ -3316,10 +3278,6 @@ Nesubrendusios: patvirtintos, bet mažiau nei 1 konvertacijos to pačio nominalo
     <message>
         <source>ZeroMQ notification options:</source>
         <translation>ZeroMQ pranešimų nustatymai:</translation>
-    </message>
-    <message>
-        <source>Zerocoin options:</source>
-        <translation>Zerocoin nustatymai:</translation>
     </message>
     <message>
         <source>on startup</source>

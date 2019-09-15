@@ -418,10 +418,6 @@
         <translation>Olhar histórico de transação</translation>
     </message>
     <message>
-        <source>Privacy Actions for zDAPS</source>
-        <translation>Ações privadas para zDAPS</translation>
-    </message>
-    <message>
         <source>E&amp;xit</source>
         <translation>&amp;Sair</translation>
     </message>
@@ -1878,10 +1874,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>DAPS:</translation>
     </message>
     <message>
-        <source>zDAPS:</source>
-        <translation>zDAPS:</translation>
-    </message>
-    <message>
         <source>0 %</source>
         <translation>0 %</translation>
     </message>
@@ -1896,10 +1888,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     <message>
         <source>Unlocked:</source>
         <translation>Destravado:</translation>
-    </message>
-    <message>
-        <source>Zerocoin Balance</source>
-        <translation>Saldo Zerocoin</translation>
     </message>
     <message>
         <source>Unconfirmed:</source>

@@ -1819,22 +1819,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>&amp;UPnp를 사용하여 포트 매핑</translation>
     </message>
     <message>
-        <source>Percentage of incoming DAPS which get automatically converted to zDAPS via Zerocoin Protocol (min: 10%)</source>
-        <translation>DAPS수신시 자동변환 zDAPS 퍼센트 (최소값:10%)</translation>
-    </message>
-    <message>
-        <source>Percentage of autominted zDAPS</source>
-        <translation>자동 변환되는 zDAPS 퍼센트</translation>
-    </message>
-    <message>
-        <source>Wait with automatic conversion to Zerocoin until enough DAPS for this denomination is available</source>
-        <translation>이 디노미네이션의 DAPS가 충분해질 때까지 Zerocoin으로 자동전환은 보류됩니다.</translation>
-    </message>
-    <message>
-        <source>Preferred Automint zDAPS Denomination</source>
-        <translation>선호하는 자동생성 zDAPS 디노미네이션 </translation>
-    </message>
-    <message>
         <source>Connect to the DAPScoin network through a SOCKS5 proxy.</source>
         <translation>SOCKS5 프록시를 통해 DAPScoin 네트워크에 연결해주세요.</translation>
     </message>
@@ -2034,10 +2018,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>DAPS:</translation>
     </message>
     <message>
-        <source>zDAPS:</source>
-        <translation>zDAPS:</translation>
-    </message>
-    <message>
         <source>0 %</source>
         <translation>0 %</translation>
     </message>
@@ -2052,10 +2032,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     <message>
         <source>Unlocked:</source>
         <translation>사용가능 : </translation>
-    </message>
-    <message>
-        <source>Zerocoin Balance</source>
-        <translation>제로코인 잔액</translation>
     </message>
     <message>
         <source>Mature:</source>
@@ -3618,26 +3594,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>난독화</translation>
     </message>
     <message>
-        <source>Converted Daps to zDaps</source>
-        <translation>zDAPS로 변환된 DAPS</translation>
-    </message>
-    <message>
-        <source>Spent zDaps</source>
-        <translation>전송된 zDAPS</translation>
-    </message>
-    <message>
-        <source>Received Daps from zDaps</source>
-        <translation>zDAPS로 전송받은 DAPS</translation>
-    </message>
-    <message>
-        <source>Minted Change as zDaps from zDaps Spend</source>
-        <translation>zDAPS 전송후 남은 잔돈 zDAPS 생성됨</translation>
-    </message>
-    <message>
-        <source>Converted zDaps to Daps</source>
-        <translation>zDaps에서 Daps로 변환됨</translation>
-    </message>
-    <message>
         <source>watch-only</source>
         <translation>읽기 전용</translation>
     </message>
@@ -3751,26 +3707,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     <message>
         <source>Masternode Reward</source>
         <translation>마스터노드 보상 </translation>
-    </message>
-    <message>
-        <source>Received Daps from zDaps</source>
-        <translation>zDAPS로 전송받은 DAPS</translation>
-    </message>
-    <message>
-        <source>Zerocoin Mint</source>
-        <translation>제로코인 생성</translation>
-    </message>
-    <message>
-        <source>Zerocoin Spend</source>
-        <translation>제로코인 전송</translation>
-    </message>
-    <message>
-        <source>Zerocoin Spend, Change in zDaps</source>
-        <translation>제로코인 전송, 잔돈은 zDAPS</translation>
-    </message>
-    <message>
-        <source>Zerocoin Spend to Self</source>
-        <translation>자신에게 제로코인 전송</translation>
     </message>
     <message>
         <source>Other</source>
@@ -4356,10 +4292,6 @@ rpcpassword=%s
         <translation>로딩 완료</translation>
     </message>
     <message>
-        <source>Enable automatic Zerocoin minting (0-1, default: %u)</source>
-        <translation>자동 제로코인 생성 (0-1, 기본값: %u)</translation>
-    </message>
-    <message>
         <source>Enable the client to act as a masternode (0-1, default: %u)</source>
         <translation>클라이언트가 마스터노드로 작동하는 것을 활성화 (0-1, 기본값: %u)</translation>
     </message>
@@ -4612,10 +4544,6 @@ rpcpassword=%s
         <translation>에러 : 지원하지않는 argument -checklevel 발견된.  Checklevel는 레벨 4이어야 합니다.</translation>
     </message>
     <message>
-        <source>Preferred Denomination for automatically minted Zerocoin  (1/5/10/50/100/500/1000/5000), 0 for no preference. default: %u)</source>
-        <translation>자동생성 제로코인 선호 디노미네이션 (1/5/10/50/100/500/1000/5000) 0사용안됨, 기본값 : %u)</translation>
-    </message>
-    <message>
         <source>&lt;category&gt; can be:</source>
         <translation>&lt;category&gt; 가능함 :</translation>
     </message>
@@ -4820,10 +4748,6 @@ rpcpassword=%s
         <translation>JSON-RPC 연결 비밀번호</translation>
     </message>
     <message>
-        <source>Percentage of automatically minted Zerocoin  (10-100, default: %u)</source>
-        <translation>자동 생성 제로코인 퍼센트 (10-100, 기본값: %u)</translation>
-    </message>
-    <message>
         <source>Preparing for resync...</source>
         <translation>재동기화 준비중...</translation>
     </message>
@@ -4882,14 +4806,6 @@ rpcpassword=%s
     <message>
         <source>Rescanning...</source>
         <translation>다시 스캔하는 중...</translation>
-    </message>
-    <message>
-        <source>ResetMintZerocoin finished: </source>
-        <translation>생성된 제로코인 초기화 완료:</translation>
-    </message>
-    <message>
-        <source>ResetSpentZerocoin finished: </source>
-        <translation>사용된 제로코인 초기화 완료:</translation>
     </message>
     <message>
         <source>Run a thread to flush wallet periodically (default: %u)</source>
@@ -5214,14 +5130,6 @@ rpcpassword=%s
     <message>
         <source>ZeroMQ notification options:</source>
         <translation>ZeroMQ 알림 옵션:</translation>
-    </message>
-    <message>
-        <source>Zerocoin options:</source>
-        <translation>제로코인 옵션:</translation>
-    </message>
-    <message>
-        <source>failed to validate zerocoin</source>
-        <translation>제로코인 검증을 못했습니다.</translation>
     </message>
     <message>
         <source>on startup</source>

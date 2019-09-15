@@ -1723,22 +1723,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</source
 https://www.transifex.com/dapscoin-project/dapscoin-project-translations</translation>
     </message>
     <message>
-        <source>Percentage of incoming DAPS which get automatically converted to zDAPS via Zerocoin Protocol (min: 10%)</source>
-        <translation>Процент от входящите DAPS, който автоматично да се конвертира в zDAPS посредтвом Zerocoin Протокола (мин: 10%)</translation>
-    </message>
-    <message>
-        <source>Percentage of autominted zDAPS</source>
-        <translation>Процент автоматично сечени zDAPS</translation>
-    </message>
-    <message>
-        <source>Wait with automatic conversion to Zerocoin until enough DAPS for this denomination is available</source>
-        <translation>Не бързай с автоматичното конвертиране в zDAPS докато не се съберат достатъчно DAPS за тази деноминация</translation>
-    </message>
-    <message>
-        <source>Preferred Automint zDAPS Denomination</source>
-        <translation>Предпочитани деноминации, в които да се сече автоматичен zDAPS</translation>
-    </message>
-    <message>
         <source>Connect to the DAPScoin network through a SOCKS5 proxy.</source>
         <translation>Свържи се с DAPScoin мрежата със SOCKS5 прокси.</translation>
     </message>
@@ -1938,20 +1922,12 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>DAPS:</translation>
     </message>
     <message>
-        <source>zDAPS:</source>
-        <translation>zDAPS:</translation>
-    </message>
-    <message>
         <source>0 %</source>
         <translation>0 %</translation>
     </message>
     <message>
         <source>0.000 000 00 DAPS</source>
         <translation>0.000 000 00 DAPS</translation>
-    </message>
-    <message>
-        <source>Zerocoin Balance</source>
-        <translation>Zerocoin баланс</translation>
     </message>
     <message>
         <source>Recent transactions</source>
@@ -3469,32 +3445,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Обфускирани</translation>
     </message>
     <message>
-        <source>Converted Daps to zDaps</source>
-        <translation>Конвертиран DAPS във zDAPS</translation>
-    </message>
-    <message>
-        <source>Spent zDaps</source>
-        <translation>Похарчени zDAPS</translation>
-    </message>
-    <message>
-        <source>Received Daps from zDaps</source>
-        <translation>Получен DAPS от zDAPS</translation>
-    </message>
-    <message>
-        <source>Minted Change as zDaps from zDaps Spend</source>
-        <translation>Исечено ресто като zDAPS от похарчените zDAPS</translation>
-    </message>
-    <message>
-        <source>Converted zDaps to Daps</source>
-        <translation>Конвертирани zDAPS в DAPS</translation>
-    </message>
-    <message>
         <source>watch-only</source>
         <translation>наблюдение само</translation>
-    </message>
-    <message>
-        <source>zDaps Accumulator</source>
-        <translation>zDAPS Акумулатор</translation>
     </message>
     <message>
         <source>(n/a)</source>
@@ -3598,26 +3550,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     <message>
         <source>Masternode Reward</source>
         <translation>Мастърноуд възнаграждение</translation>
-    </message>
-    <message>
-        <source>Received Daps from zDaps</source>
-        <translation>Получен DAPS от zDAPS</translation>
-    </message>
-    <message>
-        <source>Zerocoin Mint</source>
-        <translation>Сечене на Zerocoin</translation>
-    </message>
-    <message>
-        <source>Zerocoin Spend</source>
-        <translation>Харчене на Zerocoin</translation>
-    </message>
-    <message>
-        <source>Zerocoin Spend, Change in zDaps</source>
-        <translation>Харчене на Zerocoin, Ресто в zDAPS</translation>
-    </message>
-    <message>
-        <source>Zerocoin Spend to Self</source>
-        <translation>Харчене на Zerocoin за себе си</translation>
     </message>
     <message>
         <source>Other</source>
@@ -3923,10 +3855,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Край на зареждането</translation>
     </message>
     <message>
-        <source>Enable automatic Zerocoin minting (0-1, default: %u)</source>
-        <translation>Активирай автоматично сечене на Zerocoin (0-1, По подразбиране: %u)</translation>
-    </message>
-    <message>
         <source>Error</source>
         <translation>Грешка</translation>
     </message>
@@ -3947,20 +3875,12 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Грешен личен ключ.</translation>
     </message>
     <message>
-        <source>Preferred Denomination for automatically minted Zerocoin  (1/5/10/50/100/500/1000/5000), 0 for no preference. default: %u)</source>
-        <translation>Предпочитани деноминации за автоматично изсечените Zerocoin (1/5/10/50/100/500/1000/5000), 0 за каквито и да е. (По подразбиране: %u)</translation>
-    </message>
-    <message>
         <source>No Masternodes detected.</source>
         <translation>Не се засичат Мастърноудове.</translation>
     </message>
     <message>
         <source>No compatible Masternode found.</source>
         <translation>Не е намерен съвместим Мастърноуд.</translation>
-    </message>
-    <message>
-        <source>Percentage of automatically minted Zerocoin  (10-100, default: %u)</source>
-        <translation>Процент автоматично изсечени Zerocoin (10-100, по подразбиране: %u)</translation>
     </message>
     <message>
         <source>Server private key (default: %s)</source>
@@ -3977,14 +3897,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     <message>
         <source>Warning</source>
         <translation>Внимание</translation>
-    </message>
-    <message>
-        <source>Zerocoin options:</source>
-        <translation>Zerocoin опции</translation>
-    </message>
-    <message>
-        <source>failed to validate zerocoin</source>
-        <translation>провал при валидирането на Zerocoin</translation>
     </message>
     </context>
 </TS>
