@@ -4221,10 +4221,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Eliminando todas as transações da carteira...</translation>
     </message>
     <message>
-        <source>failed to validate zerocoin</source>
-        <translation>falhou em validar zerocoin</translation>
-    </message>
-    <message>
         <source>on startup</source>
         <translation>em inicialização</translation>
     </message>

@@ -3072,10 +3072,6 @@ Nesubrendusios: patvirtintos, bet mažiau nei 1 konvertacijos to pačio nominalo
         <translation>Nepavyko deserializuoti</translation>
     </message>
     <message>
-        <source>Failed to select a zerocoin</source>
-        <translation>Nepavyko pasirinkti zerocoin</translation>
-    </message>
-    <message>
         <source>Loading addresses...</source>
         <translation>Kraunami adresai....</translation>
     </message>

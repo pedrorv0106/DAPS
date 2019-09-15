@@ -4127,10 +4127,6 @@ Nezreli: potvrđeno, ali manje od 1 minta iste denominacije nakon mintanja</tran
         <translation>Izbrišite sve transakcije lisnice i obnavljajte one dijelove blok-lanca kroz -rescan pri pokretanju</translation>
     </message>
     <message>
-        <source>Delete all zerocoin spends and mints that have been recorded to the blockchain database and reindex them (0-1, default: %u)</source>
-        <translation>Izbriši sve zerocoin utroške i minteve koji su zabilježeni na blockchain database i reindexiraj ih (0-1, default: %u)</translation>
-    </message>
-    <message>
         <source>Distributed under the MIT software license, see the accompanying file COPYING or &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</source>
         <translation>Distribuirano pod MIT softverskom licencom, pogledajte priloženu datoteku COPYING ili &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</translation>
     </message>
