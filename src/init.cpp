@@ -1674,9 +1674,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     strBudgetMode = GetArg("-budgetvotemode", "auto");
 
     if (GetBoolArg("-mnconflock", true) && pwalletMain) {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(pwalletMain->cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LogPrintf("Locking Masternodes:\n");
         uint256 mnTxHash;
         BOOST_FOREACH (CMasternodeConfig::CMasternodeEntry mne, masternodeConfig.getEntries()) {

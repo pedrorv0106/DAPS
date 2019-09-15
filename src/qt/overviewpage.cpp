@@ -433,9 +433,7 @@ void OverviewPage::updateRecentTransactions(){
     }
     if (pwalletMain) {
     	{
-            printf("%s[%d]\n", __FUNCTION__, __LINE__);
     		LOCK(pwalletMain->cs_wallet);
-            printf("%s[%d]\n", __FUNCTION__, __LINE__);
     		vector<std::map<QString, QString>> txs;// = WalletUtil::getTXs(pwalletMain);
 
     		std::map<uint256, CWalletTx> txMap = pwalletMain->mapWallet;

@@ -406,9 +406,7 @@ public:
     //! check whether we are allowed to upgrade (or already support) to the named feature
     bool CanSupportFeature(enum WalletFeature wf)
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         AssertLockHeld(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         return nWalletMaxVersion >= wf;
     }
 
@@ -461,9 +459,7 @@ public:
 
     bool LoadMinVersion(int nVersion)
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         AssertLockHeld(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         nWalletVersion = nVersion;
         nWalletMaxVersion = std::max(nWalletMaxVersion, nVersion);
         return true;
@@ -685,9 +681,7 @@ public:
     void Inventory(const uint256& hash)
     {
         {
-            printf("%s[%d]\n", __FUNCTION__, __LINE__);
             LOCK(cs_wallet);
-            printf("%s[%d]\n", __FUNCTION__, __LINE__);
             std::map<uint256, int>::iterator mi = mapRequestCount.find(hash);
             if (mi != mapRequestCount.end())
                 (*mi).second++;
@@ -696,9 +690,7 @@ public:
 
     unsigned int GetKeyPoolSize()
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         AssertLockHeld(cs_wallet); // setKeyPool
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         return setKeyPool.size();
     }
 
@@ -713,9 +705,7 @@ public:
     //! get the current wallet format (the oldest client version guaranteed to understand this wallet)
     int GetVersion()
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         return nWalletVersion;
     }
 

@@ -92,9 +92,7 @@ void CActiveMasternode::ManageStatus()
                 LogPrintf("CActiveMasternode::ManageStatus() - %s\n", notCapableReason);
                 return;
             }
-            printf("%s[%d]\n", __FUNCTION__, __LINE__);
             LOCK(pwalletMain->cs_wallet);
-            printf("%s[%d]\n", __FUNCTION__, __LINE__);
             pwalletMain->LockCoin(vin.prevout);
 
             // send to all nodes
@@ -345,9 +343,7 @@ bool CActiveMasternode::GetMasterNodeVin(CTxIn& vin, CPubKey& pubkey, CKey& secr
     if (fImporting || fReindex) return false;
 
     // Find possible candidates
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     TRY_LOCK(pwalletMain->cs_wallet, fWallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     if (!fWallet) return false;
 
     vector<COutput> possibleCoins = SelectCoinsMasternode();

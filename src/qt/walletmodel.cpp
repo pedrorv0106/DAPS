@@ -142,9 +142,7 @@ void WalletModel::pollBalanceChanged()
     TRY_LOCK(cs_main, lockMain);
     if (!lockMain)
         return;
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     TRY_LOCK(wallet->cs_wallet, lockWallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     if (!lockWallet)
         return;
 
@@ -300,9 +298,7 @@ WalletModel::SendCoinsReturn WalletModel::prepareTransaction(WalletModelTransact
     }
 
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, wallet->cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 
         transaction.newPossibleKeyChange(wallet);
         CAmount nFeeRequired = 0;
@@ -410,9 +406,7 @@ bool WalletModel::changePassphrase(const SecureString& oldPass, const SecureStri
 {
     bool retval;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(wallet->cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         wallet->Lock(); // Make sure wallet is locked before attempting pass change
         retval = wallet->ChangeWalletPassphrase(oldPass, newPass);
     }
@@ -554,9 +548,7 @@ bool WalletModel::getPubKey(const CKeyID& address, CPubKey& vchPubKeyOut) const
 // returns a list of COutputs from COutPoints
 void WalletModel::getOutputs(const std::vector<COutPoint>& vOutpoints, std::vector<COutput>& vOutputs)
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK2(cs_main, wallet->cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     BOOST_FOREACH (const COutPoint& outpoint, vOutpoints) {
         if (!wallet->mapWallet.count(outpoint.hash)) continue;
         int nDepth = wallet->mapWallet[outpoint.hash].GetDepthInMainChain();
@@ -568,9 +560,7 @@ void WalletModel::getOutputs(const std::vector<COutPoint>& vOutpoints, std::vect
 
 bool WalletModel::isSpent(const COutPoint& outpoint) const
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK2(cs_main, wallet->cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     return wallet->IsSpent(outpoint.hash, outpoint.n);
 }
 
@@ -580,9 +570,7 @@ void WalletModel::listCoins(std::map<QString, std::vector<COutput> >& mapCoins) 
     std::vector<COutput> vCoins;
     wallet->AvailableCoins(vCoins);
 
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK2(cs_main, wallet->cs_wallet); // ListLockedCoins, mapWallet
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     std::vector<COutPoint> vLockedCoins;
     wallet->ListLockedCoins(vLockedCoins);
 
@@ -613,41 +601,31 @@ void WalletModel::listCoins(std::map<QString, std::vector<COutput> >& mapCoins) 
 
 bool WalletModel::isLockedCoin(uint256 hash, unsigned int n) const
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
-    LOCK2(cs_main, wallet->cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
+    LOCK2(cs_main, wallet->cs_wallet);   
     return wallet->IsLockedCoin(hash, n);
 }
 
 void WalletModel::lockCoin(COutPoint& output)
-{
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
+{   
     LOCK2(cs_main, wallet->cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     wallet->LockCoin(output);
 }
 
 void WalletModel::unlockCoin(COutPoint& output)
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK2(cs_main, wallet->cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     wallet->UnlockCoin(output);
 }
 
 void WalletModel::listLockedCoins(std::vector<COutPoint>& vOutpts)
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK2(cs_main, wallet->cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     wallet->ListLockedCoins(vOutpts);
 }
 
 void WalletModel::loadReceiveRequests(std::vector<std::string>& vReceiveRequests)
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK(wallet->cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     BOOST_FOREACH (const PAIRTYPE(CTxDestination, CAddressBookData) & item, wallet->mapAddressBook)
         BOOST_FOREACH (const PAIRTYPE(std::string, std::string) & item2, item.second.destdata)
             if (item2.first.size() > 2 && item2.first.substr(0, 2) == "rr") // receive request
@@ -662,9 +640,7 @@ bool WalletModel::saveReceiveRequest(const std::string& sAddress, const int64_t 
     ss << nId;
     std::string key = "rr" + ss.str(); // "rr" prefix = "receive request" in destdata
 
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK(wallet->cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     if (sRequest.empty())
         return wallet->EraseDestData(dest, key);
     else
@@ -742,9 +718,7 @@ vector<std::map<QString, QString> > getTXs(CWallet* wallet)
 	if (!wallet || wallet->IsLocked()) return txs;
 	std::map<uint256, CWalletTx> txMap = wallet->mapWallet;
 	{
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 		LOCK2(cs_main, wallet->cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 		for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
 			if (tx->second.GetDepthInMainChain() > 0) {
 				txs.push_back(getTx(wallet, tx->second));

@@ -1751,9 +1751,7 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
     SyncWithWallets(tx, NULL);
 
     if (pwalletMain) {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
     	LOCK(pwalletMain->cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
     	if (pwalletMain->mapWallet.count(tx.GetHash()) == 1) {
     		for (size_t i = 0; i < tx.vin.size(); i++) {
     			std::string outpoint = tx.vin[i].prevout.hash.GetHex() + std::to_string(tx.vin[i].prevout.n);

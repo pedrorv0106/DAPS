@@ -148,9 +148,7 @@ std::string COutput::ToString() const
 
 const CWalletTx* CWallet::GetWalletTx(const uint256& hash) const
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK(cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     std::map<uint256, CWalletTx>::const_iterator it = mapWallet.find(hash);
     if (it == mapWallet.end())
         return NULL;
@@ -191,9 +189,7 @@ bool CWallet::checkPassPhraseRule(const char *pass)
 }
 CPubKey CWallet::GenerateNewKey()
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
-    AssertLockHeld(cs_wallet);                 
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);                // mapKeyMetadata
+    AssertLockHeld(cs_wallet);                 // mapKeyMetadata
     bool fCompressed = CanSupportFeature(FEATURE_COMPRPUBKEY); // default to compressed public keys if we want 0.6.0 wallets
 
     RandAddSeedPerfmon();
@@ -219,9 +215,7 @@ CPubKey CWallet::GenerateNewKey()
 
 bool CWallet::AddKeyPubKey(const CKey& secret, const CPubKey& pubkey)
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     AssertLockHeld(cs_wallet); // mapKeyMetadata
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     if (!CCryptoKeyStore::AddKeyPubKey(secret, pubkey))
         return false;
 
@@ -241,9 +235,7 @@ bool CWallet::AddKeyPubKey(const CKey& secret, const CPubKey& pubkey)
 
 bool CWallet::SetHDChain(const CHDChain& chain, bool memonly)
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK(cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
 
     if (!CCryptoKeyStore::SetHDChain(chain))
         return false;
@@ -256,9 +248,7 @@ bool CWallet::SetHDChain(const CHDChain& chain, bool memonly)
 
 bool CWallet::SetCryptedHDChain(const CHDChain& chain, bool memonly)
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK(cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
 
     if (!CCryptoKeyStore::SetCryptedHDChain(chain))
         return false;
@@ -280,9 +270,7 @@ bool CWallet::SetCryptedHDChain(const CHDChain& chain, bool memonly)
 
 bool CWallet::GetDecryptedHDChain(CHDChain& hdChainRet)
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK(cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
 
     CHDChain hdChainTmp;
 
@@ -345,9 +333,7 @@ bool CWallet::AddCryptedKey(const CPubKey& vchPubKey,
     if (!fFileBacked)
         return true;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         if (pwalletdbEncryption)
             return pwalletdbEncryption->WriteCryptedKey(vchPubKey,
                                                         vchCryptedSecret,
@@ -360,9 +346,7 @@ bool CWallet::AddCryptedKey(const CPubKey& vchPubKey,
 
 bool CWallet::LoadKeyMetadata(const CPubKey& pubkey, const CKeyMetadata& meta)
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     AssertLockHeld(cs_wallet); // mapKeyMetadata
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     if (meta.nCreateTime && (!nTimeFirstKey || meta.nCreateTime < nTimeFirstKey))
         nTimeFirstKey = meta.nCreateTime;
 
@@ -412,9 +396,7 @@ bool CWallet::AddWatchOnly(const CScript& dest)
 
 bool CWallet::RemoveWatchOnly(const CScript& dest)
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     AssertLockHeld(cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     if (!CCryptoKeyStore::RemoveWatchOnly(dest))
         return false;
     if (!HaveWatchOnly())
@@ -444,9 +426,7 @@ bool CWallet::AddMultiSig(const CScript& dest)
 
 bool CWallet::RemoveMultiSig(const CScript& dest)
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     AssertLockHeld(cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     if (!CCryptoKeyStore::RemoveMultiSig(dest))
         return false;
     if (!HaveMultiSig())
@@ -500,11 +480,10 @@ bool CWallet::Unlock(const SecureString& strWalletPassphrase, bool anonymizeOnly
 
     CCrypter crypter;
     CKeyingMaterial vMasterKey;
+    bool rescanNeed = false;
 
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         BOOST_FOREACH (const MasterKeyMap::value_type& pMasterKey, mapMasterKeys) {
             if (!crypter.SetKeyFromPassphrase(strWalletPassphraseFinal, pMasterKey.second.vchSalt, pMasterKey.second.nDeriveIterations, pMasterKey.second.nDerivationMethod))
                 return false;
@@ -512,26 +491,31 @@ bool CWallet::Unlock(const SecureString& strWalletPassphrase, bool anonymizeOnly
                 continue; // try another master key
             if (CCryptoKeyStore::Unlock(vMasterKey)) {
                 fWalletUnlockAnonymizeOnly = anonymizeOnly;
-                LogPrintf("\nStart rescaning wallet transactions");
-                pwalletMain->RescanAfterUnlock();
-                walletUnlockCountStatus++;
-                LogPrintf("\nFinish rescaning wallet transactions");
-                return true;
+                rescanNeed = true;
+                break;
             }
         }
     }
+
+    if (rescanNeed) {
+        LogPrintf("\nStart rescaning wallet transactions");
+        pwalletMain->RescanAfterUnlock();
+        walletUnlockCountStatus++;
+        LogPrintf("\nFinish rescaning wallet transactions");
+        return true;
+    }
+
     return false;
 }
 
 bool CWallet::ChangeWalletPassphrase(const SecureString& strOldWalletPassphrase, const SecureString& strNewWalletPassphrase)
 {
     bool fWasLocked = IsLocked();
+    bool rescanNeed = false;
     SecureString strOldWalletPassphraseFinal = strOldWalletPassphrase;
 
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         Lock();
 
         CCrypter crypter;
@@ -562,10 +546,16 @@ bool CWallet::ChangeWalletPassphrase(const SecureString& strOldWalletPassphrase,
                 CWalletDB(strWalletFile).WriteMasterKey(pMasterKey.first, pMasterKey.second);
                 if (fWasLocked)
                     Lock();
-                pwalletMain->RescanAfterUnlock();
-                return true;
+                
+                rescanNeed = true;
+                break;
             }
         }
+    }
+
+    if (rescanNeed) {
+        pwalletMain->RescanAfterUnlock();
+        return true;
     }
 
     return false;
@@ -579,9 +569,7 @@ void CWallet::SetBestChain(const CBlockLocator& loc)
 
 bool CWallet::SetMinVersion(enum WalletFeature nVersion, CWalletDB* pwalletdbIn, bool fExplicit)
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK(cs_wallet); // nWalletVersion
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     if (nWalletVersion >= nVersion)
         return true;
 
@@ -607,9 +595,7 @@ bool CWallet::SetMinVersion(enum WalletFeature nVersion, CWalletDB* pwalletdbIn,
 
 bool CWallet::SetMaxVersion(int nVersion)
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK(cs_wallet); // nWalletVersion, nWalletMaxVersion
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     // cannot downgrade below current version
     if (nWalletVersion > nVersion)
         return false;
@@ -622,9 +608,7 @@ bool CWallet::SetMaxVersion(int nVersion)
 set<uint256> CWallet::GetConflicts(const uint256& txid) const
 {
     set<uint256> result;
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     AssertLockHeld(cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
 
     std::map<uint256, CWalletTx>::const_iterator it = mapWallet.find(txid);
     if (it == mapWallet.end())
@@ -842,9 +826,7 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
         return false;
 
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         mapMasterKeys[++nMasterKeyMaxID] = kMasterKey;
         if (fFileBacked) {
             assert(!pwalletdbEncryption);
@@ -912,9 +894,7 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
 
 int64_t CWallet::IncOrderPosNext(CWalletDB* pwalletdb)
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     AssertLockHeld(cs_wallet); // nOrderPosNext
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     int64_t nRet = nOrderPosNext++;
     if (pwalletdb) {
         pwalletdb->WriteOrderPosNext(nOrderPosNext);
@@ -950,9 +930,7 @@ CWallet::TxItems CWallet::OrderedTxItems(std::list<CAccountingEntry>& acentries,
 void CWallet::MarkDirty()
 {
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         BOOST_FOREACH (PAIRTYPE(const uint256, CWalletTx) & item, mapWallet)
         item.second.MarkDirty();
     }
@@ -994,9 +972,7 @@ bool CWallet::AddToWallet(const CWalletTx& wtxIn, bool fFromLoadWallet)
         mapWallet[hash].BindWallet(this);
         AddToSpends(hash);
     } else {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         // Inserts only if not already there, returns tx inserted or tx found
         pair<map<uint256, CWalletTx>::iterator, bool> ret = mapWallet.insert(make_pair(hash, wtxIn));
         CWalletTx& wtx = (*ret.first).second;
@@ -1099,9 +1075,7 @@ bool CWallet::AddToWallet(const CWalletTx& wtxIn, bool fFromLoadWallet)
 bool CWallet::AddToWalletIfInvolvingMe(const CTransaction& tx, const CBlock* pblock, bool fUpdate)
 {
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         AssertLockHeld(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         bool fExisted = mapWallet.count(tx.GetHash()) != 0;
         if (fExisted && !fUpdate) return false;
         IsTransactionForMe(tx);
@@ -1128,9 +1102,7 @@ bool CWallet::AddToWalletIfInvolvingMe(const CTransaction& tx, const CBlock* pbl
 void CWallet::SyncTransaction(const CTransaction& tx, const CBlock* pblock)
 {
 	if (IsLocked()) return;
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK2(cs_main, cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     if (!AddToWalletIfInvolvingMe(tx, pblock, true)) {
         return; // Not one of ours
     }
@@ -1149,9 +1121,7 @@ void CWallet::EraseFromWallet(const uint256& hash)
     if (!fFileBacked)
         return;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         if (mapWallet.erase(hash))
             CWalletDB(strWalletFile).EraseTx(hash);
     }
@@ -1162,9 +1132,7 @@ void CWallet::EraseFromWallet(const uint256& hash)
 isminetype CWallet::IsMine(const CTxIn& txin) const
 {
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         COutPoint prevout = findMyOutPoint(txin);
         map<uint256, CWalletTx>::const_iterator mi = mapWallet.find(prevout.hash);
         if (mi != mapWallet.end()) {
@@ -1188,9 +1156,7 @@ COutPoint CWallet::findMyOutPoint(const CTxIn& txin) const
 
 	COutPoint outpoint;
 	{
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 		LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 		bool ret = false;
 		CWalletTx prev;
 		if (mapWallet.count(txin.prevout.hash))
@@ -1234,9 +1200,7 @@ COutPoint CWallet::findMyOutPoint(const CTxIn& txin) const
 CAmount CWallet::GetDebit(const CTxIn& txin, const isminefilter& filter) const
 {
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         if (txin.prevout.IsNull()) return 0;
         COutPoint prevout = findMyOutPoint(txin);
         map<uint256, CWalletTx>::const_iterator mi = mapWallet.find(prevout.hash);
@@ -1332,9 +1296,7 @@ int CWallet::GetRealInputObfuscationRounds(CTxIn in, int rounds) const
 // respect current settings
 int CWallet::GetInputObfuscationRounds(CTxIn in) const
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK(cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     int realObfuscationRounds = GetRealInputObfuscationRounds(in, 0);
     return realObfuscationRounds > 0 ? 0 : realObfuscationRounds;
 }
@@ -1342,9 +1304,7 @@ int CWallet::GetInputObfuscationRounds(CTxIn in) const
 bool CWallet::IsDenominated(const CTxIn& txin) const
 {
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         COutPoint prevout = findMyOutPoint(txin);
         map<uint256, CWalletTx>::const_iterator mi = mapWallet.find(prevout.hash);
         if (mi != mapWallet.end()) {
@@ -1385,9 +1345,7 @@ bool CWallet::IsChange(const CTxOut& txout) const
         if (!ExtractDestination(txout.scriptPubKey, address))
             return true;
 
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         if (!mapAddressBook.count(address))
             return true;
     }
@@ -1411,9 +1369,7 @@ int CWalletTx::GetRequestCount() const
     // Returns -1 if it wasn't being tracked
     int nRequests = -1;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(pwallet->cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         if (IsCoinBase()) {
             // Generated block
             if (hashBlock != 0) {
@@ -1511,9 +1467,7 @@ void CWalletTx::GetAccountAmounts(const string& strAccount, CAmount& nReceived, 
         nFee = allFee;
     }
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(pwallet->cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         BOOST_FOREACH (const COutputEntry& r, listReceived) {
             if (pwallet->mapAddressBook.count(r.destination)) {
                 map<CTxDestination, CAddressBookData>::const_iterator mi = pwallet->mapAddressBook.find(r.destination);
@@ -1543,9 +1497,7 @@ int CWallet::ScanForWalletTransactions(CBlockIndex* pindexStart, bool fUpdate, i
     int64_t nNow = GetTime();
     CBlockIndex* pindex = pindexStart;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 
         // no need to read and scan block, if block was created before
         // our wallet birthday (as adjusted for block time variability)
@@ -1579,9 +1531,7 @@ int CWallet::ScanForWalletTransactions(CBlockIndex* pindexStart, bool fUpdate, i
 
 void CWallet::ReacceptWalletTransactions()
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK2(cs_main, cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     BOOST_FOREACH (PAIRTYPE(const uint256, CWalletTx) & item, mapWallet) {
         const uint256& wtxid = item.first;
         CWalletTx& wtx = item.second;
@@ -1653,10 +1603,8 @@ void CWallet::ResendWalletTransactions()
 
     // Rebroadcast any of our txes that aren't in a block yet
     LogPrintf("ResendWalletTransactions()\n");
-    {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
-        LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
+    {       
+        LOCK(cs_wallet);       
         // Sort them in chronological order
         multimap<unsigned int, CWalletTx*> mapSorted;
         BOOST_FOREACH (PAIRTYPE(const uint256, CWalletTx) & item, mapWallet) {
@@ -1685,9 +1633,7 @@ CAmount CWallet::GetBalance()
 {
     CAmount nTotal = 0;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
             if (pcoin->IsTrusted()) {
@@ -1705,9 +1651,7 @@ CAmount CWallet::GetBalance()
 CAmount CWallet::GetSpendableBalance() {
     CAmount nTotal = 0;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
             if (pcoin->IsTrusted()) {
@@ -1728,9 +1672,7 @@ CAmount CWallet::GetUnlockedCoins() const
 
     CAmount nTotal = 0;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
 
@@ -1748,9 +1690,7 @@ CAmount CWallet::GetLockedCoins() const
 
     CAmount nTotal = 0;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
 
@@ -1769,9 +1709,7 @@ CAmount CWallet::GetAnonymizableBalance() const
 
     CAmount nTotal = 0;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
 
@@ -1789,9 +1727,7 @@ CAmount CWallet::GetAnonymizedBalance() const
 
     CAmount nTotal = 0;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
 
@@ -1813,9 +1749,7 @@ double CWallet::GetAverageAnonymizedRounds()
     double fCount = 0;
 
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
 
@@ -1847,9 +1781,7 @@ CAmount CWallet::GetNormalizedAnonymizedBalance()
     CAmount nTotal = 0;
 
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
 
@@ -1873,9 +1805,7 @@ CAmount CWallet::GetDenominatedBalance(bool unconfirmed) const
 
     CAmount nTotal = 0;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
 
@@ -1890,9 +1820,7 @@ CAmount CWallet::GetUnconfirmedBalance() const
 {
     CAmount nTotal = 0;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
             if (!IsFinalTx(*pcoin) || (!pcoin->IsTrusted() && pcoin->GetDepthInMainChain() == 0))
@@ -1906,9 +1834,7 @@ CAmount CWallet::GetImmatureBalance() const
 {
     CAmount nTotal = 0;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
             nTotal += pcoin->GetImmatureCredit(false);
@@ -1921,9 +1847,7 @@ CAmount CWallet::GetWatchOnlyBalance() const
 {
     CAmount nTotal = 0;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
             if (pcoin->IsTrusted())
@@ -1938,9 +1862,7 @@ CAmount CWallet::GetUnconfirmedWatchOnlyBalance() const
 {
     CAmount nTotal = 0;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
             if (!IsFinalTx(*pcoin) || (!pcoin->IsTrusted() && pcoin->GetDepthInMainChain() == 0))
@@ -1954,9 +1876,7 @@ CAmount CWallet::GetImmatureWatchOnlyBalance() const
 {
     CAmount nTotal = 0;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
             nTotal += pcoin->GetImmatureWatchOnlyCredit();
@@ -1973,9 +1893,7 @@ void CWallet::AvailableCoins(vector<COutput>& vCoins, bool fOnlyConfirmed, const
     vCoins.clear();
 
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const uint256& wtxid = it->first;
             const CWalletTx* pcoin = &(*it).second;
@@ -2173,9 +2091,7 @@ bool CWallet::MintableCoins()
     vector<COutput> vCoins;
 
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
     	LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
     	for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
     		const uint256& wtxid = it->first;
     		const CWalletTx* pcoin = &(*it).second;
@@ -2313,9 +2229,7 @@ bool CWallet::SelectCoins(const CAmount& nTargetValue, set<pair<const CWalletTx*
     vCoins.clear();
 
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const uint256& wtxid = it->first;
             const CWalletTx* pcoin = &(*it).second;
@@ -2605,9 +2519,7 @@ int CWallet::CountInputsWithAmount(CAmount nInputAmount)
 {
     CAmount nTotal = 0;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const CWalletTx* pcoin = &(*it).second;
             if (pcoin->IsTrusted()) {
@@ -2841,9 +2753,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     txNew.hasPaymentID = wtxNew.hasPaymentID;
     txNew.paymentID = wtxNew.paymentID;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         {
             nFeeRet = 0;
             if (nFeePay > 0) nFeeRet = nFeePay;
@@ -2994,9 +2904,7 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
     txNew.nTxFee = wtxNew.nTxFee;
 
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         {
             nFeeRet = txNew.nTxFee;
             if (nFeePay > 0) nFeeRet = nFeePay;
@@ -3800,9 +3708,7 @@ void CWallet::AddComputedPrivateKey(const CTxOut& out)
 {
 	if (IsLocked()) return;
 	{
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 		LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 		CKey spend, view;
 		mySpendPrivateKey(spend);
 		myViewPrivateKey(view);
@@ -3883,9 +3789,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
     }
 
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         std::vector<map<uint256, CWalletTx>::const_iterator> tobeRemoveds;
         if (wlIdx == (int)mapWallet.size()) {
             wlIdx = 0;
@@ -4304,9 +4208,7 @@ bool CWallet::CreateCoinAudit(const CKeyStore& keystore, unsigned int nBits, int
 bool CWallet::CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey, std::string strCommand)
 {
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LogPrintf("CommitTransaction:\n%s", wtxNew.ToString());
         {
             // This is only to keep the database open to defeat the auto-flush for the
@@ -4408,9 +4310,7 @@ string CWallet::PrepareObfuscationDenominate(int minRounds, int maxRounds)
     LogPrintf("PrepareObfuscationDenominate - preparing obfuscation denominate . Got: %d \n", nValueIn);
 
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         BOOST_FOREACH (CTxIn v, vCoins)
         LockCoin(v.prevout);
     }
@@ -4490,18 +4390,14 @@ string CWallet::PrepareObfuscationDenominate(int minRounds, int maxRounds)
 
     {
         // unlock unused coins
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         BOOST_FOREACH (CTxIn v, vCoins)
         UnlockCoin(v.prevout);
     }
 
     if (obfuScationPool.GetDenominations(vOut) != obfuScationPool.sessionDenom) {
         // unlock used coins on failure
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         BOOST_FOREACH (CTxIn v, vCoinsResult)
         UnlockCoin(v.prevout);
         return "Error: can't make current denominated outputs";
@@ -4534,9 +4430,7 @@ DBErrors CWallet::LoadWallet(bool& fFirstRunRet)
     DBErrors nLoadWalletRet = CWalletDB(strWalletFile, "cr+").LoadWallet(this);
     if (nLoadWalletRet == DB_NEED_REWRITE) {
         if (CDB::Rewrite(strWalletFile, "\x04pool")) {
-            printf("%s[%d]\n", __FUNCTION__, __LINE__);
             LOCK(cs_wallet);
-            printf("%s[%d]\n", __FUNCTION__, __LINE__);
             setKeyPool.clear();
             // Note: can't top-up keypool here, because wallet is locked.
             // User will be prompted to unlock wallet the next operation
@@ -4562,9 +4456,7 @@ DBErrors CWallet::ZapWalletTx(std::vector<CWalletTx>& vWtx)
     DBErrors nZapWalletTxRet = CWalletDB(strWalletFile, "cr+").ZapWalletTx(this, vWtx);
     if (nZapWalletTxRet == DB_NEED_REWRITE) {
         if (CDB::Rewrite(strWalletFile, "\x04pool")) {
-            printf("%s[%d]\n", __FUNCTION__, __LINE__);
             LOCK(cs_wallet);
-            printf("%s[%d]\n", __FUNCTION__, __LINE__);
             setKeyPool.clear();
             // Note: can't top-up keypool here, because wallet is locked.
             // User will be prompted to unlock wallet the next operation
@@ -4583,9 +4475,7 @@ bool CWallet::SetAddressBook(const CTxDestination& address, const string& strNam
 {
     bool fUpdated = false;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet); // mapAddressBook
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         std::map<CTxDestination, CAddressBookData>::iterator mi = mapAddressBook.find(address);
         fUpdated = mi != mapAddressBook.end();
         mapAddressBook[address].name = strName;
@@ -4604,9 +4494,7 @@ bool CWallet::SetAddressBook(const CTxDestination& address, const string& strNam
 bool CWallet::DelAddressBook(const CTxDestination& address)
 {
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet); // mapAddressBook
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 
         if (fFileBacked) {
             // Delete destdata tuples associated with address
@@ -4643,9 +4531,7 @@ bool CWallet::SetDefaultKey(const CPubKey& vchPubKey)
 bool CWallet::NewKeyPool()
 {
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         CWalletDB walletdb(strWalletFile);
         BOOST_FOREACH (int64_t nIndex, setKeyPool)
         walletdb.ErasePool(nIndex);
@@ -4704,9 +4590,7 @@ void GetAccountAddress(CWallet* pwalletMain, string strAccount, int nAccountInde
 bool CWallet::TopUpKeyPool(unsigned int kpSize)
 {
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 
         if (IsLocked())
             return false;
@@ -4741,9 +4625,7 @@ void CWallet::ReserveKeyFromKeyPool(int64_t& nIndex, CKeyPool& keypool)
     nIndex = -1;
     keypool.vchPubKey = CPubKey();
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 
         if (!IsLocked())
             TopUpKeyPool();
@@ -4767,9 +4649,7 @@ void CWallet::ReserveKeyFromKeyPool(int64_t& nIndex, CKeyPool& keypool)
 
 void CWallet::CreatePrivacyAccount() {
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         if (IsCrypted())
             return;//throw runtime_error("Wallet is encrypted, please decrypt it");
 
@@ -4813,9 +4693,7 @@ void CWallet::ReturnKey(int64_t nIndex)
 {
     // Return to key pool
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         setKeyPool.insert(nIndex);
     }
     LogPrintf("keypool return %d\n", nIndex);
@@ -4826,9 +4704,7 @@ bool CWallet::GetKeyFromPool(CPubKey& result)
     int64_t nIndex = 0;
     CKeyPool keypool;
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         ReserveKeyFromKeyPool(nIndex, keypool);
         if (nIndex == -1) {
             if (IsLocked()) return false;
@@ -4857,9 +4733,7 @@ std::map<CTxDestination, CAmount> CWallet::GetAddressBalances()
     map<CTxDestination, CAmount> balances;
 
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         BOOST_FOREACH (PAIRTYPE(uint256, CWalletTx) walletEntry, mapWallet) {
             CWalletTx* pcoin = &walletEntry.second;
 
@@ -4894,7 +4768,6 @@ std::map<CTxDestination, CAmount> CWallet::GetAddressBalances()
 
 set<set<CTxDestination> > CWallet::GetAddressGroupings()
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     AssertLockHeld(cs_wallet); // mapWallet
     set<set<CTxDestination> > groupings;
     set<CTxDestination> grouping;
@@ -4978,9 +4851,7 @@ set<set<CTxDestination> > CWallet::GetAddressGroupings()
 
 set<CTxDestination> CWallet::GetAccountAddresses(string strAccount) const
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK(cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     set<CTxDestination> result;
     BOOST_FOREACH (const PAIRTYPE(CTxDestination, CAddressBookData) & item, mapAddressBook) {
         const CTxDestination& address = item.first;
@@ -5029,9 +4900,7 @@ void CWallet::GetAllReserveKeys(set<CKeyID>& setAddress) const
 
     CWalletDB walletdb(strWalletFile);
 
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK2(cs_main, cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     BOOST_FOREACH (const int64_t& id, setKeyPool) {
         CKeyPool keypool;
         if (!walletdb.ReadPool(id, keypool))
@@ -5047,9 +4916,7 @@ void CWallet::GetAllReserveKeys(set<CKeyID>& setAddress) const
 bool CWallet::UpdatedTransaction(const uint256& hashTx)
 {
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         // Only notify UI if this transaction is in this wallet
         map<uint256, CWalletTx>::const_iterator mi = mapWallet.find(hashTx);
         if (mi != mapWallet.end()) {
@@ -5062,33 +4929,26 @@ bool CWallet::UpdatedTransaction(const uint256& hashTx)
 
 void CWallet::LockCoin(COutPoint& output)
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     AssertLockHeld(cs_wallet); // setLockedCoins
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     setLockedCoins.insert(output);
 }
 
 void CWallet::UnlockCoin(COutPoint& output)
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     AssertLockHeld(cs_wallet); // setLockedCoins
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     setLockedCoins.erase(output);
 }
 
 void CWallet::UnlockAllCoins()
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     AssertLockHeld(cs_wallet); // setLockedCoins
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     setLockedCoins.clear();
 }
 
 bool CWallet::IsLockedCoin(uint256 hash, unsigned int n) const
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
+
     AssertLockHeld(cs_wallet); // setLockedCoins
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     COutPoint outpt(hash, n);
 
     return (setLockedCoins.count(outpt) > 0);
@@ -5096,9 +4956,7 @@ bool CWallet::IsLockedCoin(uint256 hash, unsigned int n) const
 
 void CWallet::ListLockedCoins(std::vector<COutPoint>& vOutpts)
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     AssertLockHeld(cs_wallet); // setLockedCoins
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     for (std::set<COutPoint>::iterator it = setLockedCoins.begin();
          it != setLockedCoins.end(); it++) {
         COutPoint outpt = (*it);
@@ -5146,7 +5004,6 @@ public:
 
 void CWallet::GetKeyBirthTimes(std::map<CKeyID, int64_t>& mapKeyBirth) const
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     AssertLockHeld(cs_wallet); // mapKeyMetadata
     mapKeyBirth.clear();
 
@@ -5252,9 +5109,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 	vCoins.clear();
 
 	{
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 		LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 		for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
 			const uint256& wtxid = it->first;
 			const CWalletTx* pcoin = &(*it).second;
@@ -5377,9 +5232,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 	txNew.hasPaymentID = wtxNew.hasPaymentID;
 	txNew.paymentID = wtxNew.paymentID;
 	{
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 		LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 		{
 			unsigned int nBytes = 0;
 			while (true) {
@@ -6078,9 +5931,7 @@ bool CWallet::IsTransactionForMe(const CTransaction& tx) {
             }
 
             if (ret) {
-                printf("%s[%d]\n", __FUNCTION__, __LINE__);
                 LOCK(cs_wallet);
-                printf("%s[%d]\n", __FUNCTION__, __LINE__);
                 //Compute private key to spend
                 //x = Hs(aR) + b, b = spend private key
                 unsigned char HStemp[32];
@@ -6222,9 +6073,7 @@ void CWallet::DeriveNewChildKey(uint32_t nAccountIndex, CKey& secretRet)
 
 bool CWallet::GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK(cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     std::map<CKeyID, CHDPubKey>::const_iterator mi = mapHdPubKeys.find(address);
     if (mi != mapHdPubKeys.end())
     {
@@ -6238,9 +6087,7 @@ bool CWallet::GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const
 
 bool CWallet::GetKey(const CKeyID &address, CKey& keyOut) const
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK(cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     std::map<CKeyID, CHDPubKey>::const_iterator mi = mapHdPubKeys.find(address);
     if (mi != mapHdPubKeys.end())
     {
@@ -6268,9 +6115,7 @@ bool CWallet::GetKey(const CKeyID &address, CKey& keyOut) const
 
 bool CWallet::HaveKey(const CKeyID &address) const
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK(cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     if (mapHdPubKeys.count(address) > 0)
         return true;
     return CCryptoKeyStore::HaveKey(address);
@@ -6278,9 +6123,7 @@ bool CWallet::HaveKey(const CKeyID &address) const
 
 bool CWallet::LoadHDPubKey(const CHDPubKey &hdPubKey)
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     AssertLockHeld(cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
 
     mapHdPubKeys[hdPubKey.extPubKey.pubkey.GetID()] = hdPubKey;
     return true;
@@ -6288,9 +6131,7 @@ bool CWallet::LoadHDPubKey(const CHDPubKey &hdPubKey)
 
 bool CWallet::AddHDPubKey(const CExtPubKey &extPubKey, bool fInternal, uint32_t nAccountIndex)
 {
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     AssertLockHeld(cs_wallet);
-    printf("%s[%d]\n", __FUNCTION__, __LINE__);
 
     CHDChain hdChainCurrent;
     GetHDChain(hdChainCurrent);
@@ -6317,9 +6158,7 @@ void CWallet::createMasterKey() const {
     int i = 0;
     CWalletDB pDB(strWalletFile);
     {   
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         while (i < 10) {
             std::string viewAccountLabel = "viewaccount";
             std::string spendAccountLabel = "spendaccount";
@@ -6347,9 +6186,7 @@ void CWallet::createMasterKey() const {
 
 bool CWallet::mySpendPrivateKey(CKey& spend) const {
 	{
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 		LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 		if (IsLocked()) {
 			LogPrintf("\n%s:Wallet is locked\n", __func__);
 			return false;
@@ -6369,9 +6206,7 @@ bool CWallet::mySpendPrivateKey(CKey& spend) const {
 }
 bool CWallet::myViewPrivateKey(CKey& view) const {
 	{
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 		LOCK2(cs_main, cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
 		if (IsLocked()) {
 			LogPrintf("\n%s:Wallet is locked\n", __func__);
 			return false;

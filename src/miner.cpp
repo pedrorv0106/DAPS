@@ -653,9 +653,7 @@ bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
 
     // Track how many getdata requests this block gets
     {
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(wallet.cs_wallet);
-        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         wallet.mapRequestCount[pblock->GetHash()] = 0;
     }
 
