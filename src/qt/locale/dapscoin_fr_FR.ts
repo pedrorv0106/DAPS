@@ -1741,13 +1741,6 @@ Veuillez vérifier l'adresse et réessayer.</translation>
     </message>
     </context>
 <context>
-    <name>ZDapsControlDialog</name>
-    <message>
-        <source>0</source>
-        <translation>0</translation>
-    </message>
-    </context>
-<context>
     <name>dapscoin-core</name>
     <message>
         <source>Error</source>

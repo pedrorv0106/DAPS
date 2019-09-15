@@ -1913,21 +1913,6 @@
     </message>
     </context>
 <context>
-    <name>ZDapsControlDialog</name>
-    <message>
-        <source>Quantity</source>
-        <translation>Quantitat</translation>
-    </message>
-    <message>
-        <source>0</source>
-        <translation>0</translation>
-    </message>
-    <message>
-        <source>zDaps</source>
-        <translation>zDaps</translation>
-    </message>
-    </context>
-<context>
     <name>dapscoin-core</name>
     <message>
         <source>Can't mix while sync in progress.</source>

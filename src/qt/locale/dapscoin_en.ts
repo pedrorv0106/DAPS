@@ -5280,40 +5280,6 @@ To enable AutoMint change &apos;enablezeromint=0&apos; to &apos;enablezeromint=1
     </message>
 </context>
 <context>
-    <name>ZDapsControlDialog</name>
-    <message>
-        <location filename="../forms/zdapscontroldialog.ui" line="+20"/>
-        <source>Select zDaps to Spend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Quantity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <location line="+14"/>
-        <source>0</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-7"/>
-        <source>zDaps</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Select/Deselect All</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+50"/>
-        <source>Is Spendable</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>dapscoin-core</name>
     <message>
         <location filename="../dapscoinstrings.cpp" line="+15"/>

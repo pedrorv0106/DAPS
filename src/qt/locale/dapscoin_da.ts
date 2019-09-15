@@ -3617,13 +3617,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     </message>
 </context>
 <context>
-    <name>ZDapsControlDialog</name>
-    <message>
-        <source>0</source>
-        <translation>0</translation>
-    </message>
-    </context>
-<context>
     <name>dapscoin-core</name>
     <message>
         <source>(1 = keep tx meta data e.g. account owner and payment request information, 2 = drop tx meta data)</source>

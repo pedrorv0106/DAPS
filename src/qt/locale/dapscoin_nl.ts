@@ -3772,33 +3772,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     </message>
 </context>
 <context>
-    <name>ZDapsControlDialog</name>
-    <message>
-        <source>Select zDaps to Spend</source>
-        <translation>Selecteer zDaps om te spenderen</translation>
-    </message>
-    <message>
-        <source>Quantity</source>
-        <translation>Hoeveelheid</translation>
-    </message>
-    <message>
-        <source>0</source>
-        <translation>0</translation>
-    </message>
-    <message>
-        <source>zDaps</source>
-        <translation>zDaps</translation>
-    </message>
-    <message>
-        <source>Select/Deselect All</source>
-        <translation>Selecteer/Deselecteer Alles</translation>
-    </message>
-    <message>
-        <source>Is Spendable</source>
-        <translation>Is Uitgeefbaar</translation>
-    </message>
-</context>
-<context>
     <name>dapscoin-core</name>
     <message>
         <source>(1 = keep tx meta data e.g. account owner and payment request information, 2 = drop tx meta data)</source>

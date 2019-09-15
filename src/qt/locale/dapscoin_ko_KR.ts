@@ -3930,33 +3930,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     </message>
 </context>
 <context>
-    <name>ZDapsControlDialog</name>
-    <message>
-        <source>Select zDaps to Spend</source>
-        <translation>전송할 zDAPS 선택</translation>
-    </message>
-    <message>
-        <source>Quantity</source>
-        <translation>수량</translation>
-    </message>
-    <message>
-        <source>0</source>
-        <translation>0</translation>
-    </message>
-    <message>
-        <source>zDaps</source>
-        <translation>zDaps</translation>
-    </message>
-    <message>
-        <source>Select/Deselect All</source>
-        <translation>전체 선택 / 해제</translation>
-    </message>
-    <message>
-        <source>Is Spendable</source>
-        <translation>전송가능한 코인수</translation>
-    </message>
-</context>
-<context>
     <name>dapscoin-core</name>
     <message>
         <source>(1 = keep tx meta data e.g. account owner and payment request information, 2 = drop tx meta data)</source>

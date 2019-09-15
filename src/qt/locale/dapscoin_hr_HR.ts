@@ -4209,33 +4209,6 @@ Da biste omogućili, promjenite postavke AutoMint 'enablezeromint=0' na 'enablez
     </message>
 </context>
 <context>
-    <name>ZDapsControlDialog</name>
-    <message>
-        <source>Select zDAPS to Spend</source>
-        <translation>Odabrani zDAPS za utrošiti</translation>
-    </message>
-    <message>
-        <source>Quantity</source>
-        <translation>Količina</translation>
-    </message>
-    <message>
-        <source>0</source>
-        <translation>0</translation>
-    </message>
-    <message>
-        <source>zDAPS</source>
-        <translation>zDAPS</translation>
-    </message>
-    <message>
-        <source>Select/Deselect All</source>
-        <translation>Odaberite/poništi odabir za Sve</translation>
-    </message>
-    <message>
-        <source>Is Spendable</source>
-        <translation>Je moguće utrošiti</translation>
-    </message>
-</context>
-<context>
     <name>dapscoin-core</name>
     <message>
         <source>(1 = keep tx meta data e.g. account owner and payment request information, 2 = drop tx meta data)</source>

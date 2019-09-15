@@ -955,9 +955,6 @@
     </message>
     </context>
 <context>
-    <name>ZDapsControlDialog</name>
-    </context>
-<context>
     <name>dapscoin-core</name>
     </context>
 </TS>

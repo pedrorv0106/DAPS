@@ -1259,9 +1259,6 @@ MultiSend: %1</translation>
     </message>
     </context>
 <context>
-    <name>ZDapsControlDialog</name>
-    </context>
-<context>
     <name>dapscoin-core</name>
     <message>
         <source>Error</source>

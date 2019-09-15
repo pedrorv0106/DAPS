@@ -875,9 +875,6 @@
     </message>
     </context>
 <context>
-    <name>ZDapsControlDialog</name>
-    </context>
-<context>
     <name>dapscoin-core</name>
     <message>
         <source>Delete all wallet transactions and only recover those parts of the blockchain through -rescan on startup</source>

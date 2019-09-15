@@ -3769,33 +3769,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     </message>
 </context>
 <context>
-    <name>ZDapsControlDialog</name>
-    <message>
-        <source>Select zDaps to Spend</source>
-        <translation>Изберете zDAPS за Изпращане</translation>
-    </message>
-    <message>
-        <source>Quantity</source>
-        <translation>Количество</translation>
-    </message>
-    <message>
-        <source>0</source>
-        <translation>0</translation>
-    </message>
-    <message>
-        <source>zDaps</source>
-        <translation>zDAPS</translation>
-    </message>
-    <message>
-        <source>Select/Deselect All</source>
-        <translation>Избери/Премахни Всички</translation>
-    </message>
-    <message>
-        <source>Is Spendable</source>
-        <translation>В Налични за харечене</translation>
-    </message>
-</context>
-<context>
     <name>dapscoin-core</name>
     <message>
         <source>Change automatic finalized budget voting behavior. mode=auto: Vote for only exact finalized budget match to my generated budget. (string, default: auto)</source>

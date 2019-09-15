@@ -3008,17 +3008,6 @@ Nesubrendusios: patvirtintos, bet mažiau nei 1 konvertacijos to pačio nominalo
     </message>
     </context>
 <context>
-    <name>ZDapsControlDialog</name>
-    <message>
-        <source>0</source>
-        <translation>0</translation>
-    </message>
-    <message>
-        <source>zDAPS</source>
-        <translation>zDAPS</translation>
-    </message>
-    </context>
-<context>
     <name>dapscoin-core</name>
     <message>
         <source>(default: %s)</source>

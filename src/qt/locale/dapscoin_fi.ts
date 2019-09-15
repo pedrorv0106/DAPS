@@ -2462,13 +2462,6 @@ Please check the address and try again.</source>
     </message>
     </context>
 <context>
-    <name>ZDapsControlDialog</name>
-    <message>
-        <source>0</source>
-        <translation>0</translation>
-    </message>
-    </context>
-<context>
     <name>dapscoin-core</name>
     <message>
         <source>Warning: The network does not appear to fully agree! Some miners appear to be experiencing issues.</source>

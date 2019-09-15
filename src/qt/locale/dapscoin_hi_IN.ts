@@ -298,9 +298,6 @@
     <name>WalletView</name>
     </context>
 <context>
-    <name>ZDapsControlDialog</name>
-    </context>
-<context>
     <name>dapscoin-core</name>
     <message>
         <source>Information</source>

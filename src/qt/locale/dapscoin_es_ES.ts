@@ -626,9 +626,6 @@
     </message>
     </context>
 <context>
-    <name>ZDapsControlDialog</name>
-    </context>
-<context>
     <name>dapscoin-core</name>
     <message>
         <source>Zapping all transactions from wallet...</source>

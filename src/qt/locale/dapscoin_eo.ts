@@ -2488,21 +2488,6 @@ Nematura: konfirmita, sed malpli ol 1 minto el la samo nomado post ĝin estis mi
     </message>
     </context>
 <context>
-    <name>ZDapsControlDialog</name>
-    <message>
-        <source>0</source>
-        <translation>0</translation>
-    </message>
-    <message>
-        <source>zDAPS</source>
-        <translation>zDAPS</translation>
-    </message>
-    <message>
-        <source>Is Spendable</source>
-        <translation>Estas elspezebla</translation>
-    </message>
-</context>
-<context>
     <name>dapscoin-core</name>
     <message>
         <source>Connect through SOCKS5 proxy</source>

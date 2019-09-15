@@ -3034,13 +3034,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     </message>
     </context>
 <context>
-    <name>ZDapsControlDialog</name>
-    <message>
-        <source>0</source>
-        <translation>0</translation>
-    </message>
-    </context>
-<context>
     <name>dapscoin-core</name>
     <message>
         <source>Block creation options:</source>
