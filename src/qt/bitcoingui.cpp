@@ -367,7 +367,10 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     tabGroup->addAction(optionsAction);
 
     stakingAction = new QAction(QIcon(":/icons/options"), tr("&Staking"), this);
+    stakingAction->setText(tr("Staking Status"));
     stakingAction->setMenuRole(QAction::NoRole);
+    stakingState = new QLabel(this);
+    stakingState->setObjectName("stakingState");
     networkAction = new QAction(QIcon(":/icons/options"), tr("&Network"), this);
     networkAction->setMenuRole(QAction::NoRole);
     networkAction->setText("Network Status");
@@ -551,6 +554,7 @@ void BitcoinGUI::createToolBars()
         bottomToolbar->setOrientation(Qt::Vertical);
         bottomToolbar->addAction(optionsAction);
         bottomToolbar->addAction(stakingAction);
+        bottomToolbar->addWidget(stakingState);
         bottomToolbar->addAction(networkAction);
         bottomToolbar->addWidget(connectionCount);
         
@@ -901,7 +905,7 @@ void BitcoinGUI::setNumConnections(int count)
         break;
     }
     
-    connectionCount->setText(tr("%n connections", "", count));
+    connectionCount->setText(tr("%n Active Connections", "", count));
     if (count < 1)
         networkAction->setIcon(QIcon(":icons/staking_disabled"));
     else
@@ -1124,25 +1128,24 @@ void BitcoinGUI::setStakingStatus()
     if (pwalletMain) {
         fMultiSend = pwalletMain->isMultiSendEnabled();
         stkStatus = pwalletMain->ReadStakingStatus();
-        if(pwalletMain->walletStakingInProgress) {
-        	if (nLastCoinStakeSearchInterval == 0) {
-        		return;
-        	}
-        }
     }
 
     if (nLastCoinStakeSearchInterval || stkStatus) {
-        stakingAction->setText(tr("Staking"));
+        stakingState->setText(tr("Staking enabled"));
         stakingAction->setIcon(QIcon(":/icons/staking_active"));
     } else {
-        stakingAction->setText(tr("Not staking"));
+        stakingState->setText(tr("Staking disabled"));
         stakingAction->setIcon(QIcon(":/icons/staking_inactive"));
     }
 }
 void BitcoinGUI::setStakingInProgress(bool inProgress)
 {
 	if (inProgress) {
-		stakingAction->setText(tr("Staking In Progress"));
+        stakingState->setText(tr("Enabling staking..."));
+        stakingAction->setIcon(QIcon(":/icons/staking_active"));
+	} else {
+        stakingState->setText(tr("Disabling staking..."));
+        stakingAction->setIcon(QIcon(":/icons/staking_inactive"));
 	}
 }
 
