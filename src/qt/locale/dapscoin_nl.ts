@@ -3436,32 +3436,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Verduisterd</translation>
     </message>
     <message>
-        <source>Converted Daps to zDaps</source>
-        <translation>Geconverteerde Daps naar zDaps</translation>
-    </message>
-    <message>
-        <source>Spent zDaps</source>
-        <translation>Uitgegeven zDaps</translation>
-    </message>
-    <message>
-        <source>Received Daps from zDaps</source>
-        <translation>Verkregen Daps van zDaps</translation>
-    </message>
-    <message>
-        <source>Minted Change as zDaps from zDaps Spend</source>
-        <translation>Minted wisselgeld als zDaps van uitgegeven zDaps</translation>
-    </message>
-    <message>
-        <source>Converted zDaps to Daps</source>
-        <translation>Geconverteerde zDaps naar Daps</translation>
-    </message>
-    <message>
         <source>watch-only</source>
         <translation>watch-only</translation>
-    </message>
-    <message>
-        <source>zDaps Accumulator</source>
-        <translation>zDaps Accumulator</translation>
     </message>
     <message>
         <source>(n/a)</source>

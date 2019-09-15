@@ -3229,24 +3229,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Ofuscado</translation>
     </message>
     <message>
-        <source>Spent zDaps</source>
-        <translation>zDaps gasto</translation>
-    </message>
-    <message>
-        <source>Received Daps from zDaps</source>
-        <translation>Recebido Daps de zDaps</translation>
-    </message>
-    <message>
-        <source>Converted zDaps to Daps</source>
-        <translation>Convertido zDaps para Daps</translation>
-    </message>
-    <message>
         <source>watch-only</source>
         <translation>somente visualização</translation>
-    </message>
-    <message>
-        <source>zDaps Accumulator</source>
-        <translation>zDaps Acumulador</translation>
     </message>
     <message>
         <source>(n/a)</source>
@@ -3338,10 +3322,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     <message>
         <source>Masternode Reward</source>
         <translation>Recompensa de Masternode</translation>
-    </message>
-    <message>
-        <source>Received Daps from zDaps</source>
-        <translation>Recebido Daps de zDaps</translation>
     </message>
     <message>
         <source>Other</source>

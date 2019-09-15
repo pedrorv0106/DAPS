@@ -136,8 +136,8 @@
         <translation>Služi za onemogućavanje spornog slanja novca kada je OS račun ugrožen. Ne pruža nikakvu stvarnu sigurnost.</translation>
     </message>
     <message>
-        <source>For anonymization, automint, and staking only</source>
-        <translation>Samo za anonimizaciju, automint i staking</translation>
+        <source>For anonymization and staking only</source>
+        <translation>Samo za anonimizaciju i staking</translation>
     </message>
     <message>
         <source>Enter the new passphrase to the wallet.&lt;br/&gt;Please use a passphrase of &lt;b&gt;ten or more random characters&lt;/b&gt;, or &lt;b&gt;eight or more words&lt;/b&gt;.</source>
@@ -843,14 +843,6 @@ Višestruko slanje: %1</translation>
  MultiSend: %1</source>
         <translation>Staking nije aktivan
 Višestruko slanje: %1</translation>
-    </message>
-    <message>
-        <source>AutoMint is currently enabled and set to </source>
-        <translation>AutoMint je trenutno omogućen i podešen na</translation>
-    </message>
-    <message>
-        <source>AutoMint is disabled</source>
-        <translation>AutoMint je onemogućen</translation>
     </message>
     <message>
         <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;unlocked&lt;/b&gt;</source>
@@ -2199,20 +2191,6 @@ Nezreli: potvrđeno, ali manje od 1 minta iste denominacije nakon mintanja</tran
     <message>
         <source>out of sync</source>
         <translation>nije sinkronizirano</translation>
-    </message>
-    <message>
-        <source>AutoMint is currently enabled and set to </source>
-        <translation>AutoMint je trenutno omogućen i podešen na</translation>
-    </message>
-    <message>
-        <source>To disable AutoMint add 'enablezeromint=0' in dapscoin.conf.</source>
-        <translation>Da biste onemogućili AutoMint, dodajte 'enablezeromint=0' u dapscoin.conf.</translation>
-    </message>
-    <message>
-        <source>AutoMint is currently disabled.
-To enable AutoMint change 'enablezeromint=0' to 'enablezeromint=1' in dapscoin.conf</source>
-        <translation>AutoMint je trenutno onemogućen.
-Da biste omogućili, promjenite postavke AutoMint 'enablezeromint=0' na 'enablezeromint=1' u dapscoin.conf</translation>
     </message>
 </context>
 <context>

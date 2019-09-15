@@ -3453,32 +3453,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Ofuscado</translation>
     </message>
     <message>
-        <source>Converted Daps to zDaps</source>
-        <translation>Daps convertidos a zDaps</translation>
-    </message>
-    <message>
-        <source>Spent zDaps</source>
-        <translation>zDaps Gastados</translation>
-    </message>
-    <message>
-        <source>Received Daps from zDaps</source>
-        <translation>Daps recibidos desde zDaps</translation>
-    </message>
-    <message>
-        <source>Minted Change as zDaps from zDaps Spend</source>
-        <translation>Cambio Creado en zDaps por un Gasto zDaps</translation>
-    </message>
-    <message>
-        <source>Converted zDaps to Daps</source>
-        <translation>zDaps convertidos en Daps</translation>
-    </message>
-    <message>
         <source>watch-only</source>
         <translation>sólo-lectura</translation>
-    </message>
-    <message>
-        <source>zDaps Accumulator</source>
-        <translation>Acumulador zDaps</translation>
     </message>
     <message>
         <source>(n/a)</source>

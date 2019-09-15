@@ -2049,14 +2049,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <source>out of sync</source>
         <translation>동기화되지 않음</translation>
     </message>
-    <message>
-        <source>AutoMint is currently enabled and set to </source>
-        <translation>자동 생성기능이 현재 작동중 그리고 </translation>
-    </message>
-    <message>
-        <source>To disable AutoMint add 'enablezeromint=0' in dapscoin.conf.</source>
-        <translation>자동생성 기능을 사용하지 않으시려면, dapscoin.conf 화일에 enablezeromint=0 를 추가하세요.</translation>
-    </message>
     </context>
 <context>
     <name>PaymentServer</name>
@@ -3596,10 +3588,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     <message>
         <source>watch-only</source>
         <translation>읽기 전용</translation>
-    </message>
-    <message>
-        <source>zDaps Accumulator</source>
-        <translation>zDaps 누산기</translation>
     </message>
     <message>
         <source>(n/a)</source>

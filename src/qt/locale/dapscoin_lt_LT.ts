@@ -136,7 +136,7 @@
         <translation>Pašalina nereikšmingą sendmoney, kai OS sąskaita pažeista. Nesuteikia jokio realaus saugumo.</translation>
     </message>
     <message>
-        <source>For anonymization, automint, and staking only</source>
+        <source>For anonymization and staking only</source>
         <translation>Tik dėl anonimizacijos ir "kasimo"</translation>
     </message>
     <message>
@@ -843,14 +843,6 @@ MultiSend: %1</translation>
  MultiSend: %1</source>
         <translation>Stake'inimas neaktyvuotas
 MultiSend: %1</translation>
-    </message>
-    <message>
-        <source>AutoMint is currently enabled and set to </source>
-        <translation>AutoMint šiuo metu įgalintas ir nustatytas</translation>
-    </message>
-    <message>
-        <source>AutoMint is disabled</source>
-        <translation>AutoMint išjungtas</translation>
     </message>
     <message>
         <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;unlocked&lt;/b&gt;</source>
@@ -2101,14 +2093,6 @@ Nesubrendusios: patvirtintos, bet mažiau nei 1 konvertacijos to pačio nominalo
     <message>
         <source>out of sync</source>
         <translation>nesinchronizuotas</translation>
-    </message>
-    <message>
-        <source>AutoMint is currently enabled and set to </source>
-        <translation>AutoMint šiuo metu įgalintas ir nustatytas</translation>
-    </message>
-    <message>
-        <source>To disable AutoMint add 'enablezeromint=0' in dapscoin.conf.</source>
-        <translation>Norėdami išjungti Automatinį Kalimą pridėkite 'enablezeromint=0' dapscoin.conf faile.</translation>
     </message>
     </context>
 <context>

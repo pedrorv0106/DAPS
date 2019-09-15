@@ -2752,21 +2752,6 @@ Immature: confirmed, but less than 3 mints of the same denomination after it was
     </message>
     <message>
         <location line="+93"/>
-    <message>
-        <location line="+4"/>
-        <source>AutoMint is currently enabled and set to </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>To disable AutoMint add &apos;enablezeromint=0&apos; in dapscoin.conf.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>AutoMint is currently disabled.
-To enable AutoMint change &apos;enablezeromint=0&apos; to &apos;enablezeromint=1&apos; in dapscoin.conf</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -4825,39 +4810,9 @@ To enable AutoMint change &apos;enablezeromint=0&apos; to &apos;enablezeromint=1
         <translation>Obfuscated</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Converted Daps to zDaps</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Spent zDaps</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Received Daps from zDaps</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Minted Change as zDaps from zDaps Spend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Converted zDaps to Daps</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location line="+33"/>
         <source>watch-only</source>
         <translation>watch-only</translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>zDaps Accumulator</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+3"/>
@@ -6056,11 +6011,6 @@ for example: alertnotify=echo %%s | mail -s &quot;DAPScoin Alert&quot; admin@foo
     <message>
         <location line="+6"/>
         <source>Enable SwiftX, show confirmations for locked transactions (bool, default: %s)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Enable automatic wallet backups triggered after each zDaps minting (0-1, default: %u)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
