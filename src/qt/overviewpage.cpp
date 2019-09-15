@@ -269,12 +269,6 @@ void OverviewPage::setWalletModel(WalletModel* model)
     }
     // update the display unit, to not use the default ("DAPS")
     updateDisplayUnit();
-    
-    // update wallet state
-    // if (walletModel->getEncryptionStatus() == WalletModel::Locked || walletModel->getEncryptionStatus() == WalletModel::UnlockedForAnonymizationOnly)
-        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/lock) 0 0 0 0 stretch stretch; width: 20px;");
-    // else
-        // ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/unlock) 0 0 0 0 stretch stretch;");
 }
 
 void OverviewPage::updateBalance()
@@ -530,7 +524,7 @@ void OverviewPage::updateLockStatus(int status) {
 
     // update wallet state
     if (status == WalletModel::Locked || status == WalletModel::UnlockedForAnonymizationOnly)
-        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/lock) 0 0 0 0 stretch stretch;");
+        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/lock) 0 0 0 0 stretch stretch; width: 20px;");
     else
-        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/unlock) 0 0 0 0 stretch stretch;");
+        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/unlock) 0 0 0 0 stretch stretch; width: 30px;");
 }

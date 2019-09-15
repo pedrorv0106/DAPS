@@ -1139,7 +1139,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 #endif // ENABLE_WALLET
     // ********************************************************* Step 6: network initialization
 
-    RegisterNodeSignals(GetNodeSignals());
+    // RegisterNodeSignals(GetNodeSignals());       // block first after unlock/lock retry register
 
     if (mapArgs.count("-onlynet")) {
         std::set<enum Network> nets;

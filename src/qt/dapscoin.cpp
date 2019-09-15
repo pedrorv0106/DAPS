@@ -182,6 +182,7 @@ public:
 
 public slots:
     void initialize();
+    void registerNodeSignal();
     void shutdown();
     void restart(QStringList args);
 
@@ -239,6 +240,7 @@ public slots:
 
 signals:
     void requestedInitialize();
+    void requestedRegisterNodeSignal();
     void requestedRestart(QStringList args);
     void requestedShutdown();
     void stopThread();
@@ -269,6 +271,10 @@ void BitcoinCore::handleRunawayException(std::exception* e)
 {
     PrintExceptionContinue(e, "Runaway exception");
     emit runawayException(QString::fromStdString(strMiscWarning));
+}
+
+void BitcoinCore::registerNodeSignal() {
+    RegisterNodeSignals(GetNodeSignals()); 
 }
 
 void BitcoinCore::initialize()
@@ -408,6 +414,7 @@ void BitcoinApplication::startThread()
     connect(executor, SIGNAL(initializeResult(int)), this, SLOT(initializeResult(int)));
     connect(executor, SIGNAL(shutdownResult(int)), this, SLOT(shutdownResult(int)));
     connect(executor, SIGNAL(runawayException(QString)), this, SLOT(handleRunawayException(QString)));
+    connect(this, SIGNAL(requestedRegisterNodeSignal()), executor, SLOT(registerNodeSignal()));
     connect(this, SIGNAL(requestedInitialize()), executor, SLOT(initialize()));
     connect(this, SIGNAL(requestedShutdown()), executor, SLOT(shutdown()));
     connect(window, SIGNAL(requestedRestart(QStringList)), executor, SLOT(restart(QStringList)));
@@ -474,6 +481,7 @@ void BitcoinApplication::initializeResult(int retval)
                 if (unlockdlg.exec() != QDialog::Accepted)
                     QApplication::quit();
                 walletUnlocked = true;
+                emit requestedRegisterNodeSignal();
             }
 
             window->addWallet(BitcoinGUI::DEFAULT_WALLET, walletModel);
@@ -504,6 +512,7 @@ void BitcoinApplication::initializeResult(int retval)
         		dlg.setStyleSheet(GUIUtil::loadStyleSheet());
         		dlg.exec();
 
+                emit requestedRegisterNodeSignal();
                 walletModel->updateStatus();
         	}
         }
