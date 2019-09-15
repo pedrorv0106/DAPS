@@ -401,7 +401,9 @@ void CWalletDB::ListAccountCreditDebit(const string& strAccount, list<CAccountin
 
 DBErrors CWalletDB::ReorderTransactions(CWallet* pwallet)
 {
+    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK(pwallet->cs_wallet);
+    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     // Old wallets didn't have any defined order for transactions
     // Probably a bad idea to change the output of this
 
@@ -764,7 +766,9 @@ DBErrors CWalletDB::LoadWallet(CWallet* pwallet)
     DBErrors result = DB_LOAD_OK;
 
     try {
+        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(pwallet->cs_wallet);
+        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         int nMinVersion = 0;
         if (Read((string) "minversion", nMinVersion)) {
             if (nMinVersion > CLIENT_VERSION)
@@ -856,7 +860,9 @@ DBErrors CWalletDB::FindWalletTx(CWallet* pwallet, vector<uint256>& vTxHash, vec
     DBErrors result = DB_LOAD_OK;
 
     try {
+        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         LOCK(pwallet->cs_wallet);
+        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         int nMinVersion = 0;
         if (Read((string) "minversion", nMinVersion)) {
             if (nMinVersion > CLIENT_VERSION)

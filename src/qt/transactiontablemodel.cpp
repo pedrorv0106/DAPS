@@ -75,7 +75,9 @@ public:
     	if (wallet->IsLocked()) return;
         cachedWallet.clear();
         {
+            printf("%s[%d]\n", __FUNCTION__, __LINE__);
             LOCK2(cs_main, wallet->cs_wallet);
+            printf("%s[%d]\n", __FUNCTION__, __LINE__);
             for (std::map<uint256, CWalletTx>::iterator it = wallet->mapWallet.begin(); it != wallet->mapWallet.end(); ++it) {
                 if (TransactionRecord::showTransaction(it->second))
                     cachedWallet.append(TransactionRecord::decomposeTransaction(wallet, it->second));
@@ -119,7 +121,9 @@ public:
                 break;
             }
             if (showTransaction) {
+                printf("%s[%d]\n", __FUNCTION__, __LINE__);
                 LOCK2(cs_main, wallet->cs_wallet);
+                printf("%s[%d]\n", __FUNCTION__, __LINE__);
                 // Find transaction in wallet
                 std::map<uint256, CWalletTx>::iterator mi = wallet->mapWallet.find(hash);
                 if (mi == wallet->mapWallet.end()) {
@@ -178,7 +182,9 @@ public:
             // simply re-use the cached status.
             TRY_LOCK(cs_main, lockMain);
             if (lockMain) {
+                printf("%s[%d]\n", __FUNCTION__, __LINE__);
                 TRY_LOCK(wallet->cs_wallet, lockWallet);
+                printf("%s[%d]\n", __FUNCTION__, __LINE__);
                 if (lockWallet && rec->statusUpdateNeeded()) {
                     std::map<uint256, CWalletTx>::iterator mi = wallet->mapWallet.find(rec->hash);
 
@@ -195,7 +201,9 @@ public:
     QString describe(TransactionRecord* rec, int unit)
     {
         {
+            printf("%s[%d]\n", __FUNCTION__, __LINE__);
             LOCK2(cs_main, wallet->cs_wallet);
+            printf("%s[%d]\n", __FUNCTION__, __LINE__);
             std::map<uint256, CWalletTx>::iterator mi = wallet->mapWallet.find(rec->hash);
             if (mi != wallet->mapWallet.end()) {
                 return TransactionDesc::toHTML(wallet, mi->second, rec, unit);

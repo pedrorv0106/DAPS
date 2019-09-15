@@ -433,7 +433,9 @@ void CObfuscationPool::UnlockCoins()
         return;
     
     while (true) {
+        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         TRY_LOCK(pwalletMain->cs_wallet, lockWallet);
+        printf("%s[%d]\n", __FUNCTION__, __LINE__);
         if (!lockWallet) {
             MilliSleep(50);
             continue;
@@ -581,8 +583,9 @@ void CObfuscationPool::CheckFinalTransaction()
     if (!fMasterNode) return; // check and relay final tx only on masternode
 
     CWalletTx txNew = CWalletTx(pwalletMain, finalTransaction);
-
+    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     LOCK2(cs_main, pwalletMain->cs_wallet);
+    printf("%s[%d]\n", __FUNCTION__, __LINE__);
     {
         LogPrint("obfuscation", "Transaction 2: %s\n", txNew.ToString());
 
