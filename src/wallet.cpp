@@ -480,7 +480,7 @@ bool CWallet::Unlock(const SecureString& strWalletPassphrase, bool anonymizeOnly
 
     CCrypter crypter;
     CKeyingMaterial vMasterKey;
-    bool rescanNeed = false;
+    bool rescanNeeded = false;
 
     {
         LOCK(cs_wallet);
@@ -491,17 +491,17 @@ bool CWallet::Unlock(const SecureString& strWalletPassphrase, bool anonymizeOnly
                 continue; // try another master key
             if (CCryptoKeyStore::Unlock(vMasterKey)) {
                 fWalletUnlockAnonymizeOnly = anonymizeOnly;
-                rescanNeed = true;
+                rescanNeeded = true;
                 break;
             }
         }
     }
 
-    if (rescanNeed) {
-        LogPrintf("\nStart rescaning wallet transactions");
+    if (rescanNeeded) {
+        LogPrintf("\nStart rescanning wallet transactions");
         pwalletMain->RescanAfterUnlock();
         walletUnlockCountStatus++;
-        LogPrintf("\nFinish rescaning wallet transactions");
+        LogPrintf("\nFinish rescanning wallet transactions");
         return true;
     }
 
@@ -511,7 +511,7 @@ bool CWallet::Unlock(const SecureString& strWalletPassphrase, bool anonymizeOnly
 bool CWallet::ChangeWalletPassphrase(const SecureString& strOldWalletPassphrase, const SecureString& strNewWalletPassphrase)
 {
     bool fWasLocked = IsLocked();
-    bool rescanNeed = false;
+    bool rescanNeeded = false;
     SecureString strOldWalletPassphraseFinal = strOldWalletPassphrase;
 
     {
@@ -547,13 +547,13 @@ bool CWallet::ChangeWalletPassphrase(const SecureString& strOldWalletPassphrase,
                 if (fWasLocked)
                     Lock();
                 
-                rescanNeed = true;
+                rescanNeeded = true;
                 break;
             }
         }
     }
 
-    if (rescanNeed) {
+    if (rescanNeeded) {
         pwalletMain->RescanAfterUnlock();
         return true;
     }
