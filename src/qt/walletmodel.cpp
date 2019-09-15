@@ -163,7 +163,6 @@ void WalletModel::emitBalanceChanged()
 {
     // Force update of UI elements even when no values have changed
     emit balanceChanged(cachedBalance, cachedUnconfirmedBalance, cachedImmatureBalance,
-        0, 0, 0,
         cachedWatchOnlyBalance, cachedWatchUnconfBalance, cachedWatchImmatureBalance);
 }
 
@@ -195,7 +194,6 @@ void WalletModel::checkBalanceChanged()
         cachedWatchUnconfBalance = newWatchUnconfBalance;
         cachedWatchImmatureBalance = newWatchImmatureBalance;
         emit balanceChanged(newBalance, newUnconfirmedBalance, newImmatureBalance,
-            0, 0, 0,
             newWatchOnlyBalance, newWatchUnconfBalance, newWatchImmatureBalance);
     }
 }
