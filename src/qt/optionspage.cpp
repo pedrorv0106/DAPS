@@ -403,7 +403,7 @@ void OptionsPage::on_Enable2FA(ToggleButton* widget)
     int status = model->getEncryptionStatus();
     if (status == WalletModel::Locked || status == WalletModel::UnlockedForAnonymizationOnly) {
         QMessageBox::information(this, tr("2FA Setting"),
-        tr("Please first unlock the wallet."));
+        tr("Please unlock the keychain wallet with your passphrase before changing this setting."));
 
         ui->toggle2FA->setState(!ui->toggle2FA->getState());
         return;
