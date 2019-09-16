@@ -4206,6 +4206,10 @@ bool AcceptBlockHeader(const CBlock &block, CValidationState &state, CBlockIndex
         }
 
     }
+
+    if (!pindexPrev)
+    	return state.DoS(0, error("%s : prev block %s not found", __func__, block.hashPrevBlock.ToString().c_str()),
+    	                             0, "bad-prevblk");
     LogPrintf("\n%s: contextual", __func__);
     if (!ContextualCheckBlockHeader(block, state, pindexPrev))
         return false;
@@ -4410,6 +4414,8 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
         // If turned on Auto Combine will scan wallet for dust to combine
         if (pwalletMain->fCombineDust)
             pwalletMain->AutoCombineDust();
+
+        pwalletMain->resetPendingOutPoints();
     }
 
     //Block is accepted, let's update decoys pool
