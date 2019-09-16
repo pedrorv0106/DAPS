@@ -601,12 +601,12 @@ void WalletModel::listCoins(std::map<QString, std::vector<COutput> >& mapCoins) 
 
 bool WalletModel::isLockedCoin(uint256 hash, unsigned int n) const
 {
-    LOCK2(cs_main, wallet->cs_wallet);
+    LOCK2(cs_main, wallet->cs_wallet);   
     return wallet->IsLockedCoin(hash, n);
 }
 
 void WalletModel::lockCoin(COutPoint& output)
-{
+{   
     LOCK2(cs_main, wallet->cs_wallet);
     wallet->LockCoin(output);
 }

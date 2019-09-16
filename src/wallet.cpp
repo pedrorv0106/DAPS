@@ -189,7 +189,7 @@ bool CWallet::checkPassPhraseRule(const char *pass)
 }
 CPubKey CWallet::GenerateNewKey()
 {
-    AssertLockHeld(cs_wallet);                                 // mapKeyMetadata
+    AssertLockHeld(cs_wallet);                 // mapKeyMetadata
     bool fCompressed = CanSupportFeature(FEATURE_COMPRPUBKEY); // default to compressed public keys if we want 0.6.0 wallets
 
     RandAddSeedPerfmon();
@@ -480,6 +480,7 @@ bool CWallet::Unlock(const SecureString& strWalletPassphrase, bool anonymizeOnly
 
     CCrypter crypter;
     CKeyingMaterial vMasterKey;
+    bool rescanNeeded = false;
 
     {
         LOCK(cs_wallet);
@@ -490,20 +491,27 @@ bool CWallet::Unlock(const SecureString& strWalletPassphrase, bool anonymizeOnly
                 continue; // try another master key
             if (CCryptoKeyStore::Unlock(vMasterKey)) {
                 fWalletUnlockAnonymizeOnly = anonymizeOnly;
-                LogPrintf("\nStart rescaning wallet transactions");
-                pwalletMain->RescanAfterUnlock();
-                walletUnlockCountStatus++;
-                LogPrintf("\nFinish rescaning wallet transactions");
-                return true;
+                rescanNeeded = true;
+                break;
             }
         }
     }
+
+    if (rescanNeeded) {
+        LogPrintf("\nStart rescanning wallet transactions");
+        pwalletMain->RescanAfterUnlock();
+        walletUnlockCountStatus++;
+        LogPrintf("\nFinish rescanning wallet transactions");
+        return true;
+    }
+
     return false;
 }
 
 bool CWallet::ChangeWalletPassphrase(const SecureString& strOldWalletPassphrase, const SecureString& strNewWalletPassphrase)
 {
     bool fWasLocked = IsLocked();
+    bool rescanNeeded = false;
     SecureString strOldWalletPassphraseFinal = strOldWalletPassphrase;
 
     {
@@ -538,10 +546,16 @@ bool CWallet::ChangeWalletPassphrase(const SecureString& strOldWalletPassphrase,
                 CWalletDB(strWalletFile).WriteMasterKey(pMasterKey.first, pMasterKey.second);
                 if (fWasLocked)
                     Lock();
-                pwalletMain->RescanAfterUnlock();
-                return true;
+                
+                rescanNeeded = true;
+                break;
             }
         }
+    }
+
+    if (rescanNeeded) {
+        pwalletMain->RescanAfterUnlock();
+        return true;
     }
 
     return false;
@@ -1589,8 +1603,8 @@ void CWallet::ResendWalletTransactions()
 
     // Rebroadcast any of our txes that aren't in a block yet
     LogPrintf("ResendWalletTransactions()\n");
-    {
-        LOCK(cs_wallet);
+    {       
+        LOCK(cs_wallet);       
         // Sort them in chronological order
         multimap<unsigned int, CWalletTx*> mapSorted;
         BOOST_FOREACH (PAIRTYPE(const uint256, CWalletTx) & item, mapWallet) {
@@ -4933,6 +4947,7 @@ void CWallet::UnlockAllCoins()
 
 bool CWallet::IsLockedCoin(uint256 hash, unsigned int n) const
 {
+
     AssertLockHeld(cs_wallet); // setLockedCoins
     COutPoint outpt(hash, n);
 
