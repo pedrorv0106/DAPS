@@ -325,6 +325,42 @@ bool CWallet::ReadStakingStatus()
     return CWalletDB(strWalletFile).ReadStakingStatus();
 }
 
+bool CWallet::Write2FA(bool status)
+{
+    return CWalletDB(strWalletFile).Write2FA(status);
+}
+bool CWallet::Read2FA()
+{
+    return CWalletDB(strWalletFile).Read2FA();
+}
+
+bool CWallet::Write2FASecret(std::string secret)
+{
+    return CWalletDB(strWalletFile).Write2FASecret(secret);
+}
+std::string CWallet::Read2FASecret()
+{
+    return CWalletDB(strWalletFile).Read2FASecret();
+}
+
+bool CWallet::Write2FAPeriod(int period)
+{
+    return CWalletDB(strWalletFile).Write2FAPeriod(period);
+}
+int CWallet::Read2FAPeriod()
+{
+    return CWalletDB(strWalletFile).Read2FAPeriod();
+}
+
+bool CWallet::Write2FALastTime(uint64_t lastTime)
+{
+    return CWalletDB(strWalletFile).Write2FALastTime(lastTime);
+}
+uint64_t CWallet::Read2FALastTime()
+{
+    return CWalletDB(strWalletFile).Read2FALastTime();
+}
+
 bool CWallet::AddCryptedKey(const CPubKey& vchPubKey,
                             const vector<unsigned char>& vchCryptedSecret)
 {
