@@ -2149,7 +2149,7 @@ bool CWallet::SelectCoinsMinConf(const CAmount& nTargetValue, int nConfMine, int
                 n = getCTxOutValue(*pcoin, pcoin->vout[output.i]);
             }
             int i = output.i;
-            if (tryDenom == 0 && IsDenominatedAmount(n)) continue; // we don't want denom values on first run
+            //if (tryDenom == 0 && IsDenominatedAmount(n)) continue; // we don't want denom values on first run
 
             pair<CAmount, pair<const CWalletTx*, unsigned int> > coin = make_pair(n, make_pair(pcoin, i));
 
@@ -2172,7 +2172,7 @@ bool CWallet::SelectCoinsMinConf(const CAmount& nTargetValue, int nConfMine, int
             }
             return true;
         }
-
+        LogPrintf("\n nValueRet=%d, target value = %d\n", nValueRet, nTotalLower);
         if (nTotalLower < nTargetValue) {
             if (coinLowestLarger.second.first == NULL) // there is no input larger than nTargetValue
             {
@@ -2219,6 +2219,29 @@ bool CWallet::SelectCoinsMinConf(const CAmount& nTargetValue, int nConfMine, int
     }
 
     return true;
+}
+
+void CWallet::resetPendingOutPoints()
+{
+	if (chainActive.Height() % 20 != 0) return;
+	{
+		LOCK(mempool.cs);
+		{
+			inSpendQueueOutpoints.clear();
+			for (std::map<uint256, CTxMemPoolEntry>::const_iterator it = mempool.mapTx.begin(); it != mempool.mapTx.end(); ++it) {
+				const CTransaction& tx = it->second.GetTx();
+				for(size_t i = 0; i < tx.vin.size(); i++) {
+					COutPoint prevout = findMyOutPoint(tx.vin[i]);
+					if (prevout.hash.IsNull()) {
+						break;
+					} else {
+						inSpendQueueOutpoints[prevout] = true;
+					}
+				}
+
+			}
+		}
+	}
 }
 
 bool CWallet::SelectCoins(const CAmount& nTargetValue, set<pair<const CWalletTx*, unsigned int> >& setCoinsRet, CAmount& nValueRet, const CCoinControl* coinControl, AvailableCoinsType coin_type, bool useIX)
@@ -2268,7 +2291,6 @@ bool CWallet::SelectCoins(const CAmount& nTargetValue, set<pair<const CWalletTx*
                 LOCK(mempool.cs); // protect pool.mapNextTx
                 {
                 	COutPoint outpoint(wtxid, i);
-                	if (mapTxSpends.count(outpoint)) continue;
                 	if (inSpendQueueOutpoints.count(outpoint)) {
                 		continue;
                 	}
@@ -5150,7 +5172,6 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 				LOCK(mempool.cs); // protect pool.mapNextTx
 				{
 					COutPoint outpoint(wtxid, i);
-					if (mapTxSpends.count(outpoint)) continue;
 					if (inSpendQueueOutpoints.count(outpoint)) {
 						continue;
 					}
