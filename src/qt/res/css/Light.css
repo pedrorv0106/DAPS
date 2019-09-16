@@ -234,7 +234,7 @@ QPushButton#btn_resync{
   font-size: 15px;
 }
 
-QPushButton#btn_day, QPushButton#btn_month,QPushButton#btn_week{
+QPushButton#btn_day,QPushButton#btn_month,QPushButton#btn_week{
   min-height: 35px;
 }
 
