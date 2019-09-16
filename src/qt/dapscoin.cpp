@@ -41,9 +41,7 @@
 #endif
 
 #include "encryptdialog.h"
-#include "multisigsetupchoosenumsigners.h"
-#include "multisigsetupaddsigner.h"
-#include "multisigsetupfinish.h"
+#include "unlockdialog.h"
 
 #include <stdint.h>
 
@@ -486,31 +484,7 @@ void BitcoinApplication::initializeResult(int retval)
             window, SLOT(message(QString, QString, unsigned int)));
         QTimer::singleShot(100, paymentServer, SLOT(uiReady()));
         if (pwalletMain) {
-        	if (walletModel->getEncryptionStatus() == WalletModel::Unencrypted) {
-        		if (!walletModel->isMultiSigSetup()) {
-        			while(!pwalletMain->isMultisigSetupFinished) {
-        				if (pwalletMain->ReadScreenIndex() == 0) {
-        					MultiSigSetupChooseNumSigners dlg;
-        					dlg.setModel(walletModel);
-        					dlg.setStyleSheet(GUIUtil::loadStyleSheet());
-        					dlg.exec();
-        				} else if (pwalletMain->ReadScreenIndex() <= pwalletMain->ReadNumSigners()) {
-        					//add combo key of signers
-        					MultiSigSetupAddSigner dlg;
-        					dlg.setModel(walletModel);
-        					dlg.setStyleSheet(GUIUtil::loadStyleSheet());
-        					dlg.exec();
-        				} else {
-        					//finish
-        				    pwalletMain->GenerateMultisigWallet(pwalletMain->ReadNumSigners());
-        					MultiSigSetupFinish dlg;
-        					dlg.setModel(walletModel);
-        					dlg.setStyleSheet(GUIUtil::loadStyleSheet());
-        					dlg.exec();
-        				}
-        			}
-        		}
-
+        	if (!walletUnlocked && walletModel->getEncryptionStatus() == WalletModel::Unencrypted) {
         		EncryptDialog dlg;
         		dlg.setModel(walletModel);
         		dlg.setWindowTitle("Encrypt Wallet");
