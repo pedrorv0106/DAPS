@@ -317,6 +317,14 @@ bool OptionsPage::matchNewPasswords()
 
 void OptionsPage::on_EnableStaking(ToggleButton* widget)
 {
+    int status = model->getEncryptionStatus();
+    if (status == WalletModel::Locked || status == WalletModel::UnlockedForAnonymizationOnly) {
+        QMessageBox::information(this, tr("Staking Setting"),
+        tr("Please first unlock the wallet."));
+        widget->setState(!widget->getState());
+        return;
+    }
+
     if (chainActive.Height() < Params().LAST_POW_BLOCK()) {
     	if (widget->getState()) {
             QString msg("PoW blocks are still being mined.\nPlease wait until Block #" + Params().LAST_POW_BLOCK());
