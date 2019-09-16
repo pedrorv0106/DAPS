@@ -2780,7 +2780,9 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
             nFeeRet = 0;
             if (nFeePay > 0) nFeeRet = nFeePay;
             unsigned int nBytes = 0;
-            while (true) {
+            int iterations = 0;
+            while (true && iterations < 10) {
+            	iterations++;
                 txNew.vin.clear();
                 txNew.vout.clear();
                 wtxNew.fFromMe = true;
@@ -2849,7 +2851,12 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                     if (nFeeNeeded < COIN) nFeeNeeded = COIN;
                     newTxOut.nValue -= nFeeNeeded;
                     txNew.nTxFee = nFeeNeeded;
-                    if (newTxOut.nValue <= 0) return false;
+                    if (newTxOut.nValue <= 0) {
+                    	if (GetSpendableBalance() > nValueIn) {
+                    		continue;
+                    	}
+                    	false;
+                    }
                     CPubKey shared;
                     computeSharedSec(txNew, newTxOut, shared);
                     EncodeTxOutAmount(newTxOut, newTxOut.nValue, shared.begin());
@@ -2859,6 +2866,9 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
 						txNew.vout.insert(position, newTxOut);
                     }
                 } else {
+                	if (GetSpendableBalance() > nValueIn) {
+                		continue;
+                	}
                     return false;
                 }
 
