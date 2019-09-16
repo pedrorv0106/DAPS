@@ -88,8 +88,14 @@ void ReceiveCoinsDialog::loadAccount() {
     //Set reqAddress as the master stealth address
     std::vector<std::string> addrList, accountList;
     CWallet* wl = model->getCWallet();
+    std::string multisig = wl->MyMultisigPubAddress();
+    if (!multisig.empty()) {
+    	addrList.push_back(multisig);
+    	accountList.push_back("Multisig");
+    }
     QList<QString> stringsList;
     wl->AllMyPublicAddresses(addrList, accountList);
+
     for(size_t i = 0; i < addrList.size(); i++) {
         bool isDuplicate = false;
         for (size_t i = 0; i < (size_t)ui->reqAddress->count(); i++) {
