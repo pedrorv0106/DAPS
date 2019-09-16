@@ -73,16 +73,16 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle* networkStyle, QWidget* parent) : QMai
                                                                             clientModel(0),
                                                                             walletFrame(0),
                                                                             unitDisplayControl(0),
+                                                                            labelStakingIcon(0),
                                                                             labelEncryptionIcon(0),
                                                                             labelConnectionsIcon(0),
                                                                             labelBlocksIcon(0),
                                                                             appMenuBar(0),
                                                                             overviewAction(0),
                                                                             historyAction(0),
+                                                                            masternodeAction(0),
                                                                             quitAction(0),
                                                                             sendCoinsAction(0),
-																			keyImageSyncAction(0),
-                                                                            cosignAction(0),
                                                                             usedSendingAddressesAction(0),
                                                                             usedReceivingAddressesAction(0),
                                                                             signMessageAction(0),
@@ -188,6 +188,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle* networkStyle, QWidget* parent) : QMai
     frameBlocksLayout->setContentsMargins(3, 0, 3, 0);
     frameBlocksLayout->setSpacing(3);
     unitDisplayControl = new UnitDisplayStatusBarControl();
+    labelStakingIcon = new QLabel();
     labelEncryptionIcon = new QPushButton(this);
     labelEncryptionIcon->setFlat(true); // Make the button look like a label, but clickable
     labelEncryptionIcon->setStyleSheet(".QPushButton { background-color: rgba(255, 255, 255, 0);}");
@@ -204,6 +205,8 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle* networkStyle, QWidget* parent) : QMai
         frameBlocksLayout->addStretch();
         frameBlocksLayout->addWidget(labelEncryptionIcon);
     }
+    frameBlocksLayout->addStretch();
+    frameBlocksLayout->addWidget(labelStakingIcon);
     frameBlocksLayout->addStretch();
     frameBlocksLayout->addWidget(labelConnectionsIcon);
     frameBlocksLayout->addStretch();
@@ -243,6 +246,11 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle* networkStyle, QWidget* parent) : QMai
 
     // Subscribe to notifications from core
     subscribeToCoreSignals();
+
+    QTimer* timerStakingIcon = new QTimer(labelStakingIcon);
+    connect(timerStakingIcon, SIGNAL(timeout()), this, SLOT(setStakingStatus()));
+    timerStakingIcon->start(10000);
+    setStakingStatus();
 }
 
 BitcoinGUI::~BitcoinGUI()
@@ -277,7 +285,7 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
 #endif
     tabGroup->addAction(overviewAction);
 
-    sendCoinsAction = new QAction(QIcon(":/icons/send"), tr("&   Create"), this);
+    sendCoinsAction = new QAction(QIcon(":/icons/send"), tr("&   Send"), this);
     sendCoinsAction->setToolTip(QString());
     sendCoinsAction->setCheckable(true);
 #ifdef Q_OS_MAC
@@ -286,26 +294,6 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     sendCoinsAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_2));
 #endif
     tabGroup->addAction(sendCoinsAction);
-
-    cosignAction = new QAction(QIcon(":/icons/send"), tr("&   Co-Sign"), this);
-    cosignAction->setToolTip(QString());
-    cosignAction->setCheckable(true);
-#ifdef Q_OS_MAC
-    cosignAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_5));
-#else
-    cosignAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
-#endif
-    tabGroup->addAction(cosignAction);
-
-    keyImageSyncAction = new QAction(QIcon(":/icons/send"), tr("&   Sync KeyImage"), this);
-    keyImageSyncAction->setToolTip(QString());
-    keyImageSyncAction->setCheckable(true);
-#ifdef Q_OS_MAC
-    keyImageSyncAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_8));
-#else
-    keyImageSyncAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_8));
-#endif
-    tabGroup->addAction(keyImageSyncAction);
 
     receiveCoinsAction = new QAction(QIcon(":/icons/receiving_addresses"), tr("&   Receive"), this);
     receiveCoinsAction->setToolTip(QString());
@@ -328,16 +316,29 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     tabGroup->addAction(historyAction);
 
 #ifdef ENABLE_WALLET
+
+    QSettings settings;
+    if (settings.value("fShowMasternodesTab").toBool()) {
+        masternodeAction = new QAction(QIcon(":/icons/masternodes"), tr("&   Masternodes"), this);
+        masternodeAction->setStatusTip(tr("Masternodes"));
+        masternodeAction->setToolTip(masternodeAction->statusTip());
+        masternodeAction->setCheckable(true);
+#ifdef Q_OS_MAC
+        masternodeAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_6));
+#else
+        masternodeAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
+#endif
+        tabGroup->addAction(masternodeAction);
+        connect(masternodeAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+        connect(masternodeAction, SIGNAL(triggered()), this, SLOT(gotoMasternodePage()));
+    }
+
     // These showNormalIfMinimized are needed because Send Coins and Receive Coins
     // can be triggered from the tray menu, and need to show the GUI to be useful.
     connect(overviewAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(overviewAction, SIGNAL(triggered()), this, SLOT(gotoOverviewPage()));
     connect(sendCoinsAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(sendCoinsAction, SIGNAL(triggered()), this, SLOT(gotoSendCoinsPage()));
-    connect(cosignAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(cosignAction, SIGNAL(triggered()), this, SLOT(gotoCoSignPage()));
-    connect(keyImageSyncAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(keyImageSyncAction, SIGNAL(triggered()), this, SLOT(gotoKeyImageSyncPage()));
     connect(receiveCoinsAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(receiveCoinsAction, SIGNAL(triggered()), this, SLOT(gotoReceiveCoinsPage()));
     connect(historyAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
@@ -365,6 +366,11 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     optionsAction->setCheckable(true);
     tabGroup->addAction(optionsAction);
 
+    stakingAction = new QAction(QIcon(":/icons/options"), tr("&Staking"), this);
+    stakingAction->setText(tr("Staking Status"));
+    stakingAction->setMenuRole(QAction::NoRole);
+    stakingState = new QLabel(this);
+    stakingState->setObjectName("stakingState");
     networkAction = new QAction(QIcon(":/icons/options"), tr("&Network"), this);
     networkAction->setMenuRole(QAction::NoRole);
     networkAction->setText("Network Status");
@@ -531,10 +537,12 @@ void BitcoinGUI::createToolBars()
 
         toolbar->addAction(overviewAction);
         toolbar->addAction(sendCoinsAction);
-        toolbar->addAction(keyImageSyncAction);
-        toolbar->addAction(cosignAction);
         toolbar->addAction(receiveCoinsAction);
         toolbar->addAction(historyAction);
+        QSettings settings;
+        if (settings.value("fShowMasternodesTab").toBool()) {
+            toolbar->addAction(masternodeAction);
+        }
 
         toolbar->setMovable(false); // remove unused icon in upper left corner
         overviewAction->setChecked(true);
@@ -667,10 +675,12 @@ void BitcoinGUI::setWalletActionsEnabled(bool enabled)
 {
     overviewAction->setEnabled(enabled);
     sendCoinsAction->setEnabled(enabled);
-    keyImageSyncAction->setEnabled(enabled);
-    cosignAction->setEnabled(enabled);
     receiveCoinsAction->setEnabled(enabled);
     historyAction->setEnabled(enabled);
+    QSettings settings;
+    if (settings.value("fShowMasternodesTab").toBool()) {
+        masternodeAction->setEnabled(enabled);
+    }
     encryptWalletAction->setEnabled(enabled);
     backupWalletAction->setEnabled(enabled);
     changePassphraseAction->setEnabled(enabled);
@@ -721,8 +731,6 @@ void BitcoinGUI::createTrayIconMenu()
     trayIconMenu->addAction(toggleHideAction);
     trayIconMenu->addSeparator();
     trayIconMenu->addAction(sendCoinsAction);
-    trayIconMenu->addAction(keyImageSyncAction);
-    trayIconMenu->addAction(cosignAction);
     trayIconMenu->addAction(receiveCoinsAction);
     trayIconMenu->addSeparator();
     trayIconMenu->addAction(signMessageAction);
@@ -805,7 +813,11 @@ void BitcoinGUI::gotoHistoryPage()
 
 void BitcoinGUI::gotoMasternodePage()
 {
-    //disabled for multisig wallet
+    QSettings settings;
+    if (settings.value("fShowMasternodesTab").toBool()) {
+        masternodeAction->setChecked(true);
+        if (walletFrame) walletFrame->gotoMasternodePage();
+    }
 }
 
 void BitcoinGUI::gotoReceiveCoinsPage()
@@ -824,18 +836,6 @@ void BitcoinGUI::gotoSendCoinsPage(QString addr)
 {
     sendCoinsAction->setChecked(true);
     if (walletFrame) walletFrame->gotoSendCoinsPage(addr);
-}
-
-void BitcoinGUI::gotoCoSignPage()
-{
-    cosignAction->setChecked(true);
-    if (walletFrame) walletFrame->gotoCoSignPage();
-}
-
-void BitcoinGUI::gotoKeyImageSyncPage()
-{
-    keyImageSyncAction->setChecked(true);
-    if (walletFrame) walletFrame->gotoKeyImageSyncPage();
 }
 
 void BitcoinGUI::gotoSignMessageTab(QString addr)
@@ -1127,11 +1127,29 @@ void BitcoinGUI::dropEvent(QDropEvent* event)
 
 void BitcoinGUI::setStakingStatus()
 {
-	//disable in multisig wallet
+    bool stkStatus = false;
+    if (pwalletMain) {
+        fMultiSend = pwalletMain->isMultiSendEnabled();
+        stkStatus = pwalletMain->ReadStakingStatus();
+    }
+
+    if (nLastCoinStakeSearchInterval || stkStatus) {
+        stakingState->setText(tr("Staking enabled"));
+        stakingAction->setIcon(QIcon(":/icons/staking_active"));
+    } else {
+        stakingState->setText(tr("Staking disabled"));
+        stakingAction->setIcon(QIcon(":/icons/staking_inactive"));
+    }
 }
 void BitcoinGUI::setStakingInProgress(bool inProgress)
 {
-	//disable in multisig wallet
+	if (inProgress) {
+        stakingState->setText(tr("Enabling staking..."));
+        stakingAction->setIcon(QIcon(":/icons/staking_active"));
+	} else {
+        stakingState->setText(tr("Disabling staking..."));
+        stakingAction->setIcon(QIcon(":/icons/staking_inactive"));
+	}
 }
 
 #ifdef ENABLE_WALLET

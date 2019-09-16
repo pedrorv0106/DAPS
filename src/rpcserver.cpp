@@ -327,7 +327,6 @@ static const CRPCCommand vRPCCommands[] =
         {"rawtransactions", "decoderawtransaction", &decoderawtransaction, true, false, false},
         {"rawtransactions", "decodescript", &decodescript, true, false, false},
         {"rawtransactions", "getrawtransaction", &getrawtransaction, true, false, false},
-        {"rawtransactions", "addtowallet", &addtowallet, true, false, false},
         {"rawtransactions", "sendrawtransaction", &sendrawtransaction, false, false, false},
         {"rawtransactions", "getrawtransactionbyblockheight", &getrawtransactionbyblockheight, true, false, false},
         /* Utility functions */
@@ -378,9 +377,6 @@ static const CRPCCommand vRPCCommands[] =
         {"wallet", "importkeys", &importkeys, true, false, true},
         {"wallet", "revealviewprivatekey", &revealviewprivatekey, true, false, true},
         {"wallet", "revealspendprivatekey", &revealspendprivatekey, true, false, true},
-        {"wallet", "addcosigners", &addcosigners, true, false, true},
-        {"wallet", "showmultisigaddress", &showmultisigaddress, true, false, true},
-        {"wallet", "showcombokey", &showcombokey, true, false, true},
         {"wallet", "showtxprivatekeys", &showtxprivatekeys, true, false, true},
         {"wallet", "rescanwallettransactions", &rescanwallettransactions, true, false, true},
         {"wallet", "decodestealthaddress", &decodestealthaddress, true, false, true},

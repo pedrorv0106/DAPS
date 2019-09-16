@@ -113,7 +113,9 @@ void WalletFrame::gotoHistoryPage()
 
 void WalletFrame::gotoMasternodePage() // Masternode list
 {
-    //disabled for multisig wallet
+    QMap<QString, WalletView*>::const_iterator i;
+    for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
+        i.value()->gotoMasternodePage();
 }
 
 void WalletFrame::gotoBlockExplorerPage()
@@ -121,13 +123,6 @@ void WalletFrame::gotoBlockExplorerPage()
     QMap<QString, WalletView*>::const_iterator i;
     for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
         i.value()->gotoBlockExplorerPage();
-}
-
-void WalletFrame::gotoCoSignPage()
-{
-    QMap<QString, WalletView*>::const_iterator i;
-    for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
-        i.value()->gotoCoSignPage();
 }
 
 void WalletFrame::gotoReceiveCoinsPage()
@@ -149,13 +144,6 @@ void WalletFrame::gotoSendCoinsPage(QString addr)
     QMap<QString, WalletView*>::const_iterator i;
     for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
         i.value()->gotoSendCoinsPage(addr);
-}
-
-void WalletFrame::gotoKeyImageSyncPage()
-{
-    QMap<QString, WalletView*>::const_iterator i;
-    for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
-        i.value()->gotoKeyImageSyncPage();
 }
 
 void WalletFrame::gotoSignMessageTab(QString addr)

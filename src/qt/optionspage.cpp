@@ -51,11 +51,17 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
     connect(ui->lineEditNewPassRepeat, SIGNAL(textChanged(const QString &)), this, SLOT(validateNewPassRepeat()));
     connect(ui->lineEditOldPass, SIGNAL(textChanged(const QString &)), this, SLOT(onOldPassChanged()));
 
-    ui->lineEditWithhold->setVisible(false);
-    ui->labelStaking->setVisible(false);
-    ui->label_2->setVisible(false);
-    ui->pushButtonSave->setVisible(false);
-    ui->pushButtonDisable->setVisible(false);
+    QDoubleValidator *dblVal = new QDoubleValidator(0, Params().MAX_MONEY, 6, ui->lineEditWithhold);
+    dblVal->setNotation(QDoubleValidator::StandardNotation);
+    dblVal->setLocale(QLocale::C);
+    ui->lineEditWithhold->setValidator(dblVal);
+    ui->lineEditWithhold->setPlaceholderText("DAPS Amount");
+    if (nReserveBalance > 0)
+        ui->lineEditWithhold->setText(BitcoinUnits::format(0, nReserveBalance).toUtf8());
+
+    bool stkStatus = pwalletMain->ReadStakingStatus();
+    ui->toggleStaking->setState(nLastCoinStakeSearchInterval | stkStatus);
+    connect(ui->toggleStaking, SIGNAL(stateChanged(ToggleButton*)), this, SLOT(on_EnableStaking(ToggleButton*)));
 
     connect(ui->pushButtonRecovery, SIGNAL(clicked()), this, SLOT(onShowMnemonic()));
 
@@ -80,12 +86,14 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
     ui->code_5->setVisible(false);
     ui->code_6->setVisible(false);
 
-    ui->toggleStaking->setVisible(false);
+    timerStakingToggleSync = new QTimer();
+    connect(timerStakingToggleSync, SIGNAL(timeout()), this, SLOT(setStakingStatus()));
+    timerStakingToggleSync->start(20000);
 }
 
 void OptionsPage::setStakingToggle()
 {
-	//disable in multisig wallet
+	ui->toggleStaking->setState(fGenerateDapscoins);
 }
 
 void OptionsPage::setModel(WalletModel* model)
@@ -322,7 +330,7 @@ void OptionsPage::on_EnableStaking(ToggleButton* widget)
     	pwalletMain->walletStakingInProgress = false;
         return;
     }
-    if (widget->getState()){
+	if (widget->getState()){
         QString error;
         StakingStatusError stt = model->getStakingStatusError(error);
         if (!error.length()) {
@@ -330,56 +338,56 @@ void OptionsPage::on_EnableStaking(ToggleButton* widget)
             emit model->stakingStatusChanged(true);
             model->generateCoins(true, 1);
         } else {
-            if (stt != StakingStatusError::UTXO_UNDER_THRESHOLD) {
-                QMessageBox msgBox;
-                QString msg(error);
-                msgBox.setWindowTitle("Warning: Staking Issue");
-                msgBox.setIcon(QMessageBox::Warning);
-                msgBox.setText(msg);
-                msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
-                msgBox.exec();
-                widget->setState(false);
-                nLastCoinStakeSearchInterval = 0;
-                emit model->stakingStatusChanged(false);
-                pwalletMain->WriteStakingStatus(false);
-            } else {
-                QMessageBox::StandardButton reply;
-                reply = QMessageBox::question(this, "Create Stakable Transaction?", error, QMessageBox::Yes|QMessageBox::No);
-                if (reply == QMessageBox::Yes) {
-                    //ask yes or no
-                    //send to this self wallet MIN staking amount
-                    std::string masterAddr;
-                    model->getCWallet()->ComputeStealthPublicAddress("masteraccount", masterAddr);
-                    CWalletTx resultTx;
-                    bool success = false;
-                    try {
-                        success = model->getCWallet()->SendToStealthAddress(
-                                masterAddr,
-                                CWallet::MINIMUM_STAKE_AMOUNT,
-                                resultTx,
-                                false
-                        );
-                    } catch (const std::exception& err) {
-                        QMessageBox::warning(this, "Could not send", QString(err.what()));
-                        return;
-                    }
+        	if (stt != StakingStatusError::UTXO_UNDER_THRESHOLD) {
+        		QMessageBox msgBox;
+        		QString msg(error);
+        		msgBox.setWindowTitle("Warning: Staking Issue");
+        		msgBox.setIcon(QMessageBox::Warning);
+        		msgBox.setText(msg);
+        		msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+        		msgBox.exec();
+        		widget->setState(false);
+        		nLastCoinStakeSearchInterval = 0;
+        		emit model->stakingStatusChanged(false);
+        		pwalletMain->WriteStakingStatus(false);
+        	} else {
+        		QMessageBox::StandardButton reply;
+        		reply = QMessageBox::question(this, "Create Stakable Transaction?", error, QMessageBox::Yes|QMessageBox::No);
+        		if (reply == QMessageBox::Yes) {
+        			//ask yes or no
+        			//send to this self wallet MIN staking amount
+        			std::string masterAddr;
+        			model->getCWallet()->ComputeStealthPublicAddress("masteraccount", masterAddr);
+        			CWalletTx resultTx;
+        			bool success = false;
+        			try {
+        				success = model->getCWallet()->SendToStealthAddress(
+        						masterAddr,
+								CWallet::MINIMUM_STAKE_AMOUNT,
+								resultTx,
+								false
+        				);
+        			} catch (const std::exception& err) {
+        				QMessageBox::warning(this, "Could not send", QString(err.what()));
+        				return;
+        			}
 
-                    if (success){
-                        QMessageBox txcomplete;
-                        txcomplete.setText("Transaction initialized.");
-                        txcomplete.setInformativeText(resultTx.GetHash().GetHex().c_str());
-                        txcomplete.setStyleSheet(GUIUtil::loadStyleSheet());
-                        txcomplete.setStyleSheet("QMessageBox {messagebox-text-interaction-flags: 5;}");
-                        txcomplete.exec();
-                        WalletUtil::getTx(pwalletMain, resultTx.GetHash());
-                    }
-                } else {
-                    widget->setState(false);
-                    nLastCoinStakeSearchInterval = 0;
-                    emit model->stakingStatusChanged(false);
-                    pwalletMain->WriteStakingStatus(false);
-                }
-            }
+        			if (success){
+        				QMessageBox txcomplete;
+        				txcomplete.setText("Transaction initialized.");
+        				txcomplete.setInformativeText(resultTx.GetHash().GetHex().c_str());
+        				txcomplete.setStyleSheet(GUIUtil::loadStyleSheet());
+        				txcomplete.setStyleSheet("QMessageBox {messagebox-text-interaction-flags: 5;}");
+        				txcomplete.exec();
+        				WalletUtil::getTx(pwalletMain, resultTx.GetHash());
+        			}
+        		} else {
+        			widget->setState(false);
+        			nLastCoinStakeSearchInterval = 0;
+        			emit model->stakingStatusChanged(false);
+        			pwalletMain->WriteStakingStatus(false);
+        		}
+        	}
         }
     } else {
         nLastCoinStakeSearchInterval = 0;

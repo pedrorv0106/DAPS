@@ -334,9 +334,8 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(WalletModelTransaction& tran
     std::string stealthAddr = transaction.getRecipients()[0].address.toStdString();
     CAmount nValue = transaction.getRecipients()[0].amount;
     CWalletTx wtxNew;
-    CPartialTransaction ptx;
 
-    if (wallet->SendToStealthAddress(ptx, stealthAddr, nValue, wtxNew,false))
+    if (wallet->SendToStealthAddress(stealthAddr, nValue, wtxNew,false))
         return SendCoinsReturn(OK);
 
     return SendCoinsReturn(TransactionCommitFailed);
@@ -373,11 +372,6 @@ WalletModel::EncryptionStatus WalletModel::getEncryptionStatus() const
     } else {
         return Unlocked;
     }
-}
-
-bool WalletModel::isMultiSigSetup() const
-{
-	return wallet->IsMultisigSetup();
 }
 
 bool WalletModel::setWalletEncrypted(bool encrypted, const SecureString& passphrase)

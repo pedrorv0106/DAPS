@@ -53,7 +53,7 @@ private:
     CAmount send_amount;
 
 private:
-    CPartialTransaction sendTx();
+    void sendTx();
     
 private slots:
     void dialogIsFinished(int result);

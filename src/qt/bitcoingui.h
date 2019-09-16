@@ -92,10 +92,9 @@ private:
     QMenuBar* appMenuBar;
     QAction* overviewAction;
     QAction* historyAction;
+    QAction* masternodeAction;
     QAction* quitAction;
     QAction* sendCoinsAction;
-    QAction* keyImageSyncAction;
-    QAction* cosignAction;
     QAction* usedSendingAddressesAction;
     QAction* usedReceivingAddressesAction;
     QAction* signMessageAction;
@@ -223,8 +222,6 @@ private slots:
     void gotoOptionsPage();
     /** Switch to send coins page */
     void gotoSendCoinsPage(QString addr = "");
-    void gotoCoSignPage();
-    void gotoKeyImageSyncPage();
 
     /** Show Sign/Verify Message dialog and switch to sign message tab */
     void gotoSignMessageTab(QString addr = "");

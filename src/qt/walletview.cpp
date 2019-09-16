@@ -19,12 +19,9 @@
 #include "overviewpage.h"
 #include "optionspage.h"
 #include "receivecoinsdialog.h"
-#include "keyimagesync.h"
 #include "sendcoinsdialog.h"
-#include "keyimagesync.h"
 #include "signverifymessagedialog.h"
 #include "transactiontablemodel.h"
-#include "cosigntransaction.h"
 #include "transactionview.h"
 #include "walletmodel.h"
 
@@ -72,20 +69,15 @@ WalletView::WalletView(QWidget* parent) : QStackedWidget(parent),
 
     receiveCoinsPage = new ReceiveCoinsDialog();
     sendCoinsPage = new SendCoinsDialog();
-    keyImageSyncPage = new KeyImageSync();
-
     optionsPage = new OptionsPage();
     historyPage = new HistoryPage();
-    cosignPage = new CoSignTransaction();
 
     addWidget(overviewPage);
     addWidget(historyPage);
     addWidget(receiveCoinsPage);
     addWidget(sendCoinsPage);
-    addWidget(keyImageSyncPage);
     addWidget(optionsPage);
     addWidget(explorerWindow);
-    addWidget(cosignPage);
 
     QSettings settings;
     if (settings.value("fShowMasternodesTab").toBool()) {
@@ -143,8 +135,6 @@ void WalletView::setClientModel(ClientModel* clientModel)
 
     overviewPage->setClientModel(clientModel);
     sendCoinsPage->setClientModel(clientModel);
-    cosignPage->setClientModel(clientModel);
-    keyImageSyncPage->setClientModel(clientModel);
     QSettings settings;
     if (settings.value("fShowMasternodesTab").toBool()) {
         masternodeListPage->setClientModel(clientModel);
@@ -165,9 +155,7 @@ void WalletView::setWalletModel(WalletModel* walletModel)
     historyPage->setModel(walletModel);
     receiveCoinsPage->setModel(walletModel);
     sendCoinsPage->setModel(walletModel);
-    keyImageSyncPage->setModel(walletModel);
     optionsPage->setModel(walletModel);
-    cosignPage->setModel(walletModel);
     if (walletModel) {
         // Receive and pass through messages from wallet model
         connect(walletModel, SIGNAL(message(QString, QString, unsigned int)), this, SIGNAL(message(QString, QString, unsigned int)));
@@ -228,17 +216,15 @@ void WalletView::gotoBlockExplorerPage()
 
 void WalletView::gotoMasternodePage()
 {
-    //disabled for multisig wallet
+    QSettings settings;
+    if (settings.value("fShowMasternodesTab").toBool()) {
+        setCurrentWidget(masternodeListPage);
+    }
 }
 
 void WalletView::gotoReceiveCoinsPage()
 {
-	static bool loaded = false;
     setCurrentWidget(receiveCoinsPage);
-    if (!loaded) {
-    	receiveCoinsPage->loadAccount();
-    	loaded = true;
-    }
 }
 
 void WalletView::gotoOptionsPage()
@@ -249,16 +235,6 @@ void WalletView::gotoOptionsPage()
 void WalletView::gotoSendCoinsPage(QString addr)
 {
     setCurrentWidget(sendCoinsPage);
-}
-
-void WalletView::gotoCoSignPage()
-{
-    setCurrentWidget(cosignPage);
-}
-
-void WalletView::gotoKeyImageSyncPage()
-{
-    setCurrentWidget(keyImageSyncPage);
 }
 
 void WalletView::gotoSignMessageTab(QString addr)

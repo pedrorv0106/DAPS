@@ -76,7 +76,7 @@ public:
     }
 };
 
-/** Access to the wallet database (multisig_wallet.dat) */
+/** Access to the wallet database (wallet.dat) */
 class CWalletDB : public CDB
 {
 public:
@@ -95,13 +95,6 @@ public:
 
     bool WriteStakingStatus(bool status);
     bool ReadStakingStatus();
-
-    bool WriteNumSigners(int numSigners);
-
-    int ReadNumSigners();
-    void WriteScreenIndex(int index);
-
-    int ReadScreenIndex();
 
     bool WriteScannedBlockHeight(int height);
     bool ReadScannedBlockHeight(int& height);
@@ -129,8 +122,6 @@ public:
 
     bool WriteBestBlock(const CBlockLocator& locator);
     bool ReadBestBlock(CBlockLocator& locator);
-    bool WriteComboKeys(const ComboKeyList& combo);
-    bool ReadAllComboKeys(ComboKeyList& comboData);
 
     bool WriteOrderPosNext(int64_t nOrderPosNext);
 
