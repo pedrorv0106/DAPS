@@ -67,7 +67,7 @@ spec:
       hostAliases:
       - ip: "10.10.10.65"
         hostnames:
-        - "staker.15  "
+        - "staker.15"
       terminationGracePeriodSeconds: 3
       containers:
       - image: r.cfcr.io/hysmagus/daps_min:develop
