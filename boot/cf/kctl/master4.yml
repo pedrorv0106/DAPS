@@ -21,7 +21,7 @@ metadata:
   name: master-4-pv-volume
   labels:
     type: local
-spec:4
+spec:
   storageClassName: standard
   capacity:
     storage: 9Gi
