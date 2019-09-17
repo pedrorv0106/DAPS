@@ -152,9 +152,11 @@ void OptionsPage::on_pushButtonSave_clicked() {
 
     emit model->stakingStatusChanged(nLastCoinStakeSearchInterval);
     ui->lineEditWithhold->setStyleSheet(GUIUtil::loadStyleSheet());
+	
+    QString reserveBalance = ui->lineEditWithhold->text().trimmed();
     QMessageBox msgBox;
     msgBox.setWindowTitle("Reserve Balance Set");
-    msgBox.setText("Reserve balance of " + BitcoinUnits::format(0, nReserveBalance).toUtf8() + " is successfully set.");
+    msgBox.setText("Reserve balance of " + reserveBalance + " DAPS is successfully set.");
     msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
     msgBox.setIcon(QMessageBox::Information);
     msgBox.exec();
