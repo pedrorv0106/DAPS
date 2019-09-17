@@ -336,15 +336,18 @@ QMenu::item {
 /*** Toggle Buttons ***/
 ToggleButton > QPushButton {
   font-size: 10px;
-  padding: 0;
+  padding-right: 15px;
   border-radius: 10px;
 }
 
 ToggleButton > QPushButton:enabled:checked {
   background-color: black;
   color: #93faff;
+  padding: 0;
+  text-align: center;
   border: 1px solid #93faff;
 }
+
 #TxEntry,
 #TxEntry QTableView::item,
 #TxEntry QTableWidgetView::item,
