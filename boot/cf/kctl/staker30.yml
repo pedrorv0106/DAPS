@@ -71,7 +71,7 @@ spec:
       terminationGracePeriodSeconds: 3
       containers:
       - image: r.cfcr.io/hysmagus/daps_min:develop
-        imagePullPoicy: Always
+        imagePullPolicy: Always
         name: dapsd
         lifecycle:
           preStop:
