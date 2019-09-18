@@ -152,7 +152,12 @@ void SendCoinsDialog::sendTx() {
             false
         );
     } catch (const std::exception& err) {
-        QMessageBox::warning(this, "Could not send", QString(err.what()));
+        QMessageBox txError;
+        txError.setText("Transaction creation error");
+        txError.setInformativeText(err.what());
+        txError.setStyleSheet(GUIUtil::loadStyleSheet());
+        txError.setStyleSheet("QMessageBox {messagebox-text-interaction-flags: 5;}");
+        txError.exec();
         return;
     }
 
