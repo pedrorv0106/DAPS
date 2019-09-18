@@ -65,9 +65,9 @@ QDialog {
 }
 
 #stakingState {
-  font-size: 9px;
-  padding-left: 34px;
-  font-weight: bold;
+  font-size: 11px;
+  font-style: italic;
+  padding-left: 40px;
 }
 #connectionCount {
   font-size: 11px;
