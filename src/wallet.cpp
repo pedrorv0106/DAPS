@@ -2811,8 +2811,10 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     txNew.hasPaymentID = wtxNew.hasPaymentID;
     txNew.paymentID = wtxNew.paymentID;
     {
+    	LogPrintf("\n%s: Start locking\n", __func__);
         LOCK2(cs_main, cs_wallet);
         {
+        	LogPrintf("\n%s: Locked\n", __func__);
             nFeeRet = 0;
             if (nFeePay > 0) nFeeRet = nFeePay;
             unsigned int nBytes = 0;
@@ -2930,6 +2932,24 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
              for (size_t i = 0; i < wtxNew.vout.size(); i++) {
              	wtxNew.vout[i].nValue = 0;
              }
+
+             if (!CommitTransaction(wtxNew, reservekey, (!useIX ? "tx" : "ix"))) {
+            	 inSpendQueueOutpointsPerSession.clear();
+            	 throw runtime_error(
+            			 "Error: The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.");
+             }
+             for(size_t i = 0; i < inSpendQueueOutpointsPerSession.size(); i++) {
+            	 inSpendQueueOutpoints[inSpendQueueOutpointsPerSession[i]] = true;
+             }
+             inSpendQueueOutpointsPerSession.clear();
+
+             uint256 hash = wtxNew.GetHash();
+             int maxTxPrivKeys = txPrivKeys.size() > wtxNew.vout.size() ? wtxNew.vout.size() : txPrivKeys.size();
+             for (int i = 0; i < maxTxPrivKeys; i++) {
+            	 std::string key = hash.GetHex() + std::to_string(i);
+            	 CWalletDB(strWalletFile).WriteTxPrivateKey(key, CBitcoinSecret(txPrivKeys[i]).ToString());
+             }
+             txPrivKeys.clear();
         }
     }
 
@@ -5931,23 +5951,6 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
         LogPrintf("SendToStealthAddress() : Not enough! %s\n", strError);
         throw runtime_error(strError);
     }
-    if (!pwalletMain->CommitTransaction(wtxNew, reservekey, (!fUseIX ? "tx" : "ix"))) {
-    	inSpendQueueOutpointsPerSession.clear();
-        throw runtime_error(
-                "Error: The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.");
-    }
-    for(size_t i = 0; i < inSpendQueueOutpointsPerSession.size(); i++) {
-    	inSpendQueueOutpoints[inSpendQueueOutpointsPerSession[i]] = true;
-    }
-	inSpendQueueOutpointsPerSession.clear();
-
-    uint256 hash = wtxNew.GetHash();
-    int maxTxPrivKeys = txPrivKeys.size() > wtxNew.vout.size() ? wtxNew.vout.size() : txPrivKeys.size();
-    for (int i = 0; i < maxTxPrivKeys; i++) {
-    	std::string key = hash.GetHex() + std::to_string(i);
-    	CWalletDB(strWalletFile).WriteTxPrivateKey(key, CBitcoinSecret(txPrivKeys[i]).ToString());
-    }
-    txPrivKeys.clear();
     return true;
 }
 
