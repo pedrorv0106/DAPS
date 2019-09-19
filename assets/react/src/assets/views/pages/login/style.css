@@ -16,3 +16,13 @@
     height: 30px;
     font-size: 15px;
 }
+
+:local(.Pwd) {
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 20px;
+    display: block;
+    width: 200px;
+    height: 20px;
+    font-size: 15px;
+}
