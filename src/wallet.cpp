@@ -2259,22 +2259,25 @@ bool CWallet::SelectCoinsMinConf(const CAmount& nTargetValue, int nConfMine, int
 
 void CWallet::resetPendingOutPoints()
 {
-	if (chainActive.Height() % 20 != 0) return;
+	if (chainActive.Height() % 20 != 0 &&! inSpendQueueOutpoints.empty()) return;
 	{
-		LOCK(mempool.cs);
+		LOCK2(cs_main, cs_wallet);
 		{
-			inSpendQueueOutpoints.clear();
-			for (std::map<uint256, CTxMemPoolEntry>::const_iterator it = mempool.mapTx.begin(); it != mempool.mapTx.end(); ++it) {
-				const CTransaction& tx = it->second.GetTx();
-				for(size_t i = 0; i < tx.vin.size(); i++) {
-					COutPoint prevout = findMyOutPoint(tx.vin[i]);
-					if (prevout.hash.IsNull()) {
-						break;
-					} else {
-						inSpendQueueOutpoints[prevout] = true;
+			LOCK(mempool.cs);
+			{
+				inSpendQueueOutpoints.clear();
+				for (std::map<uint256, CTxMemPoolEntry>::const_iterator it = mempool.mapTx.begin(); it != mempool.mapTx.end(); ++it) {
+					const CTransaction& tx = it->second.GetTx();
+					for(size_t i = 0; i < tx.vin.size(); i++) {
+						COutPoint prevout = findMyOutPoint(tx.vin[i]);
+						if (prevout.hash.IsNull()) {
+							break;
+						} else {
+							inSpendQueueOutpoints[prevout] = true;
+						}
 					}
-				}
 
+				}
 			}
 		}
 	}
@@ -5391,7 +5394,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 void CWallet::AutoCombineDust()
 {
 	//if (IsInitialBlockDownload()) return;
-    if (chainActive.Tip()->nTime < (GetAdjustedTime() - 300) || IsLocked()) {
+    if (chainActive.Tip()->nTime < (GetAdjustedTime() - 1800) || IsLocked()) {
         LogPrintf("Time elapsed for autocombine transaction too short\n");
         return;
     }
