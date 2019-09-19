@@ -197,6 +197,7 @@ void OptionsPage::on_pushButtonPassword_clicked()
         msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
         msgBox.setIcon(QMessageBox::Critical);
         msgBox.exec();
+        return;
     }
     //disable password submit button
     SecureString oldPass = SecureString();
