@@ -191,8 +191,12 @@ void OptionsPage::setMapper()
 void OptionsPage::on_pushButtonPassword_clicked()
 {
     if ( (!ui->lineEditNewPass->text().length()) || (!ui->lineEditNewPassRepeat->text().length()) ) {
-        QMessageBox::critical(this, tr("Wallet Encryption Failed"),
-                    tr("The passphrase entered for wallet encryption was empty or contained spaces. Please try again."));
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Wallet Encryption Failed");
+        msgBox.setText("The passphrase entered for wallet encryption was empty or contained spaces. Please try again.");
+        msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
         return;
     }
     //disable password submit button
@@ -213,29 +217,53 @@ void OptionsPage::on_pushButtonPassword_clicked()
         double guesses;
 
         if (oldPass == newPass) {
-            QMessageBox::critical(this, tr("Wallet Encryption Failed"),
-                    tr("The passphrase you have entered is the same as your old passphrase. Please use a different passphrase if you would like to change it."));
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("Wallet Encryption Failed");
+            msgBox.setText("The passphrase you have entered is the same as your old passphrase. Please use a different passphrase if you would like to change it.");
+            msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.exec();
         }
         else if (newPass.length() < 10) {
-            QMessageBox::critical(this, tr("Wallet Encryption Failed"),
-                    tr("The passphrase's length has to be more than 10. Please try again."));
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("Wallet Encryption Failed");
+            msgBox.setText("The passphrase's length has to be more than 10. Please try again.");
+            msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.exec();
         }
         else if (!pwalletMain->checkPassPhraseRule(newPass.c_str())) {
-            QMessageBox::critical(this, tr("Wallet Encryption Failed"),
-                    tr("The passphrase must contain lower, upper, digit, symbol. Please try again."));
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("Wallet Encryption Failed");
+            msgBox.setText("The passphrase must contain lower, upper, digit, symbol. Please try again.");
+            msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.exec();
         }
         else if (zxcvbn_password_strength(newPass.c_str(), NULL, &guesses, NULL) < 0 || guesses < 10000) {
-            QMessageBox::critical(this, tr("Wallet Encryption Failed"),
-                    tr("The passphrase is too weak. You must use a minimum passphrase length of 10 characters and use uppercase letters, lowercase letters, numbers, and symbols. Please try again."));
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("Wallet Encryption Failed");
+            msgBox.setText("The passphrase is too weak. You must use a minimum passphrase length of 10 characters and use uppercase letters, lowercase letters, numbers, and symbols. Please try again.");
+            msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.exec();
         }
     	else if (model->changePassphrase(oldPass, newPass)) {
-    		QMessageBox::information(this, tr("Passphrase Change Successful"),
-                    tr("Wallet passphrase was successfully changed. Please remember your passphrase as there is no way to recover it."));
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("Passphrase Change Successful");
+            msgBox.setText("Wallet passphrase was successfully changed. Please remember your passphrase as there is no way to recover it.");
+            msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+            msgBox.setIcon(QMessageBox::Information);
+            msgBox.exec();
     		success = true;
         }
     } else {
-    		QMessageBox::critical(this, tr("Wallet Encryption Failed"),
-    				tr("The passphrases entered for wallet encryption do not match. Please try again."));
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("Wallet Encryption Failed");
+            msgBox.setText("The passphrases entered for wallet encryption do not match. Please try again.");
+            msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.exec();
     }
 
     if (success)
@@ -319,8 +347,12 @@ void OptionsPage::on_EnableStaking(ToggleButton* widget)
 {
     int status = model->getEncryptionStatus();
     if (status == WalletModel::Locked || status == WalletModel::UnlockedForAnonymizationOnly) {
-        QMessageBox::information(this, tr("Staking Setting"),
-        tr("Please unlock the keychain wallet with your passphrase before changing this setting."));
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Staking Setting");
+        msgBox.setIcon(QMessageBox::Information);
+        msgBox.setText("Please unlock the keychain wallet with your passphrase before changing this setting.");
+        msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+        msgBox.exec();
         widget->setState(!widget->getState());
         return;
     }
@@ -377,8 +409,14 @@ void OptionsPage::on_EnableStaking(ToggleButton* widget)
 								resultTx,
 								false
         				);
-        			} catch (const std::exception& err) {
-        				QMessageBox::warning(this, "Could not send", QString(err.what()));
+                    } catch (const std::exception& err)
+                    {
+                        QMessageBox msgBox;
+                        msgBox.setWindowTitle("Could Not Send");
+                        msgBox.setIcon(QMessageBox::Warning);
+                        msgBox.setText(QString(err.what()));
+                        msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+                        msgBox.exec();
         				return;
         			}
 
@@ -421,8 +459,12 @@ void OptionsPage::on_Enable2FA(ToggleButton* widget)
 {
     int status = model->getEncryptionStatus();
     if (status == WalletModel::Locked || status == WalletModel::UnlockedForAnonymizationOnly) {
-        QMessageBox::information(this, tr("2FA Setting"),
-        tr("Please unlock the keychain wallet with your passphrase before changing this setting."));
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("2FA Setting");
+        msgBox.setIcon(QMessageBox::Information);
+        msgBox.setText("Please unlock the keychain wallet with your passphrase before changing this setting.");
+        msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+        msgBox.exec();
 
         ui->toggle2FA->setState(!ui->toggle2FA->getState());
         return;
@@ -467,8 +509,12 @@ void OptionsPage::dialogIsFinished(int result) {
         pwalletMain->Write2FALastTime(current.toTime_t());
         enable2FA();
 
-        QMessageBox::information(this, tr("SUCCESS!"),
-        tr("Two-factor authentication has been successfully enabled."));
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("SUCCESS!");
+        msgBox.setIcon(QMessageBox::Information);
+        msgBox.setText("Two-factor authentication has been successfully enabled.");
+        msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+        msgBox.exec();
    }
 
    if (result == QDialog::Rejected)
