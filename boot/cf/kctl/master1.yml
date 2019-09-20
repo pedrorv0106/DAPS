@@ -67,7 +67,7 @@ spec:
         test: test
     spec:
       hostAliases:
-      - ip: "10.10.10.2"
+      - ip: "10.10.10.101"
         hostnames:
         - "master.1"
       terminationGracePeriodSeconds: 3
@@ -79,7 +79,7 @@ spec:
           preStop:
             exec:
               command: ["/bin/bash","-c","dapscoin-cli stop"]
-        command: ["/bin/bash","-c","sleep 3 && nohup dapscoind -daemon && trap: TERM INT; sleep infinity & wait"]
+        command: ["/bin/bash","-c","sleep 30 && dapscoind -daemon && trap: TERM INT; sleep infinity & wait"]
         ports:
         - containerPort: 53575
           name: regtest

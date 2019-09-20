@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -40,6 +41,7 @@
 #endif
 
 #include "encryptdialog.h"
+#include "unlockdialog.h"
 
 #include <stdint.h>
 
@@ -169,7 +171,7 @@ void DebugMessageHandler(QtMsgType type, const QMessageLogContext& context, cons
 }
 #endif
 
-/** Class encapsulating DAPScoin Core startup and shutdown.
+/** Class encapsulating DAPScoin startup and shutdown.
  * Allows running startup and shutdown in a different thread from the UI thread.
  */
 class BitcoinCore : public QObject
@@ -180,6 +182,7 @@ public:
 
 public slots:
     void initialize();
+    void registerNodeSignal();
     void shutdown();
     void restart(QStringList args);
 
@@ -237,6 +240,7 @@ public slots:
 
 signals:
     void requestedInitialize();
+    void requestedRegisterNodeSignal();
     void requestedRestart(QStringList args);
     void requestedShutdown();
     void stopThread();
@@ -269,13 +273,17 @@ void BitcoinCore::handleRunawayException(std::exception* e)
     emit runawayException(QString::fromStdString(strMiscWarning));
 }
 
+void BitcoinCore::registerNodeSignal() {
+    RegisterNodeSignals(GetNodeSignals()); 
+}
+
 void BitcoinCore::initialize()
 {
     execute_restart = true;
 
     try {
         qDebug() << __func__ << ": Running AppInit2 in thread";
-        int rv = AppInit2(threadGroup, scheduler);
+        int rv = AppInit2(threadGroup, scheduler, false);
         emit initializeResult(rv);
     } catch (std::exception& e) {
         handleRunawayException(&e);
@@ -406,6 +414,7 @@ void BitcoinApplication::startThread()
     connect(executor, SIGNAL(initializeResult(int)), this, SLOT(initializeResult(int)));
     connect(executor, SIGNAL(shutdownResult(int)), this, SLOT(shutdownResult(int)));
     connect(executor, SIGNAL(runawayException(QString)), this, SLOT(handleRunawayException(QString)));
+    connect(this, SIGNAL(requestedRegisterNodeSignal()), executor, SLOT(registerNodeSignal()));
     connect(this, SIGNAL(requestedInitialize()), executor, SLOT(initialize()));
     connect(this, SIGNAL(requestedShutdown()), executor, SLOT(shutdown()));
     connect(window, SIGNAL(requestedRestart(QStringList)), executor, SLOT(restart(QStringList)));
@@ -458,9 +467,24 @@ void BitcoinApplication::initializeResult(int retval)
 #endif
         clientModel = new ClientModel(optionsModel);
         window->setClientModel(clientModel);
+
+        bool walletUnlocked = false;
 #ifdef ENABLE_WALLET
         if (pwalletMain) {
             walletModel = new WalletModel(pwalletMain, optionsModel);
+
+            if (walletModel->getEncryptionStatus() == WalletModel::Locked) {  
+                UnlockDialog unlockdlg;
+                unlockdlg.setWindowTitle("Unlock Keychain Wallet");
+                unlockdlg.setModel(walletModel);
+                unlockdlg.setStyleSheet(GUIUtil::loadStyleSheet());
+                unlockdlg.setWindowFlags(Qt::WindowStaysOnTopHint);
+                if (unlockdlg.exec() != QDialog::Accepted)
+                    QApplication::quit();
+                walletUnlocked = true;
+                emit requestedRegisterNodeSignal();
+            }
+
             window->addWallet(BitcoinGUI::DEFAULT_WALLET, walletModel);
             window->setCurrentWallet(BitcoinGUI::DEFAULT_WALLET);
         }
@@ -482,12 +506,15 @@ void BitcoinApplication::initializeResult(int retval)
             window, SLOT(message(QString, QString, unsigned int)));
         QTimer::singleShot(100, paymentServer, SLOT(uiReady()));
         if (pwalletMain) {
-        	if (walletModel->getEncryptionStatus() == WalletModel::Unencrypted) {
+        	if (!walletUnlocked && walletModel->getEncryptionStatus() == WalletModel::Unencrypted) {
         		EncryptDialog dlg;
         		dlg.setModel(walletModel);
         		dlg.setWindowTitle("Encrypt Wallet");
         		dlg.setStyleSheet(GUIUtil::loadStyleSheet());
         		dlg.exec();
+
+                emit requestedRegisterNodeSignal();
+                walletModel->updateStatus();
         	}
         }
 #endif
@@ -597,14 +624,14 @@ int main(int argc, char* argv[])
     /// 6. Determine availability of data directory and parse dapscoin.conf
     /// - Do not call GetDataDir(true) before this step finishes
     if (!boost::filesystem::is_directory(GetDataDir(false))) {
-        QMessageBox::critical(0, QObject::tr("DAPScoin Core"),
+        QMessageBox::critical(0, QObject::tr("DAPScoin"),
             QObject::tr("Error: Specified data directory \"%1\" does not exist.").arg(QString::fromStdString(mapArgs["-datadir"])));
         return 1;
     }
     try {
         ReadConfigFile(mapArgs, mapMultiArgs);
     } catch (std::exception& e) {
-        QMessageBox::critical(0, QObject::tr("DAPScoin Core"),
+        QMessageBox::critical(0, QObject::tr("DAPScoin"),
             QObject::tr("Error: Cannot parse configuration file: %1. Only use key=value syntax.").arg(e.what()));
         return 0;
     }
@@ -617,7 +644,7 @@ int main(int argc, char* argv[])
 
     // Check for -testnet or -regtest parameter (Params() calls are only valid after this clause)
     if (!SelectParamsFromCommandLine()) {
-        QMessageBox::critical(0, QObject::tr("DAPScoin Core"), QObject::tr("Error: Invalid combination of -regtest and -testnet."));
+        QMessageBox::critical(0, QObject::tr("DAPScoin"), QObject::tr("Error: Invalid combination of -regtest and -testnet."));
         return 1;
     }
 #ifdef ENABLE_WALLET
@@ -636,7 +663,7 @@ int main(int argc, char* argv[])
     /// 7a. parse masternode.conf
     string strErr;
     if (!masternodeConfig.read(strErr)) {
-        QMessageBox::critical(0, QObject::tr("DAPScoin Core"),
+        QMessageBox::critical(0, QObject::tr("DAPScoin"),
             QObject::tr("Error reading masternode configuration file: %1").arg(strErr.c_str()));
         return 0;
     }
@@ -682,7 +709,7 @@ int main(int argc, char* argv[])
         app.createWindow(networkStyle.data());
         app.requestInitialize();
 #if defined(Q_OS_WIN) && QT_VERSION >= 0x050000
-        WinShutdownMonitor::registerShutdownBlockReason(QObject::tr("DAPScoin Core didn't yet exit safely..."), (HWND)app.getMainWinId());
+        WinShutdownMonitor::registerShutdownBlockReason(QObject::tr("DAPScoin didn't yet exit safely..."), (HWND)app.getMainWinId());
 #endif
         app.exec();
         app.requestShutdown();

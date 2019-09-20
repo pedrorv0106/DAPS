@@ -630,8 +630,8 @@
         <translation>탭 도구 모음</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Send coins to a DAPScoin address</source>
@@ -654,12 +654,12 @@
         <translation>마스터노드 검색</translation>
     </message>
     <message>
-        <source>&amp;About DAPScoin Core</source>
-        <translation>DAPScoin Core &amp;정보</translation>
+        <source>&amp;About DAPScoin</source>
+        <translation>DAPScoin &amp;정보</translation>
     </message>
     <message>
-        <source>Show information about DAPScoin Core</source>
-        <translation>DAPScoin Core에 대한 정보 표시</translation>
+        <source>Show information about DAPScoin</source>
+        <translation>DAPScoin에 대한 정보 표시</translation>
     </message>
     <message>
         <source>Modify configuration options for DAPScoin</source>
@@ -714,12 +714,12 @@
         <translation>블록 탐색 창</translation>
     </message>
     <message>
-        <source>Show the DAPScoin Core help message to get a list with possible DAPScoin command-line options</source>
-        <translation>DAPScoin Core 도움말 메세지를 표시하여 사용 가능한 DAPScoin 명령행 옵션 목록 표시</translation>
+        <source>Show the DAPScoin help message to get a list with possible DAPScoin command-line options</source>
+        <translation>DAPScoin 도움말 메세지를 표시하여 사용 가능한 DAPScoin 명령행 옵션 목록 표시</translation>
     </message>
     <message>
-        <source>DAPScoin Core client</source>
-        <translation>DAPScoin Core 클라이언트</translation>
+        <source>DAPScoin client</source>
+        <translation>DAPScoin 클라이언트</translation>
     </message>
     <message numerus="yes">
         <source>%n active connection(s) to DAPScoin network</source>
@@ -1212,16 +1212,16 @@ Address: %4
         <translation>버전</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>(%1-bit)</source>
         <translation>(%1-bit)</translation>
     </message>
     <message>
-        <source>About DAPScoin Core</source>
-        <translation>DAPScoin Core 정보</translation>
+        <source>About DAPScoin</source>
+        <translation>DAPScoin 정보</translation>
     </message>
     <message>
         <source>Command-line options</source>
@@ -1267,16 +1267,16 @@ Address: %4
         <translation>환영합니다</translation>
     </message>
     <message>
-        <source>Welcome to DAPScoin Core.</source>
-        <translation>DAPScoin Core에 오신 것을 환영합니다.</translation>
+        <source>Welcome to DAPScoin.</source>
+        <translation>DAPScoin에 오신 것을 환영합니다.</translation>
     </message>
     <message>
-        <source>As this is the first time the program is launched, you can choose where DAPScoin Core will store its data.</source>
-        <translation>이 프로그램이 처음 실행되었으므로 DAPScoin Core가 데이터를 저장할 위치를 선택할 수 있습니다.</translation>
+        <source>As this is the first time the program is launched, you can choose where DAPScoin will store its data.</source>
+        <translation>이 프로그램이 처음 실행되었으므로 DAPScoin가 데이터를 저장할 위치를 선택할 수 있습니다.</translation>
     </message>
     <message>
-        <source>DAPScoin Core will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
-        <translation>DAPScoin Core는 DAPScoin 블록체인을 다운로드하여 저장합니다. 최소 %1GB의 데이터가 디렉토리에 저장되며 시간이 지날수록 증가합니다. 또한 지갑도 해당 디렉토리에 저장됩니다.</translation>
+        <source>DAPScoin will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
+        <translation>DAPScoin는 DAPScoin 블록체인을 다운로드하여 저장합니다. 최소 %1GB의 데이터가 디렉토리에 저장되며 시간이 지날수록 증가합니다. 또한 지갑도 해당 디렉토리에 저장됩니다.</translation>
     </message>
     <message>
         <source>Use the default data directory</source>
@@ -1287,8 +1287,8 @@ Address: %4
         <translation>사용자 지정 데이터 디렉토리 사용:</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Error: Specified data directory "%1" cannot be created.</source>
@@ -3640,8 +3640,8 @@ Either mint higher denominations (so fewer inputs are needed) or reduce the amou
 <context>
     <name>ShutdownWindow</name>
     <message>
-        <source>DAPScoin Core is shutting down...</source>
-        <translation>DAPScoin Core가 종료됩니다...</translation>
+        <source>DAPScoin is shutting down...</source>
+        <translation>DAPScoin가 종료됩니다...</translation>
     </message>
     <message>
         <source>Do not shut down the computer until this window disappears.</source>
@@ -3790,8 +3790,8 @@ Either mint higher denominations (so fewer inputs are needed) or reduce the amou
 <context>
     <name>SplashScreen</name>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Version %1</source>
@@ -3806,8 +3806,8 @@ Either mint higher denominations (so fewer inputs are needed) or reduce the amou
         <translation>Dash Core 개발자</translation>
     </message>
     <message>
-        <source>The DAPScoin Core developers</source>
-        <translation>DAPScoin Core 개발자</translation>
+        <source>The DAPScoin developers</source>
+        <translation>DAPScoin 개발자</translation>
     </message>
     <message>
         <source>[testnet]</source>
@@ -4463,8 +4463,8 @@ Either mint higher denominations (so fewer inputs are needed) or reduce the amou
         <translation>계산된 누산기 체크포인트는 블록 인덱스에 의해 기록되는 것이 아닙니다.</translation>
     </message>
     <message>
-        <source>Cannot obtain a lock on data directory %s. DAPScoin Core is probably already running.</source>
-        <translation>        &lt;translation&gt;잠겨진 데이터 디렉토리 %s 를 가져올 수 없습니다. DAPScoin Core는 이미 실행 중입니다.</translation>
+        <source>Cannot obtain a lock on data directory %s. DAPScoin is probably already running.</source>
+        <translation>        &lt;translation&gt;잠겨진 데이터 디렉토리 %s 를 가져올 수 없습니다. DAPScoin는 이미 실행 중입니다.</translation>
     </message>
     <message>
         <source>Change automatic finalized budget voting behavior. mode=auto: Vote for only exact finalized budget match to my generated budget. (string, default: auto)</source>
@@ -4631,8 +4631,8 @@ rpcpassword=%s
 </translation>
     </message>
     <message>
-        <source>Unable to bind to %s on this computer. DAPScoin Core is probably already running.</source>
-        <translation>이 컴퓨터를 %s 로 지정하는것은 불가능합니다. DAPScoin Core는 이미 실행 중입니다.</translation>
+        <source>Unable to bind to %s on this computer. DAPScoin is probably already running.</source>
+        <translation>이 컴퓨터를 %s 로 지정하는것은 불가능합니다. DAPScoin는 이미 실행 중입니다.</translation>
     </message>
     <message>
         <source>Unable to locate enough Obfuscation denominated funds for this transaction.</source>
@@ -4659,7 +4659,7 @@ rpcpassword=%s
         <translation>경고 : -paytxfee가 매우 높게 설정되었습니다! 이것은 전송할 경우 지불 할 트랜잭션 수수료입니다.</translation>
     </message>
     <message>
-        <source>Warning: Please check that your computer's date and time are correct! If your clock is wrong DAPScoin Core will not work properly.</source>
+        <source>Warning: Please check that your computer's date and time are correct! If your clock is wrong DAPScoin will not work properly.</source>
         <translation>경고: 컴퓨터의 날짜와 시간이 올바르게 설정되어 있는지 확인해 주세요! 만일 시계가 잘못되어 있다면 DAPScoin 코어는 정상적으로 작동하지 않을 수 있습니다.</translation>
     </message>
     <message>
@@ -4815,8 +4815,8 @@ rpcpassword=%s
         <translation>Copyright (C) 2014-%i The Dash Core 개발자들</translation>
     </message>
     <message>
-        <source>Copyright (C) 2015-%i The DAPScoin Core Developers</source>
-        <translation>Copyright (C) 2015-%i The DAPScoin Core 개발자</translation>
+        <source>Copyright (C) 2015-%i The DAPScoin Developers</source>
+        <translation>Copyright (C) 2015-%i The DAPScoin 개발자</translation>
     </message>
     <message>
         <source>Corrupted block database detected</source>
@@ -4895,7 +4895,7 @@ rpcpassword=%s
         <translation>wallet.dat을 불러오는 중 오류가 발생했습니다: 지갑 손상됨</translation>
     </message>
     <message>
-        <source>Error loading wallet.dat: Wallet requires newer version of DAPScoin Core</source>
+        <source>Error loading wallet.dat: Wallet requires newer version of DAPScoin</source>
         <translation>wallet.dat를 로드하는 중 오류가 발생했습니다. 지갑에 최신 버전의 DAPScoin 코어가 필요합니다.</translation>
     </message>
     <message>
@@ -5007,8 +5007,8 @@ rpcpassword=%s
         <translation>정보</translation>
     </message>
     <message>
-        <source>Initialization sanity check failed. DAPScoin Core is shutting down.</source>
-        <translation>초기화 정확성 검사에 실패 했습니다. DAPScoin Core가 종료됩니다.</translation>
+        <source>Initialization sanity check failed. DAPScoin is shutting down.</source>
+        <translation>초기화 정확성 검사에 실패 했습니다. DAPScoin가 종료됩니다.</translation>
     </message>
     <message>
         <source>Input is not valid.</source>
@@ -5667,7 +5667,7 @@ rpcpassword=%s
         <translation>지갑이 잠겼습니다.</translation>
     </message>
     <message>
-        <source>Wallet needed to be rewritten: restart DAPScoin Core to complete</source>
+        <source>Wallet needed to be rewritten: restart DAPScoin to complete</source>
         <translation>지갑을 다시 작성해야 합니다: 완료하려면 DAPScoin 코어를 재시작해야 합니다</translation>
     </message>
     <message>

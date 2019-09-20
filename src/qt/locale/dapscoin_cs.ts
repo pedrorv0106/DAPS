@@ -634,8 +634,8 @@
         <translation>Nástrojová lišta záložek</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Send coins to a DAPScoin address</source>
@@ -658,12 +658,12 @@
         <translation>Procházet masternody</translation>
     </message>
     <message>
-        <source>&amp;About DAPScoin Core</source>
-        <translation>&amp;O DAPScoin Core</translation>
+        <source>&amp;About DAPScoin</source>
+        <translation>&amp;O DAPScoin</translation>
     </message>
     <message>
-        <source>Show information about DAPScoin Core</source>
-        <translation>Zobraz informace o DAPScoin Core</translation>
+        <source>Show information about DAPScoin</source>
+        <translation>Zobraz informace o DAPScoin</translation>
     </message>
     <message>
         <source>Modify configuration options for DAPScoin</source>
@@ -718,12 +718,12 @@
         <translation>Okno blokového průzkumníka</translation>
     </message>
     <message>
-        <source>Show the DAPScoin Core help message to get a list with possible DAPScoin command-line options</source>
-        <translation>Zobrazit DAPScoin Core pomocnou zpráv pro získání seznamu možných parametrů DAPScoin pro příkazy do příkazové řádky</translation>
+        <source>Show the DAPScoin help message to get a list with possible DAPScoin command-line options</source>
+        <translation>Zobrazit DAPScoin pomocnou zpráv pro získání seznamu možných parametrů DAPScoin pro příkazy do příkazové řádky</translation>
     </message>
     <message>
-        <source>DAPScoin Core client</source>
-        <translation>DAPScoin Core klient</translation>
+        <source>DAPScoin client</source>
+        <translation>DAPScoin klient</translation>
     </message>
     <message numerus="yes">
         <source>%n active connection(s) to DAPScoin network</source>
@@ -1184,12 +1184,12 @@ MultiSend: %1</translation>
         <translation>verze</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
-        <source>About DAPScoin Core</source>
-        <translation>O DAPScoin Core</translation>
+        <source>About DAPScoin</source>
+        <translation>O DAPScoin</translation>
     </message>
     <message>
         <source>Command-line options</source>
@@ -1223,16 +1223,16 @@ MultiSend: %1</translation>
         <translation>Vítejte</translation>
     </message>
     <message>
-        <source>Welcome to DAPScoin Core.</source>
-        <translation>Vítejte v DAPScoin Core.</translation>
+        <source>Welcome to DAPScoin.</source>
+        <translation>Vítejte v DAPScoin.</translation>
     </message>
     <message>
-        <source>As this is the first time the program is launched, you can choose where DAPScoin Core will store its data.</source>
-        <translation>Při prvním spuštění programu si můžete vybrat, kam bude DAPScoin Core ukládat svá data.</translation>
+        <source>As this is the first time the program is launched, you can choose where DAPScoin will store its data.</source>
+        <translation>Při prvním spuštění programu si můžete vybrat, kam bude DAPScoin ukládat svá data.</translation>
     </message>
     <message>
-        <source>DAPScoin Core will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
-        <translation>DAPScoin Core stáhne a uloží kopii DAPScoin blockchainu. Nejméně %1GB dat bude do této složky uloženo a v průběhu času bude ukládat další data. Peněženka bude v této složce uložena také.</translation>
+        <source>DAPScoin will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
+        <translation>DAPScoin stáhne a uloží kopii DAPScoin blockchainu. Nejméně %1GB dat bude do této složky uloženo a v průběhu času bude ukládat další data. Peněženka bude v této složce uložena také.</translation>
     </message>
     <message>
         <source>Use the default data directory</source>
@@ -1243,8 +1243,8 @@ MultiSend: %1</translation>
         <translation>Použít vlastní složku pro data</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Error: Specified data directory "%1" cannot be created.</source>
@@ -2348,8 +2348,8 @@ Prosím zkontrolujte adresu a zkuste to znovu.</translation>
 <context>
     <name>SplashScreen</name>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     </context>
 <context>

@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -18,8 +19,8 @@
 #define MASTERNODE_MIN_MNP_SECONDS (10 * 60)
 #define MASTERNODE_MIN_MNB_SECONDS (5 * 60)
 #define MASTERNODE_PING_SECONDS (5 * 60)
-#define MASTERNODE_EXPIRATION_SECONDS (120 * 60)
-#define MASTERNODE_REMOVAL_SECONDS (130 * 60)
+#define MASTERNODE_EXPIRATION_SECONDS (60 * 60)
+#define MASTERNODE_REMOVAL_SECONDS (65 * 60)
 #define MASTERNODE_CHECK_SECONDS 5
 
 using namespace std;

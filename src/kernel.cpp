@@ -1,5 +1,6 @@
 /* @flow */
 // Copyright (c) 2012-2013 The PPCoin developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -325,7 +326,7 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlockHeader blockFrom, cons
     //create data stream once instead of repeating it in the loop
     CDataStream ss(SER_GETHASH, 0);
     ss << nStakeModifier;
-    LogPrintf("\n%s: stake modifier = %d", __func__, nStakeModifier);
+    //LogPrintf("\n%s: stake modifier = %d", __func__, nStakeModifier);
     //if wallet is simply checking to make sure a hash is valid
     if (fCheck) {
         hashProofOfStake = stakeHash(nTimeTx, ss, prevout.n, prevout.hash, nTimeBlockFrom);

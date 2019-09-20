@@ -1,6 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -78,6 +79,8 @@ int64_t nReserveBalance = 0;
 
 const int MIN_RING_SIZE = 11;
 const int MAX_RING_SIZE = 15;
+const int MAX_TX_INPUTS = 50;
+const int MIN_TX_INPUTS_FOR_SWEEPING = 25;
 
 /** Fees smaller than this (in duffs) are considered zero fee (for relaying and mining)
  * We are ~100 times smaller then bitcoin now (2015-06-23), set minRelayTxFee only 10 times higher
@@ -319,8 +322,6 @@ bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
     	CBlockIndex* pindex = (*mi).second;
     	if (!pindex || !chainActive.Contains(pindex))
     		return false;
-
-    	LogPrintf("\nKey Image %s is spent in block %s\n", kiHex, bh.GetHex());
     	return true;//receive from mempool
     }
     if (bh == againsHash && !againsHash.IsNull()) return false;
@@ -376,11 +377,11 @@ bool VerifyBulletProofAggregate(const CTransaction& tx)
 bool VerifyRingSignatureWithTxFee(const CTransaction& tx, CBlockIndex* pindex)
 {
 	LogPrintf("\nStart VerifyRingSignatureWithTxFee\n");
-	const size_t MAX_VIN = 32;
+	const size_t MAX_VIN = MAX_TX_INPUTS;
 	const size_t MAX_DECOYS = MAX_RING_SIZE;	//padding 1 for safety reasons
 	const size_t MAX_VOUT = 5;
 
-	if (tx.vin.size() >= 30) {
+	if (tx.vin.size() > MAX_VIN) {
 		LogPrintf("\nTx input too many\n");
 		return false;
 	}
@@ -443,6 +444,7 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx, CBlockIndex* pindex)
 				CBlockIndex* ancestor = tip->GetAncestor(atTheblock->nHeight);
 				if (ancestor != atTheblock) {
 					LogPrintf("\nDecoy for transactions %s not in the same chain with block %s\n", decoysForIn[j].hash.GetHex(), tip->GetBlockHash().GetHex());
+					return false;
 				}
 			}
 
@@ -1560,6 +1562,23 @@ bool CheckHaveInputs(const CCoinsViewCache& view, const CTransaction& tx)
 				if (mapBlockIndex.count(bh) < 1) return false;
 				if (prev.IsCoinStake() || prev.IsCoinAudit() || prev.IsCoinBase()) {
 					if (nSpendHeight - mapBlockIndex[bh]->nHeight < Params().COINBASE_MATURITY()) return false;
+				}
+
+				CBlockIndex* tip = chainActive.Tip();
+				if (!pindexPrev) tip = pindexPrev;
+
+				uint256 hashTip = tip->GetBlockHash();
+				//verify that tip and hashBlock must be in the same fork
+				CBlockIndex* atTheblock = mapBlockIndex[bh];
+				if (!atTheblock) {
+					LogPrintf("\nDecoy for transactions %s not in the same chain with block %s\n", alldecoys[j].hash.GetHex(), tip->GetBlockHash().GetHex());
+					return false;
+				} else {
+					CBlockIndex* ancestor = tip->GetAncestor(atTheblock->nHeight);
+					if (ancestor != atTheblock) {
+						LogPrintf("\nDecoy for transactions %s not in the same chain with block %s\n", alldecoys[j].hash.GetHex(), tip->GetBlockHash().GetHex());
+						return false;
+					}
 				}
 			}
 			if (!tx.IsCoinStake()) {
@@ -4158,23 +4177,27 @@ bool AcceptBlockHeader(const CBlock &block, CValidationState &state, CBlockIndex
     uint256 hash = block.GetHash();
     BlockMap::iterator miSelf = mapBlockIndex.find(hash);
     CBlockIndex *pindex = NULL;
-
+    LogPrintf("\n%s: Block cache", __func__);
     // TODO : ENABLE BLOCK CACHE IN SPECIFIC CASES
     if (miSelf != mapBlockIndex.end()) {
         // Block header is already known.
         pindex = miSelf->second;
         if (ppindex)
             *ppindex = pindex;
+        if (!pindex) {
+        	mapBlockIndex.erase(hash);
+            return state.Invalid(error("%s : block is not found", __func__), 0, "not-found");
+        }
         if (pindex->nStatus & BLOCK_FAILED_MASK)
             return state.Invalid(error("%s : block is marked invalid", __func__), 0, "duplicate");
         return true;
     }
-
+    LogPrintf("\n%s: Block header", __func__);
     if (!CheckBlockHeader(block, state, false)) {
         LogPrintf("AcceptBlockHeader(): CheckBlockHeader failed \n");
         return false;
     }
-
+    LogPrintf("\n%s: get priveous block", __func__);
     // Get prev block index
     CBlockIndex *pindexPrev = NULL;
     if (hash != Params().HashGenesisBlock()) {
@@ -4204,6 +4227,10 @@ bool AcceptBlockHeader(const CBlock &block, CValidationState &state, CBlockIndex
 
     }
 
+    if (!pindexPrev)
+    	return state.DoS(0, error("%s : prev block %s not found", __func__, block.hashPrevBlock.ToString().c_str()),
+    	                             0, "bad-prevblk");
+    LogPrintf("\n%s: contextual", __func__);
     if (!ContextualCheckBlockHeader(block, state, pindexPrev))
         return false;
 
@@ -4219,7 +4246,7 @@ bool AcceptBlockHeader(const CBlock &block, CValidationState &state, CBlockIndex
 bool AcceptBlock(CBlock &block, CValidationState &state, CBlockIndex **ppindex, CDiskBlockPos *dbp,
                  bool fAlreadyCheckedBlock) {
     AssertLockHeld(cs_main);
-
+    LogPrintf("\nAccepting block");
     CBlockIndex *&pindex = *ppindex;
     // Get prev block index
     CBlockIndex *pindexPrev = NULL;
@@ -4248,7 +4275,7 @@ bool AcceptBlock(CBlock &block, CValidationState &state, CBlockIndex **ppindex, 
     }
     if (block.GetHash() != Params().HashGenesisBlock() && !CheckWork(block, pindexPrev))
         return false;
-
+    LogPrintf("\nAcceptingHeader block");
     if (!AcceptBlockHeader(block, state, &pindex))
         return false;
 
@@ -4347,7 +4374,6 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
     // Preliminary checks
     int64_t nStartTime = GetTimeMillis();
     bool checked = CheckBlock(*pblock, state);
-
     // ppcoin: check proof-of-stake
     // Limited duplicity on stake: prevents block flood attack
     // Duplicate stake allowed only when there is orphan child block
@@ -4360,7 +4386,8 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
     if (pblock->GetHash() != Params().HashGenesisBlock() && pfrom != NULL) {
         //if we get this far, check if the prev block is our prev block, if not then request sync and return false
         BlockMap::iterator mi = mapBlockIndex.find(pblock->hashPrevBlock);
-        if (mi == mapBlockIndex.end()) {
+        if (mi == mapBlockIndex.end() || (mi != mapBlockIndex.end() && mi->second == NULL)) {
+        	mapBlockIndex.erase(pblock->hashPrevBlock);
             pfrom->PushMessage("getblocks", chainActive.GetLocator(), uint256(0));
             return false;
         } else {
@@ -4407,6 +4434,8 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
         // If turned on Auto Combine will scan wallet for dust to combine
         if (pwalletMain->fCombineDust)
             pwalletMain->AutoCombineDust();
+
+        pwalletMain->resetPendingOutPoints();
     }
 
     //Block is accepted, let's update decoys pool

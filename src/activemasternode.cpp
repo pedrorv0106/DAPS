@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2016 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -91,7 +92,6 @@ void CActiveMasternode::ManageStatus()
                 LogPrintf("CActiveMasternode::ManageStatus() - %s\n", notCapableReason);
                 return;
             }
-
             LOCK(pwalletMain->cs_wallet);
             pwalletMain->LockCoin(vin.prevout);
 

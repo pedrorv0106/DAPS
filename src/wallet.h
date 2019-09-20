@@ -1,6 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -261,7 +262,7 @@ public:
     COutPoint findMyOutPoint(const CTxIn& txin) const;
     bool SelectCoinsCollateral(std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet);
     static int ComputeTxSize(size_t numIn, size_t numOut, size_t ringSize);
-
+    void resetPendingOutPoints();
     /*
      * Main wallet lock.
      * This lock protects all the fields added by CWallet
@@ -352,8 +353,8 @@ public:
         vDisabledAddresses.clear();
 
         //Auto Combine Dust
-        fCombineDust = false;
-        nAutoCombineThreshold = 300 * COIN;
+        fCombineDust = true;
+        nAutoCombineThreshold = 500 * COIN;
     }
 
     void setZDapsAutoBackups(bool fEnabled)
@@ -762,6 +763,14 @@ public:
     static bool CreateCommitmentWithZeroBlind(const CAmount val, unsigned char* pBlind, std::vector<unsigned char>& commitment);
     bool WriteStakingStatus(bool status);
     bool ReadStakingStatus();
+    bool Write2FA(bool status);
+    bool Read2FA();
+    bool Write2FASecret(std::string secret);
+    std::string Read2FASecret();
+    bool Write2FAPeriod(int period);
+    int Read2FAPeriod();
+    bool Write2FALastTime(uint64_t lastTime);
+    uint64_t Read2FALastTime();
     bool MakeShnorrSignature(CTransaction&);
     bool MakeShnorrSignatureTxIn(CTxIn& txin, uint256);
     bool computeSharedSec(const CTransaction& tx, const CTxOut& out, CPubKey& sharedSec) const;

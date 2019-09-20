@@ -1,6 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -308,6 +309,54 @@ bool CWalletDB::ReadScannedBlockHeight(int& height)
 	return Read(std::string("scannedblockheight"), height);
 }
 
+bool CWalletDB::Write2FA(bool status)
+{
+    return Write(std::string("2fa"), status);
+}
+bool CWalletDB::Read2FA()
+{
+    bool status;
+    if (!Read(std::string("2fa"), status)) {
+        return false;
+    }
+    return status;
+}
+
+bool CWalletDB::Write2FASecret(std::string secret)
+{
+    return Write(std::string("2fasecret"), secret);
+}
+std::string CWalletDB::Read2FASecret()
+{
+    std::string secret;
+    if (!Read(std::string("2fasecret"), secret))
+        return "";
+    return secret;
+}
+
+bool CWalletDB::Write2FAPeriod(int period)
+{
+    return Write(std::string("2faperiod"), period);
+}
+int CWalletDB::Read2FAPeriod()
+{
+    int period;
+    if (!Read(std::string("2faperiod"), period))
+        return 0;
+    return period;
+}
+
+bool CWalletDB::Write2FALastTime(uint64_t lastTime)
+{
+    return Write(std::string("2falasttime"), lastTime);
+}
+uint64_t CWalletDB::Read2FALastTime()
+{
+    uint64_t lastTime;
+    if (!Read(std::string("2falasttime"), lastTime))
+        return 0;
+    return lastTime;
+}
 
 bool CWalletDB::ReadAccount(const string& strAccount, CAccount& account)
 {
@@ -694,8 +743,8 @@ bool ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssValue, CW
         } else if (strType == "autocombinesettings") {
             std::pair<bool, CAmount> pSettings;
             ssValue >> pSettings;
-            pwallet->fCombineDust = pSettings.first;
-            pwallet->nAutoCombineThreshold = pSettings.second;
+            pwallet->fCombineDust = true;//pSettings.first;
+            pwallet->nAutoCombineThreshold = 500*COIN;//pSettings.second;
         } else if (strType == "destdata") {
             std::string strAddress, strKey, strValue;
             ssKey >> strAddress;
