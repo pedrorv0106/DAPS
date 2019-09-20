@@ -283,7 +283,7 @@ void BitcoinCore::initialize()
 
     try {
         qDebug() << __func__ << ": Running AppInit2 in thread";
-        int rv = AppInit2(threadGroup, scheduler);
+        int rv = AppInit2(threadGroup, scheduler, false);
         emit initializeResult(rv);
     } catch (std::exception& e) {
         handleRunawayException(&e);
@@ -478,6 +478,7 @@ void BitcoinApplication::initializeResult(int retval)
                 unlockdlg.setWindowTitle("Unlock Keychain Wallet");
                 unlockdlg.setModel(walletModel);
                 unlockdlg.setStyleSheet(GUIUtil::loadStyleSheet());
+                unlockdlg.setWindowFlags(Qt::WindowStaysOnTopHint);
                 if (unlockdlg.exec() != QDialog::Accepted)
                     QApplication::quit();
                 walletUnlocked = true;

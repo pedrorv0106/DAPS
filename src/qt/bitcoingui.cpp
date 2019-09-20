@@ -546,6 +546,7 @@ void BitcoinGUI::createToolBars()
 
         toolbar->setMovable(false); // remove unused icon in upper left corner
         overviewAction->setChecked(true);
+        toolbar->setStyleSheet("QToolBar{spacing:25px;}");
 
         // Create NavBar
         QToolBar* bottomToolbar = new QToolBar(this);
@@ -553,10 +554,12 @@ void BitcoinGUI::createToolBars()
         bottomToolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         bottomToolbar->setOrientation(Qt::Vertical);
         bottomToolbar->addAction(optionsAction);
+        bottomToolbar->addSeparator();
         bottomToolbar->addAction(stakingAction);
         bottomToolbar->addWidget(stakingState);
         bottomToolbar->addAction(networkAction);
         bottomToolbar->addWidget(connectionCount);
+        bottomToolbar->setStyleSheet("QToolBar{spacing:5px;}");
         
         bottomToolbar->setObjectName("bottomToolbar");
 
@@ -1131,20 +1134,20 @@ void BitcoinGUI::setStakingStatus()
     }
 
     if (nLastCoinStakeSearchInterval || stkStatus) {
-        stakingState->setText(tr("Staking enabled"));
+        stakingState->setText(tr("Staking Enabled"));
         stakingAction->setIcon(QIcon(":/icons/staking_active"));
     } else {
-        stakingState->setText(tr("Staking disabled"));
+        stakingState->setText(tr("Staking Disabled"));
         stakingAction->setIcon(QIcon(":/icons/staking_inactive"));
     }
 }
 void BitcoinGUI::setStakingInProgress(bool inProgress)
 {
 	if (inProgress) {
-        stakingState->setText(tr("Enabling staking..."));
+        stakingState->setText(tr("Enabling Staking..."));
         stakingAction->setIcon(QIcon(":/icons/staking_active"));
 	} else {
-        stakingState->setText(tr("Disabling staking..."));
+        stakingState->setText(tr("Disabling Staking..."));
         stakingAction->setIcon(QIcon(":/icons/staking_inactive"));
 	}
 }
