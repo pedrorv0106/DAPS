@@ -212,6 +212,13 @@ enum StakingStatusError
 	RESERVE_TOO_HIGH_AND_UTXO_UNDER_THRESHOLD
 };
 
+enum StakingMode {
+	STOPPED, //staking disabled or balance < 400k
+	STAKING_WITHOUT_CONSOLIDATION,
+	STAKING_WITH_CONSOLIDATION,
+	STAKING_WITH_CONSOLIDATION_WITH_STAKING_NEWW_FUNDS
+};
+
 /**
  * A CWallet is an extension of a keystore, which also maintains a set of transactions and balances,
  * and provides the ability to create new transactions.
@@ -263,6 +270,8 @@ public:
     bool SelectCoinsCollateral(std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet);
     static int ComputeTxSize(size_t numIn, size_t numOut, size_t ringSize);
     void resetPendingOutPoints();
+    bool estimateStakingConsolidationFees(CAmount& min, CAmount& max);
+    static int MaxTxSizePerTx();
     /*
      * Main wallet lock.
      * This lock protects all the fields added by CWallet
@@ -389,6 +398,8 @@ public:
     std::map<CKeyID, CHDPubKey> mapHdPubKeys; //<! memory map of HD extended pubkeys
 
     int64_t nTimeFirstKey;
+
+    StakingMode stakingMode = STOPPED;
 
     mutable std::map<std::string, CKeyImage> outpointToKeyImages;
     std::map<std::string, bool> keyImagesSpends;
