@@ -53,7 +53,7 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
 
     QLocale lo(QLocale::C);
     lo.setNumberOptions(QLocale::RejectGroupSeparator);
-    QDoubleValidator *dblVal = new QDoubleValidator(0, Params().MAX_MONEY, 8, ui->lineEditWithhold);
+    QDoubleValidator *dblVal = new QDoubleValidator(0, Params().MAX_MONEY, 0, ui->lineEditWithhold);
     dblVal->setNotation(QDoubleValidator::StandardNotation);
     dblVal->setLocale(lo);
     ui->lineEditWithhold->setValidator(dblVal);
