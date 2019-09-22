@@ -645,8 +645,8 @@
         <translation>Skirtukų įrankių juosta</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Send coins to a DAPScoin address</source>
@@ -669,12 +669,12 @@
         <translation>Naršyti masternod'us</translation>
     </message>
     <message>
-        <source>&amp;About DAPScoin Core</source>
-        <translation>&amp;Apie DAPScoin Core</translation>
+        <source>&amp;About DAPScoin</source>
+        <translation>&amp;Apie DAPScoin</translation>
     </message>
     <message>
-        <source>Show information about DAPScoin Core</source>
-        <translation>Rodyti informaciją apie DAPScoin Core</translation>
+        <source>Show information about DAPScoin</source>
+        <translation>Rodyti informaciją apie DAPScoin</translation>
     </message>
     <message>
         <source>Modify configuration options for DAPScoin</source>
@@ -729,12 +729,12 @@
         <translation>Blokų naršyklės langas</translation>
     </message>
     <message>
-        <source>Show the DAPScoin Core help message to get a list with possible DAPScoin command-line options</source>
-        <translation>Rodyti DAPScoin Core žinyną, kad gautumėte sąrašą su galimomis DAPScoin komandinės eilutės parinktimis</translation>
+        <source>Show the DAPScoin help message to get a list with possible DAPScoin command-line options</source>
+        <translation>Rodyti DAPScoin žinyną, kad gautumėte sąrašą su galimomis DAPScoin komandinės eilutės parinktimis</translation>
     </message>
     <message>
-        <source>DAPScoin Core client</source>
-        <translation>DAPScoin Core piniginė</translation>
+        <source>DAPScoin client</source>
+        <translation>DAPScoin piniginė</translation>
     </message>
     <message numerus="yes">
         <source>%n active connection(s) to DAPScoin network</source>
@@ -1223,16 +1223,16 @@ MultiSend: %1</translation>
         <translation>versija</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>(%1-bit)</source>
         <translation>(%1-bitai)</translation>
     </message>
     <message>
-        <source>About DAPScoin Core</source>
-        <translation>Apie DAPScoin Core</translation>
+        <source>About DAPScoin</source>
+        <translation>Apie DAPScoin</translation>
     </message>
     <message>
         <source>Command-line options</source>
@@ -1278,16 +1278,16 @@ MultiSend: %1</translation>
         <translation>Sveiki</translation>
     </message>
     <message>
-        <source>Welcome to DAPScoin Core.</source>
-        <translation>Sveiki atvykę į DAPScoin Core</translation>
+        <source>Welcome to DAPScoin.</source>
+        <translation>Sveiki atvykę į DAPScoin</translation>
     </message>
     <message>
-        <source>As this is the first time the program is launched, you can choose where DAPScoin Core will store its data.</source>
-        <translation>Kadangi programa paleista pirmą kartą, galite pasirinkti kur DAPScoin Core saugos savo duomenis.</translation>
+        <source>As this is the first time the program is launched, you can choose where DAPScoin will store its data.</source>
+        <translation>Kadangi programa paleista pirmą kartą, galite pasirinkti kur DAPScoin saugos savo duomenis.</translation>
     </message>
     <message>
-        <source>DAPScoin Core will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
-        <translation>DAPScoin Core atsisiųs ir saugos DAPScoin blockchain'o kopiją. Šiame kataloge bus saugomas ne mažesnis kaip %1GB duomenų kiekis, kuris laikui bėgant augs. Piniginė taip pat bus saugoma šiame kataloge.</translation>
+        <source>DAPScoin will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
+        <translation>DAPScoin atsisiųs ir saugos DAPScoin blockchain'o kopiją. Šiame kataloge bus saugomas ne mažesnis kaip %1GB duomenų kiekis, kuris laikui bėgant augs. Piniginė taip pat bus saugoma šiame kataloge.</translation>
     </message>
     <message>
         <source>Use the default data directory</source>
@@ -1298,8 +1298,8 @@ MultiSend: %1</translation>
         <translation>Naudoti pasirinktą duomenų katalogą:</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Error: Specified data directory "%1" cannot be created.</source>
@@ -3050,7 +3050,7 @@ Nesubrendusios: patvirtintos, bet mažiau nei 1 konvertacijos tos pačio nominal
     </message>
     <message>
         <source>Send as zero-fee transaction if possible</source>
-        <translation> Jei galima, siųsti pavedimą be pavedimo mokesčio</translation>
+        <translation> Jei galima, siųsti pavedimą be pavedimo mokesčio</translation>
     </message>
     <message>
         <source>(confirmation may take longer)</source>
@@ -3229,8 +3229,8 @@ Nesubrendusios: patvirtintos, bet mažiau nei 1 konvertacijos tos pačio nominal
 <context>
     <name>SplashScreen</name>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     </context>
 <context>
@@ -3494,8 +3494,8 @@ Nesubrendusios: patvirtintos, bet mažiau nei 1 konvertacijos tos pačio nominal
         <translation>Klaida kraunant wallet.dat: Piniginė yra sugadinta</translation>
     </message>
     <message>
-        <source>Error loading wallet.dat: Wallet requires newer version of DAPScoin Core</source>
-        <translation>Klaida kraunant wallet.dat: Piniginė reikalauja naujesnės DAPScoin Core versijos</translation>
+        <source>Error loading wallet.dat: Wallet requires newer version of DAPScoin</source>
+        <translation>Klaida kraunant wallet.dat: Piniginė reikalauja naujesnės DAPScoin versijos</translation>
     </message>
     <message>
         <source>Error opening block database</source>
@@ -3722,8 +3722,8 @@ Nesubrendusios: patvirtintos, bet mažiau nei 1 konvertacijos tos pačio nominal
         <translation>Piniginė užrakinta.</translation>
     </message>
     <message>
-        <source>Wallet needed to be rewritten: restart DAPScoin Core to complete</source>
-        <translation>Piniginę reikia perrašyti: paleiskite DAPScoin Core iš naujo</translation>
+        <source>Wallet needed to be rewritten: restart DAPScoin to complete</source>
+        <translation>Piniginę reikia perrašyti: paleiskite DAPScoin iš naujo</translation>
     </message>
     <message>
         <source>Wallet options:</source>

@@ -52,7 +52,6 @@ WalletView::WalletView(QWidget* parent) : QStackedWidget(parent),
     QPushButton* exportButton = new QPushButton(tr("&Export"), this);
     exportButton->setToolTip(tr("Export the data in the current tab to a file"));
     hbox_buttons->addStretch();
-
     // Sum of selected transactions
     QLabel* transactionSumLabel = new QLabel();                // Label
     transactionSumLabel->setObjectName("transactionSumLabel"); // Label ID as CSS-reference
@@ -157,7 +156,6 @@ void WalletView::setWalletModel(WalletModel* walletModel)
     receiveCoinsPage->setModel(walletModel);
     sendCoinsPage->setModel(walletModel);
     optionsPage->setModel(walletModel);
-
     if (walletModel) {
         // Receive and pass through messages from wallet model
         connect(walletModel, SIGNAL(message(QString, QString, unsigned int)), this, SIGNAL(message(QString, QString, unsigned int)));

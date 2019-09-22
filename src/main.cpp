@@ -1,6 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -78,6 +79,8 @@ int64_t nReserveBalance = 0;
 
 const int MIN_RING_SIZE = 11;
 const int MAX_RING_SIZE = 15;
+const int MAX_TX_INPUTS = 50;
+const int MIN_TX_INPUTS_FOR_SWEEPING = 25;
 
 /** Fees smaller than this (in duffs) are considered zero fee (for relaying and mining)
  * We are ~100 times smaller then bitcoin now (2015-06-23), set minRelayTxFee only 10 times higher
@@ -94,7 +97,6 @@ struct COrphanTx {
 map <uint256, COrphanTx> mapOrphanTransactions;
 map <uint256, set<uint256>> mapOrphanTransactionsByPrev;
 map <uint256, int64_t> mapRejectedBlocks;
-
 
 void EraseOrphansFor(NodeId peer);
 
@@ -301,6 +303,7 @@ double GetPriority(const CTransaction& tx, int nHeight)
 }
 
 bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
+	if (kiHex.empty()) return false;
     uint256 bh;
     if (!pblocktree->ReadKeyImage(kiHex, bh)) {
         //not spent yet because not found in database
@@ -310,7 +313,7 @@ bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
         return false;
     }
 
-    if (!bh.IsNull() && againsHash.IsNull()) {
+    if (againsHash.IsNull()) {
     	//check if bh is in main chain
     	// Find the block it claims to be in
     	BlockMap::iterator mi = mapBlockIndex.find(bh);
@@ -319,54 +322,16 @@ bool IsKeyImageSpend1(const std::string& kiHex, const uint256& againsHash) {
     	CBlockIndex* pindex = (*mi).second;
     	if (!pindex || !chainActive.Contains(pindex))
     		return false;
-
-    	//return (chainActive.Height() - pindex->nHeight + 1) > 0;
     	return true;//receive from mempool
     }
-    if (bh == againsHash) return false;
+    if (bh == againsHash && !againsHash.IsNull()) return false;
 
     //check whether bh and againsHash is in the same fork
     if (mapBlockIndex.count(bh) < 1) return false;
     CBlockIndex* pindex = mapBlockIndex[againsHash];
     CBlockIndex* bhIndex = mapBlockIndex[bh];
-    while (pindex->nHeight >= bhIndex->nHeight) {
-    	pindex = pindex->pprev;
-    }
-
-    if (pindex != bhIndex) return false;
-
-    /*CBlockIndex* bhIdx = mapBlockIndex[bh];
-    CBlockIndex* against = mapBlockIndex[againsHash];
-
-    LogPrintf("\n%s: Checking key image spent = %s, bh = %s, agains = %s\n", __func__, kiHex, bh.GetHex(), againsHash.GetHex());
-
-    if (bhIdx != NULL && !againsHash.IsNull() && bh) return true;
-	if (against == NULL) return true;
-
-    if (IsKeyImageSpend2(kiHex, bh) && IsKeyImageSpend2(kiHex, againsHash)) {
-    	if (bhIdx->nHeight < against->nHeight)
-    		return true;
-    }
-
-    /*if (bhIdx == against) return true;
-    if (bhIdx != NULL && against != NULL) {
-        if (bhIdx->nHeight < against->nHeight) {
-        	if ((chainActive[against->nHeight]->GetBlockHash() == againsHash) && IsKeyImageSpend2(kiHex, bh)) {
-        		if (pwalletMain) {
-        			if (pwalletMain->keyImagesSpends.count(kiHex) == 1) {
-        				pwalletMain->keyImagesSpends[kiHex] = 1;
-        			};
-        		}
-                return true;
-        	}
-        }
-    }*/
-    /*LogPrintf("\n%s: Checking key image spent = %s, bh = %s, agains = %s, not spent yet\n", __func__, kiHex, bh.GetHex(), againsHash.GetHex());
-    if (pwalletMain) {
-        pwalletMain->keyImagesSpends[kiHex] = false;
-    }*/
-
-    return true;
+    CBlockIndex* ancestor = pindex->GetAncestor(bhIndex->nHeight);
+    return ancestor == bhIndex;
 }
 
 secp256k1_context2* GetContext() {
@@ -409,19 +374,32 @@ bool VerifyBulletProofAggregate(const CTransaction& tx)
 	return secp256k1_bulletproof_rangeproof_verify(GetContext(), GetScratch(), GetGenerator(), &(tx.bulletproofs[0]), len, NULL, commitments, tx.vout.size(), 64, &secp256k1_generator_const_h, NULL, 0);
 }
 
-bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
+bool VerifyRingSignatureWithTxFee(const CTransaction& tx, CBlockIndex* pindex)
 {
-	const size_t MAX_VIN = 32;
+	LogPrintf("\nStart VerifyRingSignatureWithTxFee\n");
+	const size_t MAX_VIN = MAX_TX_INPUTS;
 	const size_t MAX_DECOYS = MAX_RING_SIZE;	//padding 1 for safety reasons
 	const size_t MAX_VOUT = 5;
 
-	if (tx.vin.size() >= 30) return false;
-	for(size_t i = 0; i < tx.vin.size(); i++) {
-		if (tx.vin[i].decoys.size() != tx.vin[0].decoys.size()) return false;
+	if (tx.vin.size() > MAX_VIN) {
+		LogPrintf("\nTx input too many\n");
+		return false;
 	}
-	if (tx.vin.size() == 0) return false;
+	for(size_t i = 1; i < tx.vin.size(); i++) {
+		if (tx.vin[i].decoys.size() != tx.vin[0].decoys.size()) {
+			LogPrintf("\nThe number of decoys not equal for all inputs, input %d has %d decoys but input 0 has only %d\n", i, tx.vin[i].decoys.size(), tx.vin[0].decoys.size());
+			return false;
+		}
+	}
+	if (tx.vin.size() == 0) {
+		LogPrintf("\nTransaction %s has no inputs\n", tx.GetHash().GetHex());
+		return false;
+	}
 
-	if (tx.vin[0].decoys.size() > MAX_DECOYS || tx.vin[0].decoys.size() < MIN_RING_SIZE) return false;//maximum decoys = 15
+	if (tx.vin[0].decoys.size() > MAX_DECOYS || tx.vin[0].decoys.size() < MIN_RING_SIZE) {
+		LogPrintf("\nThe number of decoys RingSize %d not within range [%d, %d]\n", tx.vin[0].decoys.size(), MIN_RING_SIZE, MAX_RING_SIZE);
+		return false;//maximum decoys = 15
+	}
 
 	unsigned char allInPubKeys[MAX_VIN + 1][MAX_DECOYS + 1][33];
 	unsigned char allKeyImages[MAX_VIN + 1][33];
@@ -450,10 +428,29 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 			CTransaction txPrev;
 			uint256 hashBlock;
 			if (!GetTransaction(decoysForIn[j].hash, txPrev, hashBlock)) {
+				LogPrintf("\nfailed to find transaction %s\n", decoysForIn[j].hash.GetHex());
 				return false;
 			}
+			CBlockIndex* tip = chainActive.Tip();
+			if (!pindex) tip = pindex;
+
+			uint256 hashTip = tip->GetBlockHash();
+			//verify that tip and hashBlock must be in the same fork
+			CBlockIndex* atTheblock = mapBlockIndex[hashBlock];
+			if (!atTheblock) {
+				LogPrintf("\nDecoy for transactions %s not in the same chain with block %s\n", decoysForIn[j].hash.GetHex(), tip->GetBlockHash().GetHex());
+				return false;
+			} else {
+				CBlockIndex* ancestor = tip->GetAncestor(atTheblock->nHeight);
+				if (ancestor != atTheblock) {
+					LogPrintf("\nDecoy for transactions %s not in the same chain with block %s\n", decoysForIn[j].hash.GetHex(), tip->GetBlockHash().GetHex());
+					return false;
+				}
+			}
+
 			CPubKey extractedPub;
 			if (!ExtractPubKey(txPrev.vout[decoysForIn[j].n].scriptPubKey, extractedPub)) {
+				LogPrintf("\nfailed to extract pubkey\n");
 				return false;
 			}
 			memcpy(allInPubKeys[i][j], extractedPub.begin(), 33);
@@ -476,6 +473,7 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 	for (size_t i = 0; i < tx.vout.size(); i++) {
 		memcpy(allOutCommitments[i], &(tx.vout[i].commitment[0]), 33);
 		if (!secp256k1_pedersen_commitment_parse(both, &allOutCommitmentsPacked[i], allOutCommitments[i])) {
+			LogPrintf("\nfailed to parse commitment\n");
 			return false;
 		}
 	}
@@ -504,6 +502,7 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 		const secp256k1_pedersen_commitment *inCptr[MAX_VIN * 2];
 		for (size_t k = 0; k < tx.vin.size(); k++) {
 			if (!secp256k1_pedersen_commitment_parse(both, &allInCommitmentsPacked[k][j], allInCommitments[k][j])) {
+				LogPrintf("\nfailed to parse commitment\n");
 				return false;
 			}
 			inCptr[k] = &allInCommitmentsPacked[k][j];
@@ -515,9 +514,11 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 		secp256k1_pedersen_commitment out;
 		size_t length;
 		if (!secp256k1_pedersen_commitment_sum(both, inCptr, tx.vin.size() * 2, outCptr, tx.vout.size() + 1, &out)) {
+			LogPrintf("\nfailed to secp256k1_pedersen_commitment_sum\n");
 			return false;
 		}
 		if (!secp256k1_pedersen_commitment_to_serialized_pubkey(&out, allInPubKeys[tx.vin.size()][j], &length)) {
+			LogPrintf("\nfailed to serialized pubkey\n");
 			return false;
 		}
 	}
@@ -532,10 +533,12 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 			unsigned char P[33];
 			memcpy(P, allInPubKeys[i][j], 33);
 			if (!secp256k1_ec_pubkey_tweak_mul(P, 33, C)) {
+				LogPrintf("\nfailed to mul pubkey\n");
 				return false;
 			}
 
 			if (!secp256k1_ec_pubkey_tweak_add(P, 33, SIJ[i][j])) {
+				LogPrintf("\nfailed to add pubkey\n");
 				return false;
 			}
 
@@ -550,6 +553,7 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 			unsigned char ci[33];
 			memcpy(ci, allKeyImages[i], 33);
 			if (!secp256k1_ec_pubkey_tweak_mul(ci, 33, C)) {
+				LogPrintf("\nfailed to mul tweak\n");
 				return false;
 			}
 
@@ -588,7 +592,7 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx)
 		uint256 temppi1 = Hash(tempForHash, tempForHash + 2 * (tx.vin.size() + 1) * 33 + 32);
 		memcpy(C, temppi1.begin(), 32);
 	}
-
+	LogPrintf("\nVerifying\n");
 	return HexStr(tx.c.begin(), tx.c.end()) == HexStr(C, C + 32);
 }
 
@@ -1559,6 +1563,23 @@ bool CheckHaveInputs(const CCoinsViewCache& view, const CTransaction& tx)
 				if (prev.IsCoinStake() || prev.IsCoinAudit() || prev.IsCoinBase()) {
 					if (nSpendHeight - mapBlockIndex[bh]->nHeight < Params().COINBASE_MATURITY()) return false;
 				}
+
+				CBlockIndex* tip = chainActive.Tip();
+				if (!pindexPrev) tip = pindexPrev;
+
+				uint256 hashTip = tip->GetBlockHash();
+				//verify that tip and hashBlock must be in the same fork
+				CBlockIndex* atTheblock = mapBlockIndex[bh];
+				if (!atTheblock) {
+					LogPrintf("\nDecoy for transactions %s not in the same chain with block %s\n", alldecoys[j].hash.GetHex(), tip->GetBlockHash().GetHex());
+					return false;
+				} else {
+					CBlockIndex* ancestor = tip->GetAncestor(atTheblock->nHeight);
+					if (ancestor != atTheblock) {
+						LogPrintf("\nDecoy for transactions %s not in the same chain with block %s\n", alldecoys[j].hash.GetHex(), tip->GetBlockHash().GetHex());
+						return false;
+					}
+				}
 			}
 			if (!tx.IsCoinStake()) {
 				if (tx.vin[i].decoys.size() != tx.vin[0].decoys.size()) {
@@ -1635,7 +1656,7 @@ bool AcceptToMemoryPool(CTxMemPool &pool, CValidationState &state, const CTransa
 
             if (!tx.IsCoinStake() && !tx.IsCoinBase() && !tx.IsCoinAudit()) {
             	if (!tx.IsCoinAudit()) {
-            		if (!VerifyRingSignatureWithTxFee(tx))
+            		if (!VerifyRingSignatureWithTxFee(tx, chainActive.Tip()))
             			return state.DoS(100, error("AcceptToMemoryPool() : Ring Signature check for transaction %s failed",
             					tx.GetHash().ToString()),
             					REJECT_INVALID, "bad-ring-signature");
@@ -2141,8 +2162,8 @@ int64_t GetBlockValue(const CBlockIndex *ptip) {
     	pForkTip = chainActive.Tip();
     }
 
-	if (pForkTip->nHeight < Params().nLastPOWBlock) {
-		nSubsidy = 300000000 * COIN;
+	if (pForkTip->nHeight < Params().LAST_POW_BLOCK()) {
+		nSubsidy = 200000000 * COIN;
 	} else {
         nSubsidy = PoSBlockReward();
         nSubsidy += TeamRewards(pForkTip);
@@ -2886,7 +2907,7 @@ ConnectBlock(const CBlock &block, CValidationState &state, CBlockIndex *pindex, 
         if (!block.IsPoABlockByVersion() && !tx.IsCoinBase()) {
         	if (!tx.IsCoinStake()) {
         		if (!tx.IsCoinAudit()) {
-        			if (!VerifyRingSignatureWithTxFee(tx))
+        			if (!VerifyRingSignatureWithTxFee(tx, pindex))
         				return state.DoS(100, error("ConnectBlock() : Ring Signature check for transaction %s failed",
         						tx.GetHash().ToString()),
         						REJECT_INVALID, "bad-ring-signature");
@@ -4156,23 +4177,27 @@ bool AcceptBlockHeader(const CBlock &block, CValidationState &state, CBlockIndex
     uint256 hash = block.GetHash();
     BlockMap::iterator miSelf = mapBlockIndex.find(hash);
     CBlockIndex *pindex = NULL;
-
+    LogPrintf("\n%s: Block cache", __func__);
     // TODO : ENABLE BLOCK CACHE IN SPECIFIC CASES
     if (miSelf != mapBlockIndex.end()) {
         // Block header is already known.
         pindex = miSelf->second;
         if (ppindex)
             *ppindex = pindex;
+        if (!pindex) {
+        	mapBlockIndex.erase(hash);
+            return state.Invalid(error("%s : block is not found", __func__), 0, "not-found");
+        }
         if (pindex->nStatus & BLOCK_FAILED_MASK)
             return state.Invalid(error("%s : block is marked invalid", __func__), 0, "duplicate");
         return true;
     }
-
+    LogPrintf("\n%s: Block header", __func__);
     if (!CheckBlockHeader(block, state, false)) {
         LogPrintf("AcceptBlockHeader(): CheckBlockHeader failed \n");
         return false;
     }
-
+    LogPrintf("\n%s: get priveous block", __func__);
     // Get prev block index
     CBlockIndex *pindexPrev = NULL;
     if (hash != Params().HashGenesisBlock()) {
@@ -4202,6 +4227,10 @@ bool AcceptBlockHeader(const CBlock &block, CValidationState &state, CBlockIndex
 
     }
 
+    if (!pindexPrev)
+    	return state.DoS(0, error("%s : prev block %s not found", __func__, block.hashPrevBlock.ToString().c_str()),
+    	                             0, "bad-prevblk");
+    LogPrintf("\n%s: contextual", __func__);
     if (!ContextualCheckBlockHeader(block, state, pindexPrev))
         return false;
 
@@ -4217,7 +4246,7 @@ bool AcceptBlockHeader(const CBlock &block, CValidationState &state, CBlockIndex
 bool AcceptBlock(CBlock &block, CValidationState &state, CBlockIndex **ppindex, CDiskBlockPos *dbp,
                  bool fAlreadyCheckedBlock) {
     AssertLockHeld(cs_main);
-
+    LogPrintf("\nAccepting block");
     CBlockIndex *&pindex = *ppindex;
     // Get prev block index
     CBlockIndex *pindexPrev = NULL;
@@ -4246,7 +4275,7 @@ bool AcceptBlock(CBlock &block, CValidationState &state, CBlockIndex **ppindex, 
     }
     if (block.GetHash() != Params().HashGenesisBlock() && !CheckWork(block, pindexPrev))
         return false;
-
+    LogPrintf("\nAcceptingHeader block");
     if (!AcceptBlockHeader(block, state, &pindex))
         return false;
 
@@ -4345,7 +4374,6 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
     // Preliminary checks
     int64_t nStartTime = GetTimeMillis();
     bool checked = CheckBlock(*pblock, state);
-
     // ppcoin: check proof-of-stake
     // Limited duplicity on stake: prevents block flood attack
     // Duplicate stake allowed only when there is orphan child block
@@ -4358,7 +4386,8 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
     if (pblock->GetHash() != Params().HashGenesisBlock() && pfrom != NULL) {
         //if we get this far, check if the prev block is our prev block, if not then request sync and return false
         BlockMap::iterator mi = mapBlockIndex.find(pblock->hashPrevBlock);
-        if (mi == mapBlockIndex.end()) {
+        if (mi == mapBlockIndex.end() || (mi != mapBlockIndex.end() && mi->second == NULL)) {
+        	mapBlockIndex.erase(pblock->hashPrevBlock);
             pfrom->PushMessage("getblocks", chainActive.GetLocator(), uint256(0));
             return false;
         } else {
@@ -4405,6 +4434,8 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
         // If turned on Auto Combine will scan wallet for dust to combine
         if (pwalletMain->fCombineDust)
             pwalletMain->AutoCombineDust();
+
+        pwalletMain->resetPendingOutPoints();
     }
 
     //Block is accepted, let's update decoys pool
@@ -4432,14 +4463,14 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
     	if ((int)pblock->vtx.size() > userTxStartIdx) {
     		for (int i = userTxStartIdx; i < (int)pblock->vtx.size(); i++) {
     			for (int j = 0; j < (int)pblock->vtx[i].vout.size(); j++) {
-    				if ((rand() % 100) <= CWallet::PROBABILITY_NEW_COIN_SELECTED) {
+    				if ((secp256k1_rand32() % 100) <= CWallet::PROBABILITY_NEW_COIN_SELECTED) {
     					COutPoint newOutPoint(pblock->vtx[i].GetHash(), j);
     					if(std::find(pwalletMain->userDecoysPool.begin(), pwalletMain->userDecoysPool.end(), newOutPoint) != pwalletMain->userDecoysPool.end()) {
     					    continue;
     					}
     					//add new user transaction to the pool
     					if ((int32_t)pwalletMain->userDecoysPool.size() >= CWallet::MAX_DECOY_POOL) {
-    						int selected = rand() % CWallet::MAX_DECOY_POOL;
+    						int selected = secp256k1_rand32() % CWallet::MAX_DECOY_POOL;
     						pwalletMain->userDecoysPool[selected] = newOutPoint;
     					} else {
     						pwalletMain->userDecoysPool.push_back(newOutPoint);
@@ -4462,14 +4493,14 @@ bool ProcessNewBlock(CValidationState &state, CNode *pfrom, CBlock *pblock, CDis
 
     			for (int i = 0; i < (int)coinbase.vout.size(); i++) {
     				if (!coinbase.vout[i].IsNull() && !coinbase.vout[i].IsEmpty()) {
-    					if ((rand() % 100) <= CWallet::PROBABILITY_NEW_COIN_SELECTED) {
+    					if ((secp256k1_rand32() % 100) <= CWallet::PROBABILITY_NEW_COIN_SELECTED) {
     						COutPoint newOutPoint(coinbase.GetHash(), i);
     						if(std::find(pwalletMain->coinbaseDecoysPool.begin(), pwalletMain->coinbaseDecoysPool.end(), newOutPoint) != pwalletMain->coinbaseDecoysPool.end()) {
     							continue;
     						}
     						//add new coinbase transaction to the pool
     						if ((int)pwalletMain->coinbaseDecoysPool.size() >= CWallet::MAX_DECOY_POOL) {
-    							int selected = rand() % CWallet::MAX_DECOY_POOL;
+    							int selected = secp256k1_rand32() % CWallet::MAX_DECOY_POOL;
     							pwalletMain->coinbaseDecoysPool[selected] = newOutPoint;
     						} else {
     							pwalletMain->coinbaseDecoysPool.push_back(newOutPoint);

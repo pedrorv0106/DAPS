@@ -1,5 +1,6 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -180,7 +181,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle* networkStyle, QWidget* parent) : QMai
     createTrayIcon(networkStyle);
 
     // Status bar notification icons
-    QFrame* frameBlocks = new QFrame();
+    frameBlocks = new QFrame();
     frameBlocks->setContentsMargins(0, 0, 0, 0);
     frameBlocks->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
     QHBoxLayout* frameBlocksLayout = new QHBoxLayout(frameBlocks);
@@ -348,8 +349,8 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     quitAction->setStatusTip(tr("Quit application"));
     quitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
     quitAction->setMenuRole(QAction::QuitRole);
-    aboutAction = new QAction(networkStyle->getAppIcon(), tr("&About DAPScoin Core"), this);
-    aboutAction->setStatusTip(tr("Show information about DAPScoin Core"));
+    aboutAction = new QAction(networkStyle->getAppIcon(), tr("&About DAPScoin"), this);
+    aboutAction->setStatusTip(tr("Show information about DAPScoin"));
     aboutAction->setMenuRole(QAction::AboutRole);
 #if QT_VERSION < 0x050000
     aboutQtAction = new QAction(QIcon(":/trolltech/qmessagebox/images/qtlogo-64.png"), tr("About &Qt"), this);
@@ -366,9 +367,15 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     tabGroup->addAction(optionsAction);
 
     stakingAction = new QAction(QIcon(":/icons/options"), tr("&Staking"), this);
+    stakingAction->setText(tr("Staking Status"));
     stakingAction->setMenuRole(QAction::NoRole);
+    stakingState = new QLabel(this);
+    stakingState->setObjectName("stakingState");
     networkAction = new QAction(QIcon(":/icons/options"), tr("&Network"), this);
     networkAction->setMenuRole(QAction::NoRole);
+    networkAction->setText("Network Status");
+    connectionCount = new QLabel(this);
+    connectionCount->setObjectName("connectionCount");
 
     toggleHideAction = new QAction(networkStyle->getAppIcon(), tr("&Show / Hide"), this);
     toggleHideAction->setStatusTip(tr("Show or hide the main Window"));
@@ -430,7 +437,7 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
 
     showHelpMessageAction = new QAction(QApplication::style()->standardIcon(QStyle::SP_MessageBoxInformation), tr("&Command-line options"), this);
     showHelpMessageAction->setMenuRole(QAction::NoRole);
-    showHelpMessageAction->setStatusTip(tr("Show the DAPScoin Core help message to get a list with possible DAPScoin command-line options"));
+    showHelpMessageAction->setStatusTip(tr("Show the DAPScoin help message to get a list with possible DAPScoin command-line options"));
 
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
     connect(aboutAction, SIGNAL(triggered()), this, SLOT(aboutClicked()));
@@ -539,6 +546,7 @@ void BitcoinGUI::createToolBars()
 
         toolbar->setMovable(false); // remove unused icon in upper left corner
         overviewAction->setChecked(true);
+        toolbar->setStyleSheet("QToolBar{spacing:25px;}");
 
         // Create NavBar
         QToolBar* bottomToolbar = new QToolBar(this);
@@ -546,8 +554,13 @@ void BitcoinGUI::createToolBars()
         bottomToolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         bottomToolbar->setOrientation(Qt::Vertical);
         bottomToolbar->addAction(optionsAction);
+        bottomToolbar->addSeparator();
         bottomToolbar->addAction(stakingAction);
+        bottomToolbar->addWidget(stakingState);
         bottomToolbar->addAction(networkAction);
+        bottomToolbar->addWidget(connectionCount);
+        bottomToolbar->setStyleSheet("QToolBar{spacing:5px;}");
+        
         bottomToolbar->setObjectName("bottomToolbar");
 
         QHBoxLayout* layout = new QHBoxLayout(this);
@@ -686,7 +699,7 @@ void BitcoinGUI::createTrayIcon(const NetworkStyle* networkStyle)
 {
 #ifndef Q_OS_MAC
     trayIcon = new QSystemTrayIcon(this);
-    QString toolTip = tr("DAPScoin Core client") + " " + networkStyle->getTitleAddText();
+    QString toolTip = tr("DAPScoin client") + " " + networkStyle->getTitleAddText();
     trayIcon->setToolTip(toolTip);
     trayIcon->setIcon(networkStyle->getAppIcon());
     trayIcon->show();
@@ -895,7 +908,7 @@ void BitcoinGUI::setNumConnections(int count)
         break;
     }
     
-    networkAction->setText(tr("%n connections", "", count));
+    connectionCount->setText(tr("%n Active Connections", "", count));
     if (count < 1)
         networkAction->setIcon(QIcon(":icons/staking_disabled"));
     else
@@ -984,7 +997,7 @@ void BitcoinGUI::setNumBlocks(int count)
 
 void BitcoinGUI::message(const QString& title, const QString& message, unsigned int style, bool* ret)
 {
-    QString strTitle = tr("DAPScoin Core"); // default title
+    QString strTitle = tr("DAPScoin"); // default title
     // Default to information icon
     int nMBoxIcon = QMessageBox::Information;
     int nNotifyIcon = Notificator::Information;
@@ -1118,25 +1131,24 @@ void BitcoinGUI::setStakingStatus()
     if (pwalletMain) {
         fMultiSend = pwalletMain->isMultiSendEnabled();
         stkStatus = pwalletMain->ReadStakingStatus();
-        if(pwalletMain->walletStakingInProgress) {
-        	if (nLastCoinStakeSearchInterval == 0) {
-        		return;
-        	}
-        }
     }
 
     if (nLastCoinStakeSearchInterval || stkStatus) {
-        stakingAction->setText(tr("Staking"));
+        stakingState->setText(tr("Staking Enabled"));
         stakingAction->setIcon(QIcon(":/icons/staking_active"));
     } else {
-        stakingAction->setText(tr("Not staking"));
+        stakingState->setText(tr("Staking Disabled"));
         stakingAction->setIcon(QIcon(":/icons/staking_inactive"));
     }
 }
 void BitcoinGUI::setStakingInProgress(bool inProgress)
 {
 	if (inProgress) {
-		stakingAction->setText(tr("Staking In Progress"));
+        stakingState->setText(tr("Enabling Staking..."));
+        stakingAction->setIcon(QIcon(":/icons/staking_active"));
+	} else {
+        stakingState->setText(tr("Disabling Staking..."));
+        stakingAction->setIcon(QIcon(":/icons/staking_inactive"));
 	}
 }
 

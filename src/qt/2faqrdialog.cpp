@@ -2,6 +2,8 @@
 #include "ui_2faqrdialog.h"
 #include "receiverequestdialog.h"
 #include "guiconstants.h"
+#include "key.h"
+#include "pubkey.h"
 #include <string>
 #include <algorithm>
 
@@ -38,6 +40,9 @@ TwoFAQRDialog::TwoFAQRDialog(QWidget *parent) :
     connect(ui->btnCopy, SIGNAL(clicked()), this, SLOT(on_btnCopyURI_clicked()));
     connect(ui->btnNext, SIGNAL(clicked()), this, SLOT(accept()));
 	connect(ui->btnCancel, SIGNAL(clicked()), this, SLOT(reject()));
+
+    ui->label->setVisible(false);
+    ui->label_2->setVisible(false);
     update();
 }
 
@@ -53,15 +58,21 @@ void TwoFAQRDialog::setModel(WalletModel* model)
 
 void TwoFAQRDialog::update()
 {
-    CWalletDB walletdb(pwalletMain->strWalletFile);
-    CAccount account;
-    walletdb.ReadAccount("", account);
-    CBitcoinAddress address(account.vchPubKey.GetID());
+    CKey newKey;
+    newKey.MakeNewKey(true);
+
+    CPubKey pubKey;
+    pubKey = newKey.GetPubKey();
+
+    QString uri;
+    CBitcoinAddress address(pubKey.GetID());
     std::string addr = "";
     for (char c : address.ToString()) {
         if (!std::isdigit(c)) addr += c;
     }
-    QString uri;
+
+    pwalletMain->Write2FASecret(addr);
+
     uri.sprintf("otpauth://totp/DAPScoin:QT%20Wallet?secret=%s&issuer=dapscoin&algorithm=SHA1&digits=6&period=30", addr.c_str());
     ui->lblURI->setText(uri);
 
@@ -96,5 +107,6 @@ void TwoFAQRDialog::update()
 
 void TwoFAQRDialog::on_btnCopyURI_clicked()
 {
-    GUIUtil::setClipboard(ui->lblURI->text());
+    QString secret = QString::fromStdString(pwalletMain->Read2FASecret());
+    GUIUtil::setClipboard(secret);
 }

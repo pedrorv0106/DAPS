@@ -120,21 +120,20 @@ void SendCoinsDialog::on_sendButton_clicked(){
 
     send_address = recipient.address;
     send_amount = recipient.amount;
-    bool status = settings.value("2FA").toString() == "enabled";
+    bool status = pwalletMain->Read2FA();
     if (!status) {
         sendTx();
         return;
     }
-    
-    uint lastTime = settings.value("2FALastTime").toInt();
-    uint period = settings.value("2FAPeriod").toInt();
+    uint lastTime = pwalletMain->Read2FALastTime();
+    uint period = pwalletMain->Read2FAPeriod();
     QDateTime current = QDateTime::currentDateTime();
     uint diffTime = current.toTime_t() - lastTime;
     if (diffTime <= period * 24 * 60 * 60)
         sendTx();
     else {
         TwoFAConfirmDialog codedlg;
-        codedlg.setWindowTitle("2FACode verification");
+        codedlg.setWindowTitle("2FACode Verification");
         codedlg.setStyleSheet(GUIUtil::loadStyleSheet());
         connect(&codedlg, SIGNAL(finished (int)), this, SLOT(dialogIsFinished(int)));
         codedlg.exec();
@@ -152,18 +151,32 @@ void SendCoinsDialog::sendTx() {
             false
         );
     } catch (const std::exception& err) {
-        QMessageBox::warning(this, "Could not send", QString(err.what()));
+        QMessageBox txError;
+        txError.setText("Transaction creation error");
+        txError.setInformativeText(err.what());
+        txError.setStyleSheet(GUIUtil::loadStyleSheet());
+        txError.setStyleSheet("QMessageBox {messagebox-text-interaction-flags: 5;}");
+        txError.exec();
         return;
     }
 
     if (success){
-        QMessageBox txcomplete;
-        txcomplete.setText("Transaction initialized.");
-        txcomplete.setInformativeText(resultTx.GetHash().GetHex().c_str());
-        txcomplete.setStyleSheet(GUIUtil::loadStyleSheet());
-        txcomplete.setStyleSheet("QMessageBox {messagebox-text-interaction-flags: 5;}");
-        txcomplete.exec();
         WalletUtil::getTx(pwalletMain, resultTx.GetHash());
+        QString txhash = resultTx.GetHash().GetHex().c_str();
+        QMessageBox msgBox;
+        QPushButton *copyButton = msgBox.addButton(tr("Copy"), QMessageBox::ActionRole);
+        copyButton->setStyleSheet("background:transparent;");
+        copyButton->setIcon(QIcon(":/icons/editcopy"));
+        msgBox.setWindowTitle("Transaction Initialized");
+        msgBox.setText("Transaction initialized.\n\n" + txhash);
+        msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+        msgBox.setIcon(QMessageBox::Information);
+        msgBox.exec();
+
+        if (msgBox.clickedButton() == copyButton) {
+        //Copy txhash to clipboard
+        GUIUtil::setClipboard(txhash);
+        }
     }
 }
 

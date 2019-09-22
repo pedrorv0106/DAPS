@@ -1,6 +1,7 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -155,7 +156,7 @@ vector<unsigned char> ParseHexO(const UniValue &o, string strKey) {
 
 int ParseInt(const UniValue &o, string strKey) {
     const UniValue &v = find_value(o, strKey);
-    if (v.isNum())
+    if (!v.isNum())
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, " + strKey + "is not an int");
 
     return v.get_int();
@@ -163,7 +164,7 @@ int ParseInt(const UniValue &o, string strKey) {
 
 bool ParseBool(const UniValue& o, string strKey) {
     const UniValue& v = find_value(o, strKey);
-    if (v.isBool())
+    if (!v.isBool())
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, " + strKey + "is not a bool");
 
     return v.get_bool();

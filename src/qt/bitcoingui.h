@@ -128,6 +128,8 @@ private:
     QAction* showHelpMessageAction;
     QAction* multiSendAction;
     QFrame* frameBlocks;
+    QLabel *stakingState;
+    QLabel* connectionCount;
 
     QProgressDialog* progressDialog = nullptr;
 

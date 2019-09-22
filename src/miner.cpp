@@ -1,6 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -96,7 +97,7 @@ void UpdateTime(CBlockHeader* pblock, const CBlockIndex* pindexPrev)
 uint32_t GetListOfPoSInfo(uint32_t currentHeight, std::vector<PoSBlockSummary>& audits) {
 	//A PoA block should be mined only after at least 59 PoS blocks have not been audited
 	//Look for the previous PoA block
-	int nloopIdx = currentHeight;
+	uint32_t nloopIdx = currentHeight;
 	while (nloopIdx >= Params().START_POA_BLOCK()) {
 		if (chainActive[nloopIdx]->GetBlockHeader().IsPoABlockByVersion()) {
 			break;
@@ -114,7 +115,7 @@ uint32_t GetListOfPoSInfo(uint32_t currentHeight, std::vector<PoSBlockSummary>& 
         }
     } else {
         //Find the previous PoA block
-        int start = nloopIdx;
+        uint32_t start = nloopIdx;
         if (start > Params().START_POA_BLOCK()) {
             CBlockIndex* pblockindex = chainActive[start];
             CBlock block;

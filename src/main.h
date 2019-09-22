@@ -1,6 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -45,6 +46,7 @@
 #include "secp256k1_commitment.h"
 #include "secp256k1_generator.h"
 #include "secp256k1.h"
+#include "secp256k1-mw/src/hash_impl.h"
 
 class CBlockIndex;
 class CBlockTreeDB;
@@ -158,6 +160,8 @@ extern int64_t nLastCoinStakeSearchTime;
 extern int64_t nReserveBalance;
 extern const int MIN_RING_SIZE;
 extern const int MAX_RING_SIZE;
+extern const int MAX_TX_INPUTS;
+extern const int MIN_TX_INPUTS_FOR_SWEEPING;
 
 extern std::map<uint256, int64_t> mapRejectedBlocks;
 extern std::map<unsigned int, unsigned int> mapHashedBlocks;
@@ -189,7 +193,7 @@ secp256k1_context2* GetContext();
 secp256k1_scratch_space2* GetScratch();
 secp256k1_bulletproof_generators* GetGenerator();
 bool VerifyBulletProofAggregate(const CTransaction& tx);
-bool VerifyRingSignatureWithTxFee(const CTransaction& tx);
+bool VerifyRingSignatureWithTxFee(const CTransaction& tx, CBlockIndex* pindex);
 void DestroyContext();
 
 /** 

@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2013 The Bitcoin developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -94,6 +95,18 @@ public:
 
     bool WriteStakingStatus(bool status);
     bool ReadStakingStatus();
+
+    bool Write2FA(bool status);
+    bool Read2FA();
+
+    bool Write2FASecret(std::string secret);
+    std::string Read2FASecret();
+
+    bool Write2FAPeriod(int period);
+    int Read2FAPeriod();
+    
+    bool Write2FALastTime(uint64_t lastTime);
+    uint64_t Read2FALastTime();
 
     bool WriteScannedBlockHeight(int height);
     bool ReadScannedBlockHeight(int& height);

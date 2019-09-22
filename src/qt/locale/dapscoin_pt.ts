@@ -1263,8 +1263,8 @@
         <translation>Carteira esta bloqueada.</translation>
     </message>
     <message>
-        <source>Wallet needed to be rewritten: restart DAPScoin Core to complete</source>
-        <translation>Carteira precisa ser reescrita: reinicie o DAPScoin Core para completar.</translation>
+        <source>Wallet needed to be rewritten: restart DAPScoin to complete</source>
+        <translation>Carteira precisa ser reescrita: reinicie o DAPScoin para completar.</translation>
     </message>
     <message>
         <source>Wallet options:</source>

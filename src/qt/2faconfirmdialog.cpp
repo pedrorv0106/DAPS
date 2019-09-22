@@ -116,23 +116,14 @@ void TwoFAConfirmDialog::on_acceptCode()
     code.sprintf("%c%c%c%c%c%c", code1, code2, code3, code4, code5, code6);
 
     QString result = "";
-    CWalletDB walletdb(pwalletMain->strWalletFile);
-    CAccount account;
-    walletdb.ReadAccount("", account);
-    CBitcoinAddress address(account.vchPubKey.GetID());
-    std::string addr = "";
-    for (char c : address.ToString()) {
-        if (!std::isdigit(c)) addr += c;
-    }
-                
-    QString data;
-    data.sprintf("%s", addr.c_str());
-    result = QGoogleAuth::generatePin(data.toUtf8());
+    QString secret = QString::fromStdString(pwalletMain->Read2FASecret());
+    result = QGoogleAuth::generatePin(secret.toUtf8());
     
-    if (result != code)
+    if (result != code) {
+        QMessageBox::critical(this, tr("Wrong 2FA Code"),
+                tr("Incorrect 2FA code entered.\nPlease try again."));
         return;
-
-    settings.setValue("2FACode", code);
+    }
 
     accept();
 }

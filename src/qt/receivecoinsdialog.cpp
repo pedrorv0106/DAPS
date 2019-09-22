@@ -56,9 +56,11 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
         pwalletMain->CreatePrivacyAccount();
      }
 
-    QDoubleValidator *dblVal = new QDoubleValidator(0, Params().MAX_MONEY, 6, ui->reqAmount);
+    QLocale lo(QLocale::C);
+    lo.setNumberOptions(QLocale::RejectGroupSeparator);
+    QDoubleValidator *dblVal = new QDoubleValidator(0, Params().MAX_MONEY, 8, ui->reqAmount);
     dblVal->setNotation(QDoubleValidator::StandardNotation);
-    dblVal->setLocale(QLocale::C);
+    dblVal->setLocale(lo);
     ui->reqAmount->setValidator(dblVal);
 }
 
@@ -83,7 +85,6 @@ void ReceiveCoinsDialog::setModel(WalletModel* model)
         model->getRecentRequestsTableModel()->sort(RecentRequestsTableModel::Date, Qt::DescendingOrder);
         connect(model->getOptionsModel(), SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit()));
         updateDisplayUnit();
-
         loadAccount();
     }
 }
@@ -108,7 +109,6 @@ void ReceiveCoinsDialog::loadAccount() {
                 QString(addrList[i].substr(addrList[i].length() - 30, 30).c_str()));
         }
     }
-
     ui->reqAddress->addItems(stringsList);
     //Set lineEditAddress to Master Account address for copy to clipboard
     ui->lineEditAddress->setText(QString(addrList[0].substr(0, 30).c_str()) + "..." + 
