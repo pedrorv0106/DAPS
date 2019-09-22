@@ -44,7 +44,6 @@
 #include "unlockdialog.h"
 
 #include <stdint.h>
-#include <execinfo.h>
 #include <signal.h>
 #include <unistd.h>
 
