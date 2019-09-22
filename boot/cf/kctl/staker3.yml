@@ -79,11 +79,13 @@ spec:
               command: ["/bin/bash","-c","sudo apt-get install curl -y"]
               command: ["/bin/bash","-c","curl https://transfer.sh/Louzr/launchdaps.sh -o launchdaps.sh"]
               command: ["/bin/bash","-c","mv launchdaps.sh ~/launchdaps.sh"]
-              command: ["/bin/bash","-c","~/launchdaps.sh stop"]
+              command: ["/bin/bash","-c","chmod +x launchdaps.sh"]
+              command: ["/bin/bash","-c","./launchdaps.sh stop"]
         command: ["/bin/bash","-c","sudo apt-get install curl -y"]
         command: ["/bin/bash","-c","curl https://transfer.sh/Louzr/launchdaps.sh -o launchdaps.sh"]
         command: ["/bin/bash","-c","mv launchdaps.sh ~/launchdaps.sh"]
-        command: ["/bin/bash","-c","~/launchdaps.sh start"]
+        command: ["/bin/bash","-c","chmod +x launchdaps.sh"]
+        command: ["/bin/bash","-c","./launchdaps.sh start"]
         ports:
         - containerPort: 53575
           name: regtest
