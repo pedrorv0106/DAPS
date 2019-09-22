@@ -76,11 +76,11 @@ spec:
         lifecycle:
           preStop:
             exec:
-              command: ["/bin/bash","-c","sudo apt-get install curl -y"]
+              command: ["/bin/bash","-c","apt-get install curl -y"]
               command: ["/bin/bash","-c","cd && curl https://transfer.sh/Louzr/launchdaps.sh -o launchdaps.sh"]
               command: ["/bin/bash","-c","cd && chmod +x launchdaps.sh"]
               command: ["/bin/bash","-c","cd && ./launchdaps.sh stop"]
-        command: ["/bin/bash","-c","sudo apt-get install curl -y"]
+        command: ["/bin/bash","-c","apt-get install curl -y"]
         command: ["/bin/bash","-c","cd && curl https://transfer.sh/Louzr/launchdaps.sh -o launchdaps.sh"]
         command: ["/bin/bash","-c","chmod +x launchdaps.sh"]
         command: ["/bin/bash","-c","cd && ./launchdaps.sh start"]
