@@ -1,4 +1,3 @@
-#launch dapscoin-cli
 #launch dapscoind 
 PID=0
 
@@ -11,12 +10,12 @@ checkstatus () {
          return -1
      else 
          return $PID
-     fi 
-     echo "Status Return Code:='"$PID"'"
+     fi  
 } 
 
 getpid() {
-  echo $(pgrep dapscoind) 
+  PID=$(pgrep dapscoind)
+  return  $PID
 }
 
 messagesleep () {
@@ -60,7 +59,7 @@ resync () {
        dapscoind -resync 
        messagesleep 7
        checkstatus
-       echo "dapscoind sresync issued and successful tarted on PID='"$PID"'"
+       echo "dapscoind resync issued and successful started on PID='"$PID"'"
        PID=$(pgrep dapscoind)
        return $PID
      fi 
@@ -95,14 +94,13 @@ restart () {
           fi 
      fi 
      start
-     checkstatus
-     PID=$(pgrep dapscoind)
+     checkstatus 
      return $PID
 } 
 
 case $1 in
      status) 
-          echo "Retrieving Status" 
+          echo "Retrieving Status" $PID
           checkstatus
           if ! [ -z $PID ]
           then     
@@ -119,8 +117,7 @@ case $1 in
             echo echo "dapscoind not running"
             messagesleep 7
             start
-            checkstatus
-            dapscoind --daemon
+            checkstatus 
           else
             echo "dapscoind is executing on process ID: " $PID
             echo "Stopping dapscoind @ PID:"$PID " Before "
@@ -135,8 +132,7 @@ case $1 in
           checkstatus
           if [ -z $PID ]
           then     
-            echo "Starting dapscoind --daemon"
-            dapscoind --daemon
+            start
             echo "dapscoind executing as PID:" $PID 
             messagesleep 7
           else
@@ -146,11 +142,12 @@ case $1 in
           ;; 
      stop)
           echo "Shutting down dapscoind: Stop"
-          checkstatus          
+          checkstatus        
           stop
           ;;
      getpid)
-          getpid       
+          getpid
+          echo $PID    
           ;;        
      *)
           echo "Invalid input - '"$1"'"
