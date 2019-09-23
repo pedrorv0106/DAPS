@@ -149,6 +149,7 @@ void AskPassphraseDialog::accept()
             msgBox.setText("The passphrase entered for the wallet unlock was incorrect. Please try again.");
             msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
             msgBox.setIcon(QMessageBox::Critical);
+            msgBox.exec();
         } else {
             QDialog::accept(); // Success
         }
@@ -160,6 +161,7 @@ void AskPassphraseDialog::accept()
             msgBox.setText("The passphrase entered for the wallet decryption was incorrect. Please try again.");
             msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
             msgBox.setIcon(QMessageBox::Critical);
+            msgBox.exec();
         } else {
             QDialog::accept(); // Success
         }
