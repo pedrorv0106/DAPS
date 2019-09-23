@@ -151,12 +151,12 @@ void SendCoinsDialog::sendTx() {
             false
         );
     } catch (const std::exception& err) {
-        QMessageBox txError;
-        txError.setText("Transaction creation error");
-        txError.setInformativeText(err.what());
-        txError.setStyleSheet(GUIUtil::loadStyleSheet());
-        txError.setStyleSheet("QMessageBox {messagebox-text-interaction-flags: 5;}");
-        txError.exec();
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Transaction Creation Error");
+        msgBox.setText(err.what());
+        msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
         return;
     }
 
