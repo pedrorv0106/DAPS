@@ -18,7 +18,9 @@ RUN apt-get update && \
 #COPY binaries
 COPY dapscoind /usr/bin/dapscoind
 COPY dapscoin-cli /usr/bin/dapscoin-cli
-COPY launchdaps.sh /usr/bin/launchdaps.sh
+COPY launchdaps.sh ~/.dapscoin/launchdaps.sh
+
+RUN chmod +x ~/.dapscoin/launchdaps.sh
 
 EXPOSE 53575 53573 53572
 
