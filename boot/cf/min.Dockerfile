@@ -21,7 +21,7 @@ COPY launchdaps.sh /root/.dapscoin/launchdaps.sh
 
 RUN chmod +x /root/.dapscoin/launchdaps.sh && \
     ls -a /usr/bin && \
-    ls -a ~/.dapscoin/
+    ls -a /root/.dapscoin/
 
 EXPOSE 53575 53573 53572
 
