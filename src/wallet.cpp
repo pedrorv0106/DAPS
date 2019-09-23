@@ -290,7 +290,7 @@ bool CWallet::GetDecryptedHDChain(CHDChain& hdChainRet)
     return true;
 }
 
-void CWallet::GenerateNewHDChain()
+void CWallet::GenerateNewHDChain(std::string* phrase)
 {
     CHDChain newHdChain;
 
@@ -298,6 +298,11 @@ void CWallet::GenerateNewHDChain()
     std::string strMnemonic = GetArg("-mnemonic", "");
     // NOTE: default mnemonic passphrase is an empty string
     std::string strMnemonicPassphrase = GetArg("-mnemonicpassphrase", "");
+    
+    if (phrase) {
+        strMnemonic = *phrase;
+        strMnemonicPassphrase = "";
+    }
 
     SecureVector vchMnemonic(strMnemonic.begin(), strMnemonic.end());
     SecureVector vchMnemonicPassphrase(strMnemonicPassphrase.begin(), strMnemonicPassphrase.end());
@@ -307,6 +312,10 @@ void CWallet::GenerateNewHDChain()
 
     if (!SetHDChain(newHdChain, false))
         throw std::runtime_error(std::string(__func__) + ": SetHDChain failed");
+    
+    if (phrase) {
+        CreatePrivacyAccount(true);
+    }
 }
 
 bool CWallet::IsHDEnabled()
@@ -4724,7 +4733,7 @@ void CWallet::ReserveKeyFromKeyPool(int64_t& nIndex, CKeyPool& keypool)
     }
 }
 
-void CWallet::CreatePrivacyAccount() {
+void CWallet::CreatePrivacyAccount(bool forceNew) {
     {
         LOCK(cs_wallet);
         if (IsCrypted())
@@ -4738,12 +4747,12 @@ void CWallet::CreatePrivacyAccount() {
             CAccount viewAccount;
             walletdb.ReadAccount(viewAccountLabel, viewAccount);
             if (!viewAccount.vchPubKey.IsValid()) {
-                GetAccountAddress(this, viewAccountLabel, 0);
+                GetAccountAddress(this, viewAccountLabel, 0, forceNew);
             }
             CAccount spendAccount;
             walletdb.ReadAccount(spendAccountLabel, spendAccount);
             if (!spendAccount.vchPubKey.IsValid()) {
-                GetAccountAddress(this, spendAccountLabel, 1);
+                GetAccountAddress(this, spendAccountLabel, 1, forceNew);
             }
             if (viewAccount.vchPubKey.GetHex() == "" || spendAccount.vchPubKey.GetHex() == "") {
                 i++;

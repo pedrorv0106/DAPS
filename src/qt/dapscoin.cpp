@@ -21,6 +21,7 @@
 #include "splashscreen.h"
 #include "utilitydialog.h"
 
+#include "importorcreate.h"
 #include "winshutdownmonitor.h"
 
 #ifdef ENABLE_WALLET
@@ -42,9 +43,10 @@
 
 #include "encryptdialog.h"
 #include "unlockdialog.h"
+#include "entermnemonics.h"
 
-#include <stdint.h>
 #include <signal.h>
+#include <stdint.h>
 #include <unistd.h>
 
 #include <boost/filesystem/operations.hpp>
@@ -87,6 +89,8 @@ Q_IMPORT_PLUGIN(QCocoaIntegrationPlugin);
 #include <QTextCodec>
 #endif
 
+static bool needShowRecoveryDialog = false;
+
 // Declare meta types used for QMetaObject::invokeMethod
 Q_DECLARE_METATYPE(bool*)
 Q_DECLARE_METATYPE(CAmount)
@@ -94,6 +98,11 @@ Q_DECLARE_METATYPE(CAmount)
 static void InitMessage(const std::string& message)
 {
     LogPrintf("init message: %s\n", message);
+}
+
+static void ShowRecoveryDialog()
+{
+    needShowRecoveryDialog = true;
 }
 
 /*
@@ -275,8 +284,9 @@ void BitcoinCore::handleRunawayException(std::exception* e)
     emit runawayException(QString::fromStdString(strMiscWarning));
 }
 
-void BitcoinCore::registerNodeSignal() {
-    RegisterNodeSignals(GetNodeSignals()); 
+void BitcoinCore::registerNodeSignal()
+{
+    RegisterNodeSignals(GetNodeSignals());
 }
 
 void BitcoinCore::initialize()
@@ -473,9 +483,23 @@ void BitcoinApplication::initializeResult(int retval)
         bool walletUnlocked = false;
 #ifdef ENABLE_WALLET
         if (pwalletMain) {
+            if (needShowRecoveryDialog) {
+                ImportOrCreate importOrCreate;
+                importOrCreate.setStyleSheet(GUIUtil::loadStyleSheet());
+                importOrCreate.setWindowFlags(Qt::WindowStaysOnTopHint);
+                importOrCreate.exec();
+
+                if (importOrCreate.willRecover) {
+                    EnterMnemonics enterMnemonics;
+                    enterMnemonics.setStyleSheet(GUIUtil::loadStyleSheet());
+                    enterMnemonics.setWindowFlags(Qt::WindowStaysOnTopHint);
+                    enterMnemonics.exec();
+                }
+            }
+
             walletModel = new WalletModel(pwalletMain, optionsModel);
 
-            if (walletModel->getEncryptionStatus() == WalletModel::Locked) {  
+            if (walletModel->getEncryptionStatus() == WalletModel::Locked) {
                 UnlockDialog unlockdlg;
                 unlockdlg.setWindowTitle("Unlock Keychain Wallet");
                 unlockdlg.setModel(walletModel);
@@ -508,16 +532,16 @@ void BitcoinApplication::initializeResult(int retval)
             window, SLOT(message(QString, QString, unsigned int)));
         QTimer::singleShot(100, paymentServer, SLOT(uiReady()));
         if (pwalletMain) {
-        	if (!walletUnlocked && walletModel->getEncryptionStatus() == WalletModel::Unencrypted) {
-        		EncryptDialog dlg;
-        		dlg.setModel(walletModel);
-        		dlg.setWindowTitle("Encrypt Wallet");
-        		dlg.setStyleSheet(GUIUtil::loadStyleSheet());
-        		dlg.exec();
+            if (!walletUnlocked && walletModel->getEncryptionStatus() == WalletModel::Unencrypted) {
+                EncryptDialog dlg;
+                dlg.setModel(walletModel);
+                dlg.setWindowTitle("Encrypt Wallet");
+                dlg.setStyleSheet(GUIUtil::loadStyleSheet());
+                dlg.exec();
 
                 emit requestedRegisterNodeSignal();
                 walletModel->updateStatus();
-        	}
+            }
         }
 #endif
     } else {
@@ -546,17 +570,18 @@ WId BitcoinApplication::getMainWinId() const
 }
 
 #ifdef DEBUG_BACKTRACE
-void handler(int sig) {
-  void *array[50];
-  size_t size;
+void handler(int sig)
+{
+    void* array[50];
+    size_t size;
 
-  // get void*'s for all entries on the stack
-  size = backtrace(array, 50);
+    // get void*'s for all entries on the stack
+    size = backtrace(array, 50);
 
-  // print out all the frames to stderr
-  fprintf(stderr, "Error: signal %d:\n", sig);
-  backtrace_symbols_fd(array, size, STDERR_FILENO);
-  exit(1);
+    // print out all the frames to stderr
+    fprintf(stderr, "Error: signal %d:\n", sig);
+    backtrace_symbols_fd(array, size, STDERR_FILENO);
+    exit(1);
 }
 #endif
 
@@ -564,7 +589,7 @@ void handler(int sig) {
 int main(int argc, char* argv[])
 {
 #ifdef DEBUG_BACKTRACE
-    signal(SIGSEGV, handler);   // install our handler
+    signal(SIGSEGV, handler); // install our handler
 #endif
     SetupEnvironment();
 
@@ -627,7 +652,7 @@ int main(int argc, char* argv[])
     }
 #endif
 #endif
-    
+
     // Show help message immediately after parsing command-line options (for "-lang") and setting locale,
     // but before showing splash screen.
     if (mapArgs.count("-?") || mapArgs.count("-help") || mapArgs.count("-version")) {
@@ -721,6 +746,7 @@ int main(int argc, char* argv[])
 
     // Subscribe to global signals from core
     uiInterface.InitMessage.connect(InitMessage);
+    uiInterface.ShowRecoveryDialog.connect(ShowRecoveryDialog);
 
     if (GetBoolArg("-splash", true) && !GetBoolArg("-min", false))
         app.createSplashScreen(networkStyle.data());
