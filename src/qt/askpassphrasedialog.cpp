@@ -129,13 +129,21 @@ void AskPassphraseDialog::accept()
                             "</b></qt>");
                     QApplication::quit();
                 } else {
-                    QMessageBox::critical(this, tr("Wallet Encryption Failed"),
-                        tr("Wallet encryption failed due to an internal error. Your wallet was not encrypted."));
+                    QMessageBox msgBox;
+                    msgBox.setWindowTitle("Wallet Encryption Failed");
+                    msgBox.setText("Wallet encryption failed due to an internal error. Your wallet was not encrypted. Please try again.");
+                    msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+                    msgBox.setIcon(QMessageBox::Critical);
+                    msgBox.exec();
                 }
                 QDialog::accept(); // Success
             } else {
-                QMessageBox::critical(this, tr("Wallet Encryption Failed"),
-                    tr("The supplied passphrases do not match. Please try again."));
+                QMessageBox msgBox;
+                msgBox.setWindowTitle("Wallet Encryption Failed");
+                msgBox.setText("The supplied passphrases do not match. Please try again.");
+                msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+                msgBox.setIcon(QMessageBox::Critical);
+                msgBox.exec();
             }
         } else {
             QDialog::reject(); // Cancelled
