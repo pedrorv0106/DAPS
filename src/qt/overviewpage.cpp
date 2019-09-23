@@ -185,13 +185,13 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     //Cam: Remove immatureBalance from showing on qt wallet (as andrew says)
     ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, nSpendableDisplayed, false, BitcoinUnits::separatorAlways));
     ui->labelUnconfirmed->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, unconfirmedBalance, false, BitcoinUnits::separatorAlways));
-    if (walletStatus == WalletModel::Locked || walletStatus == WalletModel::UnlockedForAnonymizationOnly)
+    if (walletStatus == WalletModel::Locked || walletStatus == WalletModel::UnlockedForAnonymizationOnly) {
         ui->labelBalance_2->setText("Locked");
         ui->labelBalance->setText("Locked");
         ui->labelUnconfirmed->setText("Locked");
-    else
+    } else {
         ui->labelBalance_2->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance, false, BitcoinUnits::separatorAlways));
-
+    }
     QFont font = ui->labelBalance_2->font();
     font.setPointSize(15);
     font.setBold(true);
