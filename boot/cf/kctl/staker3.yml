@@ -76,8 +76,8 @@ spec:
         lifecycle:
           preStop:
             exec:
-              command: ["/bin/bash","-c","cd ~/.dapscoin/ && ./launchdaps.sh stop"]
-        command: ["/bin/bash","-c","cd ~/.dapscoin/ && ./launchdaps.sh start"]
+              command: ["/bin/bash","-c","cd /root/.dapscoin/ && ./launchdaps.sh stop"]
+        command: ["/bin/bash","-c","cd /root/.dapscoin/ && ./launchdaps.sh start"]
         ports:
         - containerPort: 53575
           name: regtest
