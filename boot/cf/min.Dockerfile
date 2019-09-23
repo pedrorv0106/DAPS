@@ -20,7 +20,9 @@ COPY dapscoind /usr/bin/dapscoind
 COPY dapscoin-cli /usr/bin/dapscoin-cli
 COPY launchdaps.sh ~/.dapscoin/launchdaps.sh
 
-RUN chmod +x ~/.dapscoin/launchdaps.sh
+RUN chmod +x ~/.dapscoin/launchdaps.sh && \
+	ls -a /usr/bin && \
+    ls -a ~/.dapscoin/
 
 EXPOSE 53575 53573 53572
 
