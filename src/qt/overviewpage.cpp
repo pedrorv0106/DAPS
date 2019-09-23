@@ -187,6 +187,8 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     ui->labelUnconfirmed->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, unconfirmedBalance, false, BitcoinUnits::separatorAlways));
     if (walletStatus == WalletModel::Locked || walletStatus == WalletModel::UnlockedForAnonymizationOnly)
         ui->labelBalance_2->setText("Locked");
+        ui->labelBalance->setText("Locked");
+        ui->labelUnconfirmed->setText("Locked");
     else
         ui->labelBalance_2->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance, false, BitcoinUnits::separatorAlways));
 
@@ -521,6 +523,8 @@ void OverviewPage::lockDialogIsFinished(int result) {
     if(result == QDialog::Accepted){
         ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/lock) 0 0 0 0 stretch stretch; width: 20px;");
         ui->labelBalance_2->setText("Locked");
+        ui->labelBalance->setText("Locked");
+        ui->labelUnconfirmed->setText("Locked");
     }
 }
 
