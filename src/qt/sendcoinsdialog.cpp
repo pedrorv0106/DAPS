@@ -72,8 +72,6 @@ void SendCoinsDialog::setModel(WalletModel* model)
 
         connect(model, SIGNAL(balanceChanged(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)), this,
             SLOT(setBalance(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)));
-
-        updateRingSize();
     }
 }
 
@@ -151,12 +149,12 @@ void SendCoinsDialog::sendTx() {
             false
         );
     } catch (const std::exception& err) {
-        QMessageBox txError;
-        txError.setText("Transaction creation error");
-        txError.setInformativeText(err.what());
-        txError.setStyleSheet(GUIUtil::loadStyleSheet());
-        txError.setStyleSheet("QMessageBox {messagebox-text-interaction-flags: 5;}");
-        txError.exec();
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Transaction Creation Error");
+        msgBox.setText(err.what());
+        msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
         return;
     }
 
@@ -199,11 +197,4 @@ SendCoinsEntry* SendCoinsDialog::addEntry()
         bar->setSliderPosition(bar->maximum());
     return entry;
 }
-
-void SendCoinsDialog::updateRingSize()
-{
-    QSettings settings;
-}
-
-
 
