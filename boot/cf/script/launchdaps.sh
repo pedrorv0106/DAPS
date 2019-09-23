@@ -2,8 +2,7 @@
 PID=0
 
 checkstatus () {
-     echo "Checking dapascoind status"
-     messagesleep 1
+     echo "Checking dapascoind status" 
      PID=$(pgrep dapscoind)
      if [ -z $PID ]
      then 
@@ -72,10 +71,11 @@ stop () {
           then     
             echo "Stop dapscoind PID='"$PID"'" 
             echo "Stop Execution : gracefully"
+            LastPID=$PID
             dapscoin-cli stop
             messagesleep 7
             checkstatus
-            echo "dapscoind successfully stopped @PID='"$PID"'" 
+            echo "dapscoind successfully stopped @PID='"$LastPID"'" 
           else
             echo "dapscoind is not executiing: "     
     fi
@@ -86,11 +86,12 @@ restart () {
     PID=$(pgrep dapscoind)
     if ! [ -z $PID ]
     then  
+          LastPID = $PID
           stop 
           checkstatus
           if  [ -z $PID ]
           then     
-             echo "dapscoind ending... :"      
+             echo "dapscoind ending... PID='"@LastPID"'"      
           fi 
      fi 
      start
@@ -100,19 +101,20 @@ restart () {
 
 case $1 in
      status) 
-          echo "Retrieving Status" $PID
           checkstatus
+          echo "Retrieving Status" $PID
           if ! [ -z $PID ]
           then     
-            echo "Normal execution and responsive PID='"$PID"'"
+            echo "Normal execution and responsive @PID='"$PID"'"
           else
-            echo "dapscoind is not executing :" $PID     
+            echo "dapscoind is not executing"     
           fi  
           ;;     
      restart) 
           echo "Restarting dapscoind"
           checkstatus
-          if ! [ -z $PID ]
+          LastPID=$PID
+          if [ -z $PID ]
           then     
             echo echo "dapscoind not running"
             messagesleep 7
@@ -120,11 +122,16 @@ case $1 in
             checkstatus 
           else
             echo "dapscoind is executing on process ID: " $PID
-            echo "Stopping dapscoind @ PID:"$PID " Before "
+            echo "Stopping dapscoind @PID:"$PID
             stop
             checkstatus
             messagesleep 7
-
+            echo "dapscoind @ PID:"$LastPID "Stopped"
+            start
+            checkstatus
+            messagesleep 7
+            echo "dapscoind is HALTED process ID: " $LastPID
+            echo "dapscoind is executing on new process ID: " $PID
           fi  
           ;;
      start)
