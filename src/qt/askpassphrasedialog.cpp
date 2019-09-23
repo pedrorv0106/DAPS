@@ -144,16 +144,22 @@ void AskPassphraseDialog::accept()
     case UnlockAnonymize:
     case Unlock:
         if (!model->setWalletLocked(false, oldpass, ui->anonymizationCheckBox->isChecked())) {
-            QMessageBox::critical(this, tr("Wallet Unlock Failed"),
-                tr("The passphrase entered for the wallet unlock was incorrect. Please try again."));
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("Wallet Unlock Failed");
+            msgBox.setText("The passphrase entered for the wallet unlock was incorrect. Please try again.");
+            msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+            msgBox.setIcon(QMessageBox::Critical);
         } else {
             QDialog::accept(); // Success
         }
         break;
     case Decrypt:
         if (!model->setWalletEncrypted(false, oldpass)) {
-            QMessageBox::critical(this, tr("Wallet Decryption Failed"),
-                tr("The passphrase entered for the wallet decryption was incorrect. Please try again."));
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("Wallet Decryption Failed");
+            msgBox.setText("The passphrase entered for the wallet decryption was incorrect. Please try again.");
+            msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+            msgBox.setIcon(QMessageBox::Critical);
         } else {
             QDialog::accept(); // Success
         }
