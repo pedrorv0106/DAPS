@@ -1,7 +1,8 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2018-2019 The DAPScoin Core developers
+// Copyright (c) 2015-2018 The PIVX developers
+// Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -39,7 +40,6 @@ public:
         SECRET_KEY,     // BIP16
         EXT_PUBLIC_KEY, // BIP32
         EXT_SECRET_KEY, // BIP32
-        EXT_COIN_TYPE,  // BIP44
 
         MAX_BASE58_TYPES
     };
@@ -56,7 +56,7 @@ public:
     int ToCheckBlockUpgradeMajority() const { return nToCheckBlockUpgradeMajority; }
     int MaxReorganizationDepth() const { return nMaxReorganizationDepth; }
 
-    /** Used if GenerateBitcoins is called with a negative number of threads */
+    /** Used if GenerateDapscoins is called with a negative number of threads */
     int DefaultMinerThreads() const { return nMinerThreads; }
     const CBlock& GenesisBlock() const { return genesis; }
     bool RequireRPCPassword() const { return fRequireRPCPassword; }
@@ -90,11 +90,11 @@ public:
     const std::vector<CAddress>& FixedSeeds() const { return vFixedSeeds; }
     virtual const Checkpoints::CCheckpointData& Checkpoints() const = 0;
     int PoolMaxTransactions() const { return nPoolMaxTransactions; }
-    std::string SporkKey() const { return strSporkKey; }
     std::string ObfuscationPoolDummyAddress() const { return strObfuscationPoolDummyAddress; }
     int64_t StartMasternodePayments() const { return nStartMasternodePayments; }
     int64_t Budget_Fee_Confirmations() const { return nBudget_Fee_Confirmations; }
     CBaseChainParams::Network NetworkID() const { return networkID; }
+    int ExtCoinType() const { return nExtCoinType; }
 
     /** Height or Time Based Activations **/
     int ModifierUpgradeBlock() const { return nModifierUpdateBlock; }
@@ -117,6 +117,7 @@ protected:
     //! Raw pub key bytes for the broadcast alert signing key.
     std::vector<unsigned char> vAlertPubKey;
     int nDefaultPort;
+    int nExtCoinType;
     uint256 bnProofOfWorkLimit;
     int nMaxReorganizationDepth;
     int nSubsidyHalvingInterval;
@@ -147,7 +148,6 @@ protected:
     bool fTestnetToBeDeprecatedFieldRPC;
     bool fHeadersFirstSyncingActive;
     int nPoolMaxTransactions;
-    std::string strSporkKey;
     std::string strObfuscationPoolDummyAddress;
     int64_t nStartMasternodePayments;
 	int64_t nBudget_Fee_Confirmations;

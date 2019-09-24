@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
@@ -20,7 +21,6 @@
 #include "keystore.h"
 #include "main.h"
 #include "miner.h"
-#include "spork.h"
 #include "sync.h"
 #include "ui_interface.h"
 #include "wallet.h"
@@ -41,9 +41,12 @@ using namespace std;
 WalletModel::WalletModel(CWallet* wallet, OptionsModel* optionsModel, QObject* parent) : QObject(parent), wallet(wallet), optionsModel(optionsModel), addressTableModel(0),
                                                                                          transactionTableModel(0),
                                                                                          recentRequestsTableModel(0),
-                                                                                         cachedBalance(0), cachedUnconfirmedBalance(0), cachedImmatureBalance(0),
+                                                                                         cachedBalance(0), cachedUnconfirmedBalance(0), cachedImmatureBalance(0), cachedWatchOnlyBalance(0),
+                                                                                         cachedWatchUnconfBalance(0), cachedWatchImmatureBalance(0),
                                                                                          cachedEncryptionStatus(Unencrypted),
-                                                                                         cachedNumBlocks(0)
+                                                                                         cachedNumBlocks(0), cachedTxLocks(0),
+                                                                                         txTableModel(0)
+
 {
     fHaveWatchOnly = wallet->HaveWatchOnly();
     fHaveMultiSig = wallet->HaveMultiSig();
@@ -55,6 +58,7 @@ WalletModel::WalletModel(CWallet* wallet, OptionsModel* optionsModel, QObject* p
 
     // This timer will be fired repeatedly to update the balance
     pollTimer = new QTimer(this);
+    pollTimer->setInterval(10);
     connect(pollTimer, SIGNAL(timeout()), this, SLOT(pollBalanceChanged()));
     pollTimer->start(MODEL_UPDATE_DELAY);
 
@@ -71,13 +75,7 @@ CAmount WalletModel::getBalance(const CCoinControl* coinControl) const
     if (coinControl) {
 
         {   
-            CAmount nBalance = 0;
-            std::vector<COutput> vCoins;
-            wallet->AvailableCoins(vCoins, true, coinControl);
-            BOOST_FOREACH (const COutput& out, vCoins)
-                if (out.fSpendable)
-                    nBalance += wallet->getCTxOutValue(*out.tx, out.tx->vout[out.i]);
-            return nBalance;
+            return wallet->GetBalance();
         }
     }
 
@@ -134,6 +132,12 @@ void WalletModel::updateStatus()
 
 void WalletModel::pollBalanceChanged()
 {
+    bool isJustUnlocked = false;
+	if (wallet->walletUnlockCountStatus == 1) {
+		emit WalletUnlocked();
+		wallet->walletUnlockCountStatus++;
+        isJustUnlocked = true;
+	}
     // Get required locks upfront. This avoids the GUI from getting stuck on
     // periodical polls if the core is holding the locks for a longer time -
     // for example, during a wallet rescan.
@@ -150,10 +154,14 @@ void WalletModel::pollBalanceChanged()
         // Balance and number of transactions might have changed
         cachedNumBlocks = chainActive.Height();
 
-        checkBalanceChanged();
+        isJustUnlocked = isJustUnlocked && checkBalanceChanged();
         if (transactionTableModel) {
             transactionTableModel->updateConfirmations();
         }
+    }
+
+    if (isJustUnlocked) {
+        emitBalanceChanged();
     }
 }
 
@@ -165,10 +173,10 @@ void WalletModel::emitBalanceChanged()
         cachedWatchOnlyBalance, cachedWatchUnconfBalance, cachedWatchImmatureBalance);
 }
 
-void WalletModel::checkBalanceChanged()
+bool WalletModel::checkBalanceChanged()
 {
     TRY_LOCK(cs_main, lockMain);
-    if (!lockMain) return;
+    if (!lockMain) return true;
     LogPrintf("\n%s:Checking balance changed\n", __func__);
     CAmount newBalance = getBalance();
     CAmount newUnconfirmedBalance = getUnconfirmedBalance();
@@ -195,7 +203,10 @@ void WalletModel::checkBalanceChanged()
         emit balanceChanged(newBalance, newUnconfirmedBalance, newImmatureBalance,
             0, 0, 0,
             newWatchOnlyBalance, newWatchUnconfBalance, newWatchImmatureBalance);
+        return false;
     }
+
+    return true;
 }
 
 void WalletModel::updateTransaction()
@@ -599,12 +610,12 @@ void WalletModel::listCoins(std::map<QString, std::vector<COutput> >& mapCoins) 
 
 bool WalletModel::isLockedCoin(uint256 hash, unsigned int n) const
 {
-    LOCK2(cs_main, wallet->cs_wallet);
+    LOCK2(cs_main, wallet->cs_wallet);   
     return wallet->IsLockedCoin(hash, n);
 }
 
 void WalletModel::lockCoin(COutPoint& output)
-{
+{   
     LOCK2(cs_main, wallet->cs_wallet);
     wallet->LockCoin(output);
 }
@@ -650,26 +661,48 @@ bool WalletModel::isMine(CBitcoinAddress address)
     return IsMine(*wallet, address.Get());
 }
 
-QStringList WalletModel::getStakingStatusError()
+StakingStatusError WalletModel::getStakingStatusError(QString& error)
 {
-    QStringList errors;
     // int timeRemaining = (1471482000 - chainActive.Tip()->nTime) / (60 * 60); //time remaining in hrs
-    if (1471482000 > chainActive.Tip()->nTime)
-        errors.push_back(QString(tr("Chain has not matured. Hours remaining: ")) + QString((1471482000 - chainActive.Tip()->nTime) / (60 * 60)));
-    if (vNodes.empty())
-        errors.push_back(QString(tr("No peer connections. Please check network.")));
-    if (!pwalletMain->MintableCoins() || nReserveBalance > pwalletMain->GetBalance())
-        errors.push_back(QString(tr("Not enough mintable coins. Send coins to this wallet or if you have coins already, wait a maximum of 1h to be able to stake.")));
-    return errors;
+    if (1471482000 > chainActive.Tip()->nTime) {
+        error = "Chain has not matured.\nHours remaining: " + QString((1471482000 - chainActive.Tip()->nTime) / (60 * 60));
+        return StakingStatusError::DEFAULT;
+    } else if (vNodes.empty()) {
+        error = "No peer connections.\nPlease check network settings.";
+        return StakingStatusError::DEFAULT;
+    } else {
+    	bool fMintable = pwalletMain->MintableCoins();
+    	CAmount balance = pwalletMain->GetBalance();
+    	if (!fMintable || nReserveBalance > balance) {
+    		if (balance < CWallet::MINIMUM_STAKE_AMOUNT + 10*COIN) {
+    			error = "\nBalance is under the minimum 400,000 staking threshold.\nPlease send more DAPS to this wallet.\n";
+    			return StakingStatusError::DEFAULT;
+    		}
+    		if (nReserveBalance > balance || (balance > nReserveBalance && balance - nReserveBalance < CWallet::MINIMUM_STAKE_AMOUNT)) {
+    			error = "Reserve balance is too high.\nPlease lower it in order to turn staking on.";
+    			return StakingStatusError::RESERVE_TOO_HIGH;
+    		}
+			if (!fMintable) {
+				if (balance > CWallet::MINIMUM_STAKE_AMOUNT) {
+					//10 is to cover transaction fees
+					if (balance >= CWallet::MINIMUM_STAKE_AMOUNT + 10*COIN) {
+						error = "Not enough mintable coins.\nDo you want to merge & make a sent-to-yourself transaction to make the wallet stakable?";
+						return StakingStatusError::UTXO_UNDER_THRESHOLD;
+					}
+				}
+			}
+		}
+    }
+    return StakingStatusError::NONE;
 }
 
 void WalletModel::generateCoins(bool fGenerate, int nGenProcLimit)
 {
-    GenerateBitcoins(fGenerate, pwalletMain, nGenProcLimit);
+    GenerateDapscoins(fGenerate, pwalletMain, nGenProcLimit);
     if (false /*if regtest*/ && fGenerate) {
         //regtest generate
     } else {
-        GenerateBitcoins(fGenerate, pwalletMain, nGenProcLimit);
+        GenerateDapscoins(fGenerate, pwalletMain, nGenProcLimit);
     }
 }
 
@@ -690,13 +723,17 @@ std::map<QString, QString> getTx(CWallet* wallet, uint256 hash)
 
 vector<std::map<QString, QString> > getTXs(CWallet* wallet)
 {
-    std::map<uint256, CWalletTx> txMap = wallet->mapWallet;
-    vector<std::map<QString, QString> > txs;
-    for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
-    	if (tx->second.GetDepthInMainChain() > 0) {
-    		txs.push_back(getTx(wallet, tx->second));
-    	}
-    }
+	vector<std::map<QString, QString> > txs;
+	if (!wallet || wallet->IsLocked()) return txs;
+	std::map<uint256, CWalletTx> txMap = wallet->mapWallet;
+	{
+		LOCK2(cs_main, wallet->cs_wallet);
+		for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
+			if (tx->second.GetDepthInMainChain() > 0) {
+				txs.push_back(getTx(wallet, tx->second));
+			}
+		}
+	}
 
     return txs;
 }
@@ -707,33 +744,36 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
     // get stx amount
     CAmount totalamount = CAmount(0);
     CAmount totalIn = 0;
-    for (CTxIn in: tx.vin) {
-    	COutPoint prevout = wallet->findMyOutPoint(in);
-        map<uint256, CWalletTx>::const_iterator mi = wallet->mapWallet.find(prevout.hash);
-        if (mi != wallet->mapWallet.end()) {
-            const CWalletTx& prev = (*mi).second;
-            if (prevout.n < prev.vout.size()) {
-                if (wallet->IsMine(prev.vout[prevout.n])) {
-                    CAmount decodedAmount = 0;
-                    CKey blind;
-                    pwalletMain->RevealTxOutAmount(prev, prev.vout[prevout.n], decodedAmount, blind);
-                    totalIn += decodedAmount;
-                }
-            }
-        }
+    if (wallet && !wallet->IsLocked()) {
+    	for (CTxIn in: tx.vin) {
+    		COutPoint prevout = wallet->findMyOutPoint(in);
+    		map<uint256, CWalletTx>::const_iterator mi = wallet->mapWallet.find(prevout.hash);
+    		if (mi != wallet->mapWallet.end()) {
+    			const CWalletTx& prev = (*mi).second;
+    			if (prevout.n < prev.vout.size()) {
+    				if (wallet->IsMine(prev.vout[prevout.n])) {
+    					CAmount decodedAmount = 0;
+    					CKey blind;
+    					pwalletMain->RevealTxOutAmount(prev, prev.vout[prevout.n], decodedAmount, blind);
+    					totalIn += decodedAmount;
+    				}
+    			}
+    		}
+    	}
     }
     CAmount firstOut = 0;
-    for (CTxOut out: tx.vout){
-        CAmount vamount;
-        CKey blind;
-        if (wallet->IsMine(out) && wallet->RevealTxOutAmount(tx,out,vamount, blind)) {
-        	if (vamount != 0 && firstOut == 0) {
-        		firstOut = vamount;
-        	}
-            totalamount+=vamount;   //this is the total output
-        }
+    if (wallet && !wallet->IsLocked()) {
+		for (CTxOut out: tx.vout){
+			CAmount vamount;
+			CKey blind;
+			if (wallet->IsMine(out) && wallet->RevealTxOutAmount(tx,out,vamount, blind)) {
+				if (vamount != 0 && firstOut == 0) {
+					firstOut = vamount;
+				}
+				totalamount+=vamount;   //this is the total output
+			}
+		}
     }
-
     QList<TransactionRecord> decomposedTx = TransactionRecord::decomposeTransaction(wallet, tx);
     std::string txHash = tx.GetHash().GetHex();
     QList<QString> addressBook = getAddressBookData(wallet);
@@ -754,11 +794,11 @@ std::map<QString, QString> getTx(CWallet* wallet, CWalletTx tx)
         txData["date"] = QString(GUIUtil::dateTimeStr(TxRecord.time));
         // if address is in book, use data from book, else use data from transaction
         txData["address"]=""; 
-        for (QString addressBookEntry : addressBook)
-            if (addressBookEntry.contains(TxRecord.address.c_str())) {
-                txData["address"] = addressBookEntry;
-                wallet->addrToTxHashMap[addressBookEntry.toStdString()] = txHash;
-            }
+//        for (QString addressBookEntry : addressBook)
+//            if (addressBookEntry.contains(TxRecord.address.c_str())) {
+//                txData["address"] = addressBookEntry;
+//                wallet->addrToTxHashMap[addressBookEntry.toStdString()] = txHash;
+//            }
         if (!txData["address"].length()) {
             txData["address"] = QString(TxRecord.address.c_str());
             wallet->addrToTxHashMap[TxRecord.address] = txHash;

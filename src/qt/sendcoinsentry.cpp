@@ -1,5 +1,6 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -43,13 +44,12 @@ SendCoinsEntry::SendCoinsEntry(QWidget* parent) : QStackedWidget(parent),
     //Cam: Hide address book button
     ui->addressBookButton->setVisible(false);
 
-    QDoubleValidator *dblVal = new QDoubleValidator(0, Params().MAX_MONEY, 6, ui->payAmount);
+    QLocale lo(QLocale::C);
+    lo.setNumberOptions(QLocale::RejectGroupSeparator);
+    QDoubleValidator *dblVal = new QDoubleValidator(0, Params().MAX_MONEY, 8, ui->payAmount);
     dblVal->setNotation(QDoubleValidator::StandardNotation);
-    dblVal->setLocale(QLocale::C);
+    dblVal->setLocale(lo);
     ui->payAmount->setValidator(dblVal);
-
-
-    //place holder text for payAmount
 }
 
 SendCoinsEntry::~SendCoinsEntry()
@@ -57,11 +57,11 @@ SendCoinsEntry::~SendCoinsEntry()
     delete ui;
 }
 
-void SendCoinsEntry::on_pasteButton_clicked()
+/*void SendCoinsEntry::on_pasteButton_clicked()
 {
     // Paste text from clipboard into recipient field
     ui->payTo->setText(QApplication::clipboard()->text());
-}
+}*/
 
 void SendCoinsEntry::on_addressBookButton_clicked()
 {

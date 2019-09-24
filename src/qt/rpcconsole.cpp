@@ -1,5 +1,6 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -17,7 +18,7 @@
 #include "rpcserver.h"
 #include "util.h"
 
-#include "json/json_spirit_value.h"
+#include <univalue.h>
 
 #include <openssl/crypto.h>
 
@@ -32,6 +33,7 @@
 #include <QSignalMapper>
 #include <QThread>
 #include <QTime>
+#include <QTimer>
 #include <QStringList>
 
 #if QT_VERSION < 0x050000
@@ -77,6 +79,40 @@ public slots:
 
 signals:
     void reply(int category, const QString& command);
+};
+
+
+/** Class for handling RPC timers
+ * (used for e.g. re-locking the wallet after a timeout)
+ */
+class QtRPCTimerBase: public QObject, public RPCTimerBase
+{
+    Q_OBJECT
+public:
+    QtRPCTimerBase(boost::function<void(void)>& func, int64_t millis):
+            func(func)
+    {
+        timer.setSingleShot(true);
+        connect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
+        timer.start(millis);
+    }
+    ~QtRPCTimerBase() {}
+private slots:
+            void timeout() { func(); }
+private:
+    QTimer timer;
+    boost::function<void(void)> func;
+};
+
+class QtRPCTimerInterface: public RPCTimerInterface
+{
+public:
+    ~QtRPCTimerInterface() {}
+    const char *Name() { return "Qt"; }
+    RPCTimerBase* NewTimer(boost::function<void(void)>& func, int64_t millis)
+    {
+        return new QtRPCTimerBase(func, millis);
+    }
 };
 
 #include "rpcconsole.moc"
@@ -192,20 +228,20 @@ void RPCExecutor::request(const QString& command)
         std::string strPrint;
         // Convert argument list to JSON objects in method-dependent way,
         // and pass it along with the method name to the dispatcher.
-        json_spirit::Value result = tableRPC.execute(
+        UniValue result = tableRPC.execute(
             args[0],
             RPCConvertValues(args[0], std::vector<std::string>(args.begin() + 1, args.end())));
 
         // Format result reply
-        if (result.type() == json_spirit::null_type)
+        if (result.isNull())
             strPrint = "";
-        else if (result.type() == json_spirit::str_type)
+        else if (result.isStr())
             strPrint = result.get_str();
         else
-            strPrint = write_string(result, true);
+            strPrint = result.write(2);
 
         emit reply(RPCConsole::CMD_REPLY, QString::fromStdString(strPrint));
-    } catch (json_spirit::Object& objError) {
+    } catch (UniValue& objError) {
         try // Nice formatting for standard-format error
         {
             int code = find_value(objError, "code").get_int();
@@ -213,7 +249,7 @@ void RPCExecutor::request(const QString& command)
             emit reply(RPCConsole::CMD_ERROR, QString::fromStdString(message) + " (code " + QString::number(code) + ")");
         } catch (std::runtime_error&) // raised when converting to invalid type, i.e. missing code or message
         {                             // Show raw JSON object
-            emit reply(RPCConsole::CMD_ERROR, QString::fromStdString(write_string(json_spirit::Value(objError), false)));
+            emit reply(RPCConsole::CMD_ERROR, QString::fromStdString(objError.write()));
         }
     } catch (std::exception& e) {
         emit reply(RPCConsole::CMD_ERROR, QString("Error: ") + QString::fromStdString(e.what()));
@@ -260,6 +296,9 @@ RPCConsole::RPCConsole(QWidget* parent) : QDialog(parent),
     ui->label_berkeleyDBVersion->hide();
     ui->berkeleyDBVersion->hide();
 #endif
+    // Register RPC timer interface
+    rpcTimerInterface = new QtRPCTimerInterface();
+    RPCRegisterTimerInterface(rpcTimerInterface);
 
     startExecutor();
     setTrafficGraphRange(INITIAL_TRAFFIC_GRAPH_MINS);
@@ -273,6 +312,10 @@ RPCConsole::~RPCConsole()
 {
     GUIUtil::saveWindowGeometry("nRPCConsoleWindow", this);
     emit stopExecutor();
+    delete peersTableContextMenu;
+    delete banTableContextMenu;
+    RPCUnregisterTimerInterface(rpcTimerInterface);
+    delete rpcTimerInterface;
     delete ui;
 }
 

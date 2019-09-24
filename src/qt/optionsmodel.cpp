@@ -1,5 +1,6 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -72,11 +73,6 @@ void OptionsModel::Init()
         settings.setValue("fCoinControlFeatures", false);
     fCoinControlFeatures = settings.value("fCoinControlFeatures", false).toBool();
 
-    if (!settings.contains("nAnonymizeDapscoinAmount"))
-        settings.setValue("nAnonymizeDapscoinAmount", 1000);
-
-    nAnonymizeDapscoinAmount = settings.value("nAnonymizeDapscoinAmount").toLongLong();
-
     if (!settings.contains("fShowMasternodesTab"))
         settings.setValue("fShowMasternodesTab", masternodeConfig.getCount());
 
@@ -133,23 +129,12 @@ void OptionsModel::Init()
         settings.setValue("digits", "2");
     if (!settings.contains("theme"))
         settings.setValue("theme", "dark");
-    if (!settings.contains("2FA"))
-        settings.setValue("2FA", "disabled");
-    if (!settings.contains("2FACode"))
-        settings.setValue("2FACode", "");
-    if (!settings.contains("2FAPeriod"))
-        settings.setValue("2FAPeriod", 1);
-    if (!settings.contains("2FALastTime"))
-        settings.setValue("2FALastTime", 0);
     if (!settings.contains("fCSSexternal"))
         settings.setValue("fCSSexternal", false);
     if (!settings.contains("language"))
         settings.setValue("language", "");
     if (!SoftSetArg("-lang", settings.value("language").toString().toStdString()))
         addOverriddenOption("-lang");
-
-    if (settings.contains("nAnonymizeDapscoinAmount"))
-        SoftSetArg("-anonymizedapscoinamount", settings.value("nAnonymizeDapscoinAmount").toString().toStdString());
 
     language = settings.value("language").toString();
 }
@@ -219,14 +204,6 @@ QVariant OptionsModel::data(const QModelIndex& index, int role) const
             return settings.value("digits");
         case Theme:
             return settings.value("theme");
-        case TwoFA:
-            return settings.value("2FA");
-        case TwoFACode:
-            return settings.value("2FACode");
-        case TwoFAPeriod:
-            return settings.value("2FAPeriod");
-        case TwoFALastTime:
-            return settings.value("2FALastTime");
         case Language:
             return settings.value("language");
         case CoinControlFeatures:
@@ -235,8 +212,6 @@ QVariant OptionsModel::data(const QModelIndex& index, int role) const
             return settings.value("nDatabaseCache");
         case ThreadsScriptVerif:
             return settings.value("nThreadsScriptVerif");
-        case AnonymizeDapscoinAmount:
-            return QVariant(nAnonymizeDapscoinAmount);
         case Listen:
             return settings.value("fListen");
         default:
@@ -334,40 +309,11 @@ bool OptionsModel::setData(const QModelIndex& index, const QVariant& value, int 
                 setRestartRequired(true);
             }
             break;
-        case TwoFA:
-            if (settings.value("2FA") != value) {
-                settings.setValue("2FA", value);
-                setRestartRequired(true);
-            }
-            break;
-        case TwoFACode:
-            if (settings.value("2FACode") != value) {
-                settings.setValue("2FACode", value);
-                setRestartRequired(true);
-            }
-            break;
-        case TwoFAPeriod:
-            if (settings.value("2FAPeriod") != value) {
-                settings.setValue("2FAPeriod", value);
-                setRestartRequired(true);
-            }
-            break;
-        case TwoFALastTime:
-            if (settings.value("2FALastTime") != value) {
-                settings.setValue("2FALastTime", value);
-                setRestartRequired(true);
-            }
-            break;
         case Language:
             if (settings.value("language") != value) {
                 settings.setValue("language", value);
                 setRestartRequired(true);
             }
-            break;
-        case AnonymizeDapscoinAmount:
-            nAnonymizeDapscoinAmount = value.toInt();
-            settings.setValue("nAnonymizeDapscoinAmount", nAnonymizeDapscoinAmount);
-            emit anonymizeDapscoinAmountChanged(nAnonymizeDapscoinAmount);
             break;
         case CoinControlFeatures:
             fCoinControlFeatures = value.toBool();

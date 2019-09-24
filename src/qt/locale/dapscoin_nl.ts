@@ -300,7 +300,7 @@
     </message>
     <message>
         <source>Enter the BIP 38 encrypted private key. Enter the passphrase in the middle box. Click Decrypt Key to compute the private key. After the key is decrypted, clicking 'Import Address' will add this private key to the wallet.</source>
-        <translation>Voer de BIP 38 versleutelde geheime sleutel in. Voer het wachtwoord in, in het middelste veld. Druk op Ontsleutelen Sleutel om de geheime sleutel te berekenen.  Nadat de geheime sleutel is ontsleuteld, zal het klikken op 'Adres Importeren' de geheime sleutel toevoegen aan de portemonnee.</translation>
+        <translation>Voer de BIP 38 versleutelde geheime sleutel in. Voer het wachtwoord in, in het middelste veld. Druk op Ontsleutelen Sleutel om de geheime sleutel te berekenen.  Nadat de geheime sleutel is ontsleuteld, zal het klikken op 'Adres Importeren' de geheime sleutel toevoegen aan de portemonnee.</translation>
     </message>
     <message>
         <source>The DAPScoin address the message was signed with</source>
@@ -602,7 +602,7 @@
         <translation>Tabblad werkbalk</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
+        <source>DAPScoin</source>
         <translation>DAPScoin Kern</translation>
     </message>
     <message>
@@ -626,11 +626,11 @@
         <translation>Bekijk masternodes</translation>
     </message>
     <message>
-        <source>&amp;About DAPScoin Core</source>
+        <source>&amp;About DAPScoin</source>
         <translation>&amp;Over DAPScoin Kern</translation>
     </message>
     <message>
-        <source>Show information about DAPScoin Core</source>
+        <source>Show information about DAPScoin</source>
         <translation>Toon informatie over DAPScoin Kern</translation>
     </message>
     <message>
@@ -686,12 +686,12 @@
         <translation>Block verkenner venster</translation>
     </message>
     <message>
-        <source>Show the DAPScoin Core help message to get a list with possible DAPScoin command-line options</source>
-        <translation>Toon het DAPScoin Core help bericht om een ​​lijst te krijgen met mogelijke DAPScoin command line opties</translation>
+        <source>Show the DAPScoin help message to get a list with possible DAPScoin command-line options</source>
+        <translation>Toon het DAPScoin help bericht om een ​​lijst te krijgen met mogelijke DAPScoin command line opties</translation>
     </message>
     <message>
-        <source>DAPScoin Core client</source>
-        <translation>DAPScoin Core client</translation>
+        <source>DAPScoin client</source>
+        <translation>DAPScoin client</translation>
     </message>
     <message numerus="yes">
         <source>%n active connection(s) to DAPScoin network</source>
@@ -1176,7 +1176,7 @@ MultiSend: %1</translation>
         <translation>versie</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
+        <source>DAPScoin</source>
         <translation>DAPScoin Kern</translation>
     </message>
     <message>
@@ -1184,8 +1184,8 @@ MultiSend: %1</translation>
         <translation>(%1-bit)</translation>
     </message>
     <message>
-        <source>About DAPScoin Core</source>
-        <translation>Over DAPScoin Core</translation>
+        <source>About DAPScoin</source>
+        <translation>Over DAPScoin</translation>
     </message>
     <message>
         <source>Command-line options</source>
@@ -1223,16 +1223,16 @@ MultiSend: %1</translation>
         <translation>Welkom</translation>
     </message>
     <message>
-        <source>Welcome to DAPScoin Core.</source>
-        <translation>Welkom bij DAPScoin Core</translation>
+        <source>Welcome to DAPScoin.</source>
+        <translation>Welkom bij DAPScoin</translation>
     </message>
     <message>
-        <source>As this is the first time the program is launched, you can choose where DAPScoin Core will store its data.</source>
-        <translation>Aangezien dit de eerste keer is dat het programma is gestart, kun je kiezen waar DAPScoin Core zijn gegevens opslaat.</translation>
+        <source>As this is the first time the program is launched, you can choose where DAPScoin will store its data.</source>
+        <translation>Aangezien dit de eerste keer is dat het programma is gestart, kun je kiezen waar DAPScoin zijn gegevens opslaat.</translation>
     </message>
     <message>
-        <source>DAPScoin Core will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
-        <translation>DAPScoin Core zal een kopie van de DAPScoin blockchain downloaden en opslaan. Tenminste %1GB aan data zal worden opgeslagen in deze map en het zal over de tijd groeien. De portemonnee wordt ook in deze map opgeslagen.</translation>
+        <source>DAPScoin will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
+        <translation>DAPScoin zal een kopie van de DAPScoin blockchain downloaden en opslaan. Tenminste %1GB aan data zal worden opgeslagen in deze map en het zal over de tijd groeien. De portemonnee wordt ook in deze map opgeslagen.</translation>
     </message>
     <message>
         <source>Use the default data directory</source>
@@ -1243,7 +1243,7 @@ MultiSend: %1</translation>
         <translation>Gebruik een aangepaste data directory:</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
+        <source>DAPScoin</source>
         <translation>DAPScoin Kern</translation>
     </message>
     <message>
@@ -1382,7 +1382,7 @@ MultiSend: %1</translation>
     </message>
     <message>
         <source>Enter Address to Send to</source>
-        <translation>Vul het verzendadres in</translation>
+        <translation>Vul het verzendadres in</translation>
     </message>
     <message>
         <source>MultiSend allows you to automatically send up to 100% of your stake or masternode reward to a list of other DAPScoin addresses after it matures.
@@ -1701,7 +1701,7 @@ Controleer het adres alsjeblieft en probeer het opnieuw.</translation>
     </message>
     <message>
         <source>The user interface language can be set here. This setting will take effect after restarting DAPScoin.</source>
-        <translation>De gebruikersinterface taal kan hier ingesteld worden. Deze instelling zal uitgevoerd na herstart van DAPScoin.</translation>
+        <translation>De gebruikersinterface taal kan hier ingesteld worden. Deze instelling zal uitgevoerd na herstart van DAPScoin.</translation>
     </message>
     <message>
         <source>Language missing or translation incomplete? Help contributing translations here:
@@ -3448,8 +3448,8 @@ Wees alsjeblieft geduldig...</translation>
 <context>
     <name>ShutdownWindow</name>
     <message>
-        <source>DAPScoin Core is shutting down...</source>
-        <translation>DAPScoin Core is aan het afsluiten...</translation>
+        <source>DAPScoin is shutting down...</source>
+        <translation>DAPScoin is aan het afsluiten...</translation>
     </message>
     <message>
         <source>Do not shut down the computer until this window disappears.</source>
@@ -3598,7 +3598,7 @@ Wees alsjeblieft geduldig...</translation>
 <context>
     <name>SplashScreen</name>
     <message>
-        <source>DAPScoin Core</source>
+        <source>DAPScoin</source>
         <translation>DAPScoin Kern</translation>
     </message>
     <message>
@@ -3614,7 +3614,7 @@ Wees alsjeblieft geduldig...</translation>
         <translation>De Dash Kernontwikkelaars</translation>
     </message>
     <message>
-        <source>The DAPScoin Core developers</source>
+        <source>The DAPScoin developers</source>
         <translation>De DAPScoin Kernontwikkelaars</translation>
     </message>
     <message>
@@ -4271,8 +4271,8 @@ Wees alsjeblieft geduldig...</translation>
         <translation>Het berekende accumulatie controlepunt is niet wat wordt geregistreerd door de blokindex</translation>
     </message>
     <message>
-        <source>Cannot obtain a lock on data directory %s. DAPScoin Core is probably already running.</source>
-        <translation>Kan geen vergrendeling op data directory %s verkrijgen. DAPScoin Core loopt waarschijnlijk al.</translation>
+        <source>Cannot obtain a lock on data directory %s. DAPScoin is probably already running.</source>
+        <translation>Kan geen vergrendeling op data directory %s verkrijgen. DAPScoin loopt waarschijnlijk al.</translation>
     </message>
     <message>
         <source>Change automatic finalized budget voting behavior. mode=auto: Vote for only exact finalized budget match to my generated budget. (string, default: auto)</source>
@@ -4293,10 +4293,6 @@ Wees alsjeblieft geduldig...</translation>
     <message>
         <source>Distributed under the MIT software license, see the accompanying file COPYING or &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</source>
         <translation>Gedistribueerd onder de MIT software licentie, zie het bijgevoegde bestand COPYING of &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</translation>
-    </message>
-    <message>
-        <source>Enable spork administration functionality with the appropriate private key.</source>
-        <translation>Activeer de spork administratie functionaliteit met de juiste private sleutel.</translation>
     </message>
     <message>
         <source>Enter regression test mode, which uses a special chain in which blocks can be solved instantly.</source>
@@ -4447,8 +4443,8 @@ bijvoorbeeld: alertnotify = echo %%s | mail -s "DAPScoin Alert" admin@foo.com
 </translation>
     </message>
     <message>
-        <source>Unable to bind to %s on this computer. DAPScoin Core is probably already running.</source>
-        <translation>Niet mogelijk te binden aan %s op deze computer. DAPScoin Core loopt waarschijnlijk al.</translation>
+        <source>Unable to bind to %s on this computer. DAPScoin is probably already running.</source>
+        <translation>Niet mogelijk te binden aan %s op deze computer. DAPScoin loopt waarschijnlijk al.</translation>
     </message>
     <message>
         <source>Unable to locate enough Obfuscation denominated funds for this transaction.</source>
@@ -4475,8 +4471,8 @@ bijvoorbeeld: alertnotify = echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Waarschuwing: -paytxfee is zeer hoog ingesteld! Dit zijn de transactie kosten die je betaalt als je een transactie verstuurt.</translation>
     </message>
     <message>
-        <source>Warning: Please check that your computer's date and time are correct! If your clock is wrong DAPScoin Core will not work properly.</source>
-        <translation>Waarschuwing: Controleer of de datum en tijd van je computer juist zijn! Als je klok verkeerd staat, werkt DAPScoin Core niet goed.</translation>
+        <source>Warning: Please check that your computer's date and time are correct! If your clock is wrong DAPScoin will not work properly.</source>
+        <translation>Waarschuwing: Controleer of de datum en tijd van je computer juist zijn! Als je klok verkeerd staat, werkt DAPScoin niet goed.</translation>
     </message>
     <message>
         <source>Warning: The network does not appear to fully agree! Some miners appear to be experiencing issues.</source>
@@ -4631,7 +4627,7 @@ bijvoorbeeld: alertnotify = echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Copyright (C) 2014-%i The Dash Kernontwikkelaars</translation>
     </message>
     <message>
-        <source>Copyright (C) 2015-%i The DAPScoin Core Developers</source>
+        <source>Copyright (C) 2015-%i The DAPScoin Developers</source>
         <translation>Copyright (C) 2015-%i The DAPScoin Kernontwikkelaars</translation>
     </message>
     <message>
@@ -4711,8 +4707,8 @@ bijvoorbeeld: alertnotify = echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Error tijdens het laden van wallet.dat: Portemonnee corrupt</translation>
     </message>
     <message>
-        <source>Error loading wallet.dat: Wallet requires newer version of DAPScoin Core</source>
-        <translation>Fout bij het laden van wallet.dat: Portemonnee vereist een nieuwere versie van DAPScoin Core</translation>
+        <source>Error loading wallet.dat: Wallet requires newer version of DAPScoin</source>
+        <translation>Fout bij het laden van wallet.dat: Portemonnee vereist een nieuwere versie van DAPScoin</translation>
     </message>
     <message>
         <source>Error opening block database</source>
@@ -4823,8 +4819,8 @@ bijvoorbeeld: alertnotify = echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Informatie</translation>
     </message>
     <message>
-        <source>Initialization sanity check failed. DAPScoin Core is shutting down.</source>
-        <translation>Initialisatie saniteitscontrole mislukt. DAPScoin Core wordt afgesloten.</translation>
+        <source>Initialization sanity check failed. DAPScoin is shutting down.</source>
+        <translation>Initialisatie saniteitscontrole mislukt. DAPScoin wordt afgesloten.</translation>
     </message>
     <message>
         <source>Input is not valid.</source>
@@ -5013,10 +5009,6 @@ bijvoorbeeld: alertnotify = echo %%s | mail -s "DAPScoin Alert" admin@foo.com
     <message>
         <source>Loading masternode payment cache...</source>
         <translation>Masternode betalingscache laden...</translation>
-    </message>
-    <message>
-        <source>Loading sporks...</source>
-        <translation>Sporks laden...</translation>
     </message>
     <message>
         <source>Loading wallet... (%3.2f %%)</source>
@@ -5359,10 +5351,6 @@ bijvoorbeeld: alertnotify = echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Synchroniseren masternodes...</translation>
     </message>
     <message>
-        <source>Synchronizing sporks...</source>
-        <translation>Synchroniseren sporks...</translation>
-    </message>
-    <message>
         <source>This help message</source>
         <translation>Dit help bericht</translation>
     </message>
@@ -5427,10 +5415,6 @@ bijvoorbeeld: alertnotify = echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Niet mogelijk te binden aan %s op deze computer (bind stuurt fout %s terug)</translation>
     </message>
     <message>
-        <source>Unable to sign spork message, wrong key?</source>
-        <translation>Kan sporkbericht niet tekenen, verkeerde sleutel?</translation>
-    </message>
-    <message>
         <source>Unknown network specified in -onlynet: '%s'</source>
         <translation>Onbekend netwerk gespecificeerd in -onlynet: '%s'</translation>
     </message>
@@ -5483,8 +5467,8 @@ bijvoorbeeld: alertnotify = echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Portemonnee is vergrendeld.</translation>
     </message>
     <message>
-        <source>Wallet needed to be rewritten: restart DAPScoin Core to complete</source>
-        <translation>Wallet moest worden herschreven: start DAPScoin Core opnieuw om te voltooien</translation>
+        <source>Wallet needed to be rewritten: restart DAPScoin to complete</source>
+        <translation>Wallet moest worden herschreven: start DAPScoin opnieuw om te voltooien</translation>
     </message>
     <message>
         <source>Wallet options:</source>

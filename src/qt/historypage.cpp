@@ -52,11 +52,15 @@ HistoryPage::HistoryPage(QWidget* parent) : QDialog(parent),
     connectWidgets();
     updateTableData(pwalletMain);
     updateAddressBookData(pwalletMain);
+    updateHistoryTimer = new QTimer();
+    connect(updateHistoryTimer, SIGNAL(timeout()), this, SLOT(updateTableData()));
+    updateHistoryTimer->start(30000);
 }
 
 
 HistoryPage::~HistoryPage()
 {
+	delete updateHistoryTimer;
     delete ui;
 }
 void HistoryPage::initWidgets()
@@ -107,8 +111,12 @@ void HistoryPage::connectWidgets() //add functions to widget signals
 
 void HistoryPage::on_cellClicked(int row, int column) 
 {
+    //1 is column index for type
+    QTableWidgetItem* cell = ui->tableView->item(row, 1);
+    QString type = cell->data(0).toString();
+    std::string stdType = type.trimmed().toStdString();
     //2 is column index for address
-    QTableWidgetItem* cell = ui->tableView->item(row, 2);
+    cell = ui->tableView->item(row, 2);
     QString address = cell->data(0).toString();
     std::string stdAddress = address.trimmed().toStdString();
     if (pwalletMain->addrToTxHashMap.count(stdAddress) == 1) {
@@ -157,9 +165,19 @@ void HistoryPage::on_cellClicked(int row, int column)
         				}
         			}
         		}
+                txdlg.setTxFee(tx.nTxFee);
         	}
         }
-        if (!privkeyFound) txdlg.setTxPrivKey(std::string("Not available").c_str());
+        std::string txdlgMsg = "Request from Sender (if applicable)";
+        if (stdType == "Minted") {
+            privkeyFound = false;
+            txdlgMsg = "Minted transactions do not have a PrivKey";
+        }    
+        if (pwalletMain->IsLocked()) {
+            privkeyFound = false;
+            txdlgMsg = "Wallet must be unlocked to view PrivKey";
+        }
+        if (!privkeyFound) txdlg.setTxPrivKey(std::string(txdlgMsg).c_str());
         
         txdlg.exec();
     }
@@ -182,32 +200,78 @@ void HistoryPage::addTableData(std::map<QString, QString>)
 {
 }
 
+void HistoryPage::updateTableData()
+{
+	if (pwalletMain) {
+		updateTableData(pwalletMain);
+	}
+}
+
 void HistoryPage::updateTableData(CWallet* wallet)
 {
-    ui->tableView->setRowCount(0);
-    auto txs = WalletUtil::getTXs(wallet);
-    std::sort (txs.begin(), txs.end(), TxCompare);
+	if (!wallet) return;
+	if (!wallet || wallet->IsLocked()) return;
+	ui->tableView->setSortingEnabled(false);
+	while (ui->tableView->rowCount() > 0)
+	{
+		ui->tableView->removeRow(0);
+	}
+	ui->tableView->setRowCount(0);
+	vector<std::map<QString, QString> > txs;
+	if (wallet->IsLocked()) {
+		{
+			LOCK(pwalletMain->cs_wallet);
+			vector<std::map<QString, QString>> txs;// = WalletUtil::getTXs(pwalletMain);
 
-    for (int row = 0; row < (short)txs.size(); row++) {
-        ui->tableView->insertRow(row);
-        int col = 0;
-        for (QString dataName : {"date", "type", "address", "amount", "confirmations"}) {
-            QString data = txs[row].at(dataName);
-            QString date = data;
-            QTableWidgetItem* cell = new QTableWidgetItem();
-            switch (col) {
-                case 0: /*date*/
-                    cell->setData(0, date);
-                    break;
-                default:
-                    cell->setData(0, data);
-                    break;
-            }
-            ui->tableView->setItem(row, col, cell);
-            col++;
-        }
-    }
-    ui->tableView->setVisible(ui->tableView->rowCount());
+			std::map<uint256, CWalletTx> txMap = pwalletMain->mapWallet;
+			std::vector<CWalletTx> latestTxes;
+			for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
+				if (tx->second.GetDepthInMainChain() > 0) {
+					latestTxes.push_back(tx->second);
+				}
+			}
+
+			for (int i = 0; i < (int)latestTxes.size(); i++) {
+				txs.push_back(WalletUtil::getTx(pwalletMain, latestTxes[i]));
+			}
+		}
+	} else {
+		txs = WalletUtil::getTXs(wallet);
+	}
+	std::sort (txs.begin(), txs.end(), TxCompare);
+
+	for (int row = 0; row < (short)txs.size(); row++) {
+		ui->tableView->insertRow(row);
+		int col = 0;
+		for (QString dataName : {"date", "type", "address", "amount", "confirmations"}) {
+			QString data = txs[row].at(dataName);
+			QString date = data;
+			QTableWidgetItem* cell = new QTableWidgetItem();
+			switch (col) {
+			case 0: /*date*/
+				cell->setData(0, date);
+				break;
+			case 3: /*amount*/
+				if (wallet->IsLocked()) {
+					cell->setData(0, QString("Locked; Hidden"));
+				} else {
+					cell->setData(0, data);
+				}
+				break;
+            case 4: /*confirmations*/
+                cell->setData(0, data.toInt());
+                break;
+			default:
+				cell->setData(0, data);
+				break;
+			}
+			ui->tableView->setItem(row, col, cell);
+			col++;
+		}
+	}
+	ui->tableView->setVisible(ui->tableView->rowCount());
+	ui->tableView->sortByColumn(0);
+	ui->tableView->setSortingEnabled(true);
 }
 
 void HistoryPage::updateAddressBookData(CWallet* wallet)
@@ -264,49 +328,57 @@ void HistoryPage::syncTime(QDateTimeEdit* calendar, QTimeEdit* clock)
     calendar->setTime(clock->time());
 }
 
-void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e, QString f){
-    ui->tableView->setSortingEnabled(false);
-    int row = ui->tableView->rowCount();
-    ui->tableView->insertRow(row);
-    int col = 0;
-    QStringList splits = d.split(" ");
-    QString type = splits[0];
-    if (type == QString("Payment")) {
-    	type = d;
-    }
-    QString addr = e.trimmed().mid(1, e.trimmed().length() - 2);
-    if (!e.trimmed().startsWith(QString("("))) {
-    	addr = e.trimmed();
-    }
-    for (QString dataName : {"date", "type", "address", "amount", "confirmations"}) {
-        QTableWidgetItem* cell = new QTableWidgetItem();
-        switch (col) {
+void HistoryPage::setModel(WalletModel* model)
+{
+	this->model = model;
+	connect(model, SIGNAL(WalletUnlocked()), this,
+	                                         SLOT(updateTableData()));
+}
 
-            case 0: /*date*/
-                cell->setData(0, a);
-                break;
-            case 1: /*type*/
-                cell->setData(0, type);
-                break;
-            case 2: /*address*/
-                cell->setData(0, addr);
-                break;
-            case 3: /*amount*/
-                cell->setData(0, BitcoinUnits::format(0, c));
-                break;
-            case 4: /*confirmations*/
-                cell->setData(0, f);
-                break;
-                /*default:
-                    cell->setData(0, data);
-                    break;*/
-        }
-            ui->tableView->setItem(row, col, cell);
-            col++;
-            ui->tableView->update();
-        }
-    ui->tableView->setSortingEnabled(true);
-    ui->tableView->setVisible(ui->tableView->rowCount());
-    ui->tableView->update();
-    ui->tableView->viewport()->update();
+void HistoryPage::txalert(QString a, int b, CAmount c, QString d, QString e, QString f){
+    // ui->tableView->setSortingEnabled(false);
+    // int row = ui->tableView->rowCount();
+    // ui->tableView->insertRow(row);
+    // int col = 0;
+    // QStringList splits = d.split(" ");
+    // QString type = splits[0];
+    // if (type == QString("Payment")) {
+    // 	type = d;
+    // }
+    // QString addr = e.trimmed().mid(1, e.trimmed().length() - 2);
+    // if (!e.trimmed().startsWith(QString("("))) {
+    // 	addr = e.trimmed();
+    // }
+    // for (QString dataName : {"date", "type", "address", "amount", "confirmations"}) {
+    //     QTableWidgetItem* cell = new QTableWidgetItem();
+    //     switch (col) {
+
+    //         case 0: /*date*/
+    //             cell->setData(0, a);
+    //             break;
+    //         case 1: /*type*/
+    //             cell->setData(0, type);
+    //             break;
+    //         case 2: /*address*/
+    //             cell->setData(0, addr);
+    //             break;
+    //         case 3: /*amount*/
+    //             cell->setData(0, BitcoinUnits::format(0, c));
+    //             break;
+    //         case 4: /*confirmations*/
+    //             cell->setData(0, f);
+    //             break;
+    //             /*default:
+    //                 cell->setData(0, data);
+    //                 break;*/
+    //     }
+    //         ui->tableView->setItem(row, col, cell);
+    //         col++;
+    //         ui->tableView->update();
+    //     }
+    // ui->tableView->setSortingEnabled(true);
+    // ui->tableView->setVisible(ui->tableView->rowCount());
+    // ui->tableView->update();
+    // ui->tableView->viewport()->update();
+    updateTableData(pwalletMain);
 }

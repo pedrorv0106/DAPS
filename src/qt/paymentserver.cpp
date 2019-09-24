@@ -1,5 +1,6 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -379,41 +380,20 @@ void PaymentServer::handleURIOrFile(const QString& s)
 #else
         QUrlQuery uri((QUrl(s)));
 #endif
-        if (uri.hasQueryItem("r")) // payment request URI
-        {
-            QByteArray temp;
-            temp.append(uri.queryItemValue("r"));
-            QString decoded = QUrl::fromPercentEncoding(temp);
-            QUrl fetchUrl(decoded, QUrl::StrictMode);
-
-            if (fetchUrl.isValid()) {
-                qDebug() << "PaymentServer::handleURIOrFile : fetchRequest(" << fetchUrl << ")";
-                fetchRequest(fetchUrl);
-            } else {
-                qWarning() << "PaymentServer::handleURIOrFile : Invalid URL: " << fetchUrl;
-                emit message(tr("URI handling"),
-                    tr("Payment request fetch URL is invalid: %1").arg(fetchUrl.toString()),
-                    CClientUIInterface::ICON_WARNING);
-            }
-
-            return;
-        } else // normal URI
-        {
-            SendCoinsRecipient recipient;
-            if (GUIUtil::parseBitcoinURI(s, &recipient)) {
-                CBitcoinAddress address(recipient.address.toStdString());
-                if (!address.IsValid()) {
-                    emit message(tr("URI handling"), tr("Invalid payment address %1").arg(recipient.address),
-                        CClientUIInterface::MSG_ERROR);
-                } else
-                    emit receivedPaymentRequest(recipient);
+        SendCoinsRecipient recipient;
+        if (GUIUtil::parseBitcoinURI(s, &recipient)) {
+            CBitcoinAddress address(recipient.address.toStdString());
+            if (!address.IsValid()) {
+                emit message(tr("URI handling"), tr("Invalid payment address %1").arg(recipient.address),
+                    CClientUIInterface::MSG_ERROR);
             } else
-                emit message(tr("URI handling"),
-                    tr("URI cannot be parsed! This can be caused by an invalid DAPScoin address or malformed URI parameters."),
-                    CClientUIInterface::ICON_WARNING);
+                emit receivedPaymentRequest(recipient);
+        } else
+            emit message(tr("URI handling"),
+                tr("URI cannot be parsed! This can be caused by an invalid DAPScoin address or malformed URI parameters."),
+                CClientUIInterface::ICON_WARNING);
 
-            return;
-        }
+        return;
     }
 
     if (QFile::exists(s)) // payment request file

@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -344,8 +345,6 @@ public:
 
     // Return sum of txouts.
     CAmount GetValueOut() const;
-    // GetValueIn() is a method on CCoinsViewCache, because
-    // inputs must be known to compute value in.
 
     // Compute priority, given priority of inputs and (optionally) tx size
     double ComputePriority(double dPriorityInputs, unsigned int nTxSize=0) const;

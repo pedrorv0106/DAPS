@@ -55,6 +55,7 @@ public slots:
     void refreshRecentTransactions();
     void setSpendableBalance(bool isStaking);
     void showBlockCurrentHeight();
+    void updateBalance();
 
 signals:
     void transactionClicked(const QModelIndex& index);
@@ -94,6 +95,10 @@ private slots:
     void handleTransactionClicked(const QModelIndex& index);
     void updateAlerts(const QString& warnings);
     void updateWatchOnlyLabels(bool showWatchOnly);
+    void on_lockUnlock();
+    void unlockDialogIsFinished(int result);
+    void lockDialogIsFinished(int result);
+    void updateLockStatus(int status);
 };
 
 #endif // BITCOIN_QT_OVERVIEWPAGE_H

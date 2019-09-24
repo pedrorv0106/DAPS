@@ -1,6 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -45,10 +46,10 @@
 #include "secp256k1_commitment.h"
 #include "secp256k1_generator.h"
 #include "secp256k1.h"
+#include "secp256k1-mw/src/hash_impl.h"
 
 class CBlockIndex;
 class CBlockTreeDB;
-class CSporkDB;
 class CBloomFilter;
 class CInv;
 class CScriptCheck;
@@ -148,7 +149,7 @@ extern unsigned int nCoinCacheSize;
 extern CFeeRate minRelayTxFee;
 extern bool fAlerts;
 extern bool fVerifyingBlocks;
-extern bool fGenerateBitcoins;
+extern bool fGenerateDapscoins;
 
 extern bool fLargeWorkForkFound;
 extern bool fLargeWorkInvalidChainFound;
@@ -157,6 +158,10 @@ extern unsigned int nStakeMinAge;
 extern int64_t nLastCoinStakeSearchInterval;
 extern int64_t nLastCoinStakeSearchTime;
 extern int64_t nReserveBalance;
+extern const int MIN_RING_SIZE;
+extern const int MAX_RING_SIZE;
+extern const int MAX_TX_INPUTS;
+extern const int MIN_TX_INPUTS_FOR_SWEEPING;
 
 extern std::map<uint256, int64_t> mapRejectedBlocks;
 extern std::map<unsigned int, unsigned int> mapHashedBlocks;
@@ -188,7 +193,7 @@ secp256k1_context2* GetContext();
 secp256k1_scratch_space2* GetScratch();
 secp256k1_bulletproof_generators* GetGenerator();
 bool VerifyBulletProofAggregate(const CTransaction& tx);
-bool VerifyRingSignatureWithTxFee(const CTransaction& tx);
+bool VerifyRingSignatureWithTxFee(const CTransaction& tx, CBlockIndex* pindex);
 void DestroyContext();
 
 /** 
@@ -255,8 +260,8 @@ int64_t GetMasternodePayment(int nHeight, int64_t blockValue, int nMasternodeCou
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader* pblock, bool fProofOfStake);
 
 bool ActivateBestChain(CValidationState& state, CBlock* pblock = NULL, bool fAlreadyChecked = false);
-CAmount GetBlockValue(int nHeight);
-CAmount TeamRewards(int nHeight);
+CAmount GetBlockValue(const CBlockIndex *ptip);
+CAmount TeamRewards(const CBlockIndex *ptip);
 CAmount PoSBlockReward();
 
 /** Create a new block index entry for a given block hash */
@@ -357,15 +362,6 @@ bool AreInputsStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs)
  * @see CTransaction::FetchInputs
  */
 unsigned int GetLegacySigOpCount(const CTransaction& tx);
-
-/**
- * Count ECDSA signature operations in pay-to-script-hash inputs.
- * 
- * @param[in] mapInputs Map of previous transactions that have outputs we're spending
- * @return maximum number of sigops required to validate this transaction's inputs
- * @see CTransaction::FetchInputs
- */
-unsigned int GetP2SHSigOpCount(const CTransaction& tx, const CCoinsViewCache& mapInputs);
 
 
 /**
@@ -654,9 +650,6 @@ extern CCoinsViewCache* pcoinsTip;
 
 /** Global variable that points to the active block tree (protected by cs_main) */
 extern CBlockTreeDB* pblocktree;
-
-/** Global variable that points to the spork database (protected by cs_main) */
-extern CSporkDB* pSporkDB;
 
 struct CBlockTemplate {
     CBlock block;

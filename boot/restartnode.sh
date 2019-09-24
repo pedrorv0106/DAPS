@@ -8,6 +8,6 @@ sleep 10
 echo "Checking block count"
 $DAEMON_FOLDER/dapscoin-cli getblockcount
 echo "Unlocking wallet"
-$DAEMON_FOLDER/dapscoin-cli walletpassphrase 1234567890 0
+$DAEMON_FOLDER/dapscoin-cli unlockwallet 1234567890 0
 $DAEMON_FOLDER/dapscoin-cli getstakingstatus
 echo "Finish restart"

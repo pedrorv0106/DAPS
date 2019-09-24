@@ -594,8 +594,8 @@
         <translation>Панель вкладок</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Send coins to a DAPScoin address</source>
@@ -618,12 +618,12 @@
         <translation>Обзор мастернод</translation>
     </message>
     <message>
-        <source>&amp;About DAPScoin Core</source>
-        <translation>&amp;О DAPScoin Core</translation>
+        <source>&amp;About DAPScoin</source>
+        <translation>&amp;О DAPScoin</translation>
     </message>
     <message>
-        <source>Show information about DAPScoin Core</source>
-        <translation>Показать информацию о DAPScoin Core</translation>
+        <source>Show information about DAPScoin</source>
+        <translation>Показать информацию о DAPScoin</translation>
     </message>
     <message>
         <source>Modify configuration options for DAPScoin</source>
@@ -678,12 +678,12 @@
         <translation>Окно обзора блока</translation>
     </message>
     <message>
-        <source>Show the DAPScoin Core help message to get a list with possible DAPScoin command-line options</source>
+        <source>Show the DAPScoin help message to get a list with possible DAPScoin command-line options</source>
         <translation>Смотрите помощь к программе, чтобы получить документацию ко всем возможным опциям комманды DAPScoin</translation>
     </message>
     <message>
-        <source>DAPScoin Core client</source>
-        <translation>Клиент DAPScoin Core</translation>
+        <source>DAPScoin client</source>
+        <translation>Клиент DAPScoin</translation>
     </message>
     <message>
         <source>Synchronizing with network...</source>
@@ -1152,16 +1152,16 @@ MultiSend: %1</translation>
         <translation>версия</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>(%1-bit)</source>
         <translation>(%1-бит)</translation>
     </message>
     <message>
-        <source>About DAPScoin Core</source>
-        <translation>О DAPScoin Core</translation>
+        <source>About DAPScoin</source>
+        <translation>О DAPScoin</translation>
     </message>
     <message>
         <source>Command-line options</source>
@@ -1207,16 +1207,16 @@ MultiSend: %1</translation>
         <translation>Добро пожаловать</translation>
     </message>
     <message>
-        <source>Welcome to DAPScoin Core.</source>
-        <translation>Добро пожаловать в DAPScoin Core.</translation>
+        <source>Welcome to DAPScoin.</source>
+        <translation>Добро пожаловать в DAPScoin.</translation>
     </message>
     <message>
-        <source>As this is the first time the program is launched, you can choose where DAPScoin Core will store its data.</source>
-        <translation>Поскольку это первый запуск программы, вы можете выбрать, где будут храниться данные DAPScoin Core.</translation>
+        <source>As this is the first time the program is launched, you can choose where DAPScoin will store its data.</source>
+        <translation>Поскольку это первый запуск программы, вы можете выбрать, где будут храниться данные DAPScoin.</translation>
     </message>
     <message>
-        <source>DAPScoin Core will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
-        <translation>DAPScoin Core загрузит и сохранит копию цепочки блоков DAPScoin. Каталог будет занимать около %1GB и со временем размер будет увеличиваться. Кроме того, в этом каталоге будет храниться кошелек.</translation>
+        <source>DAPScoin will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
+        <translation>DAPScoin загрузит и сохранит копию цепочки блоков DAPScoin. Каталог будет занимать около %1GB и со временем размер будет увеличиваться. Кроме того, в этом каталоге будет храниться кошелек.</translation>
     </message>
     <message>
         <source>Use the default data directory</source>
@@ -1227,8 +1227,8 @@ MultiSend: %1</translation>
         <translation>Использовать другой каталог данных:</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Error: Specified data directory "%1" cannot be created.</source>
@@ -1915,7 +1915,7 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     </message>
     <message>
         <source>Zerocoin Balance</source>
-        <translation>Баланс Zerocoin </translation>
+        <translation>Баланс Zerocoin </translation>
     </message>
     <message>
         <source>Recent transactions</source>
@@ -2032,7 +2032,7 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     <name>PrivacyDialog</name>
     <message>
         <source>DAPS which were anonymized via Zerocin Protocol</source>
-        <translation>DAPS, который был анонимно использован через Zerocoin протокол</translation>
+        <translation>DAPS, который был анонимно использован через Zerocoin протокол</translation>
     </message>
     <message>
         <source>Zerocoin Actions:</source>
@@ -2839,8 +2839,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
 <context>
     <name>ShutdownWindow</name>
     <message>
-        <source>DAPScoin Core is shutting down...</source>
-        <translation>DAPScoin Core выключается...</translation>
+        <source>DAPScoin is shutting down...</source>
+        <translation>DAPScoin выключается...</translation>
     </message>
     <message>
         <source>Do not shut down the computer until this window disappears.</source>
@@ -2929,8 +2929,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
 <context>
     <name>SplashScreen</name>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Version %1</source>
@@ -2945,8 +2945,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Разработчики Dash Core</translation>
     </message>
     <message>
-        <source>The DAPScoin Core developers</source>
-        <translation>Разработчики DAPScoin Core</translation>
+        <source>The DAPScoin developers</source>
+        <translation>Разработчики DAPScoin</translation>
     </message>
     <message>
         <source>[testnet]</source>
@@ -3234,8 +3234,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Copyright (C) 2014-%i Разработчики Dash Core</translation>
     </message>
     <message>
-        <source>Copyright (C) 2015-%i The DAPScoin Core Developers</source>
-        <translation>Copyright (C) 2015-%i Разработчики DAPScoin Core</translation>
+        <source>Copyright (C) 2015-%i The DAPScoin Developers</source>
+        <translation>Copyright (C) 2015-%i Разработчики DAPScoin</translation>
     </message>
     <message>
         <source>Corrupted block database detected</source>
@@ -3500,10 +3500,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     <message>
         <source>Synchronizing masternodes...</source>
         <translation>Синхронизация мастернод ...</translation>
-    </message>
-    <message>
-        <source>Synchronizing sporks...</source>
-        <translation>Синхронизация спорков ...</translation>
     </message>
     <message>
         <source>This help message</source>

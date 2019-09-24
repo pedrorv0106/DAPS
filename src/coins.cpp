@@ -1,4 +1,5 @@
 // Copyright (c) 2012-2014 The Bitcoin developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -218,18 +219,6 @@ const CTxOut& CCoinsViewCache::GetOutputFor(const CTxIn& input) const
     const CCoins* coins = AccessCoins(input.prevout.hash);
     assert(coins && coins->IsAvailable(input.prevout.n));
     return coins->vout[input.prevout.n];
-}
-
-CAmount CCoinsViewCache::GetValueIn(const CTransaction& tx) const
-{
-    if (tx.IsCoinBase())
-        return 0;
-
-    CAmount nResult = 0;
-    //for (unsigned int i = 0; i < tx.vin.size(); i++)
-        //nResult += GetOutputFor(tx.vin[i]).nValue;
-
-    return nResult;
 }
 
 bool CCoinsViewCache::HaveInputs(const CTransaction& tx) const

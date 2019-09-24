@@ -1,19 +1,20 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "overviewpage.h"
 #include "ui_overviewpage.h"
-
+#include "unlockdialog.h"
+#include "lockdialog.h"
 #include "bitcoinunits.h"
 #include "clientmodel.h"
 #include "guiconstants.h"
 #include "guiutil.h"
 #include "init.h"
 #include "obfuscation.h"
-#include "obfuscationconfig.h"
 #include "optionsmodel.h"
 #include "transactionfilterproxy.h"
 #include "transactiontablemodel.h"
@@ -130,10 +131,11 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
 
     initSyncCircle(.8);
 
-    QTimer* timerBlockHeightLabel = new QTimer();
+    QTimer* timerBlockHeightLabel = new QTimer(this);
     connect(timerBlockHeightLabel, SIGNAL(timeout()), this, SLOT(showBlockCurrentHeight()));
-    timerBlockHeightLabel->start(10000);
+    timerBlockHeightLabel->start(45000);
 
+    connect(ui->btnLockUnlock, SIGNAL(clicked()), this, SLOT(on_lockUnlock()));
     updateRecentTransactions();
 }
 
@@ -145,6 +147,7 @@ void OverviewPage::handleTransactionClicked(const QModelIndex& index)
 
 OverviewPage::~OverviewPage()
 {
+    delete animClock;
     delete ui;
 }
 
@@ -161,6 +164,8 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
                               const CAmount& zerocoinBalance, const CAmount& unconfirmedZerocoinBalance, const CAmount& immatureZerocoinBalance,
                               const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance)
 {
+    int walletStatus = walletModel->getEncryptionStatus();
+
     currentBalance = balance;
     currentUnconfirmedBalance = unconfirmedBalance;
     currentImmatureBalance = immatureBalance;
@@ -178,10 +183,15 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     }
     // DAPS labels
     //Cam: Remove immatureBalance from showing on qt wallet (as andrew says)
-    ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, nSpendableDisplayed, false, BitcoinUnits::separatorAlways));
-    ui->labelUnconfirmed->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, unconfirmedBalance, false, BitcoinUnits::separatorAlways));
-    ui->labelBalance_2->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance, false, BitcoinUnits::separatorAlways));
-
+    if (walletStatus == WalletModel::Locked || walletStatus == WalletModel::UnlockedForAnonymizationOnly) {
+        ui->labelBalance_2->setText("Locked; Hidden");
+        ui->labelBalance->setText("Locked; Hidden");
+        ui->labelUnconfirmed->setText("Locked; Hidden");
+    } else {
+        ui->labelBalance_2->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance, false, BitcoinUnits::separatorAlways));
+        ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, nSpendableDisplayed, false, BitcoinUnits::separatorAlways));
+        ui->labelUnconfirmed->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, unconfirmedBalance, false, BitcoinUnits::separatorAlways));
+    }
     QFont font = ui->labelBalance_2->font();
     font.setPointSize(15);
     font.setBold(true);
@@ -232,7 +242,7 @@ void OverviewPage::setWalletModel(WalletModel* model)
     if (model && model->getOptionsModel()) {
         // Set up transaction list
         LogPrintf("\n%s:setWalletModel\n", __func__);
-        filter = new TransactionFilterProxy();
+        filter = new TransactionFilterProxy(this);
         filter->setSourceModel(model->getTransactionTableModel());
         filter->setLimit(NUM_ITEMS);
         filter->setDynamicSortFilter(true);
@@ -248,6 +258,12 @@ void OverviewPage::setWalletModel(WalletModel* model)
                          SLOT(setBalance(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)));
         connect(model, SIGNAL(stakingStatusChanged(bool)), this, 
                          SLOT(setSpendableBalance(bool)));
+        connect(model, SIGNAL(WalletUnlocked()), this,
+                                 SLOT(refreshRecentTransactions()));
+        connect(model, SIGNAL(WalletUnlocked()), this,
+                                         SLOT(updateBalance()));
+        connect(model, SIGNAL(encryptionStatusChanged(int)), this,
+                                         SLOT(updateLockStatus(int)));
         
         connect(model->getOptionsModel(), SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit()));
 
@@ -255,10 +271,19 @@ void OverviewPage::setWalletModel(WalletModel* model)
         connect(model, SIGNAL(notifyWatchonlyChanged(bool)), this, SLOT(updateWatchOnlyLabels(bool)));
 
         connect(walletModel, SIGNAL(RefreshRecent()), this, SLOT(refreshRecentTransactions()));
-    }
 
+        updateLockStatus(walletModel->getEncryptionStatus());
+    }
     // update the display unit, to not use the default ("DAPS")
     updateDisplayUnit();
+}
+
+void OverviewPage::updateBalance()
+{
+	WalletModel* model = this->walletModel;
+	setBalance(model->getBalance(), model->getUnconfirmedBalance(), model->getImmatureBalance(),
+			0, 0, 0,
+			model->getWatchBalance(), model->getWatchUnconfirmedBalance(), model->getWatchImmatureBalance());
 }
 
 void OverviewPage::updateDisplayUnit()
@@ -400,6 +425,7 @@ int OverviewPage::tryNetworkBlockCount(){
 }
 
 void OverviewPage::updateRecentTransactions(){
+	if (!pwalletMain || pwalletMain->IsLocked()) return;
     QLayoutItem* item;
     QSettings settings;
     QVariant theme = settings.value("theme");
@@ -411,54 +437,105 @@ void OverviewPage::updateRecentTransactions(){
         delete item;
     }
     if (pwalletMain) {
-    	vector<std::map<QString, QString>> txs;// = WalletUtil::getTXs(pwalletMain);
+    	{
+    		LOCK(pwalletMain->cs_wallet);
+    		vector<std::map<QString, QString>> txs;// = WalletUtil::getTXs(pwalletMain);
 
-        std::map<uint256, CWalletTx> txMap = pwalletMain->mapWallet;
-        std::vector<CWalletTx> latestTxes;
-        for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
-        	if (tx->second.GetDepthInMainChain() > 0) {
-        		int64_t txTime = tx->second.GetComputedTxTime();
-        		int idx = -1;
-        		for (int i = 0; i < (int)latestTxes.size(); i++) {
-        			if (txTime >= latestTxes[i].GetComputedTxTime()) {
-        				idx = i;
-        				break;
-        			}
-        		}
-        		if (idx == -1) {
-        			latestTxes.push_back(tx->second);
-        		} else {
-        			latestTxes.insert(latestTxes.begin() + idx, tx->second);
-        		}
-        	}
-        }
+    		std::map<uint256, CWalletTx> txMap = pwalletMain->mapWallet;
+    		std::vector<CWalletTx> latestTxes;
+    		for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
+    			if (tx->second.GetDepthInMainChain() > 0) {
+    				int64_t txTime = tx->second.GetComputedTxTime();
+    				int idx = -1;
+    				for (int i = 0; i < (int)latestTxes.size(); i++) {
+    					if (txTime >= latestTxes[i].GetComputedTxTime()) {
+    						idx = i;
+    						break;
+    					}
+    				}
+    				if (idx == -1) {
+    					latestTxes.push_back(tx->second);
+    				} else {
+    					latestTxes.insert(latestTxes.begin() + idx, tx->second);
+    				}
+    			}
+    		}
 
-        for (int i = 0; i < (int)latestTxes.size(); i++) {
-        	txs.push_back(WalletUtil::getTx(pwalletMain, latestTxes[i]));
-        	if (txs.size() >= 5) break;
-        }
+    		for (int i = 0; i < (int)latestTxes.size(); i++) {
+    			txs.push_back(WalletUtil::getTx(pwalletMain, latestTxes[i]));
+    			if (txs.size() >= 5) break;
+    		}
 
-        int length = (txs.size()>5)? 5:txs.size();
-        for (int i = 0; i< length; i++){
-        	uint256 txHash;
-        	txHash.SetHex(txs[i]["id"].toStdString());
-            TxEntry* entry = new TxEntry(this);
-            ui->verticalLayoutRecent->addWidget(entry);
-            CWalletTx wtx = pwalletMain->mapWallet[txHash];
-            int64_t txTime = wtx.GetComputedTxTime();
-            entry->setData(txTime, txs[i]["address"] , txs[i]["amount"], txs[i]["id"], txs[i]["type"]);
-            if (i % 2 == 0) {
-                entry->setObjectName("secondaryTxEntry");
-            }
-        }
+    		int length = (txs.size()>5)? 5:txs.size();
+    		for (int i = 0; i< length; i++){
+    			uint256 txHash;
+    			txHash.SetHex(txs[i]["id"].toStdString());
+    			TxEntry* entry = new TxEntry(this);
+    			ui->verticalLayoutRecent->addWidget(entry);
+    			CWalletTx wtx = pwalletMain->mapWallet[txHash];
+    			int64_t txTime = wtx.GetComputedTxTime();
+    			entry->setData(txTime, txs[i]["address"] , txs[i]["amount"], txs[i]["id"], txs[i]["type"]);
+    			if (i % 2 == 0) {
+    				entry->setObjectName("secondaryTxEntry");
+    			}
+    		}
 
-        ui->label_4->setVisible(txs.size());
+    		ui->lblRecentTransaction->setVisible(true);
+    	}
     } else {
         LogPrintf("\npwalletMain has not been initialized\n");
     }
 }
 
 void OverviewPage::refreshRecentTransactions() {
-	LogPrintf("\n: Refreshing history\n");
 	updateRecentTransactions();
+}
+
+void OverviewPage::on_lockUnlock() {
+    if (walletModel->getEncryptionStatus() == WalletModel::Locked || walletModel->getEncryptionStatus() == WalletModel::UnlockedForAnonymizationOnly) {
+        UnlockDialog unlockdlg;
+        unlockdlg.setWindowTitle("Unlock Keychain Wallet");
+        unlockdlg.setModel(walletModel);
+        unlockdlg.setStyleSheet(GUIUtil::loadStyleSheet());
+        connect(&unlockdlg, SIGNAL(finished (int)), this, SLOT(unlockDialogIsFinished(int)));
+        unlockdlg.exec();
+    }
+    else {
+        LockDialog lockdlg;
+        lockdlg.setWindowTitle("Lock Keychain Wallet");
+        lockdlg.setModel(walletModel);
+        lockdlg.setStyleSheet(GUIUtil::loadStyleSheet());
+        connect(&lockdlg, SIGNAL(finished (int)), this, SLOT(lockDialogIsFinished(int)));
+        lockdlg.exec();   
+    }
+}
+
+
+void OverviewPage::unlockDialogIsFinished(int result) {
+    if(result == QDialog::Accepted){
+        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/unlock) 0 0 0 0 stretch stretch; width: 30px;");
+        ui->labelBalance_2->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, walletModel->getBalance(), false, BitcoinUnits::separatorAlways));
+        ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, walletModel->getSpendableBalance(), false, BitcoinUnits::separatorAlways));
+        ui->labelUnconfirmed->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, walletModel->getUnconfirmedBalance(), false, BitcoinUnits::separatorAlways));
+    }
+}
+
+void OverviewPage::lockDialogIsFinished(int result) {
+    if(result == QDialog::Accepted){
+        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/lock) 0 0 0 0 stretch stretch; width: 20px;");
+        ui->labelBalance_2->setText("Locked; Hidden");
+        ui->labelBalance->setText("Locked; Hidden");
+        ui->labelUnconfirmed->setText("Locked; Hidden");
+    }
+}
+
+void OverviewPage::updateLockStatus(int status) {
+    if (!walletModel)
+        return;
+
+    // update wallet state
+    if (status == WalletModel::Locked || status == WalletModel::UnlockedForAnonymizationOnly)
+        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/lock) 0 0 0 0 stretch stretch; width: 20px;");
+    else
+        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/unlock) 0 0 0 0 stretch stretch; width: 30px;");
 }

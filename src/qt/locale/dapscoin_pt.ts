@@ -1155,10 +1155,6 @@
         <translation>Sincronizando masternodes ...</translation>
     </message>
     <message>
-        <source>Synchronizing sporks...</source>
-        <translation>Sincronizando sporks ...</translation>
-    </message>
-    <message>
         <source>This help message</source>
         <translation>Esta mensagem de ajuda</translation>
     </message>
@@ -1215,10 +1211,6 @@
         <translation>Não é possível ligar a %s neste computador (erro retornado%s)</translation>
     </message>
     <message>
-        <source>Unable to sign spork message, wrong key?</source>
-        <translation>Não é possível assinar mensagem spork, chave errada?</translation>
-    </message>
-    <message>
         <source>Unknown network specified in -onlynet: '%s'</source>
         <translation>Rede desconhecida especificada em -onlynet: '%s'</translation>
     </message>
@@ -1271,8 +1263,8 @@
         <translation>Carteira esta bloqueada.</translation>
     </message>
     <message>
-        <source>Wallet needed to be rewritten: restart DAPScoin Core to complete</source>
-        <translation>Carteira precisa ser reescrita: reinicie o DAPScoin Core para completar.</translation>
+        <source>Wallet needed to be rewritten: restart DAPScoin to complete</source>
+        <translation>Carteira precisa ser reescrita: reinicie o DAPScoin para completar.</translation>
     </message>
     <message>
         <source>Wallet options:</source>

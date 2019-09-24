@@ -1,6 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -41,8 +42,6 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/deque.hpp>
 #include <atomic>
-#include "crypto/crypto-ops.h"
-#include "crypto/common.h"
 
 
 
@@ -153,6 +152,7 @@ class CAccount
 {
 public:
     CPubKey vchPubKey;
+    uint32_t nAccountIndex;
 
     CAccount()
     {
@@ -172,6 +172,7 @@ public:
         if (!(nType & SER_GETHASH))
             READWRITE(nVersion);
         READWRITE(vchPubKey);
+        READWRITE(nAccountIndex);
     }
 };
 
@@ -200,6 +201,15 @@ public:
         READWRITE(spendAccount);
         READWRITE(viewAccount);
     }
+};
+
+enum StakingStatusError
+{
+	NONE,
+	DEFAULT,
+	UTXO_UNDER_THRESHOLD,
+	RESERVE_TOO_HIGH,
+	RESERVE_TOO_HIGH_AND_UTXO_UNDER_THRESHOLD
 };
 
 /**
@@ -236,6 +246,7 @@ private:
     void SyncMetaData(std::pair<TxSpends::iterator, TxSpends::iterator>);
 
 public:
+    static const CAmount MINIMUM_STAKE_AMOUNT = 400000 * COIN;
     static const int32_t MAX_DECOY_POOL = 500;
     static const int32_t PROBABILITY_NEW_COIN_SELECTED = 70;
     bool RescanAfterUnlock(bool fromBeginning = false);
@@ -247,9 +258,11 @@ public:
     bool HasCollateralInputs(bool fOnlyConfirmed = true);
     bool IsCollateralAmount(CAmount nInputAmount) const;
     int CountInputsWithAmount(CAmount nInputAmount);
+    bool checkPassPhraseRule(const char *pass);
     COutPoint findMyOutPoint(const CTxIn& txin) const;
-    bool SelectCoinsCollateral(std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet) ;
-
+    bool SelectCoinsCollateral(std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet);
+    static int ComputeTxSize(size_t numIn, size_t numOut, size_t ringSize);
+    void resetPendingOutPoints();
     /*
      * Main wallet lock.
      * This lock protects all the fields added by CWallet
@@ -276,6 +289,7 @@ public:
     unsigned int nHashInterval;
     uint64_t nStakeSplitThreshold;
     int nStakeSetUpdateTime;
+    int walletUnlockCountStatus = 0;
 
     //MultiSend
     std::vector<std::pair<std::string, int> > vMultiSend;
@@ -289,7 +303,7 @@ public:
     //Auto Combine Inputs
     bool fCombineDust;
     CAmount nAutoCombineThreshold;
-
+    bool CreateSweepingTransaction(CAmount target);
     CWallet()
     {
         SetNull();
@@ -320,6 +334,7 @@ public:
         nLastResend = 0;
         nTimeFirstKey = 0;
         fWalletUnlockAnonymizeOnly = false;
+        walletStakingInProgress = false;
         fBackupMints = false;
 
         // Stake Settings
@@ -338,8 +353,8 @@ public:
         vDisabledAddresses.clear();
 
         //Auto Combine Dust
-        fCombineDust = false;
-        nAutoCombineThreshold = 0;
+        fCombineDust = true;
+        nAutoCombineThreshold = 500 * COIN;
     }
 
     void setZDapsAutoBackups(bool fEnabled)
@@ -371,6 +386,7 @@ public:
 
     std::set<COutPoint> setLockedCoins;
     bool walletStakingInProgress;
+    std::map<CKeyID, CHDPubKey> mapHdPubKeys; //<! memory map of HD extended pubkeys
 
     int64_t nTimeFirstKey;
 
@@ -418,7 +434,22 @@ public:
     //  keystore implementation
     // Generate a new key
     CPubKey GenerateNewKey();
-
+    void DeriveNewChildKey(uint32_t nAccountIndex, CKey& secretRet);
+    void GenerateNewHDChain(std::string* phrase = NULL);
+     /* Set the HD chain model (chain child index counters) */
+    bool SetHDChain(const CHDChain& chain, bool memonly);
+    bool SetCryptedHDChain(const CHDChain& chain, bool memonly);
+    bool GetDecryptedHDChain(CHDChain& hdChainRet);
+    bool IsHDEnabled();
+    bool HaveKey(const CKeyID &address) const;
+    //! GetPubKey implementation that also checks the mapHdPubKeys
+    bool GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const;
+    //! GetKey implementation that can derive a HD private key on the fly
+    bool GetKey(const CKeyID &address, CKey& keyOut) const;
+    //! Adds a HDPubKey into the wallet(database)
+    bool AddHDPubKey(const CExtPubKey &extPubKey, bool fInternal, uint32_t nAccountIndex);
+    //! loads a HDPubKey into the wallets memory
+    bool LoadHDPubKey(const CHDPubKey &hdPubKey);
     //! Adds a key to the store, and saves it to disk.
     bool AddKeyPubKey(const CKey& key, const CPubKey& pubkey);
     //! Adds a key to the store, without saving it to disk (used by LoadWallet)
@@ -724,7 +755,7 @@ public:
     CAmount getCTxOutValue(const CTransaction &tx, const CTxOut &out) const;
     bool findCorrespondingPrivateKey(const CTxOut &txout, CKey &key) const;
     bool AvailableCoins(const uint256 wtxid, const CWalletTx* pcoin, vector<COutput>& vCoins, int cannotSpend, bool fOnlyConfirmed = true, const CCoinControl* coinControl = NULL, bool fIncludeZeroValue = false, AvailableCoinsType nCoinType = ALL_COINS, bool fUseIX = false);
-    void CreatePrivacyAccount();
+    void CreatePrivacyAccount(bool force = false);
     bool mySpendPrivateKey(CKey& spend) const;
     bool myViewPrivateKey(CKey& view) const;
     static bool CreateCommitment(const CAmount val, CKey& blind, std::vector<unsigned char>& commitment);
@@ -732,9 +763,18 @@ public:
     static bool CreateCommitmentWithZeroBlind(const CAmount val, unsigned char* pBlind, std::vector<unsigned char>& commitment);
     bool WriteStakingStatus(bool status);
     bool ReadStakingStatus();
+    bool Write2FA(bool status);
+    bool Read2FA();
+    bool Write2FASecret(std::string secret);
+    std::string Read2FASecret();
+    bool Write2FAPeriod(int period);
+    int Read2FAPeriod();
+    bool Write2FALastTime(uint64_t lastTime);
+    uint64_t Read2FALastTime();
     bool MakeShnorrSignature(CTransaction&);
     bool MakeShnorrSignatureTxIn(CTxIn& txin, uint256);
     bool computeSharedSec(const CTransaction& tx, const CTxOut& out, CPubKey& sharedSec) const;
+    void AddComputedPrivateKey(const CTxOut& out);
 private:
     bool encodeStealthBase58(const std::vector<unsigned char>& raw, std::string& stealth);
     bool allMyPrivateKeys(std::vector<CKey>& spends, std::vector<CKey>& views);

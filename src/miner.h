@@ -20,7 +20,7 @@ class CWallet;
 struct CBlockTemplate;
 
 /** Run the miner threads */
-void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads);
+void GenerateDapscoins(bool fGenerate, CWallet* pwallet, int nThreads);
 /** Run the PoA miner threads */
 void GeneratePoADapscoin(CWallet* pwallet, int period);
 /** Generate a new block, without valid proof-of-work */
@@ -35,6 +35,7 @@ void IncrementExtraNonce(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& 
 void UpdateTime(CBlockHeader* block, const CBlockIndex* pindexPrev);
 
 void BitcoinMiner(CWallet* pwallet, bool fProofOfStake, MineType mineType=MineType::MINETYPE_POW);
+void ThreadStakeMinter();
 
 extern double dHashesPerSec;
 extern int64_t nHPSTimerStart;

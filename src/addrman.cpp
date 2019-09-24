@@ -253,6 +253,11 @@ bool CAddrMan::Add_(const CAddress& addr, const CNetAddr& source, int64_t nTimeP
     int nId;
     CAddrInfo* pinfo = Find(addr, &nId);
 
+    // Do not set a penalty for a source's self-announcement
+    if (addr == source) {
+        nTimePenalty = 0;
+    }
+
     if (pinfo) {
         // periodically update nTime
         bool fCurrentlyOnline = (GetAdjustedTime() - addr.nTime < 24 * 60 * 60);
@@ -343,8 +348,10 @@ CAddress CAddrMan::Select_()
         while (1) {
             int nKBucket = GetRandInt(ADDRMAN_TRIED_BUCKET_COUNT);
             int nKBucketPos = GetRandInt(ADDRMAN_BUCKET_SIZE);
-            if (vvTried[nKBucket][nKBucketPos] == -1)
-                continue;
+            while (vvTried[nKBucket][nKBucketPos] == -1) {
+                nKBucket = (nKBucket + insecure_rand()) % ADDRMAN_TRIED_BUCKET_COUNT;
+                nKBucketPos = (nKBucketPos + insecure_rand()) % ADDRMAN_BUCKET_SIZE;
+            }
             int nId = vvTried[nKBucket][nKBucketPos];
             assert(mapInfo.count(nId) == 1);
             CAddrInfo& info = mapInfo[nId];

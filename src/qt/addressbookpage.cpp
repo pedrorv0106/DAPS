@@ -1,5 +1,6 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -81,7 +82,8 @@ AddressBookPage::AddressBookPage(Mode mode, Tabs tab, QWidget* parent) : QDialog
     deleteAction = new QAction(ui->deleteAddress->text(), this);
 
     // Build context menu
-    contextMenu = new QMenu();
+    contextMenu = new QMenu(this);
+    contextMenu->setAttribute(Qt::WA_DeleteOnClose);
     contextMenu->addAction(copyAddressAction);
     contextMenu->addAction(copyLabelAction);
     contextMenu->addAction(editAction);

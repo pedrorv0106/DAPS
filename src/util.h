@@ -1,6 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -37,8 +38,6 @@ extern bool fLiteMode;
 extern bool fEnableSwiftTX;
 extern int nSwiftTXDepth;
 extern const int64_t AUTOMINT_DELAY;
-extern int nAnonymizeDapscoinAmount;
-extern int nLiquidityProvider;
 extern int64_t enforceMasternodePaymentsTime;
 extern std::string strMasterNodeAddr;
 extern int keysLoaded;
@@ -58,6 +57,7 @@ extern bool fLogIPs;
 extern volatile bool fReopenDebugLog;
 
 void SetupEnvironment();
+bool SetupNetworking();
 
 /** Return true if log accepts specified category */
 bool LogAcceptCategory(const char* category);

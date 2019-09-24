@@ -1,6 +1,7 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -110,8 +111,8 @@ public:
         nMaxMoneyOut = MAX_MONEY * COIN;
 
         /** Height or Time Based Activations **/
-        nLastPOWBlock = 200;
-        nStartPOABlock = 300;
+        nLastPOWBlock = 300;
+        nStartPOABlock = 360;
         nModifierUpdateBlock = 615800;
         nPoABlockTime = 30 * 60; //a PoA block every 30 minutes
         nMinNumPoSBlocks = 59;
@@ -137,12 +138,12 @@ public:
         genesis.hashPrevBlock = 0;
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
         genesis.nVersion = 1;
-        genesis.nTime = 1558521974;
+        genesis.nTime = 1558521975;
         genesis.nBits = 0x1e0ffff0;
-        genesis.nNonce = 13653769;
+        genesis.nNonce = 16758790;
 
         //change blockhash from 0x00000e9468bba3df97334bfb5015543488a0fb38193c82b101472937590e3037 because of transaction structure change
-        if(genesis.GetHash()!=uint256("0000059f433f00d4ed1aa073e7bdd9b358676cc8e2537d371c354256390122b6"))
+        if(genesis.GetHash()!=uint256("000000c1f997ef7feee72e7aaa24f33fb94666c7c5cb9806a3bc63437b4e3479"))
         {
             printf("Searchingforgenesisblock...\n");
             uint256 hashTarget=uint256().SetCompact(genesis.nBits);
@@ -174,16 +175,14 @@ public:
 
 
         hashGenesisBlock = genesis.GetHash();
-        assert(hashGenesisBlock == uint256("0000059f433f00d4ed1aa073e7bdd9b358676cc8e2537d371c354256390122b6"));
+        assert(hashGenesisBlock == uint256("000000c1f997ef7feee72e7aaa24f33fb94666c7c5cb9806a3bc63437b4e3479"));
         printf("genesis.hashMerkleRoot: %s\n", genesis.hashMerkleRoot.GetHex().c_str());
         assert(genesis.hashMerkleRoot == uint256("03fcb696ffbce2bb8248c65f6286c9948a4927919506331f21992a7021f969ed"));
 
-        vSeeds.push_back(CDNSSeedData("daps-stg-explorer.arcadiaapi.com", "daps-stg-explorer.arcadiaapi.com")); //35.231.98.100        // Single node address
-        vSeeds.push_back(CDNSSeedData("daps-stg-seed1.arcadiaapi.com", "daps-stg-seed1.arcadiaapi.com"));  //104.196.7.250   // Primary DNS Seeder from arcadiaapi
-        vSeeds.push_back(CDNSSeedData("daps-stg-seed2.arcadiaapi.com ", "daps-stg-seed2.arcadiaapi.com"));  // 35.229.54.148   // // Single node address
-        vSeeds.push_back(CDNSSeedData("daps-stg-seed3.arcadiaapi.com", "daps-stg-seed3.arcadiaapi.com"));  // 35.227.81.1  // // Single node address
-        vSeeds.push_back(CDNSSeedData("daps-stg-seed4.arcadiaapi.com", "daps-stg-seed4.arcadiaapi.com"));  //35.237.184.1   // // Single node address
-        vSeeds.push_back(CDNSSeedData("35.227.75.234", "35.227.75.234"));  //35.227.75.234 ip address of stg-ssed1
+        vSeeds.push_back(CDNSSeedData("dev-seed1.dapscoin.com", "dev-seed1.dapscoin.com"));        // Single node address
+        vSeeds.push_back(CDNSSeedData("dev-seed2.dapscoin.com", "dev-seed2.dapscoin.com"));        // Single node address
+        vSeeds.push_back(CDNSSeedData("seed1.dapscoin.com", "seed1.dapscoin.com"));        // Single node address
+        vSeeds.push_back(CDNSSeedData("seed2.dapscoin.com", "seed2.dapscoin.com"));        // Single node address
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 30);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 13);
@@ -191,7 +190,7 @@ public:
         base58Prefixes[EXT_PUBLIC_KEY] = boost::assign::list_of(0x02)(0x2D)(0x25)(0x33).convert_to_container<std::vector<unsigned char> >();
         base58Prefixes[EXT_SECRET_KEY] = boost::assign::list_of(0x02)(0x21)(0x31)(0x2B).convert_to_container<std::vector<unsigned char> >();
         // 	BIP44 coin type is from https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-        base58Prefixes[EXT_COIN_TYPE] = boost::assign::list_of(0x80)(0x00)(0x00)(0x77).convert_to_container<std::vector<unsigned char> >();
+        nExtCoinType = 0x80000166;
 
         convertSeed6(vFixedSeeds, pnSeed6_main, ARRAYLEN(pnSeed6_main));
 
@@ -206,7 +205,6 @@ public:
         fHeadersFirstSyncingActive = false;
 
         nPoolMaxTransactions = 3;
-        strSporkKey = "04B433E6598390C992F4F022F20D3B4CBBE691652EE7C48243B81701CBDB7CC7D7BF0EE09E154E6FCBF2043D65AF4E9E97B89B5DBAF830D83B9B7F469A6C45A717";
         strObfuscationPoolDummyAddress = "D87q2gC9j6nNrnzCsg4aY6bHMLsT9nUhEw";
         nStartMasternodePayments = 1546809115; //Wed, 25 Jun 2014 20:36:16 GMT
     }
@@ -303,7 +301,7 @@ public:
         // Testnet dapscoin BIP32 prvkeys start with 'DRKP'
         base58Prefixes[EXT_SECRET_KEY] = boost::assign::list_of(0x3a)(0x80)(0x58)(0x37).convert_to_container<std::vector<unsigned char> >();
         // Testnet dapscoin BIP44 coin type is '1' (All coin's testnet default)
-        base58Prefixes[EXT_COIN_TYPE] = boost::assign::list_of(0x80)(0x00)(0x00)(0x01).convert_to_container<std::vector<unsigned char> >();
+        nExtCoinType = 0x80000001;
 
         convertSeed6(vFixedSeeds, pnSeed6_test, ARRAYLEN(pnSeed6_test));
 
@@ -316,7 +314,6 @@ public:
         fTestnetToBeDeprecatedFieldRPC = true;
 
         nPoolMaxTransactions = 2;
-        strSporkKey = "04348C2F50F90267E64FACC65BFDC9D0EB147D090872FB97ABAE92E9A36E6CA60983E28E741F8E7277B11A7479B626AC115BA31463AC48178A5075C5A9319D4A38";
         strObfuscationPoolDummyAddress = "y57cqfGRkekRyDRNeJiLtYVEbvhXrNbmox";
         nStartMasternodePayments = 1420837558; //Fri, 09 Jan 2015 21:05:58 GMT
         nBudget_Fee_Confirmations = 3; // Number of confirmations for the finalization fee. We have to make this very short
@@ -427,6 +424,8 @@ public:
         fDefaultConsistencyChecks = true;
         fAllowMinDifficultyBlocks = false;
         fMineBlocksOnDemand = true;
+
+        nExtCoinType = 0x80000166;
     }
 
     const Checkpoints::CCheckpointData& Checkpoints() const

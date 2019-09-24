@@ -45,6 +45,7 @@ class PeerTableModel : public QAbstractTableModel
 
 public:
     explicit PeerTableModel(ClientModel* parent = 0);
+    ~PeerTableModel();
     const CNodeCombinedStats* getNodeStats(int idx);
     int getRowByNodeId(NodeId nodeid);
     void startAutoRefresh();
