@@ -17,7 +17,7 @@ spec:
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: staker-1-pv-volume
+  name: staker-1-pv-volume-mn
   labels:
     type: local
 spec:

@@ -31,7 +31,7 @@ spec:
     name: staker-28-pv-claim
   gcePersistentDisk:
     fsType: ext4
-    pdName: stakingnode-28-service
+    pdName: stakingnode-28-service-mn
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:

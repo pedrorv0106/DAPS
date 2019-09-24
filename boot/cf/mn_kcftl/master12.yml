@@ -31,7 +31,7 @@ spec:
     name: master-12-pv-claim
   gcePersistentDisk:
     fsType: ext4
-    pdName: masternode-12-service
+    pdName: masternode-12-service-mn
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
