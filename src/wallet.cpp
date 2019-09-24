@@ -5328,12 +5328,11 @@ bool CWallet::CreateSweepingTransaction(CAmount target)
 
                             std::string strFailReason;
                             if (!makeRingCT(wtxNew, ringSize, strFailReason)) {
-                                strFailReason = _("Failed to generate RingCT for Sweeping transaction");
                                 ret = false;
                             }
 
                             if (ret && !generateBulletProofAggregate(wtxNew)) {
-                                strFailReason = _("Failed to generate bulletproof for Sweeping transaction");
+                                strFailReason = _("There is an internal error in generating bulletproofs. Please try again later.");
                                 ret = false;
                             }
 
