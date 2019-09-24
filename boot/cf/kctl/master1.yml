@@ -14,7 +14,6 @@ spec:
     app: daps-master-1
   sessionAffinity: None
   type: LoadBalancer
----
 kind: PersistentVolume
 apiVersion: v1
 metadata:
@@ -33,7 +32,6 @@ spec:
   gcePersistentDisk:
     fsType: ext4
     pdName: masternode-1-service
----
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -46,7 +44,6 @@ spec:
   resources:
     requests:
       storage: 9Gi
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:

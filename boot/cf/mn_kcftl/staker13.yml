@@ -14,7 +14,6 @@ spec:
     app: daps-staker-13
   sessionAffinity: None
   type: LoadBalancer
----
 kind: PersistentVolume
 apiVersion: v1
 metadata:
@@ -32,8 +31,7 @@ spec:
     name: staker-13-pv-claim
   gcePersistentDisk:
     fsType: ext4
-    pdName: stakingnode-13-service
----
+    pdName: stakingnode-13-service-mn
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -46,7 +44,6 @@ spec:
   resources:
     requests:
       storage: 9Gi
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
