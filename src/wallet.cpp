@@ -2834,7 +2834,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                         if (nSpendableBalance < nValueIn + fee) {
                             strFailReason = ("Insufficient funds. Transaction requires a fee of " + FormatMoney(fee));
                         } else if (setCoins.size() > MAX_TX_INPUTS) {
-                            strFailReason = _("Transaction size too large due to the internal complexity of the wallet, please send a smaller amount");
+                            strFailReason = _("You have attempted to send more than 50 UTXOs in a single transaction. This is a rare occurrence, and to work around this limitation, please either lower the total amount of the transaction, or send two separate transactions with 50% of your total desired amount.");
                         }
                     } else if (coin_type == ONLY_NOT1000000IFMN) {
                         strFailReason = _("Unable to locate enough funds for this transaction that are not equal 10000 DAPS.");
