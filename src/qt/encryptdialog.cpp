@@ -74,7 +74,7 @@ void EncryptDialog::on_acceptPassphrase() {
         if (newPass.length() < 10) {
             QMessageBox msgBox;
             msgBox.setWindowTitle("Wallet Encryption Failed");
-            msgBox.setText("The passphrase's length has to be more than 10. Please try again."");
+            msgBox.setText("The passphrase's length has to be more than 10. Please try again.");
             msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
             msgBox.setIcon(QMessageBox::Critical);
             return;
@@ -83,7 +83,7 @@ void EncryptDialog::on_acceptPassphrase() {
         if (!pwalletMain->checkPassPhraseRule(newPass.c_str())) {
             QMessageBox msgBox;
             msgBox.setWindowTitle("Wallet Encryption Failed");
-            msgBox.setText("The passphrase must contain lower, upper, digit, symbol. Please try again."");
+            msgBox.setText("The passphrase must contain lower, upper, digit, symbol. Please try again.");
             msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
             msgBox.setIcon(QMessageBox::Critical);
             return;
@@ -94,7 +94,7 @@ void EncryptDialog::on_acceptPassphrase() {
         if (ret < 0 || guesses < 10000) {
             QMessageBox msgBox;
             msgBox.setWindowTitle("Wallet Encryption Failed");
-            msgBox.setText("The passphrases entered for wallet encryption is too weak. Please try again."");
+            msgBox.setText("The passphrases entered for wallet encryption is too weak. Please try again.");
             msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
             msgBox.setIcon(QMessageBox::Critical);
             return;
@@ -110,7 +110,7 @@ void EncryptDialog::on_acceptPassphrase() {
     } else {
         QMessageBox msgBox;
         msgBox.setWindowTitle("Wallet Encryption Failed");
-        msgBox.setText("The passphrases entered for wallet encryption do not match. Please try again."");
+        msgBox.setText("The passphrases entered for wallet encryption do not match. Please try again.");
         msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
         msgBox.setIcon(QMessageBox::Critical);
         return;
