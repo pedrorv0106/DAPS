@@ -79,7 +79,11 @@ spec:
           preStop:
             exec:
               command: ["/bin/bash","-c","./launchdaps.sh stop"]
+<<<<<<< Updated upstream
         command: ["/bin/bash","-c","./launchdaps.sh start && trap: TERM INT; sleep infinity & wait"]
+=======
+              command: ["/bin/bash","-c","./launchdaps.sh start && trap: TERM INT; sleep infinity & wait"]
+>>>>>>> Stashed changes
         ports:
         - containerPort: 53575
           name: regtest

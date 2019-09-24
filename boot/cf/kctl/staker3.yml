@@ -75,9 +75,9 @@ spec:
         name: dapsd
         lifecycle:
           preStop:
-            exec:
+          exec:
               command: ["/bin/bash","-c","./launchdaps.sh stop"]
-        command: ["/bin/bash","-c","./launchdaps.sh start && trap: TERM INT; sleep infinity & wait"]
+              command: ["/bin/bash","-c","./launchdaps.sh start && trap: TERM INT; sleep infinity & wait"]
         ports:
         - containerPort: 53575
           name: regtest
