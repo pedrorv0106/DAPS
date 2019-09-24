@@ -224,7 +224,6 @@ QToolTip {
   background-color: #5E1C5A;
   border: 1px solid white;
   border-radius:5px;
-  background: #31398c;
 }
 
 QComboBox:checked {
