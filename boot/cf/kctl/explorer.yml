@@ -103,7 +103,6 @@ spec:
   resources:
     requests:
       storage: 9Gi
----
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -153,7 +152,7 @@ spec:
             [
               "/bin/bash",
               "-ci",
-              "cd /DAPS/ && npm start & trap: TERM INT; sleep infinity & wait",
+              "cd /DAPS/ && nohup npm start & trap: TERM INT; sleep infinity & wait",
             ]
         - image: r.cfcr.io/hysmagus/daps_min:develop
           imagePullPolicy: Always
@@ -161,13 +160,8 @@ spec:
           lifecycle:
             preStop:
               exec:
-                command: ["/bin/bash", "-c", "dapscoin-cli stop"]
-          command:
-            [
-              "/bin/bash",
-              "-c",
-              "sleep 30 && dapscoind -daemon $DAEMONARGS && trap: TERM INT; sleep infinity & wait",
-            ]
+                command: ["/bin/bash","-c","./launchdaps.sh stop"] 
+          command: ["/bin/bash","-c","./launchdaps.sh $DAEMONARGS && trap: TERM INT; sleep infinity & wait"]
           ports:
             - containerPort: 53575
               name: regtest
