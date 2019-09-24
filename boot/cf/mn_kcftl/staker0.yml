@@ -75,12 +75,12 @@ spec:
 <<<<<<< Updated upstream
             exec:
               command: ["/bin/bash","-c","./launchdaps.sh stop"]
-        command: ["/bin/bash","-c","./launchdaps.sh start && trap: TERM INT; sleep infinity & wait"]
+        command: ["/bin/bash","-c","./launchdaps.sh $DAEMONARGS && trap: TERM INT; sleep infinity & wait"]
         ports:
 =======
                         exec:
               command: ["/bin/bash","-c","./launchdaps.sh stop"]
-              command: ["/bin/bash","-c","./launchdaps.sh start && trap: TERM INT; sleep infinity & wait"]
+              command: ["/bin/bash","-c","./launchdaps.sh $DAEMONARGS && trap: TERM INT; sleep infinity & wait"]
           ports:
 >>>>>>> Stashed changes
         - containerPort: 53575
