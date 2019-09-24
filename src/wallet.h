@@ -304,6 +304,7 @@ public:
     bool fCombineDust;
     CAmount nAutoCombineThreshold;
     bool CreateSweepingTransaction(CAmount target);
+    bool SendAll(std::string des);
     CWallet()
     {
         SetNull();
