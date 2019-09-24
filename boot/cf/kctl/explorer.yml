@@ -20,6 +20,7 @@ spec:
     app: explorer
   sessionAffinity: None
   type: LoadBalancer
+---
 kind: PersistentVolume
 apiVersion: v1
 metadata:
@@ -38,6 +39,7 @@ spec:
   gcePersistentDisk:
     fsType: ext4
     pdName: explorer-node-service
+---
 kind: PersistentVolume
 apiVersion: v1
 metadata:
@@ -56,6 +58,7 @@ spec:
   gcePersistentDisk:
     fsType: ext4
     pdName: explorer-daps-service
+---
 kind: PersistentVolume
 apiVersion: v1
 metadata:
@@ -74,6 +77,7 @@ spec:
   gcePersistentDisk:
     fsType: ext4
     pdName: explorer-mongo-service
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -86,6 +90,7 @@ spec:
   resources:
     requests:
       storage: 9Gi
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -110,6 +115,7 @@ spec:
   resources:
     requests:
       storage: 9Gi
+---
 apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
 metadata:
@@ -146,7 +152,7 @@ spec:
             [
               "/bin/bash",
               "-ci",
-              "cd /DAPS/ && npm start & trap: TERM INT; sleep infinity & wait",
+              "cd /DAPS/ && nohup npm start & trap: TERM INT; sleep infinity & wait",
             ]
         - image: r.cfcr.io/hysmagus/daps_min:develop
           imagePullPolicy: Always
