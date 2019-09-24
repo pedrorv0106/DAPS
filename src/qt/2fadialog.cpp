@@ -50,9 +50,11 @@ TwoFADialog::TwoFADialog(QWidget *parent) :
     connect(ui->txtcode_5, &QLineEdit::textChanged, this, &TwoFADialog::codeChanged);
     connect(ui->txtcode_6, &QLineEdit::textChanged, this, &TwoFADialog::codeChanged);
 
-    ui->label_2->setVisible(false);
     ui->lblOpenAppURL->setVisible(false);
-
+    bool status = pwalletMain->Read2FA();
+    if (!status) {
+        ui->label_2->setVisible(true);
+    }
 }
 
 TwoFADialog::~TwoFADialog()
@@ -118,7 +120,7 @@ void TwoFADialog::on_acceptCode()
     code.sprintf("%c%c%c%c%c%c", code1, code2, code3, code4, code5, code6);
 
     QString result = "";
-    QString secret = settings.value("2FACode").toString();
+    QString secret = QString::fromStdString(pwalletMain->Read2FASecret());
     result = QGoogleAuth::generatePin(secret.toUtf8());
     
     if (result != code) {

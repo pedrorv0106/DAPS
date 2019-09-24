@@ -132,9 +132,11 @@ void WalletModel::updateStatus()
 
 void WalletModel::pollBalanceChanged()
 {
+    bool isJustUnlocked = false;
 	if (wallet->walletUnlockCountStatus == 1) {
 		emit WalletUnlocked();
 		wallet->walletUnlockCountStatus++;
+        isJustUnlocked = true;
 	}
     // Get required locks upfront. This avoids the GUI from getting stuck on
     // periodical polls if the core is holding the locks for a longer time -
@@ -152,10 +154,14 @@ void WalletModel::pollBalanceChanged()
         // Balance and number of transactions might have changed
         cachedNumBlocks = chainActive.Height();
 
-        checkBalanceChanged();
+        isJustUnlocked = isJustUnlocked && checkBalanceChanged();
         if (transactionTableModel) {
             transactionTableModel->updateConfirmations();
         }
+    }
+
+    if (isJustUnlocked) {
+        emitBalanceChanged();
     }
 }
 
@@ -166,10 +172,10 @@ void WalletModel::emitBalanceChanged()
         cachedWatchOnlyBalance, cachedWatchUnconfBalance, cachedWatchImmatureBalance);
 }
 
-void WalletModel::checkBalanceChanged()
+bool WalletModel::checkBalanceChanged()
 {
     TRY_LOCK(cs_main, lockMain);
-    if (!lockMain) return;
+    if (!lockMain) return true;
     LogPrintf("\n%s:Checking balance changed\n", __func__);
     CAmount newBalance = getBalance();
     CAmount newUnconfirmedBalance = getUnconfirmedBalance();
@@ -195,7 +201,10 @@ void WalletModel::checkBalanceChanged()
         cachedWatchImmatureBalance = newWatchImmatureBalance;
         emit balanceChanged(newBalance, newUnconfirmedBalance, newImmatureBalance,
             newWatchOnlyBalance, newWatchUnconfBalance, newWatchImmatureBalance);
+        return false;
     }
+
+    return true;
 }
 
 void WalletModel::updateTransaction()
@@ -599,12 +608,12 @@ void WalletModel::listCoins(std::map<QString, std::vector<COutput> >& mapCoins) 
 
 bool WalletModel::isLockedCoin(uint256 hash, unsigned int n) const
 {
-    LOCK2(cs_main, wallet->cs_wallet);
+    LOCK2(cs_main, wallet->cs_wallet);   
     return wallet->IsLockedCoin(hash, n);
 }
 
 void WalletModel::lockCoin(COutPoint& output)
-{
+{   
     LOCK2(cs_main, wallet->cs_wallet);
     wallet->LockCoin(output);
 }
@@ -650,32 +659,32 @@ bool WalletModel::isMine(CBitcoinAddress address)
     return IsMine(*wallet, address.Get());
 }
 
-StakingStatusError WalletModel::getStakingStatusError(QStringList& errors)
+StakingStatusError WalletModel::getStakingStatusError(QString& error)
 {
     // int timeRemaining = (1471482000 - chainActive.Tip()->nTime) / (60 * 60); //time remaining in hrs
     if (1471482000 > chainActive.Tip()->nTime) {
-        errors.push_back(QString(tr("Chain has not matured. Hours remaining: ")) + QString((1471482000 - chainActive.Tip()->nTime) / (60 * 60)));
+        error = "Chain has not matured.\nHours remaining: " + QString((1471482000 - chainActive.Tip()->nTime) / (60 * 60));
         return StakingStatusError::DEFAULT;
     } else if (vNodes.empty()) {
-        errors.push_back(QString(tr("No peer connections. Please check network.")));
+        error = "No peer connections.\nPlease check network settings.";
         return StakingStatusError::DEFAULT;
     } else {
     	bool fMintable = pwalletMain->MintableCoins();
     	CAmount balance = pwalletMain->GetBalance();
     	if (!fMintable || nReserveBalance > balance) {
     		if (balance < CWallet::MINIMUM_STAKE_AMOUNT + 10*COIN) {
-    			errors.push_back(QString(tr("Balance is under staking thresh hold, please send more DAPS to this wallet")));
+    			error = "\nBalance is under the minimum 400,000 staking threshold.\nPlease send more DAPS to this wallet.\n";
     			return StakingStatusError::DEFAULT;
     		}
     		if (nReserveBalance > balance || (balance > nReserveBalance && balance - nReserveBalance < CWallet::MINIMUM_STAKE_AMOUNT)) {
-    			errors.push_back(QString(tr("Reserve balance is too high, please lower it down in order to turn staking on")));
+    			error = "Reserve balance is too high.\nPlease lower it in order to turn staking on.";
     			return StakingStatusError::RESERVE_TOO_HIGH;
     		}
 			if (!fMintable) {
 				if (balance > CWallet::MINIMUM_STAKE_AMOUNT) {
 					//10 is to cover transaction fees
 					if (balance >= CWallet::MINIMUM_STAKE_AMOUNT + 10*COIN) {
-						errors.push_back(QString(tr("Not enough mintable coins. Do you want to merge make a sent-to-yourself transaction to turn the wallet into stakable?.")));
+						error = "Not enough mintable coins.\nDo you want to merge & make a sent-to-yourself transaction to make the wallet stakable?";
 						return StakingStatusError::UTXO_UNDER_THRESHOLD;
 					}
 				}

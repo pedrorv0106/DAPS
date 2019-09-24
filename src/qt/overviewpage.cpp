@@ -163,6 +163,8 @@ void OverviewPage::getPercentage(CAmount nUnlockedBalance, QString& sDAPSPercent
 void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, 
                               const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance)
 {
+    int walletStatus = walletModel->getEncryptionStatus();
+
     currentBalance = balance;
     currentUnconfirmedBalance = unconfirmedBalance;
     currentImmatureBalance = immatureBalance;
@@ -180,10 +182,15 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     }
     // DAPS labels
     //Cam: Remove immatureBalance from showing on qt wallet (as andrew says)
-    ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, nSpendableDisplayed, false, BitcoinUnits::separatorAlways));
-    ui->labelUnconfirmed->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, unconfirmedBalance, false, BitcoinUnits::separatorAlways));
-    ui->labelBalance_2->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance, false, BitcoinUnits::separatorAlways));
-
+    if (walletStatus == WalletModel::Locked || walletStatus == WalletModel::UnlockedForAnonymizationOnly) {
+        ui->labelBalance_2->setText("Locked; Hidden");
+        ui->labelBalance->setText("Locked; Hidden");
+        ui->labelUnconfirmed->setText("Locked; Hidden");
+    } else {
+        ui->labelBalance_2->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance, false, BitcoinUnits::separatorAlways));
+        ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, nSpendableDisplayed, false, BitcoinUnits::separatorAlways));
+        ui->labelUnconfirmed->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, unconfirmedBalance, false, BitcoinUnits::separatorAlways));
+    }
     QFont font = ui->labelBalance_2->font();
     font.setPointSize(15);
     font.setBold(true);
@@ -241,6 +248,8 @@ void OverviewPage::setWalletModel(WalletModel* model)
                                  SLOT(refreshRecentTransactions()));
         connect(model, SIGNAL(WalletUnlocked()), this,
                                          SLOT(updateBalance()));
+        connect(model, SIGNAL(encryptionStatusChanged(int)), this,
+                                         SLOT(updateLockStatus(int)));
         
         connect(model->getOptionsModel(), SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit()));
 
@@ -248,14 +257,11 @@ void OverviewPage::setWalletModel(WalletModel* model)
         connect(model, SIGNAL(notifyWatchonlyChanged(bool)), this, SLOT(updateWatchOnlyLabels(bool)));
 
         connect(walletModel, SIGNAL(RefreshRecent()), this, SLOT(refreshRecentTransactions()));
+
+        updateLockStatus(walletModel->getEncryptionStatus());
     }
     // update the display unit, to not use the default ("DAPS")
     updateDisplayUnit();
-    // update wallet state
-    // if (walletModel->getEncryptionStatus() == WalletModel::Locked || walletModel->getEncryptionStatus() == WalletModel::UnlockedForAnonymizationOnly)
-        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/lock) 0 0 0 0 stretch stretch; width: 20px;");
-    // else
-        // ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/unlock) 0 0 0 0 stretch stretch;");
 }
 
 void OverviewPage::updateBalance()
@@ -404,7 +410,6 @@ int OverviewPage::tryNetworkBlockCount(){
 }
 
 void OverviewPage::updateRecentTransactions(){
-	if (isSyncingBlocks) return;
 	if (!pwalletMain || pwalletMain->IsLocked()) return;
     QLayoutItem* item;
     QSettings settings;
@@ -468,7 +473,6 @@ void OverviewPage::updateRecentTransactions(){
 }
 
 void OverviewPage::refreshRecentTransactions() {
-	if (isSyncingBlocks) return;
 	updateRecentTransactions();
 }
 
@@ -495,11 +499,28 @@ void OverviewPage::on_lockUnlock() {
 void OverviewPage::unlockDialogIsFinished(int result) {
     if(result == QDialog::Accepted){
         ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/unlock) 0 0 0 0 stretch stretch; width: 30px;");
+        ui->labelBalance_2->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, walletModel->getBalance(), false, BitcoinUnits::separatorAlways));
+        ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, walletModel->getSpendableBalance(), false, BitcoinUnits::separatorAlways));
+        ui->labelUnconfirmed->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, walletModel->getUnconfirmedBalance(), false, BitcoinUnits::separatorAlways));
     }
 }
 
 void OverviewPage::lockDialogIsFinished(int result) {
     if(result == QDialog::Accepted){
         ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/lock) 0 0 0 0 stretch stretch; width: 20px;");
+        ui->labelBalance_2->setText("Locked; Hidden");
+        ui->labelBalance->setText("Locked; Hidden");
+        ui->labelUnconfirmed->setText("Locked; Hidden");
     }
+}
+
+void OverviewPage::updateLockStatus(int status) {
+    if (!walletModel)
+        return;
+
+    // update wallet state
+    if (status == WalletModel::Locked || status == WalletModel::UnlockedForAnonymizationOnly)
+        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/lock) 0 0 0 0 stretch stretch; width: 20px;");
+    else
+        ui->btnLockUnlock->setStyleSheet("border-image: url(:/images/unlock) 0 0 0 0 stretch stretch; width: 30px;");
 }

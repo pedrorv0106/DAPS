@@ -34,15 +34,16 @@ QComboBox:disabled,
 }
 
 #stakingState {
-  font-size: 9px;
-  padding-left: 34px;
+  font-size: 11px;
+  font-style: italic;
+  padding-left: 40px;
   color: white;
-  font-weight: bold;
 }
 #connectionCount {
   font-size: 11px;
   font-style: italic;
   padding-left: 32px;
+  color: white;
 }
 
 QDialog {
@@ -175,10 +176,16 @@ QComboBox:focus,
 QComboBox::item:selected,
 QMenuBar::item:selected,
 QMenu::item:selected,
-QTextEdit:focus,
-QToolTip {
+QTextEdit:focus {
   border-width: 4px;
   background: #a7a7a7;
+}
+
+QToolTip {
+  color: white;
+  background-color: #5E1C5A;
+  border: 1px solid white;
+  border-radius:5px;
 }
 
 QMenu::item {
@@ -232,6 +239,10 @@ QPushButton#btn_rescan{
 
 QPushButton#btn_resync{
   font-size: 15px;
+}
+
+QPushButton#btn_day,QPushButton#btn_month,QPushButton#btn_week{
+  min-height: 35px;
 }
 
 QPushButton#btnLockUnlock{
@@ -305,13 +316,15 @@ QWidget::right-arrow:disabled {
 /*** Toggle Buttons ***/
 ToggleButton > QPushButton {
   font-size: 10px;
-  padding: 0;
+  padding-right: 15px;
   border-radius: 10px;
 }
 
 ToggleButton > QPushButton:enabled:checked {
   background-color: black;
   color: #93faff;
+  padding: 0;
+  text-align: center;
   border: 1px solid #93faff;
 }
 #TxEntry,

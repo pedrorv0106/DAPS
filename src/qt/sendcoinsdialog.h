@@ -58,7 +58,6 @@ private:
 private slots:
     void dialogIsFinished(int result);
     void on_sendButton_clicked();
-    void updateRingSize();
     void setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, 
                               const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance);
 

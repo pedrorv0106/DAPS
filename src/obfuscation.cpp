@@ -581,7 +581,6 @@ void CObfuscationPool::CheckFinalTransaction()
     if (!fMasterNode) return; // check and relay final tx only on masternode
 
     CWalletTx txNew = CWalletTx(pwalletMain, finalTransaction);
-
     LOCK2(cs_main, pwalletMain->cs_wallet);
     {
         LogPrint("obfuscation", "Transaction 2: %s\n", txNew.ToString());
@@ -1917,8 +1916,8 @@ bool CObfuScationSigner::VerifyMessage(CPubKey pubkey, vector<unsigned char>& vc
 bool CObfuscationQueue::Sign()
 {
     if (!fMasterNode) return false;
-    std::string strMessage = vin.ToString() + boost::lexical_cast<std::string>(nDenom) + boost::lexical_cast<std::string>(time) + boost::lexical_cast<std::string>(ready);
-
+    HEX_DATA_STREAM_PROTOCOL(PROTOCOL_VERSION) << vin.ToString() << nDenom << time << ready;
+    std::string strMessage = HEX_STR(ser);
     CKey key2;
     CPubKey pubkey2;
     std::string errorMessage = "";
@@ -1957,8 +1956,8 @@ bool CObfuscationQueue::CheckSignature()
     CMasternode* pmn = mnodeman.Find(vin);
 
     if (pmn != NULL) {
-        std::string strMessage = vin.ToString() + boost::lexical_cast<std::string>(nDenom) + boost::lexical_cast<std::string>(time) + boost::lexical_cast<std::string>(ready);
-
+        HEX_DATA_STREAM_PROTOCOL(pmn->protocolVersion) << vin.ToString() << nDenom << time << ready;
+        std::string strMessage = HEX_STR(ser);
         std::string errorMessage = "";
         if (!obfuScationSigner.VerifyMessage(pmn->pubKeyMasternode, vchSig, strMessage, errorMessage)) {
             return error("CObfuscationQueue::CheckSignature() - Got bad Masternode address signature %s \n", vin.ToString().c_str());

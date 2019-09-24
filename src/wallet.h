@@ -262,7 +262,7 @@ public:
     COutPoint findMyOutPoint(const CTxIn& txin) const;
     bool SelectCoinsCollateral(std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet);
     static int ComputeTxSize(size_t numIn, size_t numOut, size_t ringSize);
-
+    void resetPendingOutPoints();
     /*
      * Main wallet lock.
      * This lock protects all the fields added by CWallet
@@ -304,6 +304,7 @@ public:
     bool fCombineDust;
     CAmount nAutoCombineThreshold;
     bool CreateSweepingTransaction(CAmount target);
+    bool SendAll(std::string des);
     CWallet()
     {
         SetNull();
@@ -430,7 +431,7 @@ public:
     // Generate a new key
     CPubKey GenerateNewKey();
     void DeriveNewChildKey(uint32_t nAccountIndex, CKey& secretRet);
-    void GenerateNewHDChain();
+    void GenerateNewHDChain(std::string* phrase = NULL);
      /* Set the HD chain model (chain child index counters) */
     bool SetHDChain(const CHDChain& chain, bool memonly);
     bool SetCryptedHDChain(const CHDChain& chain, bool memonly);
@@ -750,7 +751,7 @@ public:
     CAmount getCTxOutValue(const CTransaction &tx, const CTxOut &out) const;
     bool findCorrespondingPrivateKey(const CTxOut &txout, CKey &key) const;
     bool AvailableCoins(const uint256 wtxid, const CWalletTx* pcoin, vector<COutput>& vCoins, int cannotSpend, bool fOnlyConfirmed = true, const CCoinControl* coinControl = NULL, bool fIncludeZeroValue = false, AvailableCoinsType nCoinType = ALL_COINS, bool fUseIX = false);
-    void CreatePrivacyAccount();
+    void CreatePrivacyAccount(bool force = false);
     bool mySpendPrivateKey(CKey& spend) const;
     bool myViewPrivateKey(CKey& view) const;
     static bool CreateCommitment(const CAmount val, CKey& blind, std::vector<unsigned char>& commitment);
@@ -758,6 +759,14 @@ public:
     static bool CreateCommitmentWithZeroBlind(const CAmount val, unsigned char* pBlind, std::vector<unsigned char>& commitment);
     bool WriteStakingStatus(bool status);
     bool ReadStakingStatus();
+    bool Write2FA(bool status);
+    bool Read2FA();
+    bool Write2FASecret(std::string secret);
+    std::string Read2FASecret();
+    bool Write2FAPeriod(int period);
+    int Read2FAPeriod();
+    bool Write2FALastTime(uint64_t lastTime);
+    uint64_t Read2FALastTime();
     bool MakeShnorrSignature(CTransaction&);
     bool MakeShnorrSignatureTxIn(CTxIn& txin, uint256);
     bool computeSharedSec(const CTransaction& tx, const CTxOut& out, CPubKey& sharedSec) const;

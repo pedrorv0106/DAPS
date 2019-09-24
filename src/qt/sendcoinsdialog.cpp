@@ -72,15 +72,18 @@ void SendCoinsDialog::setModel(WalletModel* model)
 
         connect(model, SIGNAL(balanceChanged(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)), this,
             SLOT(setBalance(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)));
-
-        updateRingSize();
     }
 }
 
 void SendCoinsDialog::setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, 
                               const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance)
 {
-    ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(0, balance, false, BitcoinUnits::separatorAlways));
+    int status = model->getEncryptionStatus();
+    if (status == WalletModel::Locked || status == WalletModel::UnlockedForAnonymizationOnly) {
+        ui->labelBalance->setText("Locked; Hidden");
+    } else {
+        ui->labelBalance->setText(BitcoinUnits::formatHtmlWithUnit(0, balance, false, BitcoinUnits::separatorAlways));
+    }
 }
 
 SendCoinsDialog::~SendCoinsDialog(){
@@ -119,21 +122,20 @@ void SendCoinsDialog::on_sendButton_clicked(){
 
     send_address = recipient.address;
     send_amount = recipient.amount;
-    bool status = settings.value("2FA").toString() == "enabled";
+    bool status = pwalletMain->Read2FA();
     if (!status) {
         sendTx();
         return;
     }
-    
-    uint lastTime = settings.value("2FALastTime").toInt();
-    uint period = settings.value("2FAPeriod").toInt();
+    uint lastTime = pwalletMain->Read2FALastTime();
+    uint period = pwalletMain->Read2FAPeriod();
     QDateTime current = QDateTime::currentDateTime();
     uint diffTime = current.toTime_t() - lastTime;
     if (diffTime <= period * 24 * 60 * 60)
         sendTx();
     else {
         TwoFAConfirmDialog codedlg;
-        codedlg.setWindowTitle("2FACode verification");
+        codedlg.setWindowTitle("2FACode Verification");
         codedlg.setStyleSheet(GUIUtil::loadStyleSheet());
         connect(&codedlg, SIGNAL(finished (int)), this, SLOT(dialogIsFinished(int)));
         codedlg.exec();
@@ -151,18 +153,32 @@ void SendCoinsDialog::sendTx() {
             false
         );
     } catch (const std::exception& err) {
-        QMessageBox::warning(this, "Could not send", QString(err.what()));
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Transaction Creation Error");
+        msgBox.setText(err.what());
+        msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
         return;
     }
 
     if (success){
-        QMessageBox txcomplete;
-        txcomplete.setText("Transaction initialized.");
-        txcomplete.setInformativeText(resultTx.GetHash().GetHex().c_str());
-        txcomplete.setStyleSheet(GUIUtil::loadStyleSheet());
-        txcomplete.setStyleSheet("QMessageBox {messagebox-text-interaction-flags: 5;}");
-        txcomplete.exec();
         WalletUtil::getTx(pwalletMain, resultTx.GetHash());
+        QString txhash = resultTx.GetHash().GetHex().c_str();
+        QMessageBox msgBox;
+        QPushButton *copyButton = msgBox.addButton(tr("Copy"), QMessageBox::ActionRole);
+        copyButton->setStyleSheet("background:transparent;");
+        copyButton->setIcon(QIcon(":/icons/editcopy"));
+        msgBox.setWindowTitle("Transaction Initialized");
+        msgBox.setText("Transaction initialized.\n\n" + txhash);
+        msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+        msgBox.setIcon(QMessageBox::Information);
+        msgBox.exec();
+
+        if (msgBox.clickedButton() == copyButton) {
+        //Copy txhash to clipboard
+        GUIUtil::setClipboard(txhash);
+        }
     }
 }
 
@@ -185,11 +201,3 @@ SendCoinsEntry* SendCoinsDialog::addEntry()
         bar->setSliderPosition(bar->maximum());
     return entry;
 }
-
-void SendCoinsDialog::updateRingSize()
-{
-    QSettings settings;
-}
-
-
-
