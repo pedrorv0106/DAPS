@@ -2830,7 +2830,12 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                 CAmount nValueIn = 0;
                 if (!SelectCoins(true, ringSize, 2, nTotalValue, setCoins, nValueIn, coinControl, coin_type, useIX)) {
                     if (coin_type == ALL_COINS) {
-                        strFailReason = _("Insufficient funds.");
+                        CAmount fee = ComputeFee(setCoins.size(), 2, ringSize);
+                        if (nSpendableBalance < nValueIn + fee) {
+                            strFailReason = ("Insufficient funds. Transaction requires a fee of " + FormatMoney(fee));
+                        } else if (setCoins.size() > MAX_TX_INPUTS) {
+                            strFailReason = _("Transaction size too large due to the internal complexity of the wallet, please send a smaller amount");
+                        }
                     } else if (coin_type == ONLY_NOT1000000IFMN) {
                         strFailReason = _("Unable to locate enough funds for this transaction that are not equal 10000 DAPS.");
                     } else if (coin_type == ONLY_NONDENOMINATED_NOT1000000IFMN) {
@@ -5941,9 +5946,6 @@ bool CWallet::SendToStealthAddress(const std::string& stealthAddr, const CAmount
     CAmount nFeeRequired;
     if (!pwalletMain->CreateTransactionBulletProof(secret, pubViewKey, scriptPubKey, nValue, wtxNew, reservekey,
             nFeeRequired, strError, &control, ALL_COINS, fUseIX, (CAmount)0, 6, tomyself)) {
-        if (nValue + nFeeRequired > pwalletMain->GetBalance())
-            strError = strprintf("Error: This transaction requires a transaction fee of at least %s because of its amount, complexity, or use of recently received funds!, nfee=%d, nValue=%d", FormatMoney(nFeeRequired), nFeeRequired, nValue);
-        LogPrintf("SendToStealthAddress() : Not enough! %s\n", strError);
         throw runtime_error(strError);
     }
     return true;
