@@ -2809,6 +2809,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     txNew.hasPaymentID = wtxNew.hasPaymentID;
     txNew.paymentID = wtxNew.paymentID;
     CAmount nSpendableBalance = GetSpendableBalance();
+    bool ret = true;
     {
     	LogPrintf("\n%s: Start locking\n", __func__);
         LOCK2(cs_main, cs_wallet);
@@ -2835,7 +2836,8 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                 	std::copy(txPub.begin(), txPub.end(), std::back_inserter(txout.txPub));
                 	if (txout.IsDust(::minRelayTxFee)) {
                 		strFailReason = _("Transaction amount too small");
-                		return false;
+                		ret = false;
+                        break;
                 	}
                 	CPubKey sharedSec;
                 	ECDHInfo::ComputeSharedSec(txPrivDes, recipientViewKey, sharedSec);
@@ -2843,6 +2845,8 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                 	txNew.vout.push_back(txout);
                 	nBytes += ::GetSerializeSize(*(CTxOut*)&txout, SER_NETWORK, PROTOCOL_VERSION);
                 }
+
+                if (!ret) break;
 
                 // Choose coins to use
                 set<pair<const CWalletTx*, unsigned int> > setCoins;
@@ -2864,7 +2868,8 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                         strFailReason += " " + _("SwiftX requires inputs with at least 6 confirmations, you might need to wait a few minutes and try again.");
                     }
 
-                    return false;
+                    ret = false;
+                    break;
                 }
 
                 CAmount nChange = nValueIn - nValue - nFeeRet;
@@ -2892,7 +2897,8 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                     	if (nSpendableBalance > nValueIn) {
                     		continue;
                     	}
-                    	false;
+                    	ret = false;
+                        break;
                     }
                     CPubKey shared;
                     computeSharedSec(txNew, newTxOut, shared);
@@ -2906,7 +2912,8 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                 	if (nSpendableBalance > nValueIn) {
                 		continue;
                 	}
-                    return false;
+                    ret = false;
+                    break;
                 }
 
                 // Fill vin
@@ -2917,42 +2924,44 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                 *static_cast<CTransaction*>(&wtxNew) = CTransaction(txNew);
                 break;
             }
-            if (!makeRingCT(wtxNew, ringSize, strFailReason)) {
+            if (ret && !makeRingCT(wtxNew, ringSize, strFailReason)) {
              	strFailReason = _("Failed to generate RingCT");
-             	return false;
+             	ret = false;
              }
 
-             if (!generateBulletProofAggregate(wtxNew)) {
+             if (ret && !generateBulletProofAggregate(wtxNew)) {
              	strFailReason = _("Failed to generate bulletproof");
-             	return false;
+             	ret = false;
              }
 
-             //set transaction output amounts as 0
-             for (size_t i = 0; i < wtxNew.vout.size(); i++) {
-             	wtxNew.vout[i].nValue = 0;
-             }
+             if (ret) {
+                //set transaction output amounts as 0
+                for (size_t i = 0; i < wtxNew.vout.size(); i++) {
+                    wtxNew.vout[i].nValue = 0;
+                }
 
-             if (!CommitTransaction(wtxNew, reservekey, (!useIX ? "tx" : "ix"))) {
-            	 inSpendQueueOutpointsPerSession.clear();
-            	 throw runtime_error(
-            			 "Error: The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.");
-             }
-             for(size_t i = 0; i < inSpendQueueOutpointsPerSession.size(); i++) {
-            	 inSpendQueueOutpoints[inSpendQueueOutpointsPerSession[i]] = true;
-             }
-             inSpendQueueOutpointsPerSession.clear();
+                if (!CommitTransaction(wtxNew, reservekey, (!useIX ? "tx" : "ix"))) {
+                    inSpendQueueOutpointsPerSession.clear();
+                    ret = false;
+                    strFailReason = _("Error: The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.");
+                }
+                for(size_t i = 0; i < inSpendQueueOutpointsPerSession.size(); i++) {
+                    inSpendQueueOutpoints[inSpendQueueOutpointsPerSession[i]] = true;
+                }
+                inSpendQueueOutpointsPerSession.clear();
 
-             uint256 hash = wtxNew.GetHash();
-             int maxTxPrivKeys = txPrivKeys.size() > wtxNew.vout.size() ? wtxNew.vout.size() : txPrivKeys.size();
-             for (int i = 0; i < maxTxPrivKeys; i++) {
-            	 std::string key = hash.GetHex() + std::to_string(i);
-            	 CWalletDB(strWalletFile).WriteTxPrivateKey(key, CBitcoinSecret(txPrivKeys[i]).ToString());
+                uint256 hash = wtxNew.GetHash();
+                int maxTxPrivKeys = txPrivKeys.size() > wtxNew.vout.size() ? wtxNew.vout.size() : txPrivKeys.size();
+                for (int i = 0; i < maxTxPrivKeys; i++) {
+                    std::string key = hash.GetHex() + std::to_string(i);
+                    CWalletDB(strWalletFile).WriteTxPrivateKey(key, CBitcoinSecret(txPrivKeys[i]).ToString());
+                }
+                txPrivKeys.clear();
              }
-             txPrivKeys.clear();
         }
     }
 
-    return true;
+    return ret;
 }
 
 bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
@@ -5193,6 +5202,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 	CAmount total = 0;
 	vector<COutput> vCoins;
 	vCoins.clear();
+    bool ret = true;
 
 	{
 		LOCK2(cs_main, cs_wallet);
@@ -5247,130 +5257,135 @@ bool CWallet::CreateSweepingTransaction(CAmount target) {
 				if (vCoins.size() == MAX_TX_INPUTS) break;
 			}
 
-			if (vCoins.empty()) return false;
-			if (vCoins.size() < MIN_TX_INPUTS_FOR_SWEEPING) return false;
+			if (vCoins.empty() || vCoins.size() < MIN_TX_INPUTS_FOR_SWEEPING || total < target + 4*COIN && vCoins.size() <= MAX_TX_INPUTS) {
+                //preconditions to create auto sweeping transactions not satisfied, do nothing here
+                ret = false;
+            } else {
+                // Generate transaction public key
+                CWalletTx wtxNew;
+                CKey secret;
+                secret.MakeNewKey(true);
+                SetMinVersion(FEATURE_COMPRPUBKEY);
 
-			if (total < target + 4*COIN && vCoins.size() <= MAX_TX_INPUTS) return false;
+                unsigned char rand_seed[16];
+                memcpy(rand_seed, secret.begin(), 16);
+                secp256k1_rand_seed(rand_seed);
+                int ringSize = MIN_RING_SIZE + secp256k1_rand32() % (MAX_RING_SIZE - MIN_RING_SIZE + 1);
 
-			// Generate transaction public key
-			CWalletTx wtxNew;
-			CKey secret;
-			secret.MakeNewKey(true);
-			SetMinVersion(FEATURE_COMPRPUBKEY);
+                int estimateTxSize = ComputeTxSize(vCoins.size(), 1, ringSize);
+                CAmount nFeeNeeded = GetMinimumFee(estimateTxSize, nTxConfirmTarget, mempool);
+                nFeeNeeded += BASE_FEE;
+                if (total < nFeeNeeded*2) {
+                    ret = false;
+                } else {
+                    std::string myAddress;
+                    ComputeStealthPublicAddress("masteraccount", myAddress);
+                    //Parse stealth address
+                    CPubKey pubViewKey, pubSpendKey;
+                    bool hasPaymentID;
+                    uint64_t paymentID;
 
-			unsigned char rand_seed[16];
-			memcpy(rand_seed, secret.begin(), 16);
-			secp256k1_rand_seed(rand_seed);
-			int ringSize = MIN_RING_SIZE + secp256k1_rand32() % (MAX_RING_SIZE - MIN_RING_SIZE + 1);
+                    if (!CWallet::DecodeStealthAddress(myAddress, pubViewKey, pubSpendKey, hasPaymentID, paymentID)) {
+                        //should never happen
+                        ret = false;
+                    } else {
+                        wtxNew.txPrivM.Set(secret.begin(), secret.end(), true);
+                        wtxNew.hasPaymentID = 0;
 
-			int estimateTxSize = ComputeTxSize(vCoins.size(), 1, ringSize);
-			CAmount nFeeNeeded = GetMinimumFee(estimateTxSize, nTxConfirmTarget, mempool);
-			nFeeNeeded += BASE_FEE;
-			if (total < nFeeNeeded*2) return false;
+                        //Compute stealth destination
+                        CPubKey stealthDes;
+                        CKey spend;
+                        mySpendPrivateKey(spend);
+                        CKey view;
+                        myViewPrivateKey(view);
+                        ComputeStealthDestination(secret, pubViewKey, pubSpendKey, stealthDes);
 
-			std::string myAddress;
-			ComputeStealthPublicAddress("masteraccount", myAddress);
-			//Parse stealth address
-			CPubKey pubViewKey, pubSpendKey;
-			bool hasPaymentID;
-			uint64_t paymentID;
+                        CScript scriptPubKey = GetScriptForDestination(stealthDes);
 
-			if (!CWallet::DecodeStealthAddress(myAddress, pubViewKey, pubSpendKey, hasPaymentID, paymentID)) {
-				//should never happen
-				return false;
-			}
+                        CAmount nValue = total - nFeeNeeded;
 
-			wtxNew.txPrivM.Set(secret.begin(), secret.end(), true);
+                        wtxNew.fTimeReceivedIsTxTime = true;
+                        wtxNew.BindWallet(this);
+                        CMutableTransaction txNew;
+                        txNew.hasPaymentID = wtxNew.hasPaymentID;
+                        txNew.paymentID = wtxNew.paymentID;
 
-			wtxNew.hasPaymentID = 0;
+                        {
+                            unsigned int nBytes = 0;
+                            while (true) {
+                                txNew.vin.clear();
+                                txNew.vout.clear();
+                                wtxNew.fFromMe = true;
 
-			//Compute stealth destination
-			CPubKey stealthDes;
-			CKey spend;
-			mySpendPrivateKey(spend);
-			CKey view;
-			myViewPrivateKey(view);
-			ComputeStealthDestination(secret, pubViewKey, pubSpendKey, stealthDes);
+                                double dPriority = 0;
 
-			CScript scriptPubKey = GetScriptForDestination(stealthDes);
+                                // vouts to the payees
+                                CTxOut txout(nValue, scriptPubKey);
+                                CPubKey txPub = wtxNew.txPrivM.GetPubKey();
+                                txPrivKeys.push_back(wtxNew.txPrivM);
+                                std::copy(txPub.begin(), txPub.end(), std::back_inserter(txout.txPub));
 
-			CAmount nValue = total - nFeeNeeded;
+                                CPubKey sharedSec;
+                                ECDHInfo::ComputeSharedSec(wtxNew.txPrivM, pubViewKey, sharedSec);
+                                EncodeTxOutAmount(txout, txout.nValue, sharedSec.begin());
+                                txNew.vout.push_back(txout);
+                                //nBytes += ::GetSerializeSize(*(CTxOut*)&txout, SER_NETWORK, PROTOCOL_VERSION);
 
-			wtxNew.fTimeReceivedIsTxTime = true;
-			wtxNew.BindWallet(this);
-			CMutableTransaction txNew;
-			txNew.hasPaymentID = wtxNew.hasPaymentID;
-			txNew.paymentID = wtxNew.paymentID;
+                                txNew.nTxFee = nFeeNeeded;
 
-			{
-				unsigned int nBytes = 0;
-				while (true) {
-					txNew.vin.clear();
-					txNew.vout.clear();
-					wtxNew.fFromMe = true;
+                                //Fill vin
+                                for(size_t i = 0; i < vCoins.size(); i++) {
+                                    txNew.vin.push_back(CTxIn(vCoins[i].tx->GetHash(), vCoins[i].i));
+                                }
 
-					double dPriority = 0;
+                                // Embed the constructed transaction data in wtxNew.
+                                *static_cast<CTransaction*>(&wtxNew) = CTransaction(txNew);
+                                break;
+                            }
 
-					// vouts to the payees
-					CTxOut txout(nValue, scriptPubKey);
-					CPubKey txPub = wtxNew.txPrivM.GetPubKey();
-					txPrivKeys.push_back(wtxNew.txPrivM);
-					std::copy(txPub.begin(), txPub.end(), std::back_inserter(txout.txPub));
+                            std::string strFailReason;
+                            if (!makeRingCT(wtxNew, ringSize, strFailReason)) {
+                                strFailReason = _("Failed to generate RingCT for Sweeping transaction");
+                                ret = false;
+                            }
 
-					CPubKey sharedSec;
-					ECDHInfo::ComputeSharedSec(wtxNew.txPrivM, pubViewKey, sharedSec);
-					EncodeTxOutAmount(txout, txout.nValue, sharedSec.begin());
-					txNew.vout.push_back(txout);
-					//nBytes += ::GetSerializeSize(*(CTxOut*)&txout, SER_NETWORK, PROTOCOL_VERSION);
+                            if (ret && !generateBulletProofAggregate(wtxNew)) {
+                                strFailReason = _("Failed to generate bulletproof for Sweeping transaction");
+                                ret = false;
+                            }
 
-					txNew.nTxFee = nFeeNeeded;
+                            if (ret) {
+                                for (size_t i = 0; i < wtxNew.vout.size(); i++) {
+                                    wtxNew.vout[i].nValue = 0;
+                                }
+                                CReserveKey reservekey(pwalletMain);
+                                if (!pwalletMain->CommitTransaction(wtxNew, reservekey, "tx")) {
+                                    inSpendQueueOutpointsPerSession.clear();
+                                    ret = false;
+                                }
+                                if (ret) {
+                                    for(size_t i = 0; i < inSpendQueueOutpointsPerSession.size(); i++) {
+                                        inSpendQueueOutpoints[inSpendQueueOutpointsPerSession[i]] = true;
+                                    }
+                                    inSpendQueueOutpointsPerSession.clear();
 
-					//Fill vin
-					for(size_t i = 0; i < vCoins.size(); i++) {
-						txNew.vin.push_back(CTxIn(vCoins[i].tx->GetHash(), vCoins[i].i));
-					}
-
-					// Embed the constructed transaction data in wtxNew.
-					*static_cast<CTransaction*>(&wtxNew) = CTransaction(txNew);
-					break;
-				}
-
-				std::string strFailReason;
-				if (!makeRingCT(wtxNew, ringSize, strFailReason)) {
-					strFailReason = _("Failed to generate RingCT for Sweeping transaction");
-					return false;
-				}
-
-				if (!generateBulletProofAggregate(wtxNew)) {
-					strFailReason = _("Failed to generate bulletproof for Sweeping transaction");
-					return false;
-				}
-
-				for (size_t i = 0; i < wtxNew.vout.size(); i++) {
-					wtxNew.vout[i].nValue = 0;
-				}
-				CReserveKey reservekey(pwalletMain);
-				if (!pwalletMain->CommitTransaction(wtxNew, reservekey, "tx")) {
-					inSpendQueueOutpointsPerSession.clear();
-					return false;
-				}
-				for(size_t i = 0; i < inSpendQueueOutpointsPerSession.size(); i++) {
-					inSpendQueueOutpoints[inSpendQueueOutpointsPerSession[i]] = true;
-				}
-				inSpendQueueOutpointsPerSession.clear();
-
-				uint256 hash = wtxNew.GetHash();
-				int maxTxPrivKeys = txPrivKeys.size() > wtxNew.vout.size() ? wtxNew.vout.size() : txPrivKeys.size();
-				for (int i = 0; i < maxTxPrivKeys; i++) {
-					std::string key = hash.GetHex() + std::to_string(i);
-					CWalletDB(strWalletFile).WriteTxPrivateKey(key, CBitcoinSecret(txPrivKeys[i]).ToString());
-				}
-				txPrivKeys.clear();
-			}
+                                    uint256 hash = wtxNew.GetHash();
+                                    int maxTxPrivKeys = txPrivKeys.size() > wtxNew.vout.size() ? wtxNew.vout.size() : txPrivKeys.size();
+                                    for (int i = 0; i < maxTxPrivKeys; i++) {
+                                        std::string key = hash.GetHex() + std::to_string(i);
+                                        CWalletDB(strWalletFile).WriteTxPrivateKey(key, CBitcoinSecret(txPrivKeys[i]).ToString());
+                                    }
+                                    txPrivKeys.clear();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 		}
 	}
 
-	return true;
+	return ret;
 }
 
 void CWallet::AutoCombineDust()
