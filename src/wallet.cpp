@@ -5179,17 +5179,26 @@ bool CWallet::GetDestData(const CTxDestination& dest, const std::string& key, st
     return false;
 }
 
+std::string ValueFromAmount(const CAmount &amount) {
+    bool sign = amount < 0;
+    int64_t n_abs = (sign ? -amount : amount);
+    int64_t quotient = n_abs / COIN;
+    int64_t remainder = n_abs % COIN;
+    std::string ret(strprintf("%s%d.%08d", sign ? "-" : "", quotient, remainder));
+    return ret;
+}
+
 bool CWallet::SendAll(std::string des)
 {
     if (this->IsLocked()) {
-        throw runtime_error("Wallet is locked! Please unlock it to make transactions.")
+        throw runtime_error("Wallet is locked! Please unlock it to make transactions.");
     }
 
     int estimateTxSize = ComputeTxSize(1, 1, MIN_RING_SIZE);
     CAmount nFeeNeeded = GetMinimumFee(estimateTxSize, nTxConfirmTarget, mempool);
     nFeeNeeded += BASE_FEE;
     if (GetSpendableBalance() <= nFeeNeeded) {
-        throw runtime_error("Not enough balance to pay minimum transaction Fee: " + ValueFromAmount(nFeeNeeded).get_str());
+        throw runtime_error("Not enough balance to pay minimum transaction Fee: " + ValueFromAmount(nFeeNeeded));
     }
 
     CAmount total = 0;
@@ -5242,12 +5251,12 @@ bool CWallet::SendAll(std::string des)
                     }
                     vCoins.push_back(COutput(pcoin, i, nDepth, true));
                     total += decodedAmount;
-                    if (vCoins.size() > nHashDrift MAX_TX_INPUTS) break;
+                    if (vCoins.size() > MAX_TX_INPUTS) break;
                 }
                 if (vCoins.size() > MAX_TX_INPUTS) break;
             }
 
-            if (vCoins.size() > MAX_TX_INPUTs) {
+            if (vCoins.size() > MAX_TX_INPUTS) {
                 strFailReason = "Transaction size too large, please try again later";
                 ret = false;
             }
@@ -5269,7 +5278,7 @@ bool CWallet::SendAll(std::string des)
                 nFeeNeeded = GetMinimumFee(estimateTxSize, nTxConfirmTarget, mempool);
                 nFeeNeeded += BASE_FEE;
                 if (total < nFeeNeeded) {
-                    strFailReason = "Not enough balance to pay minimum transaction Fee: " + ValueFromAmount(nFeeNeeded).get_str();
+                    strFailReason = "Not enough balance to pay minimum transaction Fee: " + ValueFromAmount(nFeeNeeded);
                     ret = false;
                 } else {
                     //Parse stealth address
@@ -5350,7 +5359,7 @@ bool CWallet::SendAll(std::string des)
                                 CReserveKey reservekey(pwalletMain);
                                 if (!pwalletMain->CommitTransaction(wtxNew, reservekey, "tx")) {
                                     inSpendQueueOutpointsPerSession.clear();
-                                    strFailReason = "Internal error! Please try again later!"
+                                    strFailReason = "Internal error! Please try again later!";
                                     ret = false;
                                 }
                                 if (ret) {
