@@ -2811,10 +2811,8 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
     CAmount nSpendableBalance = GetSpendableBalance();
     bool ret = true;
     {
-    	LogPrintf("\n%s: Start locking\n", __func__);
         LOCK2(cs_main, cs_wallet);
         {
-        	LogPrintf("\n%s: Locked\n", __func__);
             nFeeRet = 0;
             if (nFeePay > 0) nFeeRet = nFeePay;
             unsigned int nBytes = 0;
