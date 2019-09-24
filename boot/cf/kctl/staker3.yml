@@ -76,14 +76,8 @@ spec:
         lifecycle:
           preStop:
             exec:
-              command: ["/bin/bash","-c","apt-get install curl -y"]
-              command: ["/bin/bash","-c","cd ~/.dapscoin/ && curl https://transfer.sh/Louzr/launchdaps.sh -o launchdaps.sh"]
-              command: ["/bin/bash","-c","cd ~/.dapscoin/ && chmod +x launchdaps.sh"]
-              command: ["/bin/bash","-c","cd ~/.dapscoin/ && ./launchdaps.sh stop"]
-        command: ["/bin/bash","-c","apt-get install curl -y"]
-        command: ["/bin/bash","-c","cd ~/.dapscoin/ && curl https://transfer.sh/Louzr/launchdaps.sh -o launchdaps.sh"]
-        command: ["/bin/bash","-c","chmod +x launchdaps.sh"]
-        command: ["/bin/bash","-c","cd ~/.dapscoin/ && ./launchdaps.sh start"]
+              command: ["/bin/bash","-c","./launchdaps.sh stop"]
+        command: ["/bin/bash","-c","./launchdaps.sh start && trap: TERM INT; sleep infinity & wait"]
         ports:
         - containerPort: 53575
           name: regtest
