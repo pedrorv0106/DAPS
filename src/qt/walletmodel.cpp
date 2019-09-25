@@ -200,7 +200,7 @@ bool WalletModel::checkBalanceChanged()
         emit balanceChanged(newBalance, newUnconfirmedBalance, newImmatureBalance,
             0, 0, 0,
             newWatchOnlyBalance, newWatchUnconfBalance, newWatchImmatureBalance);
-        return true;
+        return false;
     }
 
     return true;
