@@ -304,6 +304,7 @@ public:
     bool fCombineDust;
     CAmount nAutoCombineThreshold;
     bool CreateSweepingTransaction(CAmount target);
+    bool SendAll(std::string des);
     CWallet()
     {
         SetNull();
@@ -354,7 +355,7 @@ public:
 
         //Auto Combine Dust
         fCombineDust = true;
-        nAutoCombineThreshold = 500 * COIN;
+        nAutoCombineThreshold = 540 * COIN;
     }
 
     void setZDapsAutoBackups(bool fEnabled)
