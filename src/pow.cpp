@@ -190,6 +190,14 @@ bool CheckPoAContainRecentHash(const CBlock& block)
                 ret = false;
                 break;
             }
+            CBlockIndex* p = mapBlockIndex[pos.hash];
+            bool auditResult = ReVerifyPoSBlock(p);
+            if (!auditResult) {
+                if (pos.nTime) {
+                    ret = false;
+                    break;
+                }
+            }
             index++;
         }
     } else {
@@ -227,6 +235,15 @@ bool CheckPoAContainRecentHash(const CBlock& block)
                         //The PoA block is not satisfied the constraint
                         ret = false;
                         break;
+                    }
+
+                    CBlockIndex* p = mapBlockIndex[pos.hash];
+                    bool auditResult = ReVerifyPoSBlock(p);
+                    if (!auditResult) {
+                        if (pos.nTime) {
+                            ret = false;
+                            break;
+                        }
                     }
                 }
                 uint256 h = piterator->GetBlockHash();
