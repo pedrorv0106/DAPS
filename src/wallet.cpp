@@ -5179,7 +5179,7 @@ bool CWallet::GetDestData(const CTxDestination& dest, const std::string& key, st
     return false;
 }
 
-std::string ValueFromAmount(const CAmount &amount) {
+std::string ValueFromAmountToString(const CAmount &amount) {
     bool sign = amount < 0;
     int64_t n_abs = (sign ? -amount : amount);
     int64_t quotient = n_abs / COIN;
@@ -5198,7 +5198,7 @@ bool CWallet::SendAll(std::string des)
     CAmount nFeeNeeded = GetMinimumFee(estimateTxSize, nTxConfirmTarget, mempool);
     nFeeNeeded += BASE_FEE;
     if (GetSpendableBalance() <= nFeeNeeded) {
-        throw runtime_error("Not enough balance to pay minimum transaction Fee: " + ValueFromAmount(nFeeNeeded));
+        throw runtime_error("Not enough balance to pay minimum transaction Fee: " + ValueFromAmountToString(nFeeNeeded));
     }
 
     CAmount total = 0;
@@ -5278,7 +5278,7 @@ bool CWallet::SendAll(std::string des)
                 nFeeNeeded = GetMinimumFee(estimateTxSize, nTxConfirmTarget, mempool);
                 nFeeNeeded += BASE_FEE;
                 if (total < nFeeNeeded) {
-                    strFailReason = "Not enough balance to pay minimum transaction Fee: " + ValueFromAmount(nFeeNeeded);
+                    strFailReason = "Not enough balance to pay minimum transaction Fee: " + ValueFromAmountToString(nFeeNeeded);
                     ret = false;
                 } else {
                     //Parse stealth address
