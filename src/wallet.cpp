@@ -2905,7 +2905,6 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                 break;
             }
             if (ret && !makeRingCT(wtxNew, ringSize, strFailReason)) {
-                strFailReason = _("Failed to generate RingCT");
                 ret = false;
             }
 
@@ -3874,7 +3873,9 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             wlIdx = (wlIdx + 1) % mapWallet.size();
             const uint256& wtxid = it->first;
             const CWalletTx* pcoin = &(*it).second;
-
+            // Make sure the wallet is unlocked and shutdown hasn't been requested
+            if (IsLocked() || ShutdownRequested())
+                    return false;
             vector<COutput> vCoins;
             int cannotSpend = 0;
             {
