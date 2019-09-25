@@ -107,6 +107,13 @@ void SendCoinsDialog::on_sendButton_clicked(){
     if (!isValidAddresss||!isValidAmount)
         return;
 
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "Are You Sure?", "Are you sure you would like to send this transaction?", QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::Yes) {
+    } else {
+        return;
+    }
+
     bool nStaking = (nLastCoinStakeSearchInterval > 0);
 
     if (nStaking) {
