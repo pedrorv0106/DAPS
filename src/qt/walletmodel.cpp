@@ -132,11 +132,9 @@ void WalletModel::updateStatus()
 
 void WalletModel::pollBalanceChanged()
 {
-    bool isJustUnlocked = false;
 	if (wallet->walletUnlockCountStatus == 1) {
 		emit WalletUnlocked();
 		wallet->walletUnlockCountStatus++;
-        isJustUnlocked = true;
 	}
     // Get required locks upfront. This avoids the GUI from getting stuck on
     // periodical polls if the core is holding the locks for a longer time -
@@ -154,13 +152,9 @@ void WalletModel::pollBalanceChanged()
         // Balance and number of transactions might have changed
         cachedNumBlocks = chainActive.Height();
 
-        isJustUnlocked = isJustUnlocked && checkBalanceChanged();
+        checkBalanceChanged();
         if (transactionTableModel) {
             transactionTableModel->updateConfirmations();
-        }
-    } else if (isJustUnlocked) {
-        if (checkBalanceChanged()) {
-            emitBalanceChanged();
         }
     }
 }
@@ -168,6 +162,9 @@ void WalletModel::pollBalanceChanged()
 void WalletModel::emitBalanceChanged()
 {
     // Force update of UI elements even when no values have changed
+    if (cachedBalance == 0 && !checkBalanceChanged())
+        return;
+    
     emit balanceChanged(cachedBalance, cachedUnconfirmedBalance, cachedImmatureBalance,
         0, 0, 0,
         cachedWatchOnlyBalance, cachedWatchUnconfBalance, cachedWatchImmatureBalance);
@@ -203,7 +200,7 @@ bool WalletModel::checkBalanceChanged()
         emit balanceChanged(newBalance, newUnconfirmedBalance, newImmatureBalance,
             0, 0, 0,
             newWatchOnlyBalance, newWatchUnconfBalance, newWatchImmatureBalance);
-        return true;
+        return false;
     }
 
     return true;
