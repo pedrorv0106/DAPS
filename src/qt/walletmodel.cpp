@@ -158,10 +158,10 @@ void WalletModel::pollBalanceChanged()
         if (transactionTableModel) {
             transactionTableModel->updateConfirmations();
         }
-    }
-
-    if (isJustUnlocked) {
-        emitBalanceChanged();
+    } else if (isJustUnlocked) {
+        if (checkBalanceChanged()) {
+            emitBalanceChanged();
+        }
     }
 }
 
@@ -203,7 +203,7 @@ bool WalletModel::checkBalanceChanged()
         emit balanceChanged(newBalance, newUnconfirmedBalance, newImmatureBalance,
             0, 0, 0,
             newWatchOnlyBalance, newWatchUnconfBalance, newWatchImmatureBalance);
-        return false;
+        return true;
     }
 
     return true;
