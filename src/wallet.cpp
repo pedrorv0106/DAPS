@@ -2851,6 +2851,12 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                     break;
                 }
 
+                if (nValueIn == 0) {
+                    strFailReason = _("No coin set found.");
+                    ret = false;
+                    break;
+                }
+
                 CAmount nChange = nValueIn - nValue - nFeeRet;
 
                 if (nChange > 0) {
