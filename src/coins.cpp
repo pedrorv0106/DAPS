@@ -1,4 +1,5 @@
 // Copyright (c) 2012-2014 The Bitcoin developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -187,7 +188,6 @@ bool CCoinsViewCache::BatchWrite(CCoinsMap& mapCoins, const uint256& hashBlockIn
                     // modified and being pruned. This means we can just delete
                     // it from the parent.
                     cacheCoins.erase(itUs);
-                    std::cout << "Removed hash = " << it->first.GetHex()<< std::endl;
                 } else {
                     // A normal modification.
                     itUs->second.coins.swap(it->second.coins);
@@ -221,18 +221,6 @@ const CTxOut& CCoinsViewCache::GetOutputFor(const CTxIn& input) const
     return coins->vout[input.prevout.n];
 }
 
-CAmount CCoinsViewCache::GetValueIn(const CTransaction& tx) const
-{
-    if (tx.IsCoinBase())
-        return 0;
-
-    CAmount nResult = 0;
-    //for (unsigned int i = 0; i < tx.vin.size(); i++)
-        //nResult += GetOutputFor(tx.vin[i]).nValue;
-
-    return nResult;
-}
-
 bool CCoinsViewCache::HaveInputs(const CTransaction& tx) const
 {
     if (!tx.IsCoinBase()) {
@@ -246,22 +234,6 @@ bool CCoinsViewCache::HaveInputs(const CTransaction& tx) const
         }
     }
     return true;
-}
-
-double CCoinsViewCache::GetPriority(const CTransaction& tx, int nHeight) const
-{
-    if (tx.IsCoinBase() || tx.IsCoinStake())
-        return 0.0;
-    double dResult = 0.0;
-    /*for (const CTxIn& txin:  tx.vin) {
-        const CCoins* coins = AccessCoins(txin.prevout.hash);
-        assert(coins);
-        if (!coins->IsAvailable(txin.prevout.n)) continue;
-        if (coins->nHeight < nHeight) {
-            dResult += coins->vout[txin.prevout.n].nValue * (nHeight - coins->nHeight);
-        }
-    }*/
-    return tx.ComputePriority(dResult);
 }
 
 CCoinsModifier::CCoinsModifier(CCoinsViewCache& cache_, CCoinsMap::iterator it_) : cache(cache_), it(it_)

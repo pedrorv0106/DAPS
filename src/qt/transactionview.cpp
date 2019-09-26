@@ -182,6 +182,10 @@ TransactionView::TransactionView(QWidget* parent) : QWidget(parent), model(0), t
     connect(showDetailsAction, SIGNAL(triggered()), this, SLOT(showDetails()));
 }
 
+TransactionView::~TransactionView() {
+    delete contextMenu;
+}
+
 void TransactionView::setModel(WalletModel* model)
 {
     QSettings settings;

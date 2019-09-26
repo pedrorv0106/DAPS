@@ -1,6 +1,8 @@
 #include "2faconfirmdialog.h"
 #include "ui_2faconfirmdialog.h"
 #include "receiverequestdialog.h"
+#include "qgoogleauth.h"
+#include "init.h"
 
 #include <QDateTime>
 
@@ -42,6 +44,12 @@ TwoFAConfirmDialog::TwoFAConfirmDialog(QWidget *parent) :
 
     connect(ui->btnOK, SIGNAL(clicked()), this, SLOT(on_acceptCode()));
     connect(ui->btnCancel, SIGNAL(clicked()), this, SLOT(reject()));
+    connect(ui->txtcode_1, &QLineEdit::textChanged, this, &TwoFAConfirmDialog::codeChanged);
+    connect(ui->txtcode_2, &QLineEdit::textChanged, this, &TwoFAConfirmDialog::codeChanged);
+    connect(ui->txtcode_3, &QLineEdit::textChanged, this, &TwoFAConfirmDialog::codeChanged);
+    connect(ui->txtcode_4, &QLineEdit::textChanged, this, &TwoFAConfirmDialog::codeChanged);
+    connect(ui->txtcode_5, &QLineEdit::textChanged, this, &TwoFAConfirmDialog::codeChanged);
+    connect(ui->txtcode_6, &QLineEdit::textChanged, this, &TwoFAConfirmDialog::codeChanged);
 
 }
 
@@ -107,14 +115,19 @@ void TwoFAConfirmDialog::on_acceptCode()
 
     code.sprintf("%c%c%c%c%c%c", code1, code2, code3, code4, code5, code6);
 
-    QString codeSetting = settings.value("2FACode").toString();
-    if (codeSetting != "") {
-        if (code != codeSetting)
-            return;
-
-        QDateTime current = QDateTime::currentDateTime();
-        settings.setValue("2FALastTime", current.toTime_t());
+    QString result = "";
+    QString secret = QString::fromStdString(pwalletMain->Read2FASecret());
+    result = QGoogleAuth::generatePin(secret.toUtf8());
+    
+    if (result != code) {
+        QMessageBox::critical(this, tr("Wrong 2FA Code"),
+                tr("Incorrect 2FA code entered.\nPlease try again."));
+        return;
     }
 
     accept();
+}
+
+void TwoFAConfirmDialog::codeChanged(const QString & txt) {
+    this->focusNextChild();
 }

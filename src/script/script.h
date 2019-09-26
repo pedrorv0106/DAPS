@@ -19,6 +19,8 @@
 typedef std::vector<unsigned char> valtype;
 
 static const unsigned int MAX_SCRIPT_ELEMENT_SIZE = 520; // bytes
+static const int MAX_SCRIPT_SIZE = 10000;
+
 
 template <typename T>
 std::vector<unsigned char> ToByteVector(const T& in)
@@ -546,17 +548,27 @@ public:
         int nFound = 0;
         if (b.empty())
             return nFound;
-        iterator pc = begin();
+        CScript result;
+        iterator pc = begin(), pc2 = begin();
+
         opcodetype opcode;
         do
         {
-            while (end() - pc >= (long)b.size() && memcmp(&pc[0], &b[0], b.size()) == 0)
+            result.insert(result.end(), pc2, pc);
+            while (static_cast<size_t>(end() - pc) >= b.size() && std::equal(b.begin(), b.end(), pc))
             {
-                pc = erase(pc, pc + b.size());
+                pc = pc + b.size();
                 ++nFound;
             }
+            pc2 = pc;
         }
         while (GetOp(pc, opcode));
+
+        if (nFound > 0) {
+            result.insert(result.end(), pc2, end());
+            *this = result;
+        }
+        
         return nFound;
     }
     int Find(opcodetype op) const

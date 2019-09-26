@@ -598,7 +598,7 @@
         <translation>Værktøjslinier</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
+        <source>DAPScoin</source>
         <translation>DAPScoin kerne</translation>
     </message>
     <message>
@@ -618,11 +618,11 @@
         <translation>Vis masternoder</translation>
     </message>
     <message>
-        <source>&amp;About DAPScoin Core</source>
+        <source>&amp;About DAPScoin</source>
         <translation>&amp;Om DAPScoin kerne</translation>
     </message>
     <message>
-        <source>Show information about DAPScoin Core</source>
+        <source>Show information about DAPScoin</source>
         <translation>Vis information om DAPScoin kerne</translation>
     </message>
     <message>
@@ -678,11 +678,11 @@
         <translation>Blockexplorer vindue</translation>
     </message>
     <message>
-        <source>Show the DAPScoin Core help message to get a list with possible DAPScoin command-line options</source>
+        <source>Show the DAPScoin help message to get a list with possible DAPScoin command-line options</source>
         <translation>Vis hjelpetekster fra DAPScoin kernen for at få en liste med mulige DAPScoin kommandolinie-startparametre</translation>
     </message>
     <message>
-        <source>DAPScoin Core client</source>
+        <source>DAPScoin client</source>
         <translation>DAPScoin kerneklient</translation>
     </message>
     <message>
@@ -1144,7 +1144,7 @@ Adresse: %4
         <translation>version</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
+        <source>DAPScoin</source>
         <translation>DAPScoin kerne</translation>
     </message>
     <message>
@@ -1152,7 +1152,7 @@ Adresse: %4
         <translation>(%1-bit)</translation>
     </message>
     <message>
-        <source>About DAPScoin Core</source>
+        <source>About DAPScoin</source>
         <translation>om DAPScoin kerne</translation>
     </message>
     <message>
@@ -1199,15 +1199,15 @@ Adresse: %4
         <translation>Velkommen</translation>
     </message>
     <message>
-        <source>Welcome to DAPScoin Core.</source>
+        <source>Welcome to DAPScoin.</source>
         <translation>Velkommen til DAPScoin kerne</translation>
     </message>
     <message>
-        <source>As this is the first time the program is launched, you can choose where DAPScoin Core will store its data.</source>
+        <source>As this is the first time the program is launched, you can choose where DAPScoin will store its data.</source>
         <translation>Da det er første gang programmet startes, kan De vælge hvor DAPScoin kernen skal lagre sine data</translation>
     </message>
     <message>
-        <source>DAPScoin Core will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
+        <source>DAPScoin will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
         <translation>DAPScoin kernen vil nu hente og gemme en kopi af DAPScoin blockchain. Der skal være mindst %1GB ledigt på lagermediet, og behovet vil stige efterhånden som tiden går. Selve tegnebogen vil også blive gemt her.</translation>
     </message>
     <message>
@@ -1219,7 +1219,7 @@ Adresse: %4
         <translation>Anvend en mappe valgt af brugeren</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
+        <source>DAPScoin</source>
         <translation>DAPScoin kerne</translation>
     </message>
     <message>
@@ -3026,7 +3026,7 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
 <context>
     <name>ShutdownWindow</name>
     <message>
-        <source>DAPScoin Core is shutting down...</source>
+        <source>DAPScoin is shutting down...</source>
         <translation>DAPScoin kernen lukker ned</translation>
     </message>
     <message>
@@ -3176,7 +3176,7 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
 <context>
     <name>SplashScreen</name>
     <message>
-        <source>DAPScoin Core</source>
+        <source>DAPScoin</source>
         <translation>DAPScoin kerne</translation>
     </message>
     <message>
@@ -3192,7 +3192,7 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>DASH "core" udviklerne</translation>
     </message>
     <message>
-        <source>The DAPScoin Core developers</source>
+        <source>The DAPScoin developers</source>
         <translation>DAPScoin "core" udviklerne</translation>
     </message>
     <message>
@@ -3765,7 +3765,7 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Forbind til den opgivne adresse og lyt efter JSON-.RPC forbindelser. Brug [host]:port notation for IPv6. Der kan indsættes flere linier (standard: Forbind til alle interfaces)</translation>
     </message>
     <message>
-        <source>Cannot obtain a lock on data directory %s. DAPScoin Core is probably already running.</source>
+        <source>Cannot obtain a lock on data directory %s. DAPScoin is probably already running.</source>
         <translation>Kan ikke låse datamappen %s. DAPScoin core kører sandsynligvis allerede.</translation>
     </message>
     <message>
@@ -3788,10 +3788,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <source>Distributed under the MIT software license, see the accompanying file COPYING or &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</source>
         <translation>Distribueret under MIT software licensen. Se den vedlaget fil COPYING eller 
 &lt;http://www.opensource.org/licenses/mit-license.php&gt;. </translation>
-    </message>
-    <message>
-        <source>Enable spork administration functionality with the appropriate private key.</source>
-        <translation>Slå spork administrationsfunktionen til med den rette private nøgle</translation>
     </message>
     <message>
         <source>Enter regression test mode, which uses a special chain in which blocks can be solved instantly.</source>
@@ -3938,7 +3934,7 @@ For eksempel: alertnotify=Echo %% | mail - s "DAPScoin ALARM!" e-mail@administra
 </translation>
     </message>
     <message>
-        <source>Unable to bind to %s on this computer. DAPScoin Core is probably already running.</source>
+        <source>Unable to bind to %s on this computer. DAPScoin is probably already running.</source>
         <translation>Det var ikke muligt at forbinde %s på denne computer. DAPScoin kører sandsynligvis allerede.</translation>
     </message>
     <message>
@@ -3966,7 +3962,7 @@ For eksempel: alertnotify=Echo %% | mail - s "DAPScoin ALARM!" e-mail@administra
         <translation>Advarsel! -paytxfee er sat meget højt. Det er dette gebyr De kommer til at betale for transaktionen, hvis De gennemfører. </translation>
     </message>
     <message>
-        <source>Warning: Please check that your computer's date and time are correct! If your clock is wrong DAPScoin Core will not work properly.</source>
+        <source>Warning: Please check that your computer's date and time are correct! If your clock is wrong DAPScoin will not work properly.</source>
         <translation>Advarsel! Kontroller at computerens dato og tid er korrekt indstillet. Hvis tiden ikke er rigtig, vil DAPScoin core ikke fungere ordentligt.</translation>
     </message>
     <message>
@@ -4114,8 +4110,8 @@ For eksempel: alertnotify=Echo %% | mail - s "DAPScoin ALARM!" e-mail@administra
         <translation>Copyright (C) 2014-%i The Dash Core Developers </translation>
     </message>
     <message>
-        <source>Copyright (C) 2015-%i The DAPScoin Core Developers</source>
-        <translation>Copyright (C) 2015-%i The DAPScoin Core Developers</translation>
+        <source>Copyright (C) 2015-%i The DAPScoin Developers</source>
+        <translation>Copyright (C) 2015-%i The DAPScoin Developers</translation>
     </message>
     <message>
         <source>Corrupted block database detected</source>
@@ -4186,7 +4182,7 @@ For eksempel: alertnotify=Echo %% | mail - s "DAPScoin ALARM!" e-mail@administra
         <translation>Fejl ved indlæsning af wallet.dat: Tegnebogen er beskadiget</translation>
     </message>
     <message>
-        <source>Error loading wallet.dat: Wallet requires newer version of DAPScoin Core</source>
+        <source>Error loading wallet.dat: Wallet requires newer version of DAPScoin</source>
         <translation>Fejl ved indlæsning af wallet.dat: Tegnebogen kræver en nyere version af DAPScoin core</translation>
     </message>
     <message>
@@ -4298,7 +4294,7 @@ For eksempel: alertnotify=Echo %% | mail - s "DAPScoin ALARM!" e-mail@administra
         <translation>Info:</translation>
     </message>
     <message>
-        <source>Initialization sanity check failed. DAPScoin Core is shutting down.</source>
+        <source>Initialization sanity check failed. DAPScoin is shutting down.</source>
         <translation>Initiering af sanitetskontrollen fejlede. DAPScoin core lukker ned. </translation>
     </message>
     <message>
@@ -4734,10 +4730,6 @@ For eksempel: alertnotify=Echo %% | mail - s "DAPScoin ALARM!" e-mail@administra
         <translation>Synkroniserer masternoder...</translation>
     </message>
     <message>
-        <source>Synchronizing sporks...</source>
-        <translation>Synkroniserer sporks...</translation>
-    </message>
-    <message>
         <source>This help message</source>
         <translation>Denne hjælpemeddelelse</translation>
     </message>
@@ -4794,10 +4786,6 @@ For eksempel: alertnotify=Echo %% | mail - s "DAPScoin ALARM!" e-mail@administra
         <translation>Det er ikke muligt at forbide til %s på denne computer (bind returnerede fejl %s)</translation>
     </message>
     <message>
-        <source>Unable to sign spork message, wrong key?</source>
-        <translation>Det var ikke muligt at signere spork meddelelsen. Er De sikker på De anvender den rigtige nøgle?</translation>
-    </message>
-    <message>
         <source>Unknown network specified in -onlynet: '%s'</source>
         <translation>Ukendt netværk specificeret i -onlynet: '%s'</translation>
     </message>
@@ -4850,7 +4838,7 @@ For eksempel: alertnotify=Echo %% | mail - s "DAPScoin ALARM!" e-mail@administra
         <translation>Tegnebogen er låst</translation>
     </message>
     <message>
-        <source>Wallet needed to be rewritten: restart DAPScoin Core to complete</source>
+        <source>Wallet needed to be rewritten: restart DAPScoin to complete</source>
         <translation>Tegnebogen måtte genskrives. Genstart DAPScoin core for at gøre færdig</translation>
     </message>
     <message>

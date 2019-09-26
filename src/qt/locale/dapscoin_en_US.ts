@@ -602,8 +602,8 @@
         <translation>Tabs toolbar</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Send coins to a DAPScoin address</source>
@@ -622,12 +622,12 @@
         <translation>Browse masternodes</translation>
     </message>
     <message>
-        <source>&amp;About DAPScoin Core</source>
-        <translation>&amp;About DAPScoin Core</translation>
+        <source>&amp;About DAPScoin</source>
+        <translation>&amp;About DAPScoin</translation>
     </message>
     <message>
-        <source>Show information about DAPScoin Core</source>
-        <translation>Show information about DAPScoin Core</translation>
+        <source>Show information about DAPScoin</source>
+        <translation>Show information about DAPScoin</translation>
     </message>
     <message>
         <source>Modify configuration options for DAPScoin</source>
@@ -682,12 +682,12 @@
         <translation>Block explorer window</translation>
     </message>
     <message>
-        <source>Show the DAPScoin Core help message to get a list with possible DAPScoin command-line options</source>
-        <translation>Show the DAPScoin Core help message to get a list with possible DAPScoin command-line options</translation>
+        <source>Show the DAPScoin help message to get a list with possible DAPScoin command-line options</source>
+        <translation>Show the DAPScoin help message to get a list with possible DAPScoin command-line options</translation>
     </message>
     <message>
-        <source>DAPScoin Core client</source>
-        <translation>DAPScoin Core client</translation>
+        <source>DAPScoin client</source>
+        <translation>DAPScoin client</translation>
     </message>
     <message numerus="yes">
         <source>%n active connection(s) to DAPScoin network</source>
@@ -1184,16 +1184,16 @@ Address: %4
         <translation>version</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>(%1-bit)</source>
         <translation>(%1-bit)</translation>
     </message>
     <message>
-        <source>About DAPScoin Core</source>
-        <translation>About DAPScoin Core</translation>
+        <source>About DAPScoin</source>
+        <translation>About DAPScoin</translation>
     </message>
     <message>
         <source>Command-line options</source>
@@ -1239,16 +1239,16 @@ Address: %4
         <translation>Welcome</translation>
     </message>
     <message>
-        <source>Welcome to DAPScoin Core.</source>
-        <translation>Welcome to DAPScoin Core.</translation>
+        <source>Welcome to DAPScoin.</source>
+        <translation>Welcome to DAPScoin.</translation>
     </message>
     <message>
-        <source>As this is the first time the program is launched, you can choose where DAPScoin Core will store its data.</source>
-        <translation>As this is the first time the program is launched, you can choose where DAPScoin Core will store its data.</translation>
+        <source>As this is the first time the program is launched, you can choose where DAPScoin will store its data.</source>
+        <translation>As this is the first time the program is launched, you can choose where DAPScoin will store its data.</translation>
     </message>
     <message>
-        <source>DAPScoin Core will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
-        <translation>DAPScoin Core will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</translation>
+        <source>DAPScoin will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
+        <translation>DAPScoin will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</translation>
     </message>
     <message>
         <source>Use the default data directory</source>
@@ -1259,8 +1259,8 @@ Address: %4
         <translation>Use a custom data directory:</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Error: Specified data directory "%1" cannot be created.</source>
@@ -3126,8 +3126,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
 <context>
     <name>ShutdownWindow</name>
     <message>
-        <source>DAPScoin Core is shutting down...</source>
-        <translation>DAPScoin Core is shutting down...</translation>
+        <source>DAPScoin is shutting down...</source>
+        <translation>DAPScoin is shutting down...</translation>
     </message>
     <message>
         <source>Do not shut down the computer until this window disappears.</source>
@@ -3276,8 +3276,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
 <context>
     <name>SplashScreen</name>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Version %1</source>
@@ -3292,8 +3292,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>The Dash Core developers</translation>
     </message>
     <message>
-        <source>The DAPScoin Core developers</source>
-        <translation>The DAPScoin Core developers</translation>
+        <source>The DAPScoin developers</source>
+        <translation>The DAPScoin developers</translation>
     </message>
     <message>
         <source>[testnet]</source>
@@ -3910,8 +3910,8 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
         <translation>Bind to given address to listen for JSON-RPC connections. Use [host]:port notation for IPv6. This option can be specified multiple times (default: bind to all interfaces)</translation>
     </message>
     <message>
-        <source>Cannot obtain a lock on data directory %s. DAPScoin Core is probably already running.</source>
-        <translation>Cannot obtain a lock on data directory %s. DAPScoin Core is probably already running.</translation>
+        <source>Cannot obtain a lock on data directory %s. DAPScoin is probably already running.</source>
+        <translation>Cannot obtain a lock on data directory %s. DAPScoin is probably already running.</translation>
     </message>
     <message>
         <source>Change automatic finalized budget voting behavior. mode=auto: Vote for only exact finalized budget match to my generated budget. (string, default: auto)</source>
@@ -3936,10 +3936,6 @@ https://www.transifex.com/dapscoin-project/dapscoin-project-translations</transl
     <message>
         <source>Distributed under the MIT software license, see the accompanying file COPYING or &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</source>
         <translation>Distributed under the MIT software license, see the accompanying file COPYING or &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</translation>
-    </message>
-    <message>
-        <source>Enable spork administration functionality with the appropriate private key.</source>
-        <translation>Enable spork administration functionality with the appropriate private key.</translation>
     </message>
     <message>
         <source>Enable swifttx, show confirmations for locked transactions (bool, default: %s)</source>
@@ -4106,8 +4102,8 @@ for example: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
 </translation>
     </message>
     <message>
-        <source>Unable to bind to %s on this computer. DAPScoin Core is probably already running.</source>
-        <translation>Unable to bind to %s on this computer. DAPScoin Core is probably already running.</translation>
+        <source>Unable to bind to %s on this computer. DAPScoin is probably already running.</source>
+        <translation>Unable to bind to %s on this computer. DAPScoin is probably already running.</translation>
     </message>
     <message>
         <source>Unable to locate enough Obfuscation denominated funds for this transaction.</source>
@@ -4134,8 +4130,8 @@ for example: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</translation>
     </message>
     <message>
-        <source>Warning: Please check that your computer's date and time are correct! If your clock is wrong DAPScoin Core will not work properly.</source>
-        <translation>Warning: Please check that your computer's date and time are correct! If your clock is wrong DAPScoin Core will not work properly.</translation>
+        <source>Warning: Please check that your computer's date and time are correct! If your clock is wrong DAPScoin will not work properly.</source>
+        <translation>Warning: Please check that your computer's date and time are correct! If your clock is wrong DAPScoin will not work properly.</translation>
     </message>
     <message>
         <source>Warning: The network does not appear to fully agree! Some miners appear to be experiencing issues.</source>
@@ -4282,8 +4278,8 @@ for example: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Copyright (C) 2014-%i The Dash Core Developers</translation>
     </message>
     <message>
-        <source>Copyright (C) 2015-%i The DAPScoin Core Developers</source>
-        <translation>Copyright (C) 2015-%i The DAPScoin Core Developers</translation>
+        <source>Copyright (C) 2015-%i The DAPScoin Developers</source>
+        <translation>Copyright (C) 2015-%i The DAPScoin Developers</translation>
     </message>
     <message>
         <source>Corrupted block database detected</source>
@@ -4354,8 +4350,8 @@ for example: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Error loading wallet.dat: Wallet corrupted</translation>
     </message>
     <message>
-        <source>Error loading wallet.dat: Wallet requires newer version of DAPScoin Core</source>
-        <translation>Error loading wallet.dat: Wallet requires newer version of DAPScoin Core</translation>
+        <source>Error loading wallet.dat: Wallet requires newer version of DAPScoin</source>
+        <translation>Error loading wallet.dat: Wallet requires newer version of DAPScoin</translation>
     </message>
     <message>
         <source>Error opening block database</source>
@@ -4466,8 +4462,8 @@ for example: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Information</translation>
     </message>
     <message>
-        <source>Initialization sanity check failed. DAPScoin Core is shutting down.</source>
-        <translation>Initialization sanity check failed. DAPScoin Core is shutting down.</translation>
+        <source>Initialization sanity check failed. DAPScoin is shutting down.</source>
+        <translation>Initialization sanity check failed. DAPScoin is shutting down.</translation>
     </message>
     <message>
         <source>Input is not valid.</source>
@@ -4966,10 +4962,6 @@ for example: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Synchronizing masternodes...</translation>
     </message>
     <message>
-        <source>Synchronizing sporks...</source>
-        <translation>Synchronizing sporks...</translation>
-    </message>
-    <message>
         <source>This help message</source>
         <translation>This help message</translation>
     </message>
@@ -5024,10 +5016,6 @@ for example: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
     <message>
         <source>Unable to bind to %s on this computer (bind returned error %s)</source>
         <translation>Unable to bind to %s on this computer (bind returned error %s)</translation>
-    </message>
-    <message>
-        <source>Unable to sign spork message, wrong key?</source>
-        <translation>Unable to sign spork message, wrong key?</translation>
     </message>
     <message>
         <source>Unknown network specified in -onlynet: '%s'</source>
@@ -5086,8 +5074,8 @@ for example: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Wallet is locked.</translation>
     </message>
     <message>
-        <source>Wallet needed to be rewritten: restart DAPScoin Core to complete</source>
-        <translation>Wallet needed to be rewritten: restart DAPScoin Core to complete</translation>
+        <source>Wallet needed to be rewritten: restart DAPScoin to complete</source>
+        <translation>Wallet needed to be rewritten: restart DAPScoin to complete</translation>
     </message>
     <message>
         <source>Wallet options:</source>

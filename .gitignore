@@ -44,6 +44,8 @@ share/setup.nsi
 share/qt/Info.plist
 contrib/devtools/split-debug.sh
 
+src/qt/dapscoin-qt-multisig
+src/qt/test/test_dapscoin-qt-multisig
 src/univalue/gen
 
 src/qt/*.moc
@@ -56,6 +58,7 @@ src/qt/test/moc*.cpp
 .dirstamp
 .libs
 .*.swp
+.inspect.sh.swo
 *.*~*
 *.bak
 *.rej

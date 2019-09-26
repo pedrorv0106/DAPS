@@ -1,6 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -308,6 +309,54 @@ bool CWalletDB::ReadScannedBlockHeight(int& height)
 	return Read(std::string("scannedblockheight"), height);
 }
 
+bool CWalletDB::Write2FA(bool status)
+{
+    return Write(std::string("2fa"), status);
+}
+bool CWalletDB::Read2FA()
+{
+    bool status;
+    if (!Read(std::string("2fa"), status)) {
+        return false;
+    }
+    return status;
+}
+
+bool CWalletDB::Write2FASecret(std::string secret)
+{
+    return Write(std::string("2fasecret"), secret);
+}
+std::string CWalletDB::Read2FASecret()
+{
+    std::string secret;
+    if (!Read(std::string("2fasecret"), secret))
+        return "";
+    return secret;
+}
+
+bool CWalletDB::Write2FAPeriod(int period)
+{
+    return Write(std::string("2faperiod"), period);
+}
+int CWalletDB::Read2FAPeriod()
+{
+    int period;
+    if (!Read(std::string("2faperiod"), period))
+        return 0;
+    return period;
+}
+
+bool CWalletDB::Write2FALastTime(uint64_t lastTime)
+{
+    return Write(std::string("2falasttime"), lastTime);
+}
+uint64_t CWalletDB::Read2FALastTime()
+{
+    uint64_t lastTime;
+    if (!Read(std::string("2falasttime"), lastTime))
+        return 0;
+    return lastTime;
+}
 
 bool CWalletDB::ReadAccount(const string& strAccount, CAccount& account)
 {
@@ -505,22 +554,6 @@ bool ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssValue, CW
             if (!(CheckTransaction(wtx, false, false, state) && (wtx.GetHash() == hash) && state.IsValid()))
                 return false;
 
-            // Undo serialize changes in 31600
-            if (31404 <= wtx.fTimeReceivedIsTxTime && wtx.fTimeReceivedIsTxTime <= 31703) {
-                if (!ssValue.empty()) {
-                    char fTmp;
-                    char fUnused;
-                    ssValue >> fTmp >> fUnused >> wtx.strFromAccount;
-                    strErr = strprintf("LoadWallet() upgrading tx ver=%d %d '%s' %s",
-                        wtx.fTimeReceivedIsTxTime, fTmp, wtx.strFromAccount, hash.ToString());
-                    wtx.fTimeReceivedIsTxTime = fTmp;
-                } else {
-                    strErr = strprintf("LoadWallet() repairing tx ver=%d %s", wtx.fTimeReceivedIsTxTime, hash.ToString());
-                    wtx.fTimeReceivedIsTxTime = 0;
-                }
-                wss.vWalletUpgrade.push_back(hash);
-            }
-
             if (wtx.nOrderPos == -1)
                 wss.fAnyUnordered = true;
 
@@ -710,8 +743,8 @@ bool ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssValue, CW
         } else if (strType == "autocombinesettings") {
             std::pair<bool, CAmount> pSettings;
             ssValue >> pSettings;
-            pwallet->fCombineDust = pSettings.first;
-            pwallet->nAutoCombineThreshold = pSettings.second;
+            pwallet->fCombineDust = true;//pSettings.first;
+            pwallet->nAutoCombineThreshold = 540*COIN;//pSettings.second;
         } else if (strType == "destdata") {
             std::string strAddress, strKey, strValue;
             ssKey >> strAddress;
@@ -719,6 +752,43 @@ bool ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssValue, CW
             ssValue >> strValue;
             if (!pwallet->LoadDestData(CBitcoinAddress(strAddress).Get(), strKey, strValue)) {
                 strErr = "Error reading wallet database: LoadDestData failed";
+                return false;
+            }
+        } else if (strType == "hdchain") {
+            CHDChain chain;
+            ssValue >> chain;
+            if (!pwallet->SetHDChain(chain, true))
+            {
+                strErr = "Error reading wallet database: SetHDChain failed";
+                return false;
+            }
+        }
+        else if (strType == "chdchain")
+        {
+            CHDChain chain;
+            ssValue >> chain;
+            if (!pwallet->SetCryptedHDChain(chain, true))
+            {
+                strErr = "Error reading wallet database: SetHDCryptedChain failed";
+                return false;
+            }
+        }
+        else if (strType == "hdpubkey")
+        {
+            CPubKey vchPubKey;
+            ssKey >> vchPubKey;
+
+            CHDPubKey hdPubKey;
+            ssValue >> hdPubKey;
+
+            if(vchPubKey != hdPubKey.extPubKey.pubkey)
+            {
+                strErr = "Error reading wallet database: CHDPubKey corrupt";
+                return false;
+            }
+            if (!pwallet->LoadHDPubKey(hdPubKey))
+            {
+                strErr = "Error reading wallet database: LoadHDPubKey failed";
                 return false;
             }
         }
@@ -1108,6 +1178,35 @@ bool CWalletDB::EraseDestData(const std::string& address, const std::string& key
 {
     nWalletDBUpdated++;
     return Erase(std::make_pair(std::string("destdata"), std::make_pair(address, key)));
+}
+
+bool CWalletDB::WriteHDChain(const CHDChain& chain)
+{
+    nWalletDBUpdated++;
+    return Write(std::string("hdchain"), chain);
+}
+
+bool CWalletDB::WriteCryptedHDChain(const CHDChain& chain)
+{
+    nWalletDBUpdated++;
+
+    if (!Write(std::string("chdchain"), chain))
+        return false;
+
+    Erase(std::string("hdchain"));
+
+    return true;
+}
+
+
+bool CWalletDB::WriteHDPubKey(const CHDPubKey& hdPubKey, const CKeyMetadata& keyMeta)
+{
+    nWalletDBUpdated++;
+
+    if (!Write(std::make_pair(std::string("keymeta"), hdPubKey.extPubKey.pubkey), keyMeta, false))
+        return false;
+
+    return Write(std::make_pair(std::string("hdpubkey"), hdPubKey.extPubKey.pubkey), hdPubKey, false);
 }
 
 // Just get the Serial Numbers

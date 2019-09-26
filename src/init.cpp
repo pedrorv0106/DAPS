@@ -1,6 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -16,6 +17,8 @@
 #include "amount.h"
 #include "checkpoints.h"
 #include "compat/sanity.h"
+#include "httpserver.h"
+#include "httprpc.h"
 #include "key.h"
 #include "main.h"
 #include "masternode-budget.h"
@@ -27,8 +30,6 @@
 #include "rpcserver.h"
 #include "script/standard.h"
 #include "scheduler.h"
-#include "spork.h"
-#include "sporkdb.h"
 #include "txdb.h"
 #include "torcontrol.h"
 #include "ui_interface.h"
@@ -160,6 +161,16 @@ public:
 static CCoinsViewDB* pcoinsdbview = NULL;
 static CCoinsViewErrorCatcher* pcoinscatcher = NULL;
 
+void Interrupt(boost::thread_group& threadGroup)
+{
+    InterruptHTTPServer();
+    InterruptHTTPRPC();
+    InterruptRPC();
+    InterruptREST();
+    InterruptTorControl();
+    threadGroup.interrupt_all();
+}
+
 /** Preparing steps before shutting down or restarting the wallet */
 void PrepareShutdown()
 {
@@ -177,15 +188,16 @@ void PrepareShutdown()
     /// module was initialized.
     RenameThread("dapscoin-shutoff");
     mempool.AddTransactionsUpdated(1);
-    StopRPCThreads();
+    StopHTTPRPC();
+    StopREST();
+    StopRPC();
+    StopHTTPServer();
 #ifdef ENABLE_WALLET
     if (pwalletMain)
         bitdb.Flush(false);
-    GenerateBitcoins(false, NULL, 0);
+    GenerateDapscoins(false, NULL, 0);
 #endif
     StopNode();
-    InterruptTorControl();
-    StopTorControl();
     DumpMasternodes();
     DumpBudgets();
     DumpMasternodePayments();
@@ -217,8 +229,6 @@ void PrepareShutdown()
         pcoinsdbview = NULL;
         delete pblocktree;
         pblocktree = NULL;
-        delete pSporkDB;
-        pSporkDB = NULL;
     }
 #ifdef ENABLE_WALLET
     if (pwalletMain)
@@ -234,7 +244,11 @@ void PrepareShutdown()
 #endif
 
 #ifndef WIN32
-    boost::filesystem::remove(GetPidFile());
+    try {
+        boost::filesystem::remove(GetPidFile());
+    } catch (const boost::filesystem::filesystem_error& e) {
+        LogPrintf("%s: Unable to remove pidfile: %s\n", __func__, e.what());
+    }
 #endif
     UnregisterAllValidationInterfaces();
 }
@@ -255,7 +269,8 @@ void Shutdown()
         PrepareShutdown();
     }
 
-// Shutdown part 2: delete wallet instance
+// Shutdown part 2: Stop TOR thread and delete wallet instance
+    StopTorControl();
 #ifdef ENABLE_WALLET
     delete pwalletMain;
     pwalletMain = NULL;
@@ -300,6 +315,25 @@ bool static Bind(const CService& addr, unsigned int flags)
         return false;
     }
     return true;
+}
+
+void OnRPCStopped()
+{
+    cvBlockChange.notify_all();
+    LogPrint("rpc", "RPC stopped.\n");
+}
+
+void OnRPCPreCommand(const CRPCCommand& cmd)
+{
+#ifdef ENABLE_WALLET
+    if (cmd.reqWallet && !pwalletMain)
+        throw JSONRPCError(RPC_METHOD_NOT_FOUND, "Method not found (disabled)");
+#endif
+    // Observe safe mode
+    string strWarning = GetWarnings("rpc");
+    if (strWarning != "" && !GetBoolArg("-disablesafemode", false) &&
+        !cmd.okSafeMode)
+        throw JSONRPCError(RPC_FORBIDDEN_BY_SAFE_MODE, string("Safe mode: ") + strWarning);
 }
 
 std::string HelpMessage(HelpMessageMode mode)
@@ -426,9 +460,8 @@ std::string HelpMessage(HelpMessageMode mode)
         strUsage += HelpMessageOpt("-flushwallet", strprintf(_("Run a thread to flush wallet periodically (default: %u)"), 1));
         strUsage += HelpMessageOpt("-maxreorg", strprintf(_("Use a custom max chain reorganization depth (default: %u)"), 100));
         strUsage += HelpMessageOpt("-stopafterblockimport", strprintf(_("Stop running after importing blocks from disk (default: %u)"), 0));
-        strUsage += HelpMessageOpt("-sporkkey=<privkey>", _("Enable spork administration functionality with the appropriate private key."));
     }
-    string debugCategories = "addrman, alert, bench, coindb, db, lock, rand, rpc, selectcoins, tor, mempool, net, proxy, dapscoin, (obfuscation, swiftx, masternode, mnpayments, mnbudget, zero)"; // Don't translate these and qt below
+    string debugCategories = "addrman, alert, bench, coindb, db, lock, rand, rpc, selectcoins, tor, mempool, net, proxy, http, libevent, dapscoin, (obfuscation, swiftx, masternode, mnpayments, mnbudget, zero)"; // Don't translate these and qt below
     if (mode == HMM_BITCOIN_QT)
         debugCategories += ", qt";
     strUsage += HelpMessageOpt("-debug=<category>", strprintf(_("Output debugging information (default: %u, supplying <category> is optional)"), 0) + ". " +
@@ -477,9 +510,6 @@ std::string HelpMessage(HelpMessageMode mode)
     strUsage += HelpMessageOpt("-masternodeaddr=<n>", strprintf(_("Set external address:port to get to this masternode (example: %s)"), "128.127.106.235:53572"));
     strUsage += HelpMessageOpt("-budgetvotemode=<mode>", _("Change automatic finalized budget voting behavior. mode=auto: Vote for only exact finalized budget match to my generated budget. (string, default: auto)"));
 
-//    strUsage += "  -anonymizedapscoinamount=<n>     " + strprintf(_("Keep N DAPS anonymized (default: %u)"), 0) + "\n";
-//    strUsage += "  -liquidityprovider=<n>       " + strprintf(_("Provide liquidity to Obfuscation by infrequently mixing coins on a continual basis (0-100, default: %u, 1=very frequent, high fees, 100=very infrequent, low fees)"), 0) + "\n";
-
     strUsage += HelpMessageGroup(_("SwiftX options:"));
     strUsage += HelpMessageOpt("-enableswifttx=<n>", strprintf(_("Enable SwiftX, show confirmations for locked transactions (bool, default: %s)"), "true"));
     strUsage += HelpMessageOpt("-swifttxdepth=<n>", strprintf(_("Show N confirmations for a successfully locked transaction (0-9999, default: %u)"), nSwiftTXDepth));
@@ -504,14 +534,12 @@ std::string HelpMessage(HelpMessageMode mode)
     strUsage += HelpMessageOpt("-rpcpassword=<pw>", _("Password for JSON-RPC connections"));
     strUsage += HelpMessageOpt("-rpcport=<port>", strprintf(_("Listen for JSON-RPC connections on <port> (default: %u or testnet: %u)"), 53573, 53575));
     strUsage += HelpMessageOpt("-rpcallowip=<ip>", _("Allow JSON-RPC connections from specified source. Valid for <ip> are a single IP (e.g. 1.2.3.4), a network/netmask (e.g. 1.2.3.4/255.255.255.0) or a network/CIDR (e.g. 1.2.3.4/24). This option can be specified multiple times"));
-    strUsage += HelpMessageOpt("-rpcthreads=<n>", strprintf(_("Set the number of threads to service RPC calls (default: %d)"), 4));
-    strUsage += HelpMessageOpt("-rpckeepalive", strprintf(_("RPC support for HTTP persistent connections (default: %d)"), 1));
+    strUsage += HelpMessageOpt("-rpcthreads=<n>", strprintf(_("Set the number of threads to service RPC calls (default: %d)"), DEFAULT_HTTP_THREADS));
 
-    strUsage += HelpMessageGroup(_("RPC SSL options: (see the Bitcoin Wiki for SSL setup instructions)"));
-    strUsage += HelpMessageOpt("-rpcssl", _("Use OpenSSL (https) for JSON-RPC connections"));
-    strUsage += HelpMessageOpt("-rpcsslcertificatechainfile=<file.cert>", strprintf(_("Server certificate file (default: %s)"), "server.cert"));
-    strUsage += HelpMessageOpt("-rpcsslprivatekeyfile=<file.pem>", strprintf(_("Server private key (default: %s)"), "server.pem"));
-    strUsage += HelpMessageOpt("-rpcsslciphers=<ciphers>", strprintf(_("Acceptable ciphers (default: %s)"), "TLSv1.2+HIGH:TLSv1+HIGH:!SSLv2:!aNULL:!eNULL:!3DES:@STRENGTH"));
+    if (GetBoolArg("-help-debug", false)) {
+        strUsage += HelpMessageOpt("-rpcworkqueue=<n>", strprintf("Set the depth of the work queue to service RPC calls (default: %d)", DEFAULT_HTTP_WORKQUEUE));
+        strUsage += HelpMessageOpt("-rpcservertimeout=<n>", strprintf("Timeout during HTTP requests (default: %d)",  DEFAULT_HTTP_SERVER_TIMEOUT));
+    }
 
     return strUsage;
 }
@@ -522,7 +550,7 @@ std::string LicenseInfo()
            "\n" +
            FormatParagraph(strprintf(_("Copyright (C) 2014-%i The Dash Core Developers"), COPYRIGHT_YEAR)) + "\n" +
            "\n" +
-           FormatParagraph(strprintf(_("Copyright (C) 2018-%i The DAPScoin Core Developers"), COPYRIGHT_YEAR)) + "\n" +
+           FormatParagraph(strprintf(_("Copyright (C) 2018-%i The DAPScoin Developers"), COPYRIGHT_YEAR)) + "\n" +
            "\n" +
            FormatParagraph(_("This is experimental software.")) + "\n" +
            "\n" +
@@ -629,12 +657,27 @@ bool InitSanityCheck(void)
 
     return true;
 }
-
+bool AppInitServers(boost::thread_group& threadGroup)
+{
+    RPCServer::OnStopped(&OnRPCStopped);
+    RPCServer::OnPreCommand(&OnRPCPreCommand);
+    if (!InitHTTPServer())
+        return false;
+    if (!StartRPC())
+        return false;
+    if (!StartHTTPRPC())
+        return false;
+    if (GetBoolArg("-rest", false) && !StartREST())
+        return false;
+    if (!StartHTTPServer())
+        return false;
+    return true;
+}
 
 /** Initialize dapscoin.
  *  @pre Parameters should be parsed and config file should be read.
  */
-bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
+bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler, bool isDaemon)
 {
 // ********************************************************* Step 1: setup
 #ifdef _MSC_VER
@@ -658,16 +701,12 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     typedef BOOL(WINAPI * PSETPROCDEPPOL)(DWORD);
     PSETPROCDEPPOL setProcDEPPol = (PSETPROCDEPPOL)GetProcAddress(GetModuleHandleA("Kernel32.dll"), "SetProcessDEPPolicy");
     if (setProcDEPPol != NULL) setProcDEPPol(PROCESS_DEP_ENABLE);
-
-    // Initialize Windows Sockets
-    WSADATA wsadata;
-    int ret = WSAStartup(MAKEWORD(2, 2), &wsadata);
-    if (ret != NO_ERROR || LOBYTE(wsadata.wVersion) != 2 || HIBYTE(wsadata.wVersion) != 2) {
-        return InitError(strprintf("Error: Winsock library failed to start (WSAStartup returned error %d)", ret));
-    }
 #endif
-#ifndef WIN32
 
+    if (!SetupNetworking())
+        return InitError("Error: Initializing networking failed");
+
+#ifndef WIN32
     if (GetBoolArg("-sysperms", false)) {
 #ifdef ENABLE_WALLET
         if (!GetBoolArg("-disablewallet", false))
@@ -693,10 +732,8 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     sa_hup.sa_flags = 0;
     sigaction(SIGHUP, &sa_hup, NULL);
 
-#if defined(__SVR4) && defined(__sun)
-    // ignore SIGPIPE on Solaris
+// Ignore SIGPIPE, otherwise it will bring the daemon down if the client closes unexpectedly
     signal(SIGPIPE, SIG_IGN);
-#endif
 #endif
 
     // ********************************************************* Step 2: parameter interactions
@@ -903,7 +940,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     // Sanity check
     if (!InitSanityCheck())
-        return InitError(_("Initialization sanity check failed. DAPScoin Core is shutting down."));
+        return InitError(_("Initialization sanity check failed. DAPScoin is shutting down."));
 
     std::string strDataDir = GetDataDir().string();
 #ifdef ENABLE_WALLET
@@ -919,7 +956,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     // Wait maximum 10 seconds if an old wallet is still running. Avoids lockup during restart
     if (!lock.timed_lock(boost::get_system_time() + boost::posix_time::seconds(10)))
-        return InitError(strprintf(_("Cannot obtain a lock on data directory %s. DAPScoin Core is probably already running."), strDataDir));
+        return InitError(strprintf(_("Cannot obtain a lock on data directory %s. DAPScoin is probably already running."), strDataDir));
 
 #ifndef WIN32
     CreatePidFile(GetPidFile(), getpid());
@@ -946,12 +983,6 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
             threadGroup.create_thread(&ThreadScriptCheck);
     }
 
-    if (mapArgs.count("-sporkkey")) // spork priv key
-    {
-        if (!sporkManager.SetPrivKey(GetArg("-sporkkey", "")))
-            return InitError(_("Unable to sign spork message, wrong key?"));
-    }
-
     // Start the lightweight task scheduler thread
     CScheduler::Function serviceLoop = boost::bind(&CScheduler::serviceQueue, &scheduler);
     threadGroup.create_thread(boost::bind(&TraceThread<CScheduler::Function>, "scheduler", serviceLoop));
@@ -963,7 +994,8 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
      */
     if (fServer) {
         uiInterface.InitMessage.connect(SetRPCWarmupStatus);
-        StartRPCThreads();
+        if (!AppInitServers(threadGroup))
+            return InitError(_("Unable to start HTTP server. See debug log for details."));
     }
 
     int64_t nStart;
@@ -1044,9 +1076,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
             // Delete the local blockchain folders to force a resync from scratch to get a consitent blockchain-state
             filesystem::path blocksDir = GetDataDir() / "blocks";
             filesystem::path chainstateDir = GetDataDir() / "chainstate";
-            filesystem::path sporksDir = GetDataDir() / "sporks";
             
-            LogPrintf("Deleting blockchain folders blocks, chainstate and sporks\n");
             // We delete in 4 individual steps in case one of the folder is missing already
             try {
                 if (filesystem::exists(blocksDir)){
@@ -1057,11 +1087,6 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
                 if (filesystem::exists(chainstateDir)){
                     boost::filesystem::remove_all(chainstateDir);
                     LogPrintf("-resync: folder deleted: %s\n", chainstateDir.string().c_str());
-                }
-
-                if (filesystem::exists(sporksDir)){
-                    boost::filesystem::remove_all(sporksDir);
-                    LogPrintf("-resync: folder deleted: %s\n", sporksDir.string().c_str());
                 }
             } catch (boost::filesystem::filesystem_error& error) {
                 LogPrintf("Failed to delete blockchain folders %s\n", error.what());
@@ -1113,9 +1138,10 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     }  // (!fDisableWallet)
 #endif // ENABLE_WALLET
     // ********************************************************* Step 6: network initialization
-
-    RegisterNodeSignals(GetNodeSignals());
-
+    //run daemon only
+    if (isDaemon)
+        RegisterNodeSignals(GetNodeSignals());       // block first after unlock/lock retry register
+    
     if (mapArgs.count("-onlynet")) {
         std::set<enum Network> nets;
         BOOST_FOREACH (std::string snet, mapMultiArgs["-onlynet"]) {
@@ -1294,9 +1320,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
                 delete pcoinsdbview;
                 delete pcoinscatcher;
                 delete pblocktree;
-                delete pSporkDB;
 
-                pSporkDB = new CSporkDB(0, false, false);
                 pblocktree = new CBlockTreeDB(nBlockTreeDBCache, false, fReindex);
                 pcoinsdbview = new CCoinsViewDB(nCoinDBCache, false, fReindex);
                 pcoinscatcher = new CCoinsViewErrorCatcher(pcoinsdbview);
@@ -1304,10 +1328,6 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
                 if (fReindex)
                     pblocktree->WriteReindexing(true);
-
-                // DAPScoin: load previous sessions sporks if we have them.
-                uiInterface.InitMessage(_("Loading sporks..."));
-                LoadSporksFromDB();
 
                 uiInterface.InitMessage(_("Loading block index..."));
                 string strBlockIndexError = "";
@@ -1437,9 +1457,9 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
                              " or address book entries might be missing or incorrect."));
                 InitWarning(msg);
             } else if (nLoadWalletRet == DB_TOO_NEW)
-                strErrors << _("Error loading wallet.dat: Wallet requires newer version of DAPScoin Core") << "\n";
+                strErrors << _("Error loading wallet.dat: Wallet requires newer version of DAPScoin") << "\n";
             else if (nLoadWalletRet == DB_NEED_REWRITE) {
-                strErrors << _("Wallet needed to be rewritten: restart DAPScoin Core to complete") << "\n";
+                strErrors << _("Wallet needed to be rewritten: restart DAPScoin to complete") << "\n";
                 LogPrintf("%s", strErrors.str());
                 return InitError(strErrors.str());
             } else
@@ -1463,6 +1483,17 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
         if (fFirstRun) {
             // Create new keyUser and set as default key
             RandAddSeedPerfmon();
+
+            if (!pwalletMain->IsHDEnabled()) {
+                if (!isDaemon) {
+                    uiInterface.ShowRecoveryDialog();
+                }
+                
+                if (!pwalletMain->IsHDEnabled()) {
+                    // generate a new master key
+                    pwalletMain->GenerateNewHDChain();
+                }
+            }
 
             CPubKey newDefaultKey;
             if (pwalletMain->GetKeyFromPool(newDefaultKey)) {
@@ -1661,9 +1692,6 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
         }
     }
 
-// XX42 Remove/refactor code below. Until then provide safe defaults
-    nAnonymizeDapscoinAmount = 2;
-
     fEnableSwiftTX = GetBoolArg("-enableswifttx", fEnableSwiftTX);
     nSwiftTXDepth = GetArg("-swifttxdepth", nSwiftTXDepth);
     nSwiftTXDepth = std::min(std::max(nSwiftTXDepth, 0), 60);
@@ -1676,7 +1704,6 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     LogPrintf("fLiteMode %d\n", fLiteMode);
     LogPrintf("nSwiftTXDepth %d\n", nSwiftTXDepth);
-    LogPrintf("Anonymize DAPScoin Amount %d\n", nAnonymizeDapscoinAmount);
     LogPrintf("Budget Mode %s\n", strBudgetMode.c_str());
 
     /* Denominations
@@ -1730,7 +1757,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 #ifdef ENABLE_WALLET
     // Generate coins in the background
     if (pwalletMain)
-        GenerateBitcoins(GetBoolArg("-gen", false), pwalletMain, GetArg("-genproclimit", 1));
+        GenerateDapscoins(GetBoolArg("-gen", false), pwalletMain, GetArg("-genproclimit", 1));
 #endif
 
     // ********************************************************* Step 12: finished
@@ -1739,12 +1766,20 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     uiInterface.InitMessage(_("Done loading"));
 
 #ifdef ENABLE_WALLET
+    bool storedStakingStatus = false;
     if (pwalletMain) {
         // Add wallet transactions that aren't already in a block to mapTransactions
         pwalletMain->ReacceptWalletTransactions();
 
         // Run a thread to flush wallet periodically
         threadGroup.create_thread(boost::bind(&ThreadFlushWalletDB, boost::ref(pwalletMain->strWalletFile)));
+		
+        storedStakingStatus = pwalletMain->ReadStakingStatus();
+        if (GetBoolArg("-staking", true) || storedStakingStatus) {
+            fGenerateDapscoins = true;
+            LogPrintf("Starting staking\n");
+            threadGroup.create_thread(boost::bind(&TraceThread<void (*)()>, "stakemint", &ThreadStakeMinter));
+        }
     }
 #endif
 

@@ -1,5 +1,6 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -141,21 +142,7 @@ public:
     
     void updateEntry(const QString &pubCoin, const QString &isUsed, int status)
     {
-        // Find address / label in model
-        // QList<AddressTableEntry>::iterator lower = qLowerBound(
-        //                                                        cachedAddressTable.begin(), cachedAddressTable.end(), pubCoin, AddressTableEntryLessThan());
-        // QList<AddressTableEntry>::iterator upper = qUpperBound(
-        //                                                        cachedAddressTable.begin(), cachedAddressTable.end(), pubCoin, AddressTableEntryLessThan());
-        // bool inModel = (lower != upper);
-        
-        switch(status)
-        {
-            case CT_NEW:
-                break;
-            case CT_UPDATED:
-                break;
-        }
-        
+        //Do nothing right now, might be changed in the future to have stealth address book
     }
 
 

@@ -11,8 +11,13 @@ ENV BUILD_TARGET=${BUILD_TARGET}
 ARG DESTDIR=/daps/bin/
 ENV DESTDIR=$DESTDIR
 
+ARG VERSION=NONE
+ENV VERSION=$VERSION
+
 #COPY source
 COPY . /DAPS/
+
+RUN apt-get update
 
 RUN apt-get autoremove -y
 
@@ -20,9 +25,6 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
 #
     if [ "$BUILD_TARGET" = "windowsx64" ]; \
       then echo "Compiling for Windows 64-bit (x86_64-w64-mingw32)..." && \
-        if [ -d depends/chilkat/include ]; then mkdir -p depends/x86_64-w64-mingw32/include/chilkat-9.5.0; fi && \
-        if [ -d depends/chilkat/include ]; then cp depends/chilkat/include/* depends/x86_64-w64-mingw32/include/chilkat-9.5.0; fi && \
-        if [ -d depends/chilkat/lib ]; then cp depends/chilkat/lib/* depends/x86_64-w64-mingw32/lib; fi && \
         ./autogen.sh && \
         CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure --prefix=/ && \
         make -j2 && \
@@ -49,9 +51,6 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
 #
     elif [ "$BUILD_TARGET" = "windowsx86" ]; \
       then echo "Compiling for Windows 32-bit (i686-w64-mingw32)..." && \
-        if [ -d depends/chilkat/x86/include ]; then mkdir -p depends/i686-w64-mingw32/include/chilkat-9.5.0; fi && \
-        if [ -d depends/chilkat/x86/include ]; then cp depends/chilkat/x86/include/* depends/i686-w64-mingw32/include/chilkat-9.5.0; fi && \
-        if [ -d depends/chilkat/x86/lib ]; then cp depends/chilkat/x86/lib/* depends/i686-w64-mingw32/lib; fi && \
         ./autogen.sh && \
         CONFIG_SITE=$PWD/depends/i686-w64-mingw32/share/config.site ./configure --prefix=/ && \
         make -j2 && \
@@ -90,7 +89,7 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         apt-get install libcurl4-openssl-dev -y && \
         if [ -f assets/cpuminer-2.5.0/build_linux.sh ]; then cd assets/cpuminer-2.5.0; fi && \
         if [ -f build_linux.sh ]; then ./build_linux.sh; fi && \
-        if [ -f minerd ]; then cp minerd /BUILD/usr/local/bin/dapscoin-poa-minerd; fi; \
+        if [ -f minerd ]; then cp minerd /BUILD/bin/dapscoin-poa-minerd; fi; \
 #
     elif [ "$BUILD_TARGET" = "linuxarm64" ]; \
        then echo "Compiling for Linux ARM 64-bit (aarch64-linux-gnu)..." && \
@@ -113,7 +112,8 @@ RUN cd /DAPS/ && mkdir -p /BUILD/ && \
         make HOST="x86_64-apple-darwin11" -j2 && \
         make deploy && \
         make install HOST="x86_64-apple-darwin11" DESTDIR=/BUILD/ && \
-        cp Dapscoin-Core.dmg /BUILD/bin/; \
+        mv DAPScoin.dmg DAPScoin-Qt.dmg && \
+        cp DAPScoin-Qt.dmg /BUILD/bin/; \
 #
     else echo "Build target not recognized."; \
       exit 127; \
@@ -127,7 +127,7 @@ RUN cd /BUILD/ && \
     #flatten
     tar pcvf - --transform 's/.*\///g' --files-from=/dev/stdin | \
     #compress
-    xz -9 - > $DESTDIR$BUILD_TARGET.tar.xz
+    xz -9 - > $DESTDIR$BUILD_TARGET-v$VERSION.tar.xz
 
 RUN mkdir -p /codefresh/volume/out/bin/ && \
     cp -r /daps/bin/* /codefresh/volume/out/bin/ && \

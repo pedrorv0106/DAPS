@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -513,7 +514,7 @@ bool CBudgetManager::FillBlockPayee(CMutableTransaction& txNew, CAmount nFees, b
         ++it;
     }
 
-    CAmount blockValue = GetBlockValue(pindexPrev->nHeight);
+    CAmount blockValue = GetBlockValue(pindexPrev);
 
     if (fProofOfStake) {
         if (nHighestCount > 0) {
@@ -893,7 +894,7 @@ void CBudgetManager::NewBlock()
     // incremental sync with our peers
     if (masternodeSync.IsSynced()) {
         LogPrint("masternode","CBudgetManager::NewBlock - incremental sync started\n");
-        if (chainActive.Height() % 1440 == rand() % 1440) {
+        if (chainActive.Height() % 1440 == secp256k1_rand32() % 1440) {
             ClearSeen();
             ResetSync();
         }
@@ -1684,7 +1685,8 @@ bool CBudgetVote::Sign(CKey& keyMasternode, CPubKey& pubKeyMasternode)
     CKey keyCollateralAddress;
 
     std::string errorMessage;
-    std::string strMessage = vin.prevout.ToStringShort() + nProposalHash.ToString() + boost::lexical_cast<std::string>(nVote) + boost::lexical_cast<std::string>(nTime);
+    HEX_DATA_STREAM << vin.prevout << nProposalHash << nVote << nTime;
+    std::string strMessage = HEX_STR(ser);
 
     if (!obfuScationSigner.SignMessage(strMessage, errorMessage, vchSig, keyMasternode)) {
         LogPrint("masternode","CBudgetVote::Sign - Error upon calling SignMessage");
@@ -1702,7 +1704,8 @@ bool CBudgetVote::Sign(CKey& keyMasternode, CPubKey& pubKeyMasternode)
 bool CBudgetVote::SignatureValid(bool fSignatureCheck)
 {
     std::string errorMessage;
-    std::string strMessage = vin.prevout.ToStringShort() + nProposalHash.ToString() + boost::lexical_cast<std::string>(nVote) + boost::lexical_cast<std::string>(nTime);
+	HEX_DATA_STREAM << vin.prevout << nProposalHash << nVote << nTime;
+	std::string strMessage = HEX_STR(ser);
 
     CMasternode* pmn = mnodeman.Find(vin);
 
@@ -1793,7 +1796,7 @@ void CFinalizedBudget::AutoCheck()
 
     //do this 1 in 4 blocks -- spread out the voting activity on mainnet
     // -- this function is only called every fourteenth block, so this is really 1 in 56 blocks
-    if (Params().NetworkID() == CBaseChainParams::MAIN && rand() % 4 != 0) {
+    if (Params().NetworkID() == CBaseChainParams::MAIN && secp256k1_rand32() % 4 != 0) {
         LogPrint("masternode","CFinalizedBudget::AutoCheck - waiting\n");
         return;
     }
@@ -1982,17 +1985,8 @@ bool CFinalizedBudget::IsValid(std::string& strError, bool fCheckCollateral)
         }
     }
 
-    //TODO: if N cycles old, invalid, invalid
-
     CBlockIndex* pindexPrev = chainActive.Tip();
     if (pindexPrev == NULL) return true;
-
-// TODO: verify if we can safely remove this
-//
-//    if (nBlockStart < pindexPrev->nHeight - 100) {
-//        strError = "Budget " + strBudgetName + " Older than current blockHeight" ;
-//        return false;
-//    }
 
     return true;
 }
@@ -2128,7 +2122,8 @@ bool CFinalizedBudgetVote::Sign(CKey& keyMasternode, CPubKey& pubKeyMasternode)
     CKey keyCollateralAddress;
 
     std::string errorMessage;
-    std::string strMessage = vin.prevout.ToStringShort() + nBudgetHash.ToString() + boost::lexical_cast<std::string>(nTime);
+    HEX_DATA_STREAM_PROTOCOL(PROTOCOL_VERSION) << vin.prevout << nBudgetHash << nTime;
+    std::string strMessage = HEX_STR(ser);
 
     if (!obfuScationSigner.SignMessage(strMessage, errorMessage, vchSig, keyMasternode)) {
         LogPrint("masternode","CFinalizedBudgetVote::Sign - Error upon calling SignMessage");
@@ -2147,7 +2142,8 @@ bool CFinalizedBudgetVote::SignatureValid(bool fSignatureCheck)
 {
     std::string errorMessage;
 
-    std::string strMessage = vin.prevout.ToStringShort() + nBudgetHash.ToString() + boost::lexical_cast<std::string>(nTime);
+    HEX_DATA_STREAM_PROTOCOL(PROTOCOL_VERSION) << vin.prevout << nBudgetHash << nTime;
+    std::string strMessage = HEX_STR(ser);
 
     CMasternode* pmn = mnodeman.Find(vin);
 

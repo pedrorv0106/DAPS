@@ -18,9 +18,18 @@
 #include <QSettings>
 #include <QSizeGrip>
 #include <togglebutton.h>
+#include "wallet.h"
 
 class OptionsModel;
 class WalletModel;
+
+enum Type2FA {
+    NONE2FA = 0,
+    DAY = 1,
+    WEEK = 2,
+    MONTH = 3,
+    DISABLE = 4,
+};
 
 namespace Ui
 {
@@ -44,7 +53,7 @@ public:
     void setModel(WalletModel* model);
     void setMapper();
     bool matchNewPasswords();
-    QString getStakingStatusError();
+    StakingStatusError getStakingStatusError(QString&);
 
 public slots:
     void on_EnableStaking(ToggleButton*);
@@ -62,8 +71,10 @@ private:
     QMenu* contextMenu;
     virtual void resizeEvent(QResizeEvent* event);
     CAmount getValidatedAmount();
+    Type2FA typeOf2FA;
     void disable2FA();
     void enable2FA();
+    QTimer* timerStakingToggleSync;
 
 private slots:
     void validateNewPass();
@@ -78,9 +89,12 @@ private slots:
     void on_pushButtonDisable_clicked();
     void qrDialogIsFinished(int result);
     void dialogIsFinished(int result);
+    void confirmDialogIsFinished(int result);
     void on_day();
     void on_week();
     void on_month();
+    void onShowMnemonic();
+    void setStakingToggle();
 };
 
 #endif // BITCOIN_QT_OPTIONSPAGE_H

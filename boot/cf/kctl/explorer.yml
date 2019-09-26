@@ -103,7 +103,6 @@ spec:
   resources:
     requests:
       storage: 9Gi
----
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -135,10 +134,10 @@ spec:
         app: explorer
     spec:
       hostAliases:
-        - ip: "10.10.10.5"
+        - ip: "10.10.10.200"
           hostnames:
             - "explorer"
-      terminationGracePeriodSeconds: 3
+      terminationGracePeriodSeconds: 600
       containers:
         - image: r.cfcr.io/hysmagus/explorer_min:develop
           imagePullPolicy: Always
@@ -152,8 +151,8 @@ spec:
           command:
             [
               "/bin/bash",
-              "-c",
-              "cd /DAPS/ && nohup npm start && trap: TERM INT; sleep infinity & wait",
+              "-ci",
+              "cd /DAPS/ && nohup npm start & trap: TERM INT; sleep infinity & wait",
             ]
         - image: r.cfcr.io/hysmagus/daps_min:develop
           imagePullPolicy: Always
@@ -161,13 +160,8 @@ spec:
           lifecycle:
             preStop:
               exec:
-                command: ["/bin/bash", "-c", "dapscoin-cli stop"]
-          command:
-            [
-              "/bin/bash",
-              "-c",
-              "sleep 3 && nohup dapscoind -daemon && trap: TERM INT; sleep infinity & wait",
-            ]
+                command: ["/bin/bash","-c","./launchdaps.sh stop"] 
+          command: ["/bin/bash","-c","./launchdaps.sh $DAEMONARGS && trap: TERM INT; sleep infinity & wait"]
           ports:
             - containerPort: 53575
               name: regtest

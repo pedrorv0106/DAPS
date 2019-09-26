@@ -72,9 +72,9 @@ public:
      */
     void refreshWallet()
     {
-        qDebug() << "TransactionTablePriv::refreshWallet";
+    	if (wallet->IsLocked()) return;
         cachedWallet.clear();
-        {
+        {           
             LOCK2(cs_main, wallet->cs_wallet);
             for (std::map<uint256, CWalletTx>::iterator it = wallet->mapWallet.begin(); it != wallet->mapWallet.end(); ++it) {
                 if (TransactionRecord::showTransaction(it->second))

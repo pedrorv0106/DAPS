@@ -602,8 +602,8 @@
         <translation>Registerkartenleiste</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Send coins to a DAPScoin address</source>
@@ -626,12 +626,12 @@
         <translation>Masternodes durchsuchen</translation>
     </message>
     <message>
-        <source>&amp;About DAPScoin Core</source>
-        <translation>Über.DAPScoin Core</translation>
+        <source>&amp;About DAPScoin</source>
+        <translation>Über.DAPScoin</translation>
     </message>
     <message>
-        <source>Show information about DAPScoin Core</source>
-        <translation>Zeigt Informationen über DAPScoin Core</translation>
+        <source>Show information about DAPScoin</source>
+        <translation>Zeigt Informationen über DAPScoin</translation>
     </message>
     <message>
         <source>Modify configuration options for DAPScoin</source>
@@ -682,12 +682,12 @@
         <translation>Blockchain Betrachter Fenster</translation>
     </message>
     <message>
-        <source>Show the DAPScoin Core help message to get a list with possible DAPScoin command-line options</source>
+        <source>Show the DAPScoin help message to get a list with possible DAPScoin command-line options</source>
         <translation>Zeige die DAPScoin-Core Hilfe, um mögliche DAPScoin Kommando-Zeilen-Optionen anzuzeigen</translation>
     </message>
     <message>
-        <source>DAPScoin Core client</source>
-        <translation>DAPScoin Core Client</translation>
+        <source>DAPScoin client</source>
+        <translation>DAPScoin Client</translation>
     </message>
     <message numerus="yes">
         <source>%n active connection(s) to DAPScoin network</source>
@@ -1179,16 +1179,16 @@ Adresse: %4</translation>
         <translation>Version</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>(%1-bit)</source>
         <translation>(%1-Bit)</translation>
     </message>
     <message>
-        <source>About DAPScoin Core</source>
-        <translation>Über DAPScoin Core</translation>
+        <source>About DAPScoin</source>
+        <translation>Über DAPScoin</translation>
     </message>
     <message>
         <source>Command-line options</source>
@@ -1234,16 +1234,16 @@ Adresse: %4</translation>
         <translation>Willkommen</translation>
     </message>
     <message>
-        <source>Welcome to DAPScoin Core.</source>
-        <translation>Willkommen zu DAPScoin Core.</translation>
+        <source>Welcome to DAPScoin.</source>
+        <translation>Willkommen zu DAPScoin.</translation>
     </message>
     <message>
-        <source>As this is the first time the program is launched, you can choose where DAPScoin Core will store its data.</source>
-        <translation>Da dies das erste Mal ist, dass Sie DAPScoin Core starten, legen Sie jetzt bitte fest, an welchem Ort die Daten gespeichert werden sollen.</translation>
+        <source>As this is the first time the program is launched, you can choose where DAPScoin will store its data.</source>
+        <translation>Da dies das erste Mal ist, dass Sie DAPScoin starten, legen Sie jetzt bitte fest, an welchem Ort die Daten gespeichert werden sollen.</translation>
     </message>
     <message>
-        <source>DAPScoin Core will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
-        <translation>DAPScoin Core wird die Blockchain laden und lokal speichern. Dafür sind mindestens %1GB freier Speicherplatz erforderlich. Der Speicherbedarf wird mit der Zeit anwachsen. Die Wallet wird ebenfalls in diesem Verzeichnis gespeichert.</translation>
+        <source>DAPScoin will download and store a copy of the DAPScoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
+        <translation>DAPScoin wird die Blockchain laden und lokal speichern. Dafür sind mindestens %1GB freier Speicherplatz erforderlich. Der Speicherbedarf wird mit der Zeit anwachsen. Die Wallet wird ebenfalls in diesem Verzeichnis gespeichert.</translation>
     </message>
     <message>
         <source>Use the default data directory</source>
@@ -1254,8 +1254,8 @@ Adresse: %4</translation>
         <translation>Ein benutzerdefiniertes Datenverzeichnis verwenden:</translation>
     </message>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Error: Specified data directory "%1" cannot be created.</source>
@@ -3455,8 +3455,8 @@ Bitte haben Sie Geduld...</translation>
 <context>
     <name>ShutdownWindow</name>
     <message>
-        <source>DAPScoin Core is shutting down...</source>
-        <translation>DAPScoin Core wird beendet...</translation>
+        <source>DAPScoin is shutting down...</source>
+        <translation>DAPScoin wird beendet...</translation>
     </message>
     <message>
         <source>Do not shut down the computer until this window disappears.</source>
@@ -3605,8 +3605,8 @@ Bitte haben Sie Geduld...</translation>
 <context>
     <name>SplashScreen</name>
     <message>
-        <source>DAPScoin Core</source>
-        <translation>DAPScoin Core</translation>
+        <source>DAPScoin</source>
+        <translation>DAPScoin</translation>
     </message>
     <message>
         <source>Version %1</source>
@@ -3621,8 +3621,8 @@ Bitte haben Sie Geduld...</translation>
         <translation>Die Dash Core Entwickler</translation>
     </message>
     <message>
-        <source>The DAPScoin Core developers</source>
-        <translation>Die DAPScoin Core Entwickler</translation>
+        <source>The DAPScoin developers</source>
+        <translation>Die DAPScoin Entwickler</translation>
     </message>
     <message>
         <source>[testnet]</source>
@@ -4266,8 +4266,8 @@ Bitte haben Sie Geduld...</translation>
         <translation>Der berechnete Akkumulator-Checkpoint stimmt nicht mit dem vom Blockindex aufgezeichneten überein</translation>
     </message>
     <message>
-        <source>Cannot obtain a lock on data directory %s. DAPScoin Core is probably already running.</source>
-        <translation>Kann keine Sperre für das Datenverzeichnis %s erhalten. DAPScoin Core läuft wahrscheinlich bereits.</translation>
+        <source>Cannot obtain a lock on data directory %s. DAPScoin is probably already running.</source>
+        <translation>Kann keine Sperre für das Datenverzeichnis %s erhalten. DAPScoin läuft wahrscheinlich bereits.</translation>
     </message>
     <message>
         <source>Create new files with system default permissions, instead of umask 077 (only effective with disabled wallet functionality)</source>
@@ -4280,10 +4280,6 @@ Bitte haben Sie Geduld...</translation>
     <message>
         <source>Distributed under the MIT software license, see the accompanying file COPYING or &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</source>
         <translation>Veröffentlicht unter der MIT-Software-Lizenz, siehe die beigelegte Datei COPYING oder &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</translation>
-    </message>
-    <message>
-        <source>Enable spork administration functionality with the appropriate private key.</source>
-        <translation>Aktiviere die Funktionalität der Spork-Administration mit dem entsprechenden privaten Schlüssel.</translation>
     </message>
     <message>
         <source>Enter regression test mode, which uses a special chain in which blocks can be solved instantly.</source>
@@ -4430,8 +4426,8 @@ Beispiel: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
 </translation>
     </message>
     <message>
-        <source>Unable to bind to %s on this computer. DAPScoin Core is probably already running.</source>
-        <translation>Fehler: Port %s ist bereits belegt! Läuft bereits eine andere DAPScoin Core Wallet ?</translation>
+        <source>Unable to bind to %s on this computer. DAPScoin is probably already running.</source>
+        <translation>Fehler: Port %s ist bereits belegt! Läuft bereits eine andere DAPScoin Wallet ?</translation>
     </message>
     <message>
         <source>Unable to locate enough Obfuscation denominated funds for this transaction.</source>
@@ -4450,8 +4446,8 @@ Beispiel: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Warnung: -paytxfee ist sehr hoch eingestellt! Diese Transaktionsgebühr werden Ihnen abgebucht, falls Sie die Transaktion überweisen.</translation>
     </message>
     <message>
-        <source>Warning: Please check that your computer's date and time are correct! If your clock is wrong DAPScoin Core will not work properly.</source>
-        <translation>Warnung: Bitte stellen Sie sicher, das vom Computer verwendete Zeit und Datumangaben korrekt sind! Wenn ihr System falsche Zeitangaben nutzt, wird DAPScoin Core nicht korrekt funktionieren.</translation>
+        <source>Warning: Please check that your computer's date and time are correct! If your clock is wrong DAPScoin will not work properly.</source>
+        <translation>Warnung: Bitte stellen Sie sicher, das vom Computer verwendete Zeit und Datumangaben korrekt sind! Wenn ihr System falsche Zeitangaben nutzt, wird DAPScoin nicht korrekt funktionieren.</translation>
     </message>
     <message>
         <source>Warning: The network does not appear to fully agree! Some miners appear to be experiencing issues.</source>
@@ -4590,8 +4586,8 @@ Beispiel: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Copyright (C) 2014-%i The Dash Core Developers</translation>
     </message>
     <message>
-        <source>Copyright (C) 2015-%i The DAPScoin Core Developers</source>
-        <translation>Copyright (C) 2015-%i The DAPScoin Core Developers</translation>
+        <source>Copyright (C) 2015-%i The DAPScoin Developers</source>
+        <translation>Copyright (C) 2015-%i The DAPScoin Developers</translation>
     </message>
     <message>
         <source>Corrupted block database detected</source>
@@ -4662,8 +4658,8 @@ Beispiel: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Fehler beim Laden von wallet.dat : Wallet beschädigt</translation>
     </message>
     <message>
-        <source>Error loading wallet.dat: Wallet requires newer version of DAPScoin Core</source>
-        <translation>Fehler beim Laden der wallet.dat: Neuere DAPScoin Core Version benötigt</translation>
+        <source>Error loading wallet.dat: Wallet requires newer version of DAPScoin</source>
+        <translation>Fehler beim Laden der wallet.dat: Neuere DAPScoin Version benötigt</translation>
     </message>
     <message>
         <source>Error opening block database</source>
@@ -4774,8 +4770,8 @@ Beispiel: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Hinweis</translation>
     </message>
     <message>
-        <source>Initialization sanity check failed. DAPScoin Core is shutting down.</source>
-        <translation>Initialisierung Sanity-Check fehlgeschlagen. DAPScoin Core schaltet ab.</translation>
+        <source>Initialization sanity check failed. DAPScoin is shutting down.</source>
+        <translation>Initialisierung Sanity-Check fehlgeschlagen. DAPScoin schaltet ab.</translation>
     </message>
     <message>
         <source>Input is not valid.</source>
@@ -4940,10 +4936,6 @@ Beispiel: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
     <message>
         <source>Loading masternode payment cache...</source>
         <translation>Lade Masternode-Zahlungs-Puffer... </translation>
-    </message>
-    <message>
-        <source>Loading sporks...</source>
-        <translation>Lade Sporks...</translation>
     </message>
     <message>
         <source>Loading wallet... (%3.2f %%)</source>
@@ -5238,10 +5230,6 @@ Beispiel: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Synchronisiere Masternodes....</translation>
     </message>
     <message>
-        <source>Synchronizing sporks...</source>
-        <translation>Synchronisiere Sporks....</translation>
-    </message>
-    <message>
         <source>This help message</source>
         <translation>Dieser Hilfetext</translation>
     </message>
@@ -5306,10 +5294,6 @@ Beispiel: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Kann auf diesem Computer nicht an %s binden (zurückgegebener Fehler: %s)</translation>
     </message>
     <message>
-        <source>Unable to sign spork message, wrong key?</source>
-        <translation>Die Spork-Nachricht konnte nicht signiert werden. Falscher Key?</translation>
-    </message>
-    <message>
         <source>Unknown network specified in -onlynet: '%s'</source>
         <translation>Unbekannter Netztyp in -onlynet angegeben: '%s'</translation>
     </message>
@@ -5362,8 +5346,8 @@ Beispiel: alertnotify=echo %%s | mail -s "DAPScoin Alert" admin@foo.com
         <translation>Wallet gesperrt.</translation>
     </message>
     <message>
-        <source>Wallet needed to be rewritten: restart DAPScoin Core to complete</source>
-        <translation>Wallet musste neu geschrieben werden: Bitte DAPScoin Core neu starten</translation>
+        <source>Wallet needed to be rewritten: restart DAPScoin to complete</source>
+        <translation>Wallet musste neu geschrieben werden: Bitte DAPScoin neu starten</translation>
     </message>
     <message>
         <source>Wallet options:</source>

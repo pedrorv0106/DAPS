@@ -1,6 +1,7 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -110,8 +111,8 @@ public:
         nMaxMoneyOut = MAX_MONEY * COIN;
 
         /** Height or Time Based Activations **/
-        nLastPOWBlock = 200;
-        nStartPOABlock = 300;
+        nLastPOWBlock = 500;
+        nStartPOABlock = 560;
         nModifierUpdateBlock = 615800;
         nPoABlockTime = 30 * 60; //a PoA block every 30 minutes
         nMinNumPoSBlocks = 59;
@@ -137,12 +138,12 @@ public:
         genesis.hashPrevBlock = 0;
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
         genesis.nVersion = 1;
-        genesis.nTime = 1558521974;
+        genesis.nTime = 1569319143; //09/24/2019 @ 9:59am (UTC)
         genesis.nBits = 0x1e0ffff0;
-        genesis.nNonce = 13653769;
+        genesis.nNonce = 16972500;
 
         //change blockhash from 0x00000e9468bba3df97334bfb5015543488a0fb38193c82b101472937590e3037 because of transaction structure change
-        if(genesis.GetHash()!=uint256("0000059f433f00d4ed1aa073e7bdd9b358676cc8e2537d371c354256390122b6"))
+        if(genesis.GetHash()!=uint256("00000b5cfdf0461b9e8d1361fb515512803a782ded53635c719684180ecc7211"))
         {
             printf("Searchingforgenesisblock...\n");
             uint256 hashTarget=uint256().SetCompact(genesis.nBits);
@@ -174,16 +175,17 @@ public:
 
 
         hashGenesisBlock = genesis.GetHash();
-        assert(hashGenesisBlock == uint256("0000059f433f00d4ed1aa073e7bdd9b358676cc8e2537d371c354256390122b6"));
+        assert(hashGenesisBlock == uint256("00000b5cfdf0461b9e8d1361fb515512803a782ded53635c719684180ecc7211"));
         printf("genesis.hashMerkleRoot: %s\n", genesis.hashMerkleRoot.GetHex().c_str());
         assert(genesis.hashMerkleRoot == uint256("03fcb696ffbce2bb8248c65f6286c9948a4927919506331f21992a7021f969ed"));
 
-        vSeeds.push_back(CDNSSeedData("daps-stg-explorer.arcadiaapi.com", "daps-stg-explorer.arcadiaapi.com")); //35.231.98.100        // Single node address
-        vSeeds.push_back(CDNSSeedData("daps-stg-seed1.arcadiaapi.com", "daps-stg-seed1.arcadiaapi.com"));  //104.196.7.250   // Primary DNS Seeder from arcadiaapi
-        vSeeds.push_back(CDNSSeedData("daps-stg-seed2.arcadiaapi.com ", "daps-stg-seed2.arcadiaapi.com"));  // 35.229.54.148   // // Single node address
-        vSeeds.push_back(CDNSSeedData("daps-stg-seed3.arcadiaapi.com", "daps-stg-seed3.arcadiaapi.com"));  // 35.227.81.1  // // Single node address
-        vSeeds.push_back(CDNSSeedData("daps-stg-seed4.arcadiaapi.com", "daps-stg-seed4.arcadiaapi.com"));  //35.237.184.1   // // Single node address
-
+        vSeeds.push_back(CDNSSeedData("dev-seed1.dapscoin.com", "dev-seed1.dapscoin.com"));        // Single node address
+        vSeeds.push_back(CDNSSeedData("dev-seed2.dapscoin.com", "dev-seed2.dapscoin.com"));        // Single node address
+        vSeeds.push_back(CDNSSeedData("seed.dapscoin.com", "seed.dapscoin.com"));        // Single node address
+        vSeeds.push_back(CDNSSeedData("seed1.dapscoin.com", "seed1.dapscoin.com"));        // Single node address
+        vSeeds.push_back(CDNSSeedData("seed2.dapscoin.com", "seed2.dapscoin.com"));        // Single node address
+        vSeeds.push_back(CDNSSeedData("seed3.dapscoin.com", "seed3.dapscoin.com"));        // Single node address
+        vSeeds.push_back(CDNSSeedData("seed4.dapscoin.com", "seed4.dapscoin.com"));        // Single node address
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 30);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 13);
@@ -191,7 +193,7 @@ public:
         base58Prefixes[EXT_PUBLIC_KEY] = boost::assign::list_of(0x02)(0x2D)(0x25)(0x33).convert_to_container<std::vector<unsigned char> >();
         base58Prefixes[EXT_SECRET_KEY] = boost::assign::list_of(0x02)(0x21)(0x31)(0x2B).convert_to_container<std::vector<unsigned char> >();
         // 	BIP44 coin type is from https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-        base58Prefixes[EXT_COIN_TYPE] = boost::assign::list_of(0x80)(0x00)(0x00)(0x77).convert_to_container<std::vector<unsigned char> >();
+        nExtCoinType = 0x80000166;
 
         convertSeed6(vFixedSeeds, pnSeed6_main, ARRAYLEN(pnSeed6_main));
 
@@ -206,7 +208,6 @@ public:
         fHeadersFirstSyncingActive = false;
 
         nPoolMaxTransactions = 3;
-        strSporkKey = "04B433E6598390C992F4F022F20D3B4CBBE691652EE7C48243B81701CBDB7CC7D7BF0EE09E154E6FCBF2043D65AF4E9E97B89B5DBAF830D83B9B7F469A6C45A717";
         strObfuscationPoolDummyAddress = "D87q2gC9j6nNrnzCsg4aY6bHMLsT9nUhEw";
         nStartMasternodePayments = 1546809115; //Wed, 25 Jun 2014 20:36:16 GMT
     }
@@ -240,9 +241,9 @@ public:
         nMinerThreads = 0;
         nTargetTimespan = 1 * 60; // DAPScoin: 1 day
         nTargetSpacing = 1 * 60;  // DAPScoin: 1 minute
-        nLastPOWBlock = 220;
-        nStartPOABlock = 300;
-        nPoABlockTime = 15 * 60;  //1 PoA block every 15 minutes
+        nLastPOWBlock = 500;
+        nStartPOABlock = 560;
+        nPoABlockTime = 30 * 60;  //1 PoA block every 30 minutes
         nMinNumPoSBlocks = 20;
         nMaturity = 15;
         nMasternodeCountDrift = 4;
@@ -256,10 +257,10 @@ public:
         nBlockEnforceInvalidUTXO = 9902850; //Start enforcing the invalid UTXO's
 
         //! Modify the testnet genesis block so the timestamp is valid for a later start.
-        genesis.nTime = 1536808115;
-        genesis.nNonce = 12642182;
+        genesis.nTime = 1569319143;
+        genesis.nNonce = 13181403;
 
-        if(genesis.GetHash()!=uint256("0000026ffe2f480e74c26dcdbe79d349bd19d67db32c49c55d915da8633883d1"))
+        if(genesis.GetHash()!=uint256("00000fd0bbd43f9f0adb0a6724213681803bfba6a127fbe26ac9cd9ce22b50a4"))
         {
             printf("Searchingforgenesisblock...\n");
             uint256 hashTarget=uint256().SetCompact(genesis.nBits);
@@ -289,7 +290,7 @@ public:
         }
 
         hashGenesisBlock = genesis.GetHash();
-        assert(hashGenesisBlock == uint256("0000026ffe2f480e74c26dcdbe79d349bd19d67db32c49c55d915da8633883d1"));
+        assert(hashGenesisBlock == uint256("00000fd0bbd43f9f0adb0a6724213681803bfba6a127fbe26ac9cd9ce22b50a4"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
@@ -303,7 +304,7 @@ public:
         // Testnet dapscoin BIP32 prvkeys start with 'DRKP'
         base58Prefixes[EXT_SECRET_KEY] = boost::assign::list_of(0x3a)(0x80)(0x58)(0x37).convert_to_container<std::vector<unsigned char> >();
         // Testnet dapscoin BIP44 coin type is '1' (All coin's testnet default)
-        base58Prefixes[EXT_COIN_TYPE] = boost::assign::list_of(0x80)(0x00)(0x00)(0x01).convert_to_container<std::vector<unsigned char> >();
+        nExtCoinType = 0x80000001;
 
         convertSeed6(vFixedSeeds, pnSeed6_test, ARRAYLEN(pnSeed6_test));
 
@@ -316,7 +317,6 @@ public:
         fTestnetToBeDeprecatedFieldRPC = true;
 
         nPoolMaxTransactions = 2;
-        strSporkKey = "04348C2F50F90267E64FACC65BFDC9D0EB147D090872FB97ABAE92E9A36E6CA60983E28E741F8E7277B11A7479B626AC115BA31463AC48178A5075C5A9319D4A38";
         strObfuscationPoolDummyAddress = "y57cqfGRkekRyDRNeJiLtYVEbvhXrNbmox";
         nStartMasternodePayments = 1420837558; //Fri, 09 Jan 2015 21:05:58 GMT
         nBudget_Fee_Confirmations = 3; // Number of confirmations for the finalization fee. We have to make this very short
@@ -352,11 +352,11 @@ public:
         nTargetTimespan = 24 * 60 * 60; // Dapscoin: 1 day
         nTargetSpacing = 1 * 60;        // Dapscoin: 1 minutes
         bnProofOfWorkLimit = ~uint256(0) >> 1;
-        genesis.nTime = 1536808341;
+        genesis.nTime = 1569319143;
         genesis.nBits = 0x207fffff;
         genesis.nNonce = 12357;
 
-        if(genesis.GetHash()!=uint256("5559b7d36e00d07e48ec38143c08804efc5a4b57eaadadbae977e05676054f2a"))
+        if(genesis.GetHash()!=uint256("0e27b50334500e2044a32d722cf14042e78f61abdebc730659d411fccd7eedcb"))
         {
             printf("Searchingforgenesisblock...\n");
             uint256 hashTarget=uint256().SetCompact(genesis.nBits);
@@ -388,7 +388,7 @@ public:
         hashGenesisBlock = genesis.GetHash();
         nDefaultPort = 51476;
 
-        assert(hashGenesisBlock == uint256("5559b7d36e00d07e48ec38143c08804efc5a4b57eaadadbae977e05676054f2a"));
+        assert(hashGenesisBlock == uint256("0e27b50334500e2044a32d722cf14042e78f61abdebc730659d411fccd7eedcb"));
 
         vFixedSeeds.clear(); //! Testnet mode doesn't have any fixed seeds.
         vSeeds.clear();      //! Testnet mode doesn't have any DNS seeds.
@@ -427,6 +427,8 @@ public:
         fDefaultConsistencyChecks = true;
         fAllowMinDifficultyBlocks = false;
         fMineBlocksOnDemand = true;
+
+        nExtCoinType = 0x80000166;
     }
 
     const Checkpoints::CCheckpointData& Checkpoints() const

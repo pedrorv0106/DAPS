@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
+// Copyright (c) 2015-2018 The PIVX developers
 // Copyright (c) 2018-2019 The DAPScoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -469,7 +470,7 @@ public:
         }
     }
 
-    void AskFor(const CInv& inv);
+    void AskFor(const CInv& inv, bool fImmediateRetry = false);
 
     // TODO: Document the postcondition of this function.  Is cs_vSend locked?
     void BeginMessage(const char* pszCommand) EXCLUSIVE_LOCK_FUNCTION(cs_vSend);

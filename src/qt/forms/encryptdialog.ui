@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>611</width>
-    <height>243</height>
+    <height>231</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -50,7 +50,9 @@
         </font>
        </property>
        <property name="text">
-        <string>Please enter the passphrase</string>
+        <string>Please enter a passphrase to encrypt your wallet. This is required.
+(You must use a minimum passphrase length of 10 characters and use uppercase letters, 
+lowercase letters, numbers, symbols) </string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -95,22 +97,22 @@
       <number>100</number>
      </property>
      <item>
-      <widget class="QPushButton" name="btnCancel">
-       <property name="text">
-        <string>Cancel</string>
-       </property>
-       <property name="shortcut">
-        <string>Esc</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="btnOK">
        <property name="text">
         <string>Confirm</string>
        </property>
        <property name="shortcut">
         <string>Return</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnCancel">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+       <property name="shortcut">
+        <string>Esc</string>
        </property>
       </widget>
      </item>
