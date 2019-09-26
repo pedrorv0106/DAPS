@@ -4429,8 +4429,9 @@ bool AcceptBlock(CBlock& block, CValidationState& state, CBlockIndex** ppindex, 
                 REJECT_INVALID, "bad-prevblk");
         }
     }
-    if (block.GetHash() != Params().HashGenesisBlock() && !CheckWork(block, pindexPrev))
+    if (block.GetHash() != Params().HashGenesisBlock() && !CheckWork(block, pindexPrev)) {
         return false;
+    }
     LogPrintf("\nAcceptingHeader block");
     if (!AcceptBlockHeader(block, state, &pindex))
         return false;
@@ -4575,8 +4576,12 @@ bool ProcessNewBlock(CValidationState& state, CNode* pfrom, CBlock* pblock, CDis
             mapBlockSource[pindex->GetBlockHash()] = pfrom->GetId();
         }
         CheckBlockIndex();
-        if (!ret)
+        if (!ret) {
+            if (pfrom) {
+                pfrom->PushMessage("getblocks", chainActive.GetLocator(pindexBestForkTip), pblock->GetHash());
+            }
             return error("%s : AcceptBlock FAILED", __func__);
+        }
     }
     if (!ActivateBestChain(state, pblock, checked))
         return error("%s : ActivateBestChain failed", __func__);
@@ -5962,8 +5967,8 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             bool fAlreadyHave = AlreadyHave(inv);
             LogPrint("net", "got inv: %s  %s peer=%d, inv.type=%d, mapBlocksInFlight.count(inv.hash)=%d\n", inv.ToString(), fAlreadyHave ? "have" : "new", pfrom->id, inv.type, mapBlocksInFlight.count(inv.hash));
 
-            if (!fAlreadyHave && !fImporting && !fReindex && inv.type != MSG_BLOCK)
-                pfrom->AskFor(inv); // peershares: immediate retry during initial download
+            if (!fAlreadyHave && pfrom)
+                pfrom->AskFor(inv, IsInitialBlockDownload()); // peershares: immediate retry during initial download
             if (inv.type == MSG_BLOCK) {
                 UpdateBlockAvailability(pfrom->GetId(), inv.hash);
                 if (!fAlreadyHave && !fImporting && !fReindex && !mapBlocksInFlight.count(inv.hash)) {
@@ -5972,6 +5977,17 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
                     LogPrint("net", "getblocks (%d) %s to peer=%d\n", pindexBestHeader->nHeight, inv.hash.ToString(),
                         pfrom->id);
                 }
+            } else if (nInv == nLastBlock) {
+                // In case we are on a very long side-chain, it is possible that we already have
+                // the last block in an inv bundle sent in response to getblocks. Try to detect
+                // this situation and push another getblocks to continue.
+                std::vector<CInv> vGetData(1,inv);
+                
+                if (pfrom) {
+                    pfrom->PushMessage("getblocks", chainActive.GetLocator(mapBlockIndex[inv.hash]), uint256(0));
+                }
+                if (fDebug)
+                    printf("force request: %s\n", inv.ToString().c_str());
             }
 
             // Track requests for our stuff
