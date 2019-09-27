@@ -4363,7 +4363,7 @@ bool AcceptBlockHeader(const CBlock& block, CValidationState& state, CBlockIndex
         LogPrintf("AcceptBlockHeader(): CheckBlockHeader failed \n");
         return false;
     }
-    LogPrintf("\n%s: get priveous block", __func__);
+    LogPrintf("\n%s: get previous block", __func__);
     // Get prev block index
     CBlockIndex* pindexPrev = NULL;
     if (hash != Params().HashGenesisBlock()) {
