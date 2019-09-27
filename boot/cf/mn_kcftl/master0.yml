@@ -53,7 +53,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: daps-master-0-mn
+      app: daps-master-0
   strategy:
     type: Recreate
   template:
