@@ -17,7 +17,7 @@ spec:
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: master-0-pv-volume-mn
+  name: master-0-pv-volume
   labels:
     type: local
 spec:
@@ -35,9 +35,9 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: master-0-pv-claim-mn
+  name: master-0-pv-claim
   labels:
-    app: daps-master-0-mn
+    app: daps-master-0
 spec:
   accessModes:
     - ReadWriteOnce
@@ -47,9 +47,9 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: daps-master-0-mn
+  name: daps-master-0
   labels:
-    app: daps-master-0-mn
+    app: daps-master-0
 spec:
   selector:
     matchLabels:
@@ -90,7 +90,7 @@ spec:
       volumes:
       - name: master0data
         persistentVolumeClaim:
-          claimName: master-0-pv-claim-mn
+          claimName: master-0-pv-claim
       dnsPolicy: ClusterFirst
       imagePullSecrets:
       - name: regcred
