@@ -69,7 +69,7 @@ spec:
         - "master.1"
       terminationGracePeriodSeconds: 3
       containers:
-      - image: r.cfcr.io/hysmagus/daps_min:develop
+      - image: r.cfcr.io/hysmagus/daps_min:master
         imagePullPolicy: Always
         name: dapsd
         lifecycle:
