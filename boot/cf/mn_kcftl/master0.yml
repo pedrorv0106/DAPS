@@ -28,7 +28,7 @@ spec:
     - ReadWriteOnce
   claimRef:
     namespace: default
-    name: master-0-pv-claim-mn
+    name: master-0-pv-claim
   gcePersistentDisk:
     fsType: ext4
     pdName: masternode-0-service-mn
