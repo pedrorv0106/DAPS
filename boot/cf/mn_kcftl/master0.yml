@@ -35,7 +35,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: master-0-pv-claim
+  name: master-0-pv-claim-mn
   labels:
     app: daps-master-0
 spec:
