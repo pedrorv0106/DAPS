@@ -85,12 +85,12 @@ spec:
         - containerPort: 53572
           name: mainnet
         volumeMounts:
-        - name: master0data
+        - name: master0data-mn
           mountPath: /root/.dapscoin/
       volumes:
-      - name: master0data
+      - name: master0data-mn
         persistentVolumeClaim:
-          claimName: master-0-pv-claim
+          claimName: master-0-pv-claim-mn
       dnsPolicy: ClusterFirst
       imagePullSecrets:
       - name: codefresh-generated-r.cfcr.io-cfcr-default
