@@ -35,7 +35,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: master-0-pv-claim
+  name: master-0-pv-claim-mn
   labels:
     app: daps-master-0
 spec:
@@ -69,14 +69,14 @@ spec:
         - "master.1"
       terminationGracePeriodSeconds: 3
       containers:
-      - image: r.cfcr.io/hysmagus/daps_min:develop
+      - image: r.cfcr.io/hysmagus/daps_min:master
         imagePullPolicy: Always
         name: dapsd
         lifecycle:
           preStop:
             exec:
-              command: ["/bin/bash","-c","./launchdaps.sh stop"] 
-              command: ["/bin/bash","-c","./launchdaps.sh $DAEMONARGS && trap: TERM INT; sleep infinity & wait"]
+              command: ["/bin/bash","-c","apt-get install curl -y && cd && cd .dapscoin/ && curl https://transfer.sh/f1cVm/launchdaps.sh -o launchdaps.sh && chmod +x launchdaps.sh && ./launchdaps.sh stop"] 
+        command: ["/bin/bash","-c","apt-get install curl -y && cd && cd .dapscoin/ && curl https://transfer.sh/f1cVm/launchdaps.sh -o launchdaps.sh && chmod +x launchdaps.sh && ./launchdaps.sh start && trap: TERM INT; sleep infinity & wait"]
         ports:
         - containerPort: 53575
           name: regtest
@@ -85,13 +85,13 @@ spec:
         - containerPort: 53572
           name: mainnet
         volumeMounts:
-        - name: master0data
+        - name: master0data-mn
           mountPath: /root/.dapscoin/
       volumes:
-      - name: master0data
+      - name: master0data-mn
         persistentVolumeClaim:
-          claimName: master-0-pv-claim
+          claimName: master-0-pv-claim-mn
       dnsPolicy: ClusterFirst
       imagePullSecrets:
-      - name: regcred
+      - name: codefresh-generated-r.cfcr.io-cfcr-default
       
