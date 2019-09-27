@@ -205,11 +205,12 @@ public:
 
 enum StakingStatusError
 {
-	NONE,
-	DEFAULT,
-	UTXO_UNDER_THRESHOLD,
-	RESERVE_TOO_HIGH,
-	RESERVE_TOO_HIGH_AND_UTXO_UNDER_THRESHOLD
+    UTXO_UNDER_THRESHOLD, //unstakable, use case A
+    UNSTAKABLE, //coin is not mature yet (balance > 400k)
+	STAKING_OK, //use case B, C, D, no consolidation needed, 
+    RESERVE_TOO_HIGH,   //unstakable, reserve too high, ask users to reduce reserve
+    RESERVE_TOO_HIGH_NEED_CONSOLIDATION, //have stakable UTXO but spendable balance - reserve < 400k => need consolidation 
+	NEED_CONSOLIDATION_TO_STAKE_100_PERCENT //minus reserve
 };
 
 enum StakingMode {
