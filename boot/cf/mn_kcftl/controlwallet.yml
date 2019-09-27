@@ -33,7 +33,7 @@ spec:
     path: "/tmp/pv/control"
 apiVersion: v1
 kind: PersistentVolumeClaim
-metadata:
+metad ata:
   name: control-wallet-pv-claim
   labels:
     app: daps-control-wallet
