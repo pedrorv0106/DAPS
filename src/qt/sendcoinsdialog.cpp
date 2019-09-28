@@ -172,7 +172,7 @@ void SendCoinsDialog::sendTx() {
     } catch (const std::exception& err) {
         QMessageBox msgBox;
         msgBox.setWindowTitle("Transaction Creation Error");
-        msgBox.setText("Error String: " + QString(err.what()));
+        msgBox.setText(QString(err.what()));
         msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
         msgBox.setIcon(QMessageBox::Critical);
         msgBox.exec();
