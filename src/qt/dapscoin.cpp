@@ -48,7 +48,10 @@
 #include <signal.h>
 #include <stdint.h>
 #include <unistd.h>
+
+#ifndef Q_OS_WIN
 #include <execinfo.h>
+#endif
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/thread.hpp>
@@ -571,7 +574,7 @@ WId BitcoinApplication::getMainWinId() const
 
     return window->winId();
 }
-
+#ifndef Q_OS_WIN
 #ifdef DEBUG_BACKTRACE
 void handler(int sig)
 {
@@ -587,12 +590,15 @@ void handler(int sig)
     exit(1);
 }
 #endif
+#endif
 
 #ifndef BITCOIN_QT_TEST
 int main(int argc, char* argv[])
 {
+#ifndef Q_OS_WIN
 #ifdef DEBUG_BACKTRACE
     signal(SIGSEGV, handler); // install our handler
+#endif
 #endif
     SetupEnvironment();
 
