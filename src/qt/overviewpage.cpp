@@ -182,7 +182,7 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
         nSpendableDisplayed = nSpendableDisplayed > nReserveBalance ? nReserveBalance:nSpendableDisplayed;
     }
     // DAPS labels
-    //Cam: Remove immatureBalance from showing on qt wallet (as andrew says)
+    //TODO-NOTE: Remove immatureBalance from showing on qt wallet (as requested)
     if (walletStatus == WalletModel::Locked || walletStatus == WalletModel::UnlockedForAnonymizationOnly) {
         ui->labelBalance_2->setText("Locked; Hidden");
         ui->labelBalance->setText("Locked; Hidden");

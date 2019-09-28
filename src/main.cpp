@@ -1673,7 +1673,7 @@ bool CheckHaveInputs(const CCoinsViewCache& view, const CTransaction& tx)
                     return false;
                 }
 
-                //Cam: 07/06/2019 Remove this condition as colateral will be cheated as a normal tx
+                //TODO-NOTE: 07/06/2019 Remove this condition as colateral will be cheated as a normal tx
                 //UTXO with 1M DAPS can only be consumed in a transaction with that single UTXO
                 /*if (decoysSize > 1 && prev.vout[alldecoys[j].n].nValue == 1000000 * COIN) {
 					return false;
@@ -4366,7 +4366,7 @@ bool AcceptBlockHeader(const CBlock& block, CValidationState& state, CBlockIndex
         LogPrintf("AcceptBlockHeader(): CheckBlockHeader failed \n");
         return false;
     }
-    LogPrintf("\n%s: get priveous block", __func__);
+    LogPrintf("\n%s: get previous block", __func__);
     // Get prev block index
     CBlockIndex* pindexPrev = NULL;
     if (hash != Params().HashGenesisBlock()) {
