@@ -48,7 +48,6 @@
 #include <signal.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <execinfo.h>
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/thread.hpp>
