@@ -70,13 +70,12 @@ void SendCoinsDialog::setModel(WalletModel* model)
             }
         }
 
-        connect(model, SIGNAL(balanceChanged(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)), this,
-            SLOT(setBalance(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)));
+        connect(model, SIGNAL(balanceChanged(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)), this,
+            SLOT(setBalance(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)));
     }
 }
 
 void SendCoinsDialog::setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, 
-                              const CAmount& zerocoinBalance, const CAmount& unconfirmedZerocoinBalance, const CAmount& immatureZerocoinBalance,
                               const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance)
 {
     int status = model->getEncryptionStatus();
@@ -219,4 +218,3 @@ SendCoinsEntry* SendCoinsDialog::addEntry()
         bar->setSliderPosition(bar->maximum());
     return entry;
 }
-
