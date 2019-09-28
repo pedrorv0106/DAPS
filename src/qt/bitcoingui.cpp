@@ -275,6 +275,7 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     QActionGroup* tabGroup = new QActionGroup(this);
 
     overviewAction = new QAction(QIcon(":/icons/overview"), tr("&Overview"), this);
+    overviewAction->setIconText("    &Overview");
     overviewAction->setStatusTip(QString());
     overviewAction->setToolTip(QString());
     overviewAction->setCheckable(true);
@@ -285,7 +286,8 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
 #endif
     tabGroup->addAction(overviewAction);
 
-    sendCoinsAction = new QAction(QIcon(":/icons/send"), tr("&   Send"), this);
+    sendCoinsAction = new QAction(QIcon(":/icons/send"), tr("&Send"), this);
+    sendCoinsAction->setIconText("    &Send");
     sendCoinsAction->setToolTip(QString());
     sendCoinsAction->setCheckable(true);
 #ifdef Q_OS_MAC
@@ -295,7 +297,8 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
 #endif
     tabGroup->addAction(sendCoinsAction);
 
-    receiveCoinsAction = new QAction(QIcon(":/icons/receiving_addresses"), tr("&   Receive"), this);
+    receiveCoinsAction = new QAction(QIcon(":/icons/receiving_addresses"), tr("&Receive"), this);
+    receiveCoinsAction->setIconText("    &Receive");
     receiveCoinsAction->setToolTip(QString());
     receiveCoinsAction->setCheckable(true);
 #ifdef Q_OS_MAC
@@ -305,7 +308,8 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
 #endif
     tabGroup->addAction(receiveCoinsAction);
 
-    historyAction = new QAction(QIcon(":/icons/history"), tr("&   History"), this);
+    historyAction = new QAction(QIcon(":/icons/history"), tr("&History"), this);
+    historyAction->setIconText("    &History");
     historyAction->setToolTip(QString());
     historyAction->setCheckable(true);
 #ifdef Q_OS_MAC
@@ -319,7 +323,8 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
 
     QSettings settings;
     if (settings.value("fShowMasternodesTab").toBool()) {
-        masternodeAction = new QAction(QIcon(":/icons/masternodes"), tr("&   Masternodes"), this);
+        masternodeAction = new QAction(QIcon(":/icons/masternodes"), tr("&Masternodes"), this);
+        masternodeAction->setIconText("    &Masternodes");
         masternodeAction->setStatusTip(tr("Masternodes"));
         masternodeAction->setToolTip(masternodeAction->statusTip());
         masternodeAction->setCheckable(true);
@@ -360,6 +365,7 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     aboutQtAction->setStatusTip(tr("Show information about Qt"));
     aboutQtAction->setMenuRole(QAction::AboutQtRole);
     optionsAction = new QAction(QIcon(":/icons/options"), tr("&Settings"), this);
+    optionsAction->setIconText("   Settings");
     optionsAction->setStatusTip(tr("Modify settings"));
     optionsAction->setMenuRole(QAction::PreferencesRole);
     optionsAction->setToolTip(optionsAction->statusTip());
@@ -368,12 +374,14 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
 
     stakingAction = new QAction(QIcon(":/icons/options"), tr("&Staking"), this);
     stakingAction->setText(tr("Staking Status"));
+    stakingAction->setIconText("   Staking Status");
     stakingAction->setMenuRole(QAction::NoRole);
     stakingState = new QLabel(this);
     stakingState->setObjectName("stakingState");
     networkAction = new QAction(QIcon(":/icons/options"), tr("&Network"), this);
     networkAction->setMenuRole(QAction::NoRole);
     networkAction->setText("Network Status");
+    networkAction->setIconText("   Network Status");
     connectionCount = new QLabel(this);
     connectionCount->setObjectName("connectionCount");
 
