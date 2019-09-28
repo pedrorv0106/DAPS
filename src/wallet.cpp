@@ -2829,11 +2829,13 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                 if (!SelectCoins(true, ringSize, 2, nTotalValue, setCoins, nValueIn, coinControl, coin_type, useIX)) {
                     if (coin_type == ALL_COINS) {
                         CAmount fee = ComputeFee(setCoins.size(), 2, ringSize);
-                        if (nSpendableBalance < nValueIn + fee) {
+                        if (nSpendableBalance < nTotalValue + fee) {
                             strFailReason = ("Insufficient funds. Transaction requires a fee of " + FormatMoney(fee));
                         } else if (setCoins.size() > MAX_TX_INPUTS) {
                             strFailReason = _("You have attempted to send more than 50 UTXOs in a single transaction. This is a rare occurrence, and to work around this limitation, please either lower the total amount of the transaction, or send two separate transactions with 50% of your total desired amount.");
-                        }
+                        } else if (nValueIn == 0) {
+                            strFailReason = _("No coin set found.");
+                        } 
                     } else if (coin_type == ONLY_NOT1000000IFMN) {
                         strFailReason = _("Unable to locate enough funds for this transaction that are not equal 10000 DAPS.");
                     } else if (coin_type == ONLY_NONDENOMINATED_NOT1000000IFMN) {
@@ -2847,12 +2849,6 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                         strFailReason += " " + _("SwiftX requires inputs with at least 6 confirmations, you might need to wait a few minutes and try again.");
                     }
 
-                    ret = false;
-                    break;
-                }
-
-                if (nValueIn == 0) {
-                    strFailReason = _("No coin set found.");
                     ret = false;
                     break;
                 }
