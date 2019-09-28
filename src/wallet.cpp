@@ -2156,6 +2156,124 @@ bool CWallet::MintableCoins()
     return false;
 }
 
+StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
+{
+    minFee = 0;
+    maxFee = 0;
+    if (GetBalance - nReserveBalance < MINIMUM_STAKE_AMOUNT) {
+        return StakingStatusError::RESERVE_TOO_HIGH;
+    }
+
+    vector<COutput> vCoins, coinsUnderThreshold, coinsOverThreshold;
+    StakingStatusError ret = StakingStatusError::STAKING_OK;
+    CAmount nBalance = GetBalance();
+    CAmount nSpendableBalance = GetSpendableBalance();
+
+    if (nBalance < MINIMUM_STAKE_AMOUNT) {
+        return StakingStatusError::UTXO_UNDER_THRESHOLD;
+    }
+
+    {
+        LOCK2(cs_main, cs_wallet);
+        {
+            for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
+                const uint256& wtxid = it->first;
+                const CWalletTx* pcoin = &(*it).second;
+
+                int cannotSpend = 0;
+                {
+                    AvailableCoins(wtxid, pcoin, vCoins, cannotSpend, true);
+                    if (!vCoins.empty()) {
+                        for (const COutput& out : vCoins) {
+                            int64_t nTxTime = out.tx->GetTxTime();
+                            //add in-wallet minimum staking
+                            if (getCOutPutValue(out) >= MINIMUM_STAKE_AMOUNT) {
+                                ret = StakingStatusError::STAKING_OK;
+                                coinsOverThreshold.push_back(out);
+                            } else {
+                                coinsUnderThreshold.push_back(out);
+                            }
+                        }
+                    }
+                }
+            }
+
+            //compute the number of consolidatation transaction will be made
+            int numUTXOs = coinsUnderThreshold.size();
+            int numConsolidationTxs = numUTXOs > 0? 1:0;
+            minFee = ComputeFee(numConsolidationTxs % MAX_TX_INPUTS, 1, MIN_RING_SIZE);
+            maxFee = ComputeFee(numConsolidationTxs % MAX_TX_INPUTS, 1, MAX_RING_SIZE);
+            while (numUTXOs > MAX_TX_INPUTS) {
+                numUTXOs -= (MAX_TX_INPUTS - 1);
+                numConsolidationTxs++;
+                minFee += ComputeFee(MAX_TX_INPUTS, 1, MIN_RING_SIZE);
+                maxFee = ComputeFee(MAX_TX_INPUTS, 1, MAX_RING_SIZE);
+            }
+            if (nReserveBalance == 0 && coinsOverThreshold.isEmpty() && nBalance > MINIMUM_STAKE_AMOUNT) {
+                if (nSpendableBalance < MINIMUM_STAKE_AMOUNT) {
+                    return StakingStatusError::UNSTAKABLE_DUE_TO_CONSILIDATION_FAILED;  //not enough spendable balance
+                } 
+                set<pair<const CWalletTx*, unsigned int> > setCoinsRet;
+                CAmount nValueRet;
+                int ringSize = MIN_RING_SIZE + secp256k1_rand32() % (MAX_RING_SIZE - MIN_RING_SIZE + 1);
+                bool selectCoinRet = SelectCoins(true, ringSize, 1, MINIMUM_STAKE_AMOUNT, setCoinsRet, nValueRet, NULL, AvailableCoinsType::ALL_COINS, false);  
+                if (!selectCoinRet) {
+                    return StakingStatusError::UNSTAKABLE_DUE_TO_CONSILIDATION_FAILED;  //not enough spendable balance
+                }
+
+                return StakingStatusError::NEED_CONSOLIDATION_UTXO_UNDER_THRESHOLD;
+            }
+
+            if (nReserveBalance > 0) {
+                set<pair<const CWalletTx*, unsigned int> > setCoinsRet;
+                CAmount nValueRet;
+                //check whether need consolidation
+                int ringSize = MIN_RING_SIZE + secp256k1_rand32() % (MAX_RING_SIZE - MIN_RING_SIZE + 1);
+                bool selectCoinRet = SelectCoins(true, ringSize, 2, nReserveBalance, setCoinsRet, nValueRet, NULL, AvailableCoinsType::ALL_COINS, false);  
+                if (!selectCoinRet) {
+                    //fail to even select coins to consolidation for reserve funds => ask to reduce
+                    return StakingStatusError::RESERVE_TOO_HIGH;
+                } 
+                //check if all coins over threshold is selected
+                bool allCoinsOverThresholdSelected = true;
+                for (size_t i = 0; i < coinsOverThreshold; i++) {
+                    BOOST_FOREACH (const PAIRTYPE(const CWalletTx*, unsigned int) & coin, setCoinsRet) {
+                        if (coin.first->GetHash() != coinsOverThreshold[i].tx->GetHash() || coin.second != coinsOverThreshold[i].i) {
+                            allCoinsOverThresholdSelected = false;
+                        }
+                    }
+                }
+                if (allCoinsOverThresholdSelected) {
+                    return RESERVE_TOO_HIGH_NEED_CONSOLIDATION;
+                }
+            }
+
+            if (coinsOverThreshold.size() > 0 && coinsUnderThreshold.size() > 0) {
+                bool hasUnspendableCoinUnderThreshold = false;
+                for(size_t i = 0; i < coinsUnderThreshold.size(); i++) {
+                    const CWalletTx* pcoin = coinsUnderThreshold[i].tx;
+                    if (!((pcoin->IsCoinBase() || pcoin->IsCoinStake()) && pcoin->GetBlocksToMaturity() > 0 && pcoin->IsInMainChain())) {
+                        //do nothing
+                    } else {
+                        if (pcoin->IsInMainChain()) {
+                            hasUnspendableCoinUnderThreshold = true;
+                        }
+                    }
+                } 
+                if (hasUnspendableCoinUnderThreshold) {
+                    //consolidation will be done in the background
+                    return StakingStatusError::NEED_CONSOLIDATION_TO_STAKE_100_PERCENT_CONSOLIDATION_FAILED;
+                }  else {
+                    return StakingStatusError::NEED_CONSOLIDATION_TO_STAKE_100_PERCENT;
+                }
+            }
+        }
+    }
+
+    
+    return ret;
+}
+
 bool CWallet::SelectCoinsMinConf(bool needFee, int ringSize, int numOut, const CAmount& nTargetValue, int nConfMine, int nConfTheirs, vector<COutput> vCoins, set<pair<const CWalletTx*, unsigned int> >& setCoinsRet, CAmount& nValueRet)
 {
     setCoinsRet.clear();

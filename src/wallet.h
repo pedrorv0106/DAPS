@@ -203,6 +203,7 @@ public:
     }
 };
 
+//in any case consolidation needed, call estimateConsolidationFees function to estimate fees
 enum StakingStatusError
 {
     UTXO_UNDER_THRESHOLD, //unstakable, use case A
@@ -210,7 +211,12 @@ enum StakingStatusError
 	STAKING_OK, //use case B, C, D, no consolidation needed, 
     RESERVE_TOO_HIGH,   //unstakable, reserve too high, ask users to reduce reserve
     RESERVE_TOO_HIGH_NEED_CONSOLIDATION, //have stakable UTXO but spendable balance - reserve < 400k => need consolidation 
-	NEED_CONSOLIDATION_TO_STAKE_100_PERCENT //minus reserve
+	NEED_CONSOLIDATION_TO_STAKE_100_PERCENT, //consolidation can make right after pushing on enabling staking button
+    //some > 400k, some < 400k, however nSpendable < 400k => consolidation failed ==> consolidation will be in the background
+    //front end should call function to enable staking
+    NEED_CONSOLIDATION_TO_STAKE_100_PERCENT_CONSOLIDATION_FAILED, 
+    NEED_CONSOLIDATION_UTXO_UNDER_THRESHOLD, //there no UTXO > 400k even though balance > 400k
+    UNSTAKABLE_DUE_TO_CONSILIDATION_FAILED  //need consolidation to create a stakable UTXO, however the transaction fees for conlidation plus MINIMUM_STAKE_AMOUNT > GetSpendableBalance
 };
 
 enum StakingMode {
@@ -259,6 +265,7 @@ public:
     static const int32_t PROBABILITY_NEW_COIN_SELECTED = 70;
     bool RescanAfterUnlock(bool fromBeginning = false);
     bool MintableCoins();
+    StakingStatusError StakingCoinStatus(CAmount& minFee, CAmount& maxFee);
     bool SelectStakeCoins(std::set<std::pair<const CWalletTx*, unsigned int> >& setCoins, CAmount nTargetAmount) ;
     bool SelectCoinsDark(CAmount nValueMin, CAmount nValueMax, std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet, int nObfuscationRoundsMin, int nObfuscationRoundsMax) ;
     bool SelectCoinsByDenominations(int nDenom, CAmount nValueMin, CAmount nValueMax, std::vector<CTxIn>& vCoinsRet, std::vector<COutput>& vCoinsRet2, CAmount& nValueRet, int nObfuscationRoundsMin, int nObfuscationRoundsMax);

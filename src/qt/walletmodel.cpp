@@ -663,16 +663,9 @@ bool WalletModel::isMine(CBitcoinAddress address)
 
 StakingStatusError WalletModel::getStakingStatusError(QString& error)
 {
-    // int timeRemaining = (1471482000 - chainActive.Tip()->nTime) / (60 * 60); //time remaining in hrs
-    if (1471482000 > chainActive.Tip()->nTime) {
-        error = "Chain has not matured.\nHours remaining: " + QString((1471482000 - chainActive.Tip()->nTime) / (60 * 60));
-        return StakingStatusError::DEFAULT;
-    } else if (vNodes.empty()) {
-        error = "No peer connections.\nPlease check network settings.";
-        return StakingStatusError::DEFAULT;
-    } else {
+    {
     	bool fMintable = pwalletMain->MintableCoins();
-    	CAmount balance = pwalletMain->GetBalance();
+    	CAmount balance = pwalletMain->GetSpendableBalance();
     	if (!fMintable || nReserveBalance > balance) {
     		if (balance < CWallet::MINIMUM_STAKE_AMOUNT + 10*COIN) {
     			error = "\nBalance is under the minimum 400,000 staking threshold.\nPlease send more DAPS to this wallet.\n";
