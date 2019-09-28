@@ -831,6 +831,9 @@ void FinalizeNode(NodeId nodeid)
     LOCK(cs_main);
     CNodeState* state = State(nodeid);
 
+    if (!state)
+        return;
+    
     if (state->fSyncStarted)
         nSyncStarted--;
 
