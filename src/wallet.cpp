@@ -2160,13 +2160,13 @@ StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
 {
     minFee = 0;
     maxFee = 0;
-    if (GetBalance - nReserveBalance < MINIMUM_STAKE_AMOUNT) {
+    CAmount nBalance = GetBalance();
+    if (nBalance - nReserveBalance < MINIMUM_STAKE_AMOUNT) {
         return StakingStatusError::RESERVE_TOO_HIGH;
     }
 
     vector<COutput> vCoins, coinsUnderThreshold, coinsOverThreshold;
     StakingStatusError ret = StakingStatusError::STAKING_OK;
-    CAmount nBalance = GetBalance();
     CAmount nSpendableBalance = GetSpendableBalance();
 
     if (nBalance < MINIMUM_STAKE_AMOUNT) {
@@ -2209,7 +2209,7 @@ StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
                 minFee += ComputeFee(MAX_TX_INPUTS, 1, MIN_RING_SIZE);
                 maxFee = ComputeFee(MAX_TX_INPUTS, 1, MAX_RING_SIZE);
             }
-            if (nReserveBalance == 0 && coinsOverThreshold.isEmpty() && nBalance > MINIMUM_STAKE_AMOUNT) {
+            if (nReserveBalance == 0 && coinsOverThreshold.empty() && nBalance > MINIMUM_STAKE_AMOUNT) {
                 if (nSpendableBalance < MINIMUM_STAKE_AMOUNT) {
                     return StakingStatusError::UNSTAKABLE_DUE_TO_CONSILIDATION_FAILED;  //not enough spendable balance
                 } 
@@ -2236,7 +2236,7 @@ StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
                 } 
                 //check if all coins over threshold is selected
                 bool allCoinsOverThresholdSelected = true;
-                for (size_t i = 0; i < coinsOverThreshold; i++) {
+                for (size_t i = 0; i < coinsOverThreshold.size(); i++) {
                     BOOST_FOREACH (const PAIRTYPE(const CWalletTx*, unsigned int) & coin, setCoinsRet) {
                         if (coin.first->GetHash() != coinsOverThreshold[i].tx->GetHash() || coin.second != coinsOverThreshold[i].i) {
                             allCoinsOverThresholdSelected = false;

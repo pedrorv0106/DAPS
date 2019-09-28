@@ -667,9 +667,9 @@ StakingStatusError WalletModel::getStakingStatusError(QString& error)
     	bool fMintable = pwalletMain->MintableCoins();
     	CAmount balance = pwalletMain->GetSpendableBalance();
     	if (!fMintable || nReserveBalance > balance) {
-    		if (balance < CWallet::MINIMUM_STAKE_AMOUNT + 10*COIN) {
+    		if (balance < CWallet::MINIMUM_STAKE_AMOUNT) {
     			error = "\nBalance is under the minimum 400,000 staking threshold.\nPlease send more DAPS to this wallet.\n";
-    			return StakingStatusError::DEFAULT;
+    			return StakingStatusError::STAKING_OK;
     		}
     		if (nReserveBalance > balance || (balance > nReserveBalance && balance - nReserveBalance < CWallet::MINIMUM_STAKE_AMOUNT)) {
     			error = "Reserve balance is too high.\nPlease lower it in order to turn staking on.";
@@ -686,7 +686,7 @@ StakingStatusError WalletModel::getStakingStatusError(QString& error)
 			}
 		}
     }
-    return StakingStatusError::NONE;
+    return StakingStatusError::STAKING_OK;
 }
 
 void WalletModel::generateCoins(bool fGenerate, int nGenProcLimit)
