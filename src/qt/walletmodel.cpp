@@ -58,7 +58,7 @@ WalletModel::WalletModel(CWallet* wallet, OptionsModel* optionsModel, QObject* p
 
     // This timer will be fired repeatedly to update the balance
     pollTimer = new QTimer(this);
-    pollTimer->setInterval(10);
+    //pollTimer->setInterval(10);
     connect(pollTimer, SIGNAL(timeout()), this, SLOT(pollBalanceChanged()));
     pollTimer->start(MODEL_UPDATE_DELAY);
 
@@ -663,7 +663,7 @@ bool WalletModel::isMine(CBitcoinAddress address)
 
 StakingStatusError WalletModel::getStakingStatusError(QString& error)
 {
-    {
+    /* {
     	bool fMintable = pwalletMain->MintableCoins();
     	CAmount balance = pwalletMain->GetSpendableBalance();
     	if (!fMintable || nReserveBalance > balance) {
@@ -685,7 +685,7 @@ StakingStatusError WalletModel::getStakingStatusError(QString& error)
 				}
 			}
 		}
-    }
+    }*/
     return StakingStatusError::STAKING_OK;
 }
 

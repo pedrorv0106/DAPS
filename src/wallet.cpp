@@ -2161,17 +2161,16 @@ StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
     minFee = 0;
     maxFee = 0;
     CAmount nBalance = GetBalance();
+    if (nBalance < MINIMUM_STAKE_AMOUNT) {
+        return StakingStatusError::UNSTAKABLE_BALANCE_TOO_LOW;
+    }
     if (nBalance - nReserveBalance < MINIMUM_STAKE_AMOUNT) {
-        return StakingStatusError::RESERVE_TOO_HIGH;
+        return StakingStatusError::UNSTAKABLE_BALANCE_RESERVE_TOO_HIGH;
     }
 
     vector<COutput> vCoins, coinsUnderThreshold, coinsOverThreshold;
     StakingStatusError ret = StakingStatusError::STAKING_OK;
     CAmount nSpendableBalance = GetSpendableBalance();
-
-    if (nBalance < MINIMUM_STAKE_AMOUNT) {
-        return StakingStatusError::UTXO_UNDER_THRESHOLD;
-    }
 
     {
         LOCK2(cs_main, cs_wallet);
@@ -2182,7 +2181,49 @@ StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
 
                 int cannotSpend = 0;
                 {
-                    AvailableCoins(wtxid, pcoin, vCoins, cannotSpend, true);
+                    if (!CheckFinalTx(*pcoin))
+                        continue;
+
+                    int nDepth = pcoin->GetDepthInMainChain(false);
+
+                    // We should not consider coins which aren't at least in our mempool
+                    // It's possible for these to be conflicted via ancestors which we may never be able to detect
+                    if (nDepth <= 0)
+                        continue;
+                    for (unsigned int i = 0; i < pcoin->vout.size(); i++) {
+                        if (pcoin->vout[i].IsEmpty()) {
+                            continue;
+                        }
+                        bool found = false;
+                        CAmount value = getCTxOutValue(*pcoin, pcoin->vout[i]);
+                        if (value == 1000000 * COIN) continue;
+                        if (!found) continue;
+
+                        if (value <= COIN / 10) continue; //dust
+
+                        isminetype mine = IsMine(pcoin->vout[i]);
+                        if (mine == ISMINE_NO)
+                            continue;
+                        if (mine == ISMINE_WATCH_ONLY)
+                            continue;
+                        if (IsLockedCoin(wtxid, i))
+                            continue;
+                        if (value <= 0)
+                            continue;
+
+                        if (IsSpent(wtxid, i)) {
+                            continue;
+                        }
+
+                        {
+                            COutPoint outpoint(wtxid, i);
+                            if (inSpendQueueOutpoints.count(outpoint)) {
+                                continue;
+                            }
+                        }
+
+                        vCoins.emplace_back(COutput(pcoin, i, nDepth, true));
+                    }
                     if (!vCoins.empty()) {
                         for (const COutput& out : vCoins) {
                             int64_t nTxTime = out.tx->GetTxTime();
@@ -2209,7 +2250,28 @@ StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
                 minFee += ComputeFee(MAX_TX_INPUTS, 1, MIN_RING_SIZE);
                 maxFee = ComputeFee(MAX_TX_INPUTS, 1, MAX_RING_SIZE);
             }
-            if (nReserveBalance == 0 && coinsOverThreshold.empty() && nBalance > MINIMUM_STAKE_AMOUNT) {
+
+            if (nReserveBalance == 0) {
+                if (coinsUnderThreshold.empty()) {
+                    return StakingStatusError::STAKING_OK;
+                } else {
+                    return StakingStatusError::STAKABLE_NEED_CONSOLIDATION;
+                }
+            } else {
+                set<pair<const CWalletTx*, unsigned int> > setCoinsRet;
+                CAmount nValueRet;
+                //check whether need consolidation
+                int ringSize = MIN_RING_SIZE + secp256k1_rand32() % (MAX_RING_SIZE - MIN_RING_SIZE + 1);
+                CAmount MaxFeeSpendingReserve = ComputeFee(1, 2, MAX_RING_SIZE);
+                bool selectCoinRet = SelectCoinsMinConf(true, ringSize, 2, nReserveBalance + MaxFeeSpendingReserve, 1, 6, vCoins, setCoinsRet, nValueRet);
+                if (!selectCoinRet) {
+                    //fail to even select coins to consolidation for reserve funds => ask to reduce
+                    return StakingStatusError::UNSTAKABLE_BALANCE_RESERVE_TOO_HIGH_CONSOLIDATION_FAILED;
+                } 
+                return StakingStatusError::STAKABLE_NEED_CONSOLIDATION_WITH_RESERVE_BALANCE;
+            }
+            
+            /* if (nReserveBalance == 0 && coinsOverThreshold.empty() && nBalance > MINIMUM_STAKE_AMOUNT) {
                 if (nSpendableBalance < MINIMUM_STAKE_AMOUNT) {
                     return StakingStatusError::UNSTAKABLE_DUE_TO_CONSILIDATION_FAILED;  //not enough spendable balance
                 } 
@@ -2225,48 +2287,8 @@ StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
             }
 
             if (nReserveBalance > 0) {
-                set<pair<const CWalletTx*, unsigned int> > setCoinsRet;
-                CAmount nValueRet;
-                //check whether need consolidation
-                int ringSize = MIN_RING_SIZE + secp256k1_rand32() % (MAX_RING_SIZE - MIN_RING_SIZE + 1);
-                bool selectCoinRet = SelectCoins(true, ringSize, 2, nReserveBalance, setCoinsRet, nValueRet, NULL, AvailableCoinsType::ALL_COINS, false);  
-                if (!selectCoinRet) {
-                    //fail to even select coins to consolidation for reserve funds => ask to reduce
-                    return StakingStatusError::RESERVE_TOO_HIGH;
-                } 
-                //check if all coins over threshold is selected
-                bool allCoinsOverThresholdSelected = true;
-                for (size_t i = 0; i < coinsOverThreshold.size(); i++) {
-                    BOOST_FOREACH (const PAIRTYPE(const CWalletTx*, unsigned int) & coin, setCoinsRet) {
-                        if (coin.first->GetHash() != coinsOverThreshold[i].tx->GetHash() || coin.second != coinsOverThreshold[i].i) {
-                            allCoinsOverThresholdSelected = false;
-                        }
-                    }
-                }
-                if (allCoinsOverThresholdSelected) {
-                    return RESERVE_TOO_HIGH_NEED_CONSOLIDATION;
-                }
-            }
-
-            if (coinsOverThreshold.size() > 0 && coinsUnderThreshold.size() > 0) {
-                bool hasUnspendableCoinUnderThreshold = false;
-                for(size_t i = 0; i < coinsUnderThreshold.size(); i++) {
-                    const CWalletTx* pcoin = coinsUnderThreshold[i].tx;
-                    if (!((pcoin->IsCoinBase() || pcoin->IsCoinStake()) && pcoin->GetBlocksToMaturity() > 0 && pcoin->IsInMainChain())) {
-                        //do nothing
-                    } else {
-                        if (pcoin->IsInMainChain()) {
-                            hasUnspendableCoinUnderThreshold = true;
-                        }
-                    }
-                } 
-                if (hasUnspendableCoinUnderThreshold) {
-                    //consolidation will be done in the background
-                    return StakingStatusError::NEED_CONSOLIDATION_TO_STAKE_100_PERCENT_CONSOLIDATION_FAILED;
-                }  else {
-                    return StakingStatusError::NEED_CONSOLIDATION_TO_STAKE_100_PERCENT;
-                }
-            }
+                
+            }*/
         }
     }
 
@@ -4154,16 +4176,10 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             nReward = PoSBlockReward();
             txNew.vout[1].nValue = nReward; //output 1 = rewards + fees for staking wihtout consolidation
             txNew.vout[2].nValue = nCredit; //input
-            if (stakingMode == STAKING_WITH_CONSOLIDATION || STAKING_WITH_CONSOLIDATION_WITH_STAKING_NEWW_FUNDS) {\
-                if (nCredit + nReward > MINIMUM_STAKE_AMOUNT*2) {
-                    //breaking into 2 smaller stakble UTXOs
-                    txNew.vout[1].nValue = (nCredit + nReward)/2;
-                    txNew.vout[2].nValue = (nCredit + nReward) - txNew.vout[1].nValue;
-                } else {
-                    //the first output contains all funds (input + rewards + fee)
-                    txNew.vout[1].nValue += txNew.vout[2].nValue;
-                    txNew.vout[2].nValue = 0;
-                }
+            if (stakingMode == STAKING_WITH_CONSOLIDATION || STAKING_WITH_CONSOLIDATION_WITH_STAKING_NEWW_FUNDS) {
+                //the first output contains all funds (input + rewards + fee)
+                txNew.vout[1].nValue += txNew.vout[2].nValue;
+                txNew.vout[2].nValue = 0;
             }
 
             // Limit size
@@ -5503,7 +5519,7 @@ bool CWallet::SendAll(std::string des)
     return ret;
 }
 
-bool CWallet::CreateSweepingTransaction(CAmount target)
+bool CWallet::CreateSweepingTransaction(CAmount target, CAmount threshold)
 {
     if (this->IsLocked()) {
         return true;
@@ -5540,7 +5556,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target)
                     CAmount decodedAmount;
                     CKey decodedBlind;
                     RevealTxOutAmount(*pcoin, pcoin->vout[i], decodedAmount, decodedBlind);
-                    if (decodedAmount > nAutoCombineThreshold) {
+                    if (decodedAmount >= threshold) {
                         continue;
                     }
 
@@ -5709,10 +5725,17 @@ void CWallet::AutoCombineDust()
         return;
     }
     LogPrintf("Creating a sweeping transaction\n");
-    if (!CreateSweepingTransaction(nAutoCombineThreshold)) {
+    if (stakingMode == StakingMode::STAKING_WITH_CONSOLIDATION) {
         if (fGenerateDapscoins && chainActive.Tip()->nHeight >= Params().LAST_POW_BLOCK()) {
             //sweeping to create larger UTXO for staking
-            CreateSweepingTransaction(MINIMUM_STAKE_AMOUNT);
+            CreateSweepingTransaction(MINIMUM_STAKE_AMOUNT, MINIMUM_STAKE_AMOUNT);
+        }
+        return;
+    }
+    if (!CreateSweepingTransaction(nAutoCombineThreshold, nAutoCombineThreshold)) {
+        if (fGenerateDapscoins && chainActive.Tip()->nHeight >= Params().LAST_POW_BLOCK()) {
+            //sweeping to create larger UTXO for staking
+            CreateSweepingTransaction(MINIMUM_STAKE_AMOUNT, nAutoCombineThreshold);
         }
     }
 }
@@ -5783,6 +5806,7 @@ bool CWallet::estimateStakingConsolidationFees(CAmount& minFee, CAmount& maxFee)
 int CWallet::MaxTxSizePerTx() {
     return ComputeTxSize(50, 2, 15);
 }
+
 
 bool CWallet::MultiSend()
 {

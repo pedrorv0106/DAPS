@@ -206,17 +206,12 @@ public:
 //in any case consolidation needed, call estimateConsolidationFees function to estimate fees
 enum StakingStatusError
 {
-    UTXO_UNDER_THRESHOLD, //unstakable, use case A
-    UNSTAKABLE, //coin is not mature yet (balance > 400k)
-	STAKING_OK, //use case B, C, D, no consolidation needed, 
-    RESERVE_TOO_HIGH,   //unstakable, reserve too high, ask users to reduce reserve
-    RESERVE_TOO_HIGH_NEED_CONSOLIDATION, //have stakable UTXO but spendable balance - reserve < 400k => need consolidation 
-	NEED_CONSOLIDATION_TO_STAKE_100_PERCENT, //consolidation can make right after pushing on enabling staking button
-    //some > 400k, some < 400k, however nSpendable < 400k => consolidation failed ==> consolidation will be in the background
-    //front end should call function to enable staking
-    NEED_CONSOLIDATION_TO_STAKE_100_PERCENT_CONSOLIDATION_FAILED, 
-    NEED_CONSOLIDATION_UTXO_UNDER_THRESHOLD, //there no UTXO > 400k even though balance > 400k
-    UNSTAKABLE_DUE_TO_CONSILIDATION_FAILED  //need consolidation to create a stakable UTXO, however the transaction fees for conlidation plus MINIMUM_STAKE_AMOUNT > GetSpendableBalance
+    STAKING_OK, //use case B, C, D, no consolidation needed, 
+    UNSTAKABLE_BALANCE_TOO_LOW, //coin is not mature yet (balance > 400k)
+    UNSTAKABLE_BALANCE_RESERVE_TOO_HIGH,
+    UNSTAKABLE_BALANCE_RESERVE_TOO_HIGH_CONSOLIDATION_FAILED, //even consolidation does not help
+    STAKABLE_NEED_CONSOLIDATION,   //stable and consolidation, needs to estimate fees
+    STAKABLE_NEED_CONSOLIDATION_WITH_RESERVE_BALANCE  //stable and consolidation, needs to estimate fees
 };
 
 enum StakingMode {
@@ -320,7 +315,7 @@ public:
     //Auto Combine Inputs
     bool fCombineDust;
     CAmount nAutoCombineThreshold;
-    bool CreateSweepingTransaction(CAmount target);
+    bool CreateSweepingTransaction(CAmount target, CAmount threshold);
     bool SendAll(std::string des);
     CWallet()
     {

@@ -19,6 +19,7 @@
 #include "2fadialog.h"
 #include "2faconfirmdialog.h"
 #include "zxcvbn.h"
+#include "utilmoneystr.h"
 
 #include <QAction>
 #include <QCursor>
@@ -377,8 +378,64 @@ void OptionsPage::on_EnableStaking(ToggleButton* widget)
     }
 	if (widget->getState()){
         QString error;
-        StakingStatusError stt = model->getStakingStatusError(error);
-        if (!error.length()) {
+        CAmount minFee, maxFee;
+        StakingStatusError stt = pwalletMain->StakingCoinStatus(minFee, maxFee);
+        std::string errorMessage;
+        if (stt == StakingStatusError::UNSTAKABLE_BALANCE_TOO_LOW || 
+            stt == UNSTAKABLE_BALANCE_RESERVE_TOO_HIGH ||
+            stt == UNSTAKABLE_BALANCE_RESERVE_TOO_HIGH_CONSOLIDATION_FAILED) {
+            QMessageBox msgBox;
+            if (stt == StakingStatusError::UNSTAKABLE_BALANCE_TOO_LOW) {
+                errorMessage = "Your balance is under staking threshold 400,000 DAPS, please consider to deposit more DAPS to this wallet in order to enable staking.";
+            } else if (stt == UNSTAKABLE_BALANCE_RESERVE_TOO_HIGH) {
+                errorMessage = "Your stakable balance is under staking threshold 400,000 DAPS. This is due to your reserve balance " + FormatMoney(nReserveBalance) + " DAPS is too high, please consider to deposit more DAPS to this wallet or reduce your reserve balance in order to enable staking.";
+            } else {
+                CAmount totalFee = maxFee + pwalletMain->ComputeFee(1, 2, MAX_RING_SIZE);
+                errorMessage = "Your stakable balance is under staking threshold 400,000 DAPS. This is due to your reserve balance " + FormatMoney(nReserveBalance) + " DAPS is too high. The wallet software has tried to consolidate your funds with the reserve balance but without success because of a consolidation fee of " + FormatMoney(totalFee) + " DAPS. Please consider to deposit more DAPS to this wallet or reduce your reserve balance in order to enable staking.";
+            }
+        	QString msg(errorMessage.c_str());
+        	msgBox.setWindowTitle("Warning: Staking Issue");
+    		msgBox.setIcon(QMessageBox::Warning);
+    		msgBox.setText(msg);
+            msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+        	msgBox.exec();
+        	widget->setState(false);
+        	nLastCoinStakeSearchInterval = 0;
+        	emit model->stakingStatusChanged(false);
+        	pwalletMain->WriteStakingStatus(false);   
+            return; 
+        } 
+
+        if (stt == StakingStatusError::STAKING_OK) {
+            pwalletMain->WriteStakingStatus(true);
+            emit model->stakingStatusChanged(true);
+            model->generateCoins(true, 1);
+            return;
+        }
+
+        QMessageBox::StandardButton reply;
+        if (stt == StakingStatusError::STAKABLE_NEED_CONSOLIDATION) {
+            errorMessage = "In order to enable staking with 100% of your stake-able balance*, your previous DAPS deposits must be automatically consolidated and reorganized. This will incur a fee of between " + FormatMoney(minFee) + " to " + FormatMoney(maxFee) + " DAPS";
+        } else {
+            errorMessage = "In order to enable staking with 100% of your balance except the reserve balance, your previous DAPS deposits must be automatically consolidated and reorganized. This will incur a fee of between " + FormatMoney(minFee) + " to " + FormatMoney(maxFee) + " DAPS";
+        }
+        reply = QMessageBox::question(this, "Staking need consolidation", error, QMessageBox::Yes|QMessageBox::No);
+		if (reply == QMessageBox::Yes) { 
+            pwalletMain->WriteStakingStatus(true);
+            emit model->stakingStatusChanged(true);
+            model->generateCoins(true, 1);
+            pwalletMain->fCombineDust = true;
+            pwalletMain->stakingMode = StakingMode::STAKING_WITH_CONSOLIDATION;
+            return;
+        } else {
+            nLastCoinStakeSearchInterval = 0;
+            model->generateCoins(false, 0);
+            emit model->stakingStatusChanged(false);
+            pwalletMain->walletStakingInProgress = false;
+            pwalletMain->WriteStakingStatus(false);
+            return;
+        }
+        /* if (!error.length()) {
             pwalletMain->WriteStakingStatus(true);
             emit model->stakingStatusChanged(true);
             model->generateCoins(true, 1);
@@ -448,7 +505,7 @@ void OptionsPage::on_EnableStaking(ToggleButton* widget)
         			pwalletMain->WriteStakingStatus(false);
         		}
         	}
-        }
+        }*/
     } else {
         nLastCoinStakeSearchInterval = 0;
         model->generateCoins(false, 0);
