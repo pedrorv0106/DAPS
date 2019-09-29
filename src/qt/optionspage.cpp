@@ -62,6 +62,24 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
         ui->lineEditWithhold->setText(BitcoinUnits::format(0, nReserveBalance).toUtf8());
 
     bool stkStatus = pwalletMain->ReadStakingStatus();
+    if (stkStatus){
+        if (chainActive.Height() < Params().LAST_POW_BLOCK()) {
+            stkStatus = false;
+            pwalletMain->walletStakingInProgress = false;
+            pwalletMain->WriteStakingStatus(false);
+            emit model->stakingStatusChanged(false);
+        } else {
+            QString error;
+            StakingStatusError stt = model->getStakingStatusError(error);
+            if (error.length()) {
+                stkStatus = false;
+                pwalletMain->walletStakingInProgress = false;
+                pwalletMain->WriteStakingStatus(false);
+                emit model->stakingStatusChanged(false);
+            }
+        }
+    }
+
     ui->toggleStaking->setState(nLastCoinStakeSearchInterval | stkStatus);
     connect(ui->toggleStaking, SIGNAL(stateChanged(ToggleButton*)), this, SLOT(on_EnableStaking(ToggleButton*)));
 
