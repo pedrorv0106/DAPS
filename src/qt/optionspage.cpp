@@ -54,7 +54,7 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
 
     QLocale lo(QLocale::C);
     lo.setNumberOptions(QLocale::RejectGroupSeparator);
-    QDoubleValidator *dblVal = new QDoubleValidator(0, Params().MAX_MONEY, 0, ui->lineEditWithhold);
+    QDoubleValidator *dblVal = new QDoubleValidator(0, 250000000, 0, ui->lineEditWithhold);
     dblVal->setNotation(QDoubleValidator::StandardNotation);
     dblVal->setLocale(lo);
     ui->lineEditWithhold->setValidator(dblVal);
@@ -63,6 +63,24 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
         ui->lineEditWithhold->setText(BitcoinUnits::format(0, nReserveBalance).toUtf8());
 
     bool stkStatus = pwalletMain->ReadStakingStatus();
+    if (stkStatus){
+        if (chainActive.Height() < Params().LAST_POW_BLOCK()) {
+            stkStatus = false;
+            pwalletMain->walletStakingInProgress = false;
+            pwalletMain->WriteStakingStatus(false);
+            emit model->stakingStatusChanged(false);
+        } else {
+            QString error;
+            StakingStatusError stt = model->getStakingStatusError(error);
+            if (error.length()) {
+                stkStatus = false;
+                pwalletMain->walletStakingInProgress = false;
+                pwalletMain->WriteStakingStatus(false);
+                emit model->stakingStatusChanged(false);
+            }
+        }
+    }
+
     ui->toggleStaking->setState(nLastCoinStakeSearchInterval | stkStatus);
     connect(ui->toggleStaking, SIGNAL(stateChanged(ToggleButton*)), this, SLOT(on_EnableStaking(ToggleButton*)));
 
@@ -120,8 +138,6 @@ static inline int64_t roundint64(double d)
 
 CAmount OptionsPage::getValidatedAmount() {
     double dAmount = ui->lineEditWithhold->text().toDouble();
-    if (dAmount < 0.0 || dAmount > Params().MAX_MONEY)
-        throw runtime_error("Invalid amount, amount should be < 2.1B DAPS");
     CAmount nAmount = roundint64(dAmount * COIN);
     return nAmount;
 }
@@ -138,6 +154,7 @@ void OptionsPage::resizeEvent(QResizeEvent* event)
 }
 
 void OptionsPage::on_pushButtonSave_clicked() {
+    double dAmount = ui->lineEditWithhold->text().toDouble();
     if (ui->lineEditWithhold->text().trimmed().isEmpty()) {
         ui->lineEditWithhold->setStyleSheet("border: 2px solid red");
         QMessageBox msgBox;
@@ -145,6 +162,15 @@ void OptionsPage::on_pushButtonSave_clicked() {
         msgBox.setText("DAPS reserve amount is empty and must be a minimum of 1.\nPlease click Disable if you would like to turn it off.");
         msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
         msgBox.setIcon(QMessageBox::Information);
+        msgBox.exec();
+        return;
+    }
+    if (dAmount < 0.0 || dAmount > 250000000) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Invalid Reserve Amount");
+        msgBox.setText("The amount you have attempted to keep as spendable is greater than the 250,000,000 (250M) limit. Please try a smaller amount.");
+        msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+        msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();
         return;
     }
@@ -540,8 +566,8 @@ void OptionsPage::on_Enable2FA(ToggleButton* widget)
     } else {
         typeOf2FA = DISABLE;
 
-        TwoFAConfirmDialog codedlg;
-        codedlg.setWindowTitle("2FACode Verification");
+        TwoFADialog codedlg;
+        codedlg.setWindowTitle("2FA Code Verification");
         codedlg.setStyleSheet(GUIUtil::loadStyleSheet());
         connect(&codedlg, SIGNAL(finished (int)), this, SLOT(confirmDialogIsFinished(int)));
         codedlg.exec();
@@ -551,7 +577,7 @@ void OptionsPage::on_Enable2FA(ToggleButton* widget)
 void OptionsPage::qrDialogIsFinished(int result) {
     if(result == QDialog::Accepted){
         TwoFADialog codedlg;
-        codedlg.setWindowTitle("2FACode Verification");
+        codedlg.setWindowTitle("2FA Code Verification");
         codedlg.setStyleSheet(GUIUtil::loadStyleSheet());
         connect(&codedlg, SIGNAL(finished (int)), this, SLOT(dialogIsFinished(int)));
         codedlg.exec();
@@ -686,8 +712,8 @@ void OptionsPage::confirmDialogIsFinished(int result) {
 void OptionsPage::on_day() {
     typeOf2FA = DAY;
 
-    TwoFAConfirmDialog codedlg;
-    codedlg.setWindowTitle("2FACode Verification");
+    TwoFADialog codedlg;
+    codedlg.setWindowTitle("2FA Code Verification");
     codedlg.setStyleSheet(GUIUtil::loadStyleSheet());
     connect(&codedlg, SIGNAL(finished (int)), this, SLOT(confirmDialogIsFinished(int)));
     codedlg.exec();
@@ -696,8 +722,8 @@ void OptionsPage::on_day() {
 void OptionsPage::on_week() {
     typeOf2FA = WEEK;
 
-    TwoFAConfirmDialog codedlg;
-    codedlg.setWindowTitle("2FACode Verification");
+    TwoFADialog codedlg;
+    codedlg.setWindowTitle("2FA Code Verification");
     codedlg.setStyleSheet(GUIUtil::loadStyleSheet());
     connect(&codedlg, SIGNAL(finished (int)), this, SLOT(confirmDialogIsFinished(int)));
     codedlg.exec();   
@@ -706,8 +732,8 @@ void OptionsPage::on_week() {
 void OptionsPage::on_month() {
     typeOf2FA = MONTH;
 
-    TwoFAConfirmDialog codedlg;
-    codedlg.setWindowTitle("2FACode Verification");
+    TwoFADialog codedlg;
+    codedlg.setWindowTitle("2FA Code Verification");
     codedlg.setStyleSheet(GUIUtil::loadStyleSheet());
     connect(&codedlg, SIGNAL(finished (int)), this, SLOT(confirmDialogIsFinished(int)));
     codedlg.exec();
