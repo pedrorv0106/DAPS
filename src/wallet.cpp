@@ -2215,8 +2215,12 @@ StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
                             continue;
                         }
                         CAmount value = getCTxOutValue(*pcoin, pcoin->vout[i]);
-                        if (value == 1000000 * COIN) continue;
-
+                        if (value == 1000000 * COIN) {
+                            COutPoint outpoint(wtxid, i);
+                            if (IsCollateralized(outpoint)) {
+                                continue;
+                            }
+                        }
                         if (value <= COIN / 10) continue; //dust
 
                         isminetype mine = IsMine(pcoin->vout[i]);
