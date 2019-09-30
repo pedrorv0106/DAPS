@@ -2239,8 +2239,8 @@ StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
             //compute the number of consolidatation transaction will be made
             int numUTXOs = coinsUnderThreshold.size();
             int numConsolidationTxs = numUTXOs > 0? 1:0;
-            minFee = ComputeFee(numConsolidationTxs % MAX_TX_INPUTS, 1, MIN_RING_SIZE);
-            maxFee = ComputeFee(numConsolidationTxs % MAX_TX_INPUTS, 1, MAX_RING_SIZE);
+            minFee = ComputeFee(numUTXOs % (MAX_TX_INPUTS + 1), 1, MIN_RING_SIZE);
+            maxFee = ComputeFee((numUTXOs >= MAX_TX_INPUTS? MAX_TX_INPUTS : numUTXOs + 1) % (MAX_TX_INPUTS + 1), 1, MAX_RING_SIZE);
             while (numUTXOs > MAX_TX_INPUTS) {
                 numUTXOs -= (MAX_TX_INPUTS - 1);
                 numConsolidationTxs++;
