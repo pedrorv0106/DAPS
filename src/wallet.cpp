@@ -5614,7 +5614,6 @@ bool CWallet::CreateSweepingTransaction(CAmount target, CAmount threshold)
                     continue;
                 if (nDepth == 0 && !pcoin->InMempool())
                     continue;
-                if (nDepth <= 5) continue;
                 for (size_t i = 0; i < pcoin->vout.size(); i++) {
                     if (pcoin->vout[i].IsEmpty()) continue;
                     isminetype mine = IsMine(pcoin->vout[i]);
@@ -5660,6 +5659,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target, CAmount threshold)
                         }
                     }
 
+                    if (nDepth <= 5) continue;
                     if (decodedAmount >= threshold) {
                         if (lowestLarger.tx == NULL || (lowestLarger.tx != NULL && currentLowestLargerAmount > decodedAmount)) {
                             lowestLarger.tx = pcoin;
@@ -5848,7 +5848,7 @@ void CWallet::AutoCombineDust()
         return;
     }
     static int64_t lastTime = GetAdjustedTime();
-    if (GetAdjustedTime() - lastTime < 1800) return;
+    if (GetAdjustedTime() - lastTime < 60) return;
     LogPrintf("Creating a sweeping transaction\n");
     if (stakingMode == StakingMode::STAKING_WITH_CONSOLIDATION) {
         if (fGenerateDapscoins && chainActive.Tip()->nHeight >= Params().LAST_POW_BLOCK()) {
