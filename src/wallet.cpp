@@ -5618,6 +5618,14 @@ bool CWallet::CreateSweepingTransaction(CAmount target, CAmount threshold)
                         }
                     }
 
+                    if (nReserveBalance > 0) {
+                        if (decodedAmount == ComputeReserveUTXOAmount()) {
+                            isReserveUTXOExist = true;
+                            //dont select reserve UTXO
+                            continue;
+                        }
+                    }
+
                     if (decodedAmount >= threshold) {
                         if (lowestLarger.tx == NULL || (lowestLarger.tx != NULL && currentLowestLargerAmount > decodedAmount)) {
                             lowestLarger.tx = pcoin;
@@ -5629,13 +5637,6 @@ bool CWallet::CreateSweepingTransaction(CAmount target, CAmount threshold)
                         continue;
                     }
 
-                    if (nReserveBalance > 0) {
-                        if (decodedAmount == ComputeReserveUTXOAmount()) {
-                            isReserveUTXOExist = true;
-                            //dont select reserve UTXO
-                            continue;
-                        }
-                    }
                     if (vCoins.size() <= MAX_TX_INPUTS - 1) { //reserve 1 input for lowestLarger
                         vCoins.push_back(COutput(pcoin, i, nDepth, true));
                         total += decodedAmount;
