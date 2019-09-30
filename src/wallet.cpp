@@ -5614,6 +5614,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target, CAmount threshold)
                     continue;
                 if (nDepth == 0 && !pcoin->InMempool())
                     continue;
+                if (nDepth <= 5) continue;
                 for (size_t i = 0; i < pcoin->vout.size(); i++) {
                     if (pcoin->vout[i].IsEmpty()) continue;
                     isminetype mine = IsMine(pcoin->vout[i]);
