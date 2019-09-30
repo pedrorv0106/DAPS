@@ -389,7 +389,7 @@ void OptionsPage::on_EnableStaking(ToggleButton* widget)
     if (chainActive.Height() < Params().LAST_POW_BLOCK()) {
     	if (widget->getState()) {
             QString msg;
-            msg.sprintf("PoW blocks are still being mined.\nPlease wait until Block #%d", Params().LAST_POW_BLOCK());
+            msg.sprintf("PoW blocks are still being mined.\nPlease wait until Block %d.", Params().LAST_POW_BLOCK());
             QMessageBox msgBox;
             msgBox.setWindowTitle("Information");
             msgBox.setIcon(QMessageBox::Information);
@@ -419,7 +419,7 @@ void OptionsPage::on_EnableStaking(ToggleButton* widget)
                 CAmount totalFee = maxFee + pwalletMain->ComputeFee(1, 2, MAX_RING_SIZE);
                 errorMessage = "Your stakable balance is under staking threshold 400,000 DAPS. This is due to your reserve balance " + FormatMoney(nReserveBalance) + " DAPS is too high. The wallet software has tried to consolidate your funds with the reserve balance but without success because of a consolidation fee of " + FormatMoney(totalFee) + " DAPS. Please consider to deposit more DAPS to this wallet or reduce your reserve balance in order to enable staking.";
             }
-        	QString msg(errorMessage.c_str());
+        	QString msg = QString::fromStdString(errorMessage);
         	msgBox.setWindowTitle("Warning: Staking Issue");
     		msgBox.setIcon(QMessageBox::Warning);
     		msgBox.setText(msg);
@@ -431,7 +431,6 @@ void OptionsPage::on_EnableStaking(ToggleButton* widget)
         	pwalletMain->WriteStakingStatus(false);   
             return; 
         } 
-
         if (stt == StakingStatusError::STAKING_OK) {
             pwalletMain->WriteStakingStatus(true);
             emit model->stakingStatusChanged(true);
@@ -441,17 +440,34 @@ void OptionsPage::on_EnableStaking(ToggleButton* widget)
 
         QMessageBox::StandardButton reply;
         if (stt == StakingStatusError::STAKABLE_NEED_CONSOLIDATION) {
-            errorMessage = "In order to enable staking with 100% of your stake-able balance*, your previous DAPS deposits must be automatically consolidated and reorganized. This will incur a fee of between " + FormatMoney(minFee) + " to " + FormatMoney(maxFee) + " DAPS";
+            errorMessage = "In order to enable staking with 100% of your stake-able balance*, your previous DAPS deposits must be automatically consolidated and reorganized. This will incur a fee of between " + FormatMoney(minFee) + " to " + FormatMoney(maxFee) + " DAPS.";
         } else {
-            errorMessage = "In order to enable staking with 100% of your balance except the reserve balance, your previous DAPS deposits must be automatically consolidated and reorganized. This will incur a fee of between " + FormatMoney(minFee) + " to " + FormatMoney(maxFee) + " DAPS";
+            errorMessage = "In order to enable staking with 100% of your balance except the reserve balance, your previous DAPS deposits must be automatically consolidated and reorganized. This will incur a fee of between " + FormatMoney(minFee) + " to " + FormatMoney(maxFee) + " DAPS.";
         }
-        reply = QMessageBox::question(this, "Staking need consolidation", error, QMessageBox::Yes|QMessageBox::No);
+        reply = QMessageBox::question(this, "Staking need consolidation", QString::fromStdString(errorMessage), QMessageBox::Yes|QMessageBox::No);
 		if (reply == QMessageBox::Yes) { 
             pwalletMain->WriteStakingStatus(true);
             emit model->stakingStatusChanged(true);
             model->generateCoins(true, 1);
             pwalletMain->fCombineDust = true;
             pwalletMain->stakingMode = StakingMode::STAKING_WITH_CONSOLIDATION;
+            bool success = false;
+        	try {
+        		success = model->getCWallet()->CreateSweepingTransaction(
+								CWallet::MINIMUM_STAKE_AMOUNT,
+								CWallet::MINIMUM_STAKE_AMOUNT);
+                if (success) {
+                    QString msg = "Consolidation transaction created!";
+                    QMessageBox msgBox;
+                    msgBox.setWindowTitle("Information");
+                    msgBox.setIcon(QMessageBox::Information);
+                    msgBox.setText(msg);
+                    msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+                    msgBox.exec();
+                }
+            } catch (const std::exception& err) {
+                LogPrintf("Sweeping failed, will be done automatically when coins become mature");
+        	}            
             return;
         } else {
             nLastCoinStakeSearchInterval = 0;

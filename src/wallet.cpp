@@ -2186,7 +2186,6 @@ StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
                 const uint256& wtxid = it->first;
                 const CWalletTx* pcoin = &(*it).second;
 
-                int cannotSpend = 0;
                 {
                     if (!CheckFinalTx(*pcoin))
                         continue;
@@ -2201,10 +2200,8 @@ StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
                         if (pcoin->vout[i].IsEmpty()) {
                             continue;
                         }
-                        bool found = false;
                         CAmount value = getCTxOutValue(*pcoin, pcoin->vout[i]);
                         if (value == 1000000 * COIN) continue;
-                        if (!found) continue;
 
                         if (value <= COIN / 10) continue; //dust
 
@@ -2217,7 +2214,6 @@ StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
                             continue;
                         if (value <= 0)
                             continue;
-
                         if (IsSpent(wtxid, i)) {
                             continue;
                         }
@@ -2228,20 +2224,14 @@ StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
                                 continue;
                             }
                         }
-
-                        vCoins.emplace_back(COutput(pcoin, i, nDepth, true));
-                    }
-                    if (!vCoins.empty()) {
-                        for (const COutput& out : vCoins) {
-                            int64_t nTxTime = out.tx->GetTxTime();
-                            //add in-wallet minimum staking
-                            if (getCOutPutValue(out) >= MINIMUM_STAKE_AMOUNT) {
-                                ret = StakingStatusError::STAKING_OK;
-                                coinsOverThreshold.push_back(out);
-                            } else {
-                                coinsUnderThreshold.push_back(out);
-                            }
+                        COutput out(pcoin, i, nDepth, true);
+                        if (value >= MINIMUM_STAKE_AMOUNT) {
+                            coinsOverThreshold.push_back(out);
+                        } else {
+                            coinsUnderThreshold.push_back(out);
                         }
+
+                        vCoins.emplace_back(out);
                     }
                 }
             }
@@ -2259,7 +2249,7 @@ StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
             }
 
             if (nReserveBalance == 0) {
-                if (coinsUnderThreshold.empty()) {
+                if (coinsUnderThreshold.size() == 0) {
                     return StakingStatusError::STAKING_OK;
                 } else {
                     return StakingStatusError::STAKABLE_NEED_CONSOLIDATION;
@@ -2270,7 +2260,8 @@ StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
                 //check whether need consolidation
                 int ringSize = MIN_RING_SIZE + secp256k1_rand32() % (MAX_RING_SIZE - MIN_RING_SIZE + 1);
                 CAmount MaxFeeSpendingReserve = ComputeFee(1, 2, MAX_RING_SIZE);
-                bool selectCoinRet = SelectCoinsMinConf(true, ringSize, 2, nReserveBalance + MaxFeeSpendingReserve, 1, 6, vCoins, setCoinsRet, nValueRet);
+                CAmount estimatedFee = 0;
+                bool selectCoinRet = SelectCoinsMinConf(true, estimatedFee, ringSize, 2, nReserveBalance + MaxFeeSpendingReserve, 1, 6, vCoins, setCoinsRet, nValueRet);
                 if (!selectCoinRet) {
                     //fail to even select coins to consolidation for reserve funds => ask to reduce
                     return StakingStatusError::UNSTAKABLE_BALANCE_RESERVE_TOO_HIGH_CONSOLIDATION_FAILED;
@@ -2303,11 +2294,11 @@ StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
     return ret;
 }
 
-bool CWallet::SelectCoinsMinConf(bool needFee, int ringSize, int numOut, const CAmount& nTargetValue, int nConfMine, int nConfTheirs, vector<COutput> vCoins, set<pair<const CWalletTx*, unsigned int> >& setCoinsRet, CAmount& nValueRet)
+bool CWallet::SelectCoinsMinConf(bool needFee, CAmount& feeNeeded, int ringSize, int numOut, const CAmount& nTargetValue, int nConfMine, int nConfTheirs, vector<COutput> vCoins, set<pair<const CWalletTx*, unsigned int> >& setCoinsRet, CAmount& nValueRet)
 {
     setCoinsRet.clear();
     nValueRet = 0;
-    CAmount feeNeeded = 0;
+    feeNeeded = 0;
     CAmount feeForOneInput = 0;
     // List of values less than target
     pair<CAmount, pair<const CWalletTx*, unsigned int> > coinLowestLarger;
@@ -2349,6 +2340,7 @@ bool CWallet::SelectCoinsMinConf(bool needFee, int ringSize, int numOut, const C
                 setCoinsRet.clear();
                 setCoinsRet.insert(coin.second);
                 nValueRet = coin.first;
+                feeNeeded = feeForOneInput;
                 return true;
             } else if (n < nTargetValue + feeNeeded) {
                 vValue.push_back(coin);
@@ -2463,7 +2455,7 @@ void CWallet::resetPendingOutPoints()
     }
 }
 
-bool CWallet::SelectCoins(bool needFee, int ringSize, int numOut, const CAmount& nTargetValue, set<pair<const CWalletTx*, unsigned int> >& setCoinsRet, CAmount& nValueRet, const CCoinControl* coinControl, AvailableCoinsType coin_type, bool useIX)
+bool CWallet::SelectCoins(bool needFee, CAmount& estimatedFee, int ringSize, int numOut, const CAmount& nTargetValue, set<pair<const CWalletTx*, unsigned int> >& setCoinsRet, CAmount& nValueRet, const CCoinControl* coinControl, AvailableCoinsType coin_type, bool useIX)
 {
     // Note: this function should never be used for "always free" tx types like dstx
     vector<COutput> vCoins;
@@ -2536,9 +2528,9 @@ bool CWallet::SelectCoins(bool needFee, int ringSize, int numOut, const CAmount&
         return (nValueRet >= nTargetValue);
     }
 
-    return (SelectCoinsMinConf(needFee, ringSize, numOut, nTargetValue, 1, 6, vCoins, setCoinsRet, nValueRet) ||
-            SelectCoinsMinConf(needFee, ringSize, numOut, nTargetValue, 1, 1, vCoins, setCoinsRet, nValueRet) ||
-            (bSpendZeroConfChange && SelectCoinsMinConf(needFee, ringSize, numOut, nTargetValue, 0, 1, vCoins, setCoinsRet, nValueRet)));
+    return (SelectCoinsMinConf(needFee, estimatedFee, ringSize, numOut, nTargetValue, 1, 6, vCoins, setCoinsRet, nValueRet) ||
+            SelectCoinsMinConf(needFee, estimatedFee, ringSize, numOut, nTargetValue, 1, 1, vCoins, setCoinsRet, nValueRet) ||
+            (bSpendZeroConfChange && SelectCoinsMinConf(needFee, estimatedFee, ringSize, numOut, nTargetValue, 0, 1, vCoins, setCoinsRet, nValueRet)));
 }
 
 struct CompareByPriority {
@@ -2999,7 +2991,8 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                 // Choose coins to use
                 set<pair<const CWalletTx*, unsigned int> > setCoins;
                 CAmount nValueIn = 0;
-                if (!SelectCoins(true, ringSize, 2, nTotalValue, setCoins, nValueIn, coinControl, coin_type, useIX)) {
+                CAmount estimateFee;
+                if (!SelectCoins(true, estimateFee, ringSize, 2, nTotalValue, setCoins, nValueIn, coinControl, coin_type, useIX)) {
                     if (coin_type == ALL_COINS) {
                         CAmount fee = ComputeFee(setCoins.size(), 2, ringSize);
                         if (nSpendableBalance < nTotalValue + fee) {
@@ -3199,8 +3192,8 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
                 // Choose coins to use
                 set<pair<const CWalletTx*, unsigned int> > setCoins;
                 CAmount nValueIn = 0;
-
-                if (!SelectCoins(true, 10, 2, nTotalValue, setCoins, nValueIn, coinControl, coin_type, useIX)) {
+                CAmount estimatedFee = 0;
+                if (!SelectCoins(true, estimatedFee, 10, 2, nTotalValue, setCoins, nValueIn, coinControl, coin_type, useIX)) {
                     if (coin_type == ALL_COINS) {
                         strFailReason = _("Insufficient funds.");
                     } else if (coin_type == ONLY_NOT1000000IFMN) {
@@ -5566,6 +5559,8 @@ bool CWallet::CreateSweepingTransaction(CAmount target, CAmount threshold)
 
     CAmount total = 0;
     vector<COutput> vCoins;
+    COutput lowestLarger(NULL, 0, 0, false);
+    CAmount currentLowestLargerAmount = 0;
     vCoins.clear();
     bool ret = true;
 
@@ -5591,9 +5586,6 @@ bool CWallet::CreateSweepingTransaction(CAmount target, CAmount threshold)
                     CAmount decodedAmount;
                     CKey decodedBlind;
                     RevealTxOutAmount(*pcoin, pcoin->vout[i], decodedAmount, decodedBlind);
-                    if (decodedAmount >= threshold) {
-                        continue;
-                    }
 
                     std::vector<unsigned char> commitment;
                     if (!decodedBlind.IsValid()) {
@@ -5615,6 +5607,18 @@ bool CWallet::CreateSweepingTransaction(CAmount target, CAmount threshold)
                             continue;
                         }
                     }
+
+                    if (decodedAmount >= threshold) {
+                        if (lowestLarger.tx == NULL || (lowestLarger.tx != NULL && currentLowestLargerAmount > decodedAmount)) {
+                            lowestLarger.tx = pcoin;
+                            lowestLarger.i = i;
+                            lowestLarger.nDepth = nDepth;
+                            lowestLarger.fSpendable = true;
+                            currentLowestLargerAmount = decodedAmount;
+                        }
+                        continue;
+                    }
+
                     vCoins.push_back(COutput(pcoin, i, nDepth, true));
                     total += decodedAmount;
                     if (vCoins.size() == MAX_TX_INPUTS) break;
@@ -5622,20 +5626,29 @@ bool CWallet::CreateSweepingTransaction(CAmount target, CAmount threshold)
                 if (vCoins.size() == MAX_TX_INPUTS) break;
             }
 
-            if (vCoins.empty() || vCoins.size() < MIN_TX_INPUTS_FOR_SWEEPING || total < target + 4 * COIN && vCoins.size() <= MAX_TX_INPUTS) {
+            int ringSize = MIN_RING_SIZE + secp256k1_rand32() % (MAX_RING_SIZE - MIN_RING_SIZE + 1);
+
+            CAmount estimatedFee = ComputeFee(vCoins.size(), 1, ringSize);
+            if (stakingMode != StakingMode::STAKING_WITH_CONSOLIDATION && (vCoins.empty() || vCoins.size() < MIN_TX_INPUTS_FOR_SWEEPING || total < target + estimatedFee && vCoins.size() <= MAX_TX_INPUTS)) {
                 //preconditions to create auto sweeping transactions not satisfied, do nothing here
                 ret = false;
             } else {
+                if (stakingMode == StakingMode::STAKING_WITH_CONSOLIDATION) {
+                    if (total < target + estimatedFee) {
+                        if (lowestLarger.tx != NULL && currentLowestLargerAmount >= threshold) {
+                            vCoins.push_back(lowestLarger);
+                            total += currentLowestLargerAmount;
+                        } else {
+                            return false;
+                        }
+                    }
+                }
+                LogPrintf("\nGenerate conlidation, total = %d\n", total);
                 // Generate transaction public key
                 CWalletTx wtxNew;
                 CKey secret;
                 secret.MakeNewKey(true);
                 SetMinVersion(FEATURE_COMPRPUBKEY);
-
-                unsigned char rand_seed[16];
-                memcpy(rand_seed, secret.begin(), 16);
-                secp256k1_rand_seed(rand_seed);
-                int ringSize = MIN_RING_SIZE + secp256k1_rand32() % (MAX_RING_SIZE - MIN_RING_SIZE + 1);
 
                 int estimateTxSize = ComputeTxSize(vCoins.size(), 1, ringSize);
                 CAmount nFeeNeeded = GetMinimumFee(estimateTxSize, nTxConfirmTarget, mempool);

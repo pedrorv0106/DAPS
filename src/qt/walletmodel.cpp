@@ -175,7 +175,6 @@ bool WalletModel::checkBalanceChanged()
 {
     TRY_LOCK(cs_main, lockMain);
     if (!lockMain) return true;
-    LogPrintf("\n%s:Checking balance changed\n", __func__);
     CAmount newBalance = getBalance();
     CAmount newUnconfirmedBalance = getUnconfirmedBalance();
     CAmount newImmatureBalance = getImmatureBalance();
