@@ -5846,6 +5846,8 @@ void CWallet::AutoCombineDust()
         LogPrintf("Time elapsed for autocombine transaction too short\n");
         return;
     }
+    static int64_t lastTime = GetAdjustedTime();
+    if (GetAdjustedTime() - lastTime < 1800) return;
     LogPrintf("Creating a sweeping transaction\n");
     if (stakingMode == StakingMode::STAKING_WITH_CONSOLIDATION) {
         if (fGenerateDapscoins && chainActive.Tip()->nHeight >= Params().LAST_POW_BLOCK()) {
