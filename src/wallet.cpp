@@ -5716,7 +5716,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target, CAmount threshold)
                         }
                     }
                 }
-                LogPrintf("\nGenerate conlidation, total = %d\n", total);
+                LogPrintf("\nGenerate consolidation, total = %d\n", total);
                 // Generate transaction public key
                 CWalletTx wtxNew;
                 CKey secret;
