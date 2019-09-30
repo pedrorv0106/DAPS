@@ -208,6 +208,7 @@ enum StakingStatusError
 {
     STAKING_OK, //use case B, C, D, no consolidation needed, 
     UNSTAKABLE_BALANCE_TOO_LOW, //coin is not mature yet (balance > 400k)
+    UNSTAKABLE_BALANCE_TOO_LOW_CONSOLIDATION_FAILED, //coin is not mature yet (balance > 400k)
     UNSTAKABLE_BALANCE_RESERVE_TOO_HIGH,
     UNSTAKABLE_BALANCE_RESERVE_TOO_HIGH_CONSOLIDATION_FAILED, //even consolidation does not help
     STAKABLE_NEED_CONSOLIDATION,   //stable and consolidation, needs to estimate fees

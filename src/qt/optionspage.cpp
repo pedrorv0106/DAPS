@@ -409,10 +409,13 @@ void OptionsPage::on_EnableStaking(ToggleButton* widget)
         std::string errorMessage;
         if (stt == StakingStatusError::UNSTAKABLE_BALANCE_TOO_LOW || 
             stt == UNSTAKABLE_BALANCE_RESERVE_TOO_HIGH ||
-            stt == UNSTAKABLE_BALANCE_RESERVE_TOO_HIGH_CONSOLIDATION_FAILED) {
+            stt == UNSTAKABLE_BALANCE_RESERVE_TOO_HIGH_CONSOLIDATION_FAILED ||
+            stt == UNSTAKABLE_BALANCE_TOO_LOW_CONSOLIDATION_FAILED) {
             QMessageBox msgBox;
             if (stt == StakingStatusError::UNSTAKABLE_BALANCE_TOO_LOW) {
                 errorMessage = "Your balance is under staking threshold 400,000 DAPS, please consider to deposit more DAPS to this wallet in order to enable staking.";
+            } else if (stt == UNSTAKABLE_BALANCE_TOO_LOW_CONSOLIDATION_FAILED) {
+                errorMessage = "Your balance needs a consolidation transaction, which incurs incur a fee of between " + FormatMoney(minFee) + " to " + FormatMoney(maxFee) + " DAPS. However your balance " + FormatMoney(maxFee) + " will become unstabkable due to under staking threshold of 400,000 DAPS, please consider to deposit more DAPS to this wallet or reduce your reserve balance in order to enable staking.";
             } else if (stt == UNSTAKABLE_BALANCE_RESERVE_TOO_HIGH) {
                 errorMessage = "Your stakable balance is under staking threshold 400,000 DAPS. This is due to your reserve balance " + FormatMoney(nReserveBalance) + " DAPS is too high, please consider to deposit more DAPS to this wallet or reduce your reserve balance in order to enable staking.";
             } else {
@@ -549,6 +552,7 @@ void OptionsPage::on_EnableStaking(ToggleButton* widget)
         	}
         }*/
     } else {
+        pwalletMain->stakingMode = StakingMode::STOPPED;
         nLastCoinStakeSearchInterval = 0;
         model->generateCoins(false, 0);
         emit model->stakingStatusChanged(false);

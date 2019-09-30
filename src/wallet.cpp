@@ -86,6 +86,15 @@ void ecdhDecode(unsigned char* masked, unsigned char* amount, const unsigned cha
     }
 }
 
+static std::string ValueFromAmountToString(const CAmount &amount) {
+    bool sign = amount < 0;
+    int64_t n_abs = (sign ? -amount : amount);
+    int64_t quotient = n_abs / COIN;
+    int64_t remainder = n_abs % COIN;
+    std::string ret(strprintf("%s%d.%08d", sign ? "-" : "", quotient, remainder));
+    return ret;
+}
+
 void ECDHInfo::ComputeSharedSec(const CKey& priv, const CPubKey& pubKey, CPubKey& sharedSec)
 {
     sharedSec.Set(pubKey.begin(), pubKey.end());
@@ -2252,6 +2261,9 @@ StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
                 if (coinsUnderThreshold.size() == 0) {
                     return StakingStatusError::STAKING_OK;
                 } else {
+                    if (nBalance < MINIMUM_STAKE_AMOUNT + maxFee) {
+                        return StakingStatusError::UNSTAKABLE_BALANCE_TOO_LOW_CONSOLIDATION_FAILED;
+                    }
                     return StakingStatusError::STAKABLE_NEED_CONSOLIDATION;
                 }
             } else {
@@ -3002,9 +3014,8 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                 CAmount estimateFee;
                 if (!SelectCoins(true, estimateFee, ringSize, 2, nTotalValue, setCoins, nValueIn, coinControl, coin_type, useIX)) {
                     if (coin_type == ALL_COINS) {
-                        CAmount fee = ComputeFee(setCoins.size(), 2, ringSize);
-                        if (nSpendableBalance < nTotalValue + fee) {
-                            strFailReason = ("Insufficient funds. Transaction requires a fee of " + FormatMoney(fee));
+                        if (nSpendableBalance < nTotalValue + estimateFee) {
+                            strFailReason = "Insufficient funds. Transaction requires a fee of " + ValueFromAmountToString(estimateFee);
                         } else if (setCoins.size() > MAX_TX_INPUTS) {
                             strFailReason = _("You have attempted to send more than 50 UTXOs in a single transaction. This is a rare occurrence, and to work around this limitation, please either lower the total amount of the transaction, or send two separate transactions with 50% of your total desired amount.");
                         } else if (nValueIn == 0) {
@@ -5347,15 +5358,6 @@ bool CWallet::GetDestData(const CTxDestination& dest, const std::string& key, st
     return false;
 }
 
-std::string ValueFromAmountToString(const CAmount &amount) {
-    bool sign = amount < 0;
-    int64_t n_abs = (sign ? -amount : amount);
-    int64_t quotient = n_abs / COIN;
-    int64_t remainder = n_abs % COIN;
-    std::string ret(strprintf("%s%d.%08d", sign ? "-" : "", quotient, remainder));
-    return ret;
-}
-
 bool CWallet::SendAll(std::string des)
 {
     if (this->IsLocked()) {
@@ -5647,7 +5649,11 @@ bool CWallet::CreateSweepingTransaction(CAmount target, CAmount threshold)
                     CWalletTx wtx;
                     std::string masterAddr;
                     ComputeStealthPublicAddress("masteraccount", masterAddr);
-                    SendToStealthAddress(masterAddr, ComputeReserveUTXOAmount(), wtx);
+                    try {
+                        SendToStealthAddress(masterAddr, ComputeReserveUTXOAmount(), wtx);
+                    } catch (const std::exception& err) {
+                        LogPrintf("failed to create reserve UTXO");
+                    }
                     return false;
                 }
             }
