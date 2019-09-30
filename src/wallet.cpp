@@ -5601,6 +5601,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target, CAmount threshold)
     vCoins.clear();
     bool ret = true;
     bool isReserveUTXOExist = false;
+    static uint256 reserveHash;
     {
         LOCK2(cs_main, cs_wallet);
         {
@@ -5652,6 +5653,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target, CAmount threshold)
                     if (nReserveBalance > 0) {
                         if (decodedAmount == ComputeReserveUTXOAmount()) {
                             isReserveUTXOExist = true;
+                            reserveHash = wtxid;
                             //dont select reserve UTXO
                             continue;
                         }
@@ -5687,6 +5689,13 @@ bool CWallet::CreateSweepingTransaction(CAmount target, CAmount threshold)
                         LogPrintf("failed to create reserve UTXO");
                     }
                     return false;
+                } else {
+                    if (mapWallet.count(reserveHash) < 1) return false;
+                    const CWalletTx reserve = mapWallet[reserveHash];
+
+                    if (reserve.GetDepthInMainChain(false) < 10) {
+                        return false;
+                    }
                 }
             }
 
