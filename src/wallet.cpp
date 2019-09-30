@@ -2266,6 +2266,8 @@ StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
                     //fail to even select coins to consolidation for reserve funds => ask to reduce
                     return StakingStatusError::UNSTAKABLE_BALANCE_RESERVE_TOO_HIGH_CONSOLIDATION_FAILED;
                 } 
+                minFee += estimatedFee;
+                maxFee += estimatedFee;
                 return StakingStatusError::STAKABLE_NEED_CONSOLIDATION_WITH_RESERVE_BALANCE;
             }
             
@@ -2899,6 +2901,12 @@ int CWallet::ComputeTxSize(size_t numIn, size_t numOut, size_t ringSize)
     return txSize;
 }
 
+//compute the amount that let users send reserve balance
+CAmount CWallet::ComputeReserveUTXOAmount() {
+    CAmount fee = ComputeFee(1, 2, MAX_RING_SIZE);
+    return nReserveBalance + fee;
+}
+
 int CWallet::ComputeFee(size_t numIn, size_t numOut, size_t ringSize)
 {
     int txSize = ComputeTxSize(numIn, numOut, ringSize);
@@ -3021,7 +3029,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
 
                 CAmount nChange = nValueIn - nValue - nFeeRet;
 
-                if (nChange > 0) {
+                if (nChange >= 0) {
                     // Fill a vout to ourself
                     CScript scriptChange;
                     scriptChange = GetScriptForDestination(coinControl->receiver);
@@ -3040,7 +3048,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                     if (nFeeNeeded < COIN) nFeeNeeded = COIN;
                     newTxOut.nValue -= nFeeNeeded;
                     txNew.nTxFee = nFeeNeeded;
-                    if (newTxOut.nValue <= 0) {
+                    if (newTxOut.nValue < 0) {
                         if (nSpendableBalance > nValueIn) {
                             continue;
                         }
@@ -5563,7 +5571,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target, CAmount threshold)
     CAmount currentLowestLargerAmount = 0;
     vCoins.clear();
     bool ret = true;
-
+    bool isReserveUTXOExist = false;
     {
         LOCK2(cs_main, cs_wallet);
         {
@@ -5619,15 +5627,33 @@ bool CWallet::CreateSweepingTransaction(CAmount target, CAmount threshold)
                         continue;
                     }
 
-                    vCoins.push_back(COutput(pcoin, i, nDepth, true));
-                    total += decodedAmount;
-                    if (vCoins.size() == MAX_TX_INPUTS) break;
+                    if (nReserveBalance > 0) {
+                        if (decodedAmount == ComputeReserveUTXOAmount()) {
+                            isReserveUTXOExist = true;
+                            //dont select reserve UTXO
+                            continue;
+                        }
+                    }
+                    if (vCoins.size() <= MAX_TX_INPUTS - 1) { //reserve 1 input for lowestLarger
+                        vCoins.push_back(COutput(pcoin, i, nDepth, true));
+                        total += decodedAmount;
+                    }
                 }
-                if (vCoins.size() == MAX_TX_INPUTS) break;
+            }
+
+            if (nReserveBalance > 0) {
+                if (!isReserveUTXOExist) {
+                    //create transactions that create reserve funds
+                    CWalletTx wtx;
+                    std::string masterAddr;
+                    ComputeStealthPublicAddress("masteraccount", masterAddr);
+                    SendToStealthAddress(masterAddr, ComputeReserveUTXOAmount(), wtx);
+                    return false;
+                }
             }
 
             int ringSize = MIN_RING_SIZE + secp256k1_rand32() % (MAX_RING_SIZE - MIN_RING_SIZE + 1);
-
+            if (vCoins.size() == 0) return false;
             CAmount estimatedFee = ComputeFee(vCoins.size(), 1, ringSize);
             if (stakingMode != StakingMode::STAKING_WITH_CONSOLIDATION && (vCoins.empty() || vCoins.size() < MIN_TX_INPUTS_FOR_SWEEPING || total < target + estimatedFee && vCoins.size() <= MAX_TX_INPUTS)) {
                 //preconditions to create auto sweeping transactions not satisfied, do nothing here
