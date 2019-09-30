@@ -420,7 +420,7 @@ void OptionsPage::on_EnableStaking(ToggleButton* widget)
                 errorMessage = "Your stakable balance is under staking threshold 400,000 DAPS. This is due to your reserve balance " + FormatMoney(nReserveBalance) + " DAPS is too high, please consider to deposit more DAPS to this wallet or reduce your reserve balance in order to enable staking.";
             } else {
                 CAmount totalFee = maxFee + pwalletMain->ComputeFee(1, 2, MAX_RING_SIZE);
-                errorMessage = "Your stakable balance is under staking threshold 400,000 DAPS. This is due to your reserve balance " + FormatMoney(nReserveBalance) + " DAPS is too high. The wallet software has tried to consolidate your funds with the reserve balance but without success because of a consolidation fee of " + FormatMoney(totalFee) + " DAPS. Please consider to deposit more DAPS to this wallet or reduce your reserve balance in order to enable staking.";
+                errorMessage = "Your stakable balance is under staking threshold 400,000 DAPS. This is due to your reserve balance " + FormatMoney(nReserveBalance) + " DAPS is too high. The wallet software has tried to consolidate your funds with the reserve balance but without success because of a consolidation fee of " + FormatMoney(totalFee) + " DAPS. Please wait around 10 minutes for the wallet to resolve the reserve to enable staking.";
             }
         	QString msg = QString::fromStdString(errorMessage);
         	msgBox.setWindowTitle("Warning: Staking Issue");
@@ -473,6 +473,7 @@ void OptionsPage::on_EnableStaking(ToggleButton* widget)
         	}            
             return;
         } else {
+            pwalletMain->stakingMode = StakingMode::STOPPED;
             nLastCoinStakeSearchInterval = 0;
             model->generateCoins(false, 0);
             emit model->stakingStatusChanged(false);
