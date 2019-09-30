@@ -35,6 +35,7 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/thread.hpp>
+#include "masternodeconfig.h"
 
 
 using namespace std;
@@ -1994,6 +1995,10 @@ bool CWallet::AvailableCoins(const uint256 wtxid, const CWalletTx* pcoin, vector
             } else if (nCoinType == ONLY_1000000) {
                 found = value == 1000000 * COIN;
             } else {
+                COutPoint outpoint(pcoin->GetHash(), i);
+                if (IsCollateralized(outpoint)) {
+                    continue;
+                }
                 found = true;
             }
             if (!found) continue;
@@ -2496,8 +2501,11 @@ bool CWallet::SelectCoins(bool needFee, CAmount& estimatedFee, int ringSize, int
                 CAmount decodedAmount;
                 CKey decodedBlind;
                 RevealTxOutAmount(*pcoin, pcoin->vout[i], decodedAmount, decodedBlind);
-                if (decodedAmount == 1000000 * COIN && coin_type != ONLY_1000000) {
-                    continue;
+                if (decodedAmount == 1000000 * COIN) {
+                    COutPoint outpoint(wtxid, i);
+                    if (IsCollateralized(outpoint)) {
+                        continue;
+                    }
                 }
 
                 std::vector<unsigned char> commitment;
@@ -2657,6 +2665,16 @@ bool CWallet::SelectCoinsByDenominations(int nDenom, CAmount nValueMin, CAmount 
     }
 
     return (nValueRet >= nValueMin && fFound10000 && fFound1000 && fFound100 && fFound10 && fFound1 && fFoundDot1);
+}
+
+bool CWallet::IsCollateralized(const COutPoint& outpoint)
+{
+    BOOST_FOREACH (CMasternodeConfig::CMasternodeEntry mne, masternodeConfig.getEntries()) {
+        if (mne.getTxHash() == outpoint.hash.GetHex() && mne.getOutputIndex() == outpoint.n) {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool CWallet::SelectCoinsDark(CAmount nValueMin, CAmount nValueMax, std::vector<CTxIn>& setCoinsRet, CAmount& nValueRet, int nObfuscationRoundsMin, int nObfuscationRoundsMax)
@@ -4074,7 +4092,12 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
                 //make sure not to outrun target amount
                 CAmount value = getCOutPutValue(out);
                 if (value < MINIMUM_STAKE_AMOUNT) continue;
-                if (value == 1000000 * COIN) continue;
+                if (value == 1000000 * COIN) {
+                    COutPoint outpoint(out.tx->GetHash(), out.i);
+                    if (IsCollateralized(outpoint)) {
+                        continue;
+                    }
+                }
                 if (nAmountSelected + value >= nTargetAmount)
                     continue;
 
@@ -5614,6 +5637,10 @@ bool CWallet::CreateSweepingTransaction(CAmount target, CAmount threshold)
                     {
                         COutPoint outpoint(wtxid, i);
                         if (inSpendQueueOutpoints.count(outpoint)) {
+                            continue;
+                        }
+
+                        if (IsCollateralized(outpoint)) {
                             continue;
                         }
                     }
