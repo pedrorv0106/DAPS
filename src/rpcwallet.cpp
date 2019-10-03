@@ -2873,3 +2873,34 @@ UniValue rescanwallettransactions(const UniValue& params, bool fHelp) {
     }
     return "Started rescanning from block " + std::to_string(nHeight);
 }
+
+UniValue revealmnemonicphrase(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() != 0)
+        throw runtime_error(
+                "revealmnemonicphrase \n"
+                "\nReveal Mnemonic Phrase.\n"
+                "\nArguments:\n"
+                "\nResult:\n"
+                "\"Mnemonic Phrase\"    (string) mnemonic phrase\n"
+                "\nExamples:\n" +
+                HelpExampleCli("revealmnemonicphrase", "") + HelpExampleCli("revealmnemonicphrase", "\"\"") +
+                HelpExampleCli("revealmnemonicphrase", "") + HelpExampleRpc("revealmnemonicphrase", ""));
+
+    EnsureWalletIsUnlocked();
+    
+    CHDChain hdChainCurrent;
+    if (!pwalletMain->GetDecryptedHDChain(hdChainCurrent))
+        throw JSONRPCError(RPC_WALLET_ERROR,
+                           "Error: There was a problem while getting mnemonic phrase.");
+
+    SecureString mnemonic;
+    SecureString mnemonicPass;
+    if (!hdChainCurrent.GetMnemonic(mnemonic, mnemonicPass))
+        throw JSONRPCError(RPC_WALLET_ERROR,
+                           "Error: There was a problem while getting mnemonic phrase.");
+
+    string mPhrase = std::string(mnemonic.begin(), mnemonic.end()).c_str();
+
+    return mPhrase;
+}
