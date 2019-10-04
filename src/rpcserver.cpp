@@ -405,7 +405,7 @@ static const CRPCCommand vRPCCommands[] =
         // {"wallet", "listlockunspent", &listlockunspent, false, false, true},
         // {"wallet", "listreceivedbyaccount", &listreceivedbyaccount, false, false, true},
         // {"wallet", "listreceivedbyaddress", &listreceivedbyaddress, false, false, true},
-        // {"wallet", "listsinceblock", &listsinceblock, false, false, true},
+        {"wallet", "listsinceblock", &listsinceblock, false, false, true},
         {"wallet", "listtransactions", &listtransactions, false, false, true},
         {"wallet", "listunspent", &listunspent, false, false, true},
         // {"wallet", "lockunspent", &lockunspent, true, false, true},
@@ -421,7 +421,8 @@ static const CRPCCommand vRPCCommands[] =
         // {"wallet", "signmessage", &signmessage, true, false, true},
         // {"wallet", "walletlock", &walletlock, true, false, true},
         {"wallet", "walletpassphrasechange", &walletpassphrasechange, true, false, true},
-        {"wallet", "unlockwallet", &unlockwallet, true, false, true}
+        {"wallet", "unlockwallet", &unlockwallet, true, false, true},
+        {"wallet", "revealmnemonicphrase", &revealmnemonicphrase, true, false, true}
 
 #endif // ENABLE_WALLET
         };

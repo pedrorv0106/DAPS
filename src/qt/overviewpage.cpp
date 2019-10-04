@@ -159,11 +159,11 @@ void OverviewPage::getPercentage(CAmount nUnlockedBalance, QString& sDAPSPercent
     
     sDAPSPercentage = "(" + QLocale(QLocale::system()).toString(dPercentage, 'f', nPrecision) + " %)";
 }
-
 void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, 
                               const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance)
 {
     int walletStatus = walletModel->getEncryptionStatus();
+    bool stkStatus = pwalletMain->ReadStakingStatus();
 
     currentBalance = balance;
     currentUnconfirmedBalance = unconfirmedBalance;
@@ -173,6 +173,12 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     currentWatchImmatureBalance = watchImmatureBalance;
     CAmount nSpendableBalance = balance - immatureBalance;
     if (nSpendableBalance < 0) {
+        TRY_LOCK(cs_main, lockMain);
+        if (!lockMain)
+            return;
+        TRY_LOCK(pwalletMain->cs_wallet, lockWallet);
+        if (!lockWallet)
+            return;
     	nSpendableBalance = pwalletMain->GetSpendableBalance();
     }
     CAmount nSpendableDisplayed = nSpendableBalance; //if it is not staking
@@ -187,7 +193,13 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
         ui->labelBalance->setText("Locked; Hidden");
         ui->labelUnconfirmed->setText("Locked; Hidden");
     } else {
-        ui->labelBalance_2->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance, false, BitcoinUnits::separatorAlways));
+        if (stkStatus && !nLastCoinStakeSearchInterval) {
+            ui->labelBalance_2->setText("Enabling Staking");
+            ui->labelBalance_2->setToolTip("Enabling Staking... Please wait up to 1.5 hours for it to be properly enabled after consolidation.");
+        } else {
+            ui->labelBalance_2->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, balance, false, BitcoinUnits::separatorAlways));
+            ui->labelBalance_2->setToolTip("Your current balance");
+        }
         ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, nSpendableDisplayed, false, BitcoinUnits::separatorAlways));
         ui->labelUnconfirmed->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, unconfirmedBalance, false, BitcoinUnits::separatorAlways));
     }
@@ -215,12 +227,20 @@ void OverviewPage::setClientModel(ClientModel* model)
 }
 
 void OverviewPage::setSpendableBalance(bool isStaking) {
-    CAmount nSpendableDisplayed = this->walletModel->getSpendableBalance();
-    if (isStaking) {
-        //if staking enabled
-        nSpendableDisplayed = nSpendableDisplayed > nReserveBalance ? nReserveBalance:nSpendableDisplayed;
+    TRY_LOCK(cs_main, lockMain);
+    if (!lockMain)
+        return;
+    TRY_LOCK(pwalletMain->cs_wallet, lockWallet);
+    if (!lockWallet)
+        return;
+    {
+        CAmount nSpendableDisplayed = this->walletModel->getSpendableBalance();
+        if (isStaking) {
+            //if staking enabled
+            nSpendableDisplayed = nSpendableDisplayed > nReserveBalance ? nReserveBalance:nSpendableDisplayed;
+        }
+        ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, nSpendableDisplayed, false, BitcoinUnits::separatorAlways));
     }
-    ui->labelBalance->setText(BitcoinUnits::floorHtmlWithUnit(nDisplayUnit, nSpendableDisplayed, false, BitcoinUnits::separatorAlways));
 }
 
 void OverviewPage::setWalletModel(WalletModel* model)
@@ -312,6 +332,9 @@ void OverviewPage::showBlockSync(bool fShow)
 
 void OverviewPage::showBlockCurrentHeight()
 {
+    TRY_LOCK(cs_main, lockMain);
+    if (!lockMain)
+        return;
 	ui->labelBlockCurrent->setText(QString::number(chainActive.Height()));
 }
 
@@ -412,64 +435,71 @@ int OverviewPage::tryNetworkBlockCount(){
 
 void OverviewPage::updateRecentTransactions(){
 	if (!pwalletMain || pwalletMain->IsLocked()) return;
-    QLayoutItem* item;
-    QSettings settings;
-    QVariant theme = settings.value("theme");
-    QString themeName = QString(theme.toString());
-
-    while ( ( item = ui->verticalLayoutRecent->takeAt( 0 ) ) != NULL )
     {
-        delete item->widget();
-        delete item;
-    }
-    if (pwalletMain) {
-    	{
-    		LOCK(pwalletMain->cs_wallet);
-    		vector<std::map<QString, QString>> txs;// = WalletUtil::getTXs(pwalletMain);
+        TRY_LOCK(cs_main, lockMain);
+        if (!lockMain)
+            return;
+        TRY_LOCK(pwalletMain->cs_wallet, lockWallet);
+        if (!lockWallet)
+            return;
+        QLayoutItem* item;
+        QSettings settings;
+        QVariant theme = settings.value("theme");
+        QString themeName = QString(theme.toString());
 
-    		std::map<uint256, CWalletTx> txMap = pwalletMain->mapWallet;
-    		std::vector<CWalletTx> latestTxes;
-    		for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
-    			if (tx->second.GetDepthInMainChain() > 0) {
-    				int64_t txTime = tx->second.GetComputedTxTime();
-    				int idx = -1;
-    				for (int i = 0; i < (int)latestTxes.size(); i++) {
-    					if (txTime >= latestTxes[i].GetComputedTxTime()) {
-    						idx = i;
-    						break;
-    					}
-    				}
-    				if (idx == -1) {
-    					latestTxes.push_back(tx->second);
-    				} else {
-    					latestTxes.insert(latestTxes.begin() + idx, tx->second);
-    				}
-    			}
-    		}
+        while ( ( item = ui->verticalLayoutRecent->takeAt( 0 ) ) != NULL )
+        {
+            delete item->widget();
+            delete item;
+        }
+        if (pwalletMain) {
+            {
+                vector<std::map<QString, QString>> txs;// = WalletUtil::getTXs(pwalletMain);
 
-    		for (int i = 0; i < (int)latestTxes.size(); i++) {
-    			txs.push_back(WalletUtil::getTx(pwalletMain, latestTxes[i]));
-    			if (txs.size() >= 5) break;
-    		}
+                std::map<uint256, CWalletTx> txMap = pwalletMain->mapWallet;
+                std::vector<CWalletTx> latestTxes;
+                for (std::map<uint256, CWalletTx>::iterator tx = txMap.begin(); tx != txMap.end(); ++tx) {
+                    if (tx->second.GetDepthInMainChain() > 0) {
+                        int64_t txTime = tx->second.GetComputedTxTime();
+                        int idx = -1;
+                        for (int i = 0; i < (int)latestTxes.size(); i++) {
+                            if (txTime >= latestTxes[i].GetComputedTxTime()) {
+                                idx = i;
+                                break;
+                            }
+                        }
+                        if (idx == -1) {
+                            latestTxes.push_back(tx->second);
+                        } else {
+                            latestTxes.insert(latestTxes.begin() + idx, tx->second);
+                        }
+                    }
+                }
 
-    		int length = (txs.size()>5)? 5:txs.size();
-    		for (int i = 0; i< length; i++){
-    			uint256 txHash;
-    			txHash.SetHex(txs[i]["id"].toStdString());
-    			TxEntry* entry = new TxEntry(this);
-    			ui->verticalLayoutRecent->addWidget(entry);
-    			CWalletTx wtx = pwalletMain->mapWallet[txHash];
-    			int64_t txTime = wtx.GetComputedTxTime();
-    			entry->setData(txTime, txs[i]["address"] , txs[i]["amount"], txs[i]["id"], txs[i]["type"]);
-    			if (i % 2 == 0) {
-    				entry->setObjectName("secondaryTxEntry");
-    			}
-    		}
+                for (int i = 0; i < (int)latestTxes.size(); i++) {
+                    txs.push_back(WalletUtil::getTx(pwalletMain, latestTxes[i]));
+                    if (txs.size() >= 5) break;
+                }
 
-    		ui->lblRecentTransaction->setVisible(true);
-    	}
-    } else {
-        LogPrintf("\npwalletMain has not been initialized\n");
+                int length = (txs.size()>5)? 5:txs.size();
+                for (int i = 0; i< length; i++){
+                    uint256 txHash;
+                    txHash.SetHex(txs[i]["id"].toStdString());
+                    TxEntry* entry = new TxEntry(this);
+                    ui->verticalLayoutRecent->addWidget(entry);
+                    CWalletTx wtx = pwalletMain->mapWallet[txHash];
+                    int64_t txTime = wtx.GetComputedTxTime();
+                    entry->setData(txTime, txs[i]["address"] , txs[i]["amount"], txs[i]["id"], txs[i]["type"]);
+                    if (i % 2 == 0) {
+                        entry->setObjectName("secondaryTxEntry");
+                    }
+                }
+
+                ui->lblRecentTransaction->setVisible(true);
+            }
+        } else {
+            LogPrintf("\npwalletMain has not been initialized\n");
+        }
     }
 }
 
