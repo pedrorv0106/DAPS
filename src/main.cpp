@@ -603,7 +603,7 @@ bool VerifyRingSignatureWithTxFee(const CTransaction& tx, CBlockIndex* pindex)
         uint256 temppi1 = Hash(tempForHash, tempForHash + 2 * (tx.vin.size() + 1) * 33 + 32);
         memcpy(C, temppi1.begin(), 32);
     }
-    LogPrintf("\nVerifying\n");
+    //LogPrintf("\nVerifying\n");
     return HexStr(tx.c.begin(), tx.c.end()) == HexStr(C, C + 32);
 }
 
@@ -4166,7 +4166,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
         }
     }
 
-    LogPrintf("CheckBlock() : skipping transaction locking checks\n");
+    //LogPrintf("CheckBlock() : skipping transaction locking checks\n");
     // masternode payments / budgets
     CBlockIndex* pindexPrev = chainActive.Tip();
     LogPrintf("%s: chain height = %d, new hash=%s\n", __func__, chainActive.Height(), block.GetHash().GetHex());
