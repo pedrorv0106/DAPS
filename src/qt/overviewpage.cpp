@@ -106,7 +106,7 @@ public:
 };
 #include "overviewpage.moc"
 
-OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
+OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
                                               ui(new Ui::OverviewPage),
                                               clientModel(0),
                                               walletModel(0),
