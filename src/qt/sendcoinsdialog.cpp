@@ -103,8 +103,25 @@ void SendCoinsDialog::on_sendButton_clicked(){
     form->errorAddress(isValidAddresss);
     form->errorAmount(isValidAmount);
 
-    if (!isValidAddresss||!isValidAmount)
+    if (!isValidAddresss) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Invalid Address");
+        msgBox.setText("Invalid address entered. Please make sure you are sending to a Stealth Address.");
+        msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.exec();
         return;
+    }
+
+    if (!isValidAmount) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Invalid Amount");
+        msgBox.setText("Invalid amount entered. Please enter an amount less than 2.1B DAPS.");
+        msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.exec();
+        return;
+    }
 
     QMessageBox::StandardButton reply;
     reply = QMessageBox::question(this, "Are You Sure?", "Are you sure you would like to send this transaction?", QMessageBox::Yes|QMessageBox::No);
