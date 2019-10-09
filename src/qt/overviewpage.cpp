@@ -125,8 +125,8 @@ OverviewPage::OverviewPage(QWidget* parent) : QDialog(parent),
 
     pingNetworkInterval = new QTimer(this);
     connect(pingNetworkInterval, SIGNAL(timeout()), this, SLOT(tryNetworkBlockCount()));
-    pingNetworkInterval->setInterval(3000); pingNetworkInterval->start(); 
-    
+    pingNetworkInterval->setInterval(3000); pingNetworkInterval->start();
+
     pingNetworkInterval = new QTimer();
 
     initSyncCircle(.8);
@@ -155,10 +155,10 @@ void OverviewPage::getPercentage(CAmount nUnlockedBalance, QString& sDAPSPercent
     int nPrecision = 2;
 
     double dPercentage = 100.0;
-    
+
     sDAPSPercentage = "(" + QLocale(QLocale::system()).toString(dPercentage, 'f', nPrecision) + " %)";
 }
-void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, 
+void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance,
                               const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance)
 {
     int walletStatus = walletModel->getEncryptionStatus();
@@ -199,7 +199,7 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     QFont font = ui->labelBalance_2->font();
     font.setPointSize(15);
     font.setBold(true);
-    ui->labelBalance_2->setFont(font);   
+    ui->labelBalance_2->setFont(font);
 
     refreshRecentTransactions();
 }
@@ -255,15 +255,15 @@ void OverviewPage::setWalletModel(WalletModel* model)
         // Keep up to date with wallet
         setBalance(model->getBalance(), model->getUnconfirmedBalance(), model->getImmatureBalance(),
                    model->getWatchBalance(), model->getWatchUnconfirmedBalance(), model->getWatchImmatureBalance());
-        connect(model, SIGNAL(balanceChanged(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)), this, 
+        connect(model, SIGNAL(balanceChanged(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)), this,
                          SLOT(setBalance(CAmount, CAmount, CAmount, CAmount, CAmount, CAmount)));
-        connect(model, SIGNAL(stakingStatusChanged(bool)), this, 
+        connect(model, SIGNAL(stakingStatusChanged(bool)), this,
                          SLOT(setSpendableBalance(bool)));
         connect(model, SIGNAL(WalletUnlocked()), this,
                                          SLOT(updateBalance()));
         connect(model, SIGNAL(encryptionStatusChanged(int)), this,
                                          SLOT(updateLockStatus(int)));
-        
+
         connect(model->getOptionsModel(), SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit()));
 
         updateWatchOnlyLabels(model->haveWatchOnly());
@@ -413,7 +413,7 @@ int OverviewPage::tryNetworkBlockCount(){
                 if (node->nStartingHeight>highestCount)
                     highestCount = node->nStartingHeight;
             if (highestCount>550){
-                networkBlockCount = highestCount; 
+                networkBlockCount = highestCount;
                 updateTotalBlocksLabel();
                 return highestCount;
             }
@@ -427,7 +427,6 @@ int OverviewPage::tryNetworkBlockCount(){
 void OverviewPage::updateRecentTransactions(){
 	if (!pwalletMain || pwalletMain->IsLocked()) return;
     {
-        LOCK2(cs_main, pwalletMain->cs_wallet);
         QLayoutItem* item;
         QSettings settings;
         QVariant theme = settings.value("theme");
@@ -508,7 +507,7 @@ void OverviewPage::on_lockUnlock() {
         lockdlg.setModel(walletModel);
         lockdlg.setStyleSheet(GUIUtil::loadStyleSheet());
         connect(&lockdlg, SIGNAL(finished (int)), this, SLOT(lockDialogIsFinished(int)));
-        lockdlg.exec();   
+        lockdlg.exec();
     }
 }
 

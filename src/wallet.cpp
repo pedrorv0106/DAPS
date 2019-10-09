@@ -514,6 +514,7 @@ bool CWallet::RescanAfterUnlock(bool fromBeginning)
         pindex = chainActive[scannedHeight];
     }
 
+
     if (!fromBeginning) {
         LOCK2(cs_main, cs_wallet);
         if (mapWallet.size() > 0) {
@@ -2300,20 +2301,20 @@ StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
                 if (!selectCoinRet) {
                     //fail to even select coins to consolidation for reserve funds => ask to reduce
                     return StakingStatusError::UNSTAKABLE_BALANCE_RESERVE_TOO_HIGH_CONSOLIDATION_FAILED;
-                } 
+                }
                 minFee += estimatedFee;
                 maxFee += estimatedFee;
                 return StakingStatusError::STAKABLE_NEED_CONSOLIDATION_WITH_RESERVE_BALANCE;
             }
-            
+
             /* if (nReserveBalance == 0 && coinsOverThreshold.empty() && nBalance > MINIMUM_STAKE_AMOUNT) {
                 if (nSpendableBalance < MINIMUM_STAKE_AMOUNT) {
                     return StakingStatusError::UNSTAKABLE_DUE_TO_CONSILIDATION_FAILED;  //not enough spendable balance
-                } 
+                }
                 set<pair<const CWalletTx*, unsigned int> > setCoinsRet;
                 CAmount nValueRet;
                 int ringSize = MIN_RING_SIZE + secp256k1_rand32() % (MAX_RING_SIZE - MIN_RING_SIZE + 1);
-                bool selectCoinRet = SelectCoins(true, ringSize, 1, MINIMUM_STAKE_AMOUNT, setCoinsRet, nValueRet, NULL, AvailableCoinsType::ALL_COINS, false);  
+                bool selectCoinRet = SelectCoins(true, ringSize, 1, MINIMUM_STAKE_AMOUNT, setCoinsRet, nValueRet, NULL, AvailableCoinsType::ALL_COINS, false);
                 if (!selectCoinRet) {
                     return StakingStatusError::UNSTAKABLE_DUE_TO_CONSILIDATION_FAILED;  //not enough spendable balance
                 }
@@ -2322,12 +2323,12 @@ StakingStatusError CWallet::StakingCoinStatus(CAmount& minFee, CAmount& maxFee)
             }
 
             if (nReserveBalance > 0) {
-                
+
             }*/
         }
     }
 
-    
+
     return ret;
 }
 
@@ -2422,15 +2423,15 @@ bool CWallet::SelectCoinsMinConf(bool needFee, CAmount& feeNeeded, int ringSize,
         }
         LogPrintf("%s - total %s\n", s, FormatMoney(nValueRet));
         return true;
-    }    
+    }
 
     // Solve subset sum by stochastic approximation
     sort(vValue.rbegin(), vValue.rend(), CompareValueOnly());
     //fees for 50 inputs
-    feeNeeded = ComputeFee(50, numOut, ringSize); 
+    feeNeeded = ComputeFee(50, numOut, ringSize);
     //check if the sum of first 50 largest UTXOs > nTargetValue + nfeeNeeded
     for (unsigned int i = 0; i <= MAX_TX_INPUTS; i++) {
-        nValueRet += vValue[i].first;                
+        nValueRet += vValue[i].first;
     }
     if (nValueRet < nTargetValue + feeNeeded) {
         nValueRet = 0;
@@ -3055,7 +3056,7 @@ bool CWallet::CreateTransactionBulletProof(const CKey& txPrivDes, const CPubKey&
                             strFailReason = _("You have attempted to send more than 50 UTXOs in a single transaction. This is a rare occurrence, and to work around this limitation, please either lower the total amount of the transaction, or send two separate transactions with 50% of your total desired amount.");
                         } else if (nValueIn == 0) {
                             strFailReason = _("No coin set found.");
-                        } 
+                        }
                     } else if (coin_type == ONLY_NOT1000000IFMN) {
                         strFailReason = _("Unable to locate enough funds for this transaction that are not equal 10000 DAPS.");
                     } else if (coin_type == ONLY_NONDENOMINATED_NOT1000000IFMN) {
@@ -3808,7 +3809,7 @@ bool CWallet::makeRingCT(CTransaction& wtxNew, int ringSize, std::string& strFai
 bool CWallet::MakeShnorrSignature(CTransaction& wtxNew)
 {
     LOCK(cs_wallet);
-    {   
+    {
         if (wtxNew.IsCoinAudit() || wtxNew.IsCoinBase()) return true;
         //this only generates shnorr signature if either wtxNew is a staking transaction or wtxNew only spends collateralized
         if (!wtxNew.IsCoinStake()) return true;
@@ -5941,8 +5942,8 @@ bool CWallet::estimateStakingConsolidationFees(CAmount& minFee, CAmount& maxFee)
     maxFee = 0;
     if (total < MINIMUM_STAKE_AMOUNT) false; //no staking sweeping will be created
     size_t numUTXOs = vCoins.size();
-    
-    
+
+
 }
 
 int CWallet::MaxTxSizePerTx() {
