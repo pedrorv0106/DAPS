@@ -41,7 +41,7 @@ using namespace std;
 WalletModel::WalletModel(CWallet* wallet, OptionsModel* optionsModel, QObject* parent) : QObject(parent), wallet(wallet), optionsModel(optionsModel), addressTableModel(0),
                                                                                          transactionTableModel(0),
                                                                                          recentRequestsTableModel(0),
-                                                                                         cachedBalance(0), cachedUnconfirmedBalance(0), spendableBalance(0), cachedImmatureBalance(0), cachedWatchOnlyBalance(0),
+                                                                                         cachedBalance(0), cachedUnconfirmedBalance(0), cachedImmatureBalance(0), cachedWatchOnlyBalance(0),
                                                                                          cachedWatchUnconfBalance(0), cachedWatchImmatureBalance(0),
                                                                                          cachedEncryptionStatus(Unencrypted),
                                                                                          cachedNumBlocks(0), cachedTxLocks(0),
@@ -59,7 +59,7 @@ WalletModel::WalletModel(CWallet* wallet, OptionsModel* optionsModel, QObject* p
     // This timer will be fired repeatedly to update the balance
     pollTimer = new QTimer(this);
     connect(pollTimer, SIGNAL(timeout()), this, SLOT(pollBalanceChanged()));
-    pollTimer->start(MODEL_UPDATE_DELAY);
+    pollTimer->start(10000);
 
     subscribeToCoreSignals();
 }
@@ -173,15 +173,10 @@ void WalletModel::emitBalanceChanged()
 bool WalletModel::checkBalanceChanged()
 {
     TRY_LOCK(cs_main, lockMain);
-    if (!lockMain) return false;
-    TRY_LOCK(pwalletMain->cs_wallet, lockWallet);
-    if (!lockWallet) return false;
+    if (!lockMain) return true;
     CAmount newBalance = getBalance();
     CAmount newUnconfirmedBalance = getUnconfirmedBalance();
     CAmount newImmatureBalance = getImmatureBalance();
-    CAmount newSpendableBalance = newBalance - newImmatureBalance;
-    static bool stkEnabled = false;
-    static bool walletLocked = pwalletMain->IsLocked();
     CAmount newWatchOnlyBalance = 0;
     CAmount newWatchUnconfBalance = 0;
     CAmount newWatchImmatureBalance = 0;
@@ -191,32 +186,22 @@ bool WalletModel::checkBalanceChanged()
         newWatchImmatureBalance = getWatchImmatureBalance();
     }
 
-    if (walletLocked != pwalletMain->IsLocked() || 
-        (stkEnabled != (nLastCoinStakeSearchInterval > 0)) || 
-        newSpendableBalance != spendableBalance || 
-        cachedBalance != newBalance || 
-        cachedUnconfirmedBalance != newUnconfirmedBalance || 
-        cachedImmatureBalance != newImmatureBalance ||
-        cachedWatchOnlyBalance != newWatchOnlyBalance || 
-        cachedWatchUnconfBalance != newWatchUnconfBalance || 
-        cachedWatchImmatureBalance != newWatchImmatureBalance ||
+    if (cachedBalance != newBalance || cachedUnconfirmedBalance != newUnconfirmedBalance || cachedImmatureBalance != newImmatureBalance ||
+        cachedWatchOnlyBalance != newWatchOnlyBalance || cachedWatchUnconfBalance != newWatchUnconfBalance || cachedWatchImmatureBalance != newWatchImmatureBalance ||
         cachedTxLocks != nCompleteTXLocks) {
         cachedBalance = newBalance;
         cachedUnconfirmedBalance = newUnconfirmedBalance;
         cachedImmatureBalance = newImmatureBalance;
-        spendableBalance = newSpendableBalance;
         cachedTxLocks = nCompleteTXLocks;
         cachedWatchOnlyBalance = newWatchOnlyBalance;
         cachedWatchUnconfBalance = newWatchUnconfBalance;
         cachedWatchImmatureBalance = newWatchImmatureBalance;
-        stkEnabled = (nLastCoinStakeSearchInterval > 0);
-        walletLocked = pwalletMain->IsLocked();
         emit balanceChanged(newBalance, newUnconfirmedBalance, newImmatureBalance,
             newWatchOnlyBalance, newWatchUnconfBalance, newWatchImmatureBalance);
-        return true;
+        return false;
     }
 
-    return false;
+    return true;
 }
 
 void WalletModel::updateTransaction()

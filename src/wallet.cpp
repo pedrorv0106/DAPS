@@ -513,26 +513,6 @@ bool CWallet::RescanAfterUnlock(bool fromBeginning)
     } else {
         pindex = chainActive[scannedHeight];
     }
-
-    if (!fromBeginning) {
-        LOCK2(cs_main, cs_wallet);
-        if (mapWallet.size() > 0) {
-            //looking for highest blocks
-            for (map<uint256, CWalletTx>::iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
-                CWalletTx* wtx = &((*it).second);
-                uint256 wtxid = (*it).first;
-                if (mapBlockIndex.count(wtx->hashBlock) == 1) {
-                    CBlockIndex* pForTx = mapBlockIndex[wtx->hashBlock];
-                    if (pForTx != NULL && pForTx->nHeight > pindex->nHeight) {
-                        if (chainActive.Contains(pForTx)) {
-                            pindex = pForTx;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     ScanForWalletTransactions(pindex, true);
     return true;
 }
@@ -569,8 +549,10 @@ bool CWallet::Unlock(const SecureString& strWalletPassphrase, bool anonymizeOnly
     }
 
     if (rescanNeeded) {
+        LogPrintf("\nStart rescanning wallet transactions");
         pwalletMain->RescanAfterUnlock();
         walletUnlockCountStatus++;
+        LogPrintf("\nFinish rescanning wallet transactions");
         return true;
     }
 
@@ -1430,7 +1412,6 @@ int64_t CWalletTx::GetTxTime() const
 
 int64_t CWalletTx::GetComputedTxTime() const
 {
-    LOCK(cs_main);
     int64_t nTime = GetTxTime();
     return nTime;
 }
@@ -1625,7 +1606,6 @@ bool CWalletTx::InMempool() const
 
 void CWalletTx::RelayWalletTransaction(std::string strCommand)
 {
-    LOCK(cs_main);
     if (!IsCoinBase()) {
         if (GetDepthInMainChain() == 0) {
             uint256 hash = GetHash();
@@ -1710,6 +1690,9 @@ CAmount CWallet::GetBalance()
             }
         }
     }
+
+    LogPrintf("\n%s: Balance: %d\n", __func__, nTotal);
+
     return nTotal;
 }
 
@@ -2394,6 +2377,7 @@ bool CWallet::SelectCoinsMinConf(bool needFee, CAmount& feeNeeded, int ringSize,
             }
             return true;
         }
+        LogPrintf("\n nValueRet=%d, target value = %d\n", nValueRet, nTotalLower);
         if (nTotalLower < nTargetValue + feeNeeded) {
             if (coinLowestLarger.second.first == NULL) // there is no input larger than nTargetValue
             {
@@ -2468,9 +2452,9 @@ bool CWallet::SelectCoinsMinConf(bool needFee, CAmount& feeNeeded, int ringSize,
 
 void CWallet::resetPendingOutPoints()
 {
-    LOCK2(cs_main, cs_wallet);
     if (chainActive.Height() % 20 != 0 && !inSpendQueueOutpoints.empty()) return;
     {
+        LOCK2(cs_main, cs_wallet);
         {
             LOCK(mempool.cs);
             {
@@ -4124,7 +4108,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
                 int64_t nTxTime = out.tx->GetTxTime();
 
                 //check for min age
-                if (GetAdjustedTime() < nStakeMinAge + nTxTime)
+                if (GetAdjustedTime() - nTxTime < nStakeMinAge)
                     continue;
 
                 //check that it is matured
@@ -5716,6 +5700,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target, CAmount threshold)
                     }
                 }
             }
+            std::cout << "Vcoins.size() = " << vCoins.size() << std::endl;
             int ringSize = MIN_RING_SIZE + secp256k1_rand32() % (MAX_RING_SIZE - MIN_RING_SIZE + 1);
             if (vCoins.size() == 0) return false;
             CAmount estimatedFee = ComputeFee(vCoins.size(), 1, ringSize);
@@ -6161,7 +6146,6 @@ int CMerkleTx::GetDepthInMainChain(const CBlockIndex*& pindexRet, bool enableIX)
 
 int CMerkleTx::GetBlocksToMaturity() const
 {
-    LOCK(cs_main);
     if (!(IsCoinBase() || IsCoinStake()))
         return 0;
     return max(0, (Params().COINBASE_MATURITY() + 1) - GetDepthInMainChain());
@@ -6460,7 +6444,7 @@ bool CWallet::ComputeStealthDestination(const CKey& secret, const CPubKey& pubVi
 
 bool CWallet::GenerateAddress(CPubKey& pub, CPubKey& txPub, CKey& txPriv) const
 {
-    LOCK2(cs_main, cs_wallet);
+    LOCK(cs_wallet);
     {
         CKey view, spend;
         if (IsLocked()) {
