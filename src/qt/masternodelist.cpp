@@ -216,8 +216,8 @@ void MasternodeList::updateMyNodeList(bool fForce)
             CMasternode* pmn = mnodeman.Find(txin);
             updateMyMasternodeInfo(QString::fromStdString(mne.getAlias()), QString::fromStdString(mne.getIp()), pmn);
         }
+        ui->tableWidgetMyMasternodes->setSortingEnabled(true);
     }
-    ui->tableWidgetMyMasternodes->setSortingEnabled(true);
 }
 
 void MasternodeList::on_startButton_clicked()

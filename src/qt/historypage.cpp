@@ -31,7 +31,7 @@
 #include <QTextStream>
 #include <QProcess>
 
-bool TxCompare (std::map<QString, QString> i, std::map<QString, QString> j) { 
+bool TxCompare (std::map<QString, QString> i, std::map<QString, QString> j) {
     QString str_i = i.at("date");
     QString str_j = j.at("date");
     QDateTime date_i = QDateTime::fromString(str_i,"MM/dd/yy hh:mm");
@@ -52,9 +52,6 @@ HistoryPage::HistoryPage(QWidget* parent) : QDialog(parent),
     connectWidgets();
     updateTableData(pwalletMain);
     updateAddressBookData(pwalletMain);
-    /*updateHistoryTimer = new QTimer();
-    connect(updateHistoryTimer, SIGNAL(timeout()), this, SLOT(updateTableData()));
-    updateHistoryTimer->start(90000);*/
 }
 
 
@@ -109,7 +106,7 @@ void HistoryPage::connectWidgets() //add functions to widget signals
     connect(timeEditTo, SIGNAL(timeChanged(const QTime&)), this, SLOT(updateFilter()));
 }
 
-void HistoryPage::on_cellClicked(int row, int column) 
+void HistoryPage::on_cellClicked(int row, int column)
 {
     //1 is column index for type
     QTableWidgetItem* cell = ui->tableView->item(row, 1);
@@ -172,13 +169,13 @@ void HistoryPage::on_cellClicked(int row, int column)
         if (stdType == "Minted") {
             privkeyFound = false;
             txdlgMsg = "Minted transactions do not have a PrivKey";
-        }    
+        }
         if (pwalletMain->IsLocked()) {
             privkeyFound = false;
             txdlgMsg = "Wallet must be unlocked to view PrivKey";
         }
         if (!privkeyFound) txdlg.setTxPrivKey(std::string(txdlgMsg).c_str());
-        
+
         txdlg.exec();
     }
 }
@@ -210,8 +207,13 @@ void HistoryPage::updateTableData()
 void HistoryPage::updateTableData(CWallet* wallet)
 {
 	if (!wallet) return;
-        LOCK2(cs_main, wallet->cs_wallet);
-        {
+    TRY_LOCK(cs_main, lockMain);
+    if (!lockMain)
+        return;
+    TRY_LOCK(pwalletMain->cs_wallet, lockWallet);
+    if (!lockWallet)
+        return;
+    {
         if (!wallet || wallet->IsLocked()) return;
         ui->tableView->setSortingEnabled(false);
         while (ui->tableView->rowCount() > 0)
