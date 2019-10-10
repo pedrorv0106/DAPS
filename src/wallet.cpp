@@ -2,7 +2,7 @@
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2018 The PIVX developers
-// Copyright (c) 2018-2019 The DAPScoin developers
+// Copyright (c) 2018-2019 The DAPS Project developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -4083,7 +4083,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
     txNew.txType = TX_TYPE_REVEAL_BOTH;
 
     // Choose coins to use
-    LogPrintf("%s: Start staking", __func__);
+    LogPrintf("%s: Start staking\n", __func__);
 
     CAmount nSpendableBalance = 0;
     CAmount nTargetAmount = 9223372036854775807;
