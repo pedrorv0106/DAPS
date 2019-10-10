@@ -199,7 +199,7 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     QFont font = ui->labelBalance_2->font();
     font.setPointSize(15);
     font.setBold(true);
-    ui->labelBalance_2->setFont(font);
+    ui->labelBalance_2->setFont(font);   
 
     refreshRecentTransactions();
 }
