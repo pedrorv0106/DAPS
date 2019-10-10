@@ -2,7 +2,7 @@
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2018 The PIVX developers
-// Copyright (c) 2018-2019 The DAPScoin developers
+// Copyright (c) 2018-2019 The DAPS Project developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -42,7 +42,7 @@ using namespace boost;
 using namespace std;
 
 #if defined(NDEBUG)
-#error "DAPScoin cannot be compiled without assertions."
+#error "DAPS cannot be compiled without assertions."
 #endif
 
 // 6 comes from OPCODE (1) + vch.size() (1) + BIGNUM size (4)
@@ -352,7 +352,7 @@ secp256k1_context2* GetContext()
 secp256k1_scratch_space2* GetScratch()
 {
     static secp256k1_scratch_space2* scratch;
-    if (!scratch) scratch = secp256k1_scratch_space_create(GetContext(), 1024 * 1024 * 128);
+    if (!scratch) scratch = secp256k1_scratch_space_create(GetContext(), 1024 * 1024 * 2048);
     return scratch;
 }
 
@@ -2286,7 +2286,7 @@ int64_t GetBlockValue(const CBlockIndex* ptip)
         return 0;
     }
 	if (pForkTip->nHeight < Params().LAST_POW_BLOCK()) {
-		nSubsidy = 120000000 * COIN;
+		nSubsidy = 300000000 * COIN;
 	} else {
         nSubsidy = PoSBlockReward();
         nSubsidy += TeamRewards(pForkTip);
