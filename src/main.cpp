@@ -700,7 +700,7 @@ bool ReVerifyPoSBlock(CBlockIndex* pindex)
         // track money supply and mint amount info
         CAmount nMoneySupplyPrev = pindex->pprev ? pindex->pprev->nMoneySupply : 0;
         pindex->nMoneySupply = nMoneySupplyPrev + nValueOut - nValueIn - nFees;
-        LogPrintf("%s: nMoneySupplyPrev=%d, pindex->nMoneySupply=%d, nFees = %d", __func__, nMoneySupplyPrev, pindex->nMoneySupply, nFees);
+        //LogPrintf("%s: nMoneySupplyPrev=%d, pindex->nMoneySupply=%d, nFees = %d", __func__, nMoneySupplyPrev, pindex->nMoneySupply, nFees);
         pindex->nMint = pindex->nMoneySupply - nMoneySupplyPrev + nFees;
 
         //PoW phase redistributed fees to miner. PoS stage destroys fees.
@@ -3134,7 +3134,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     // track money supply and mint amount info
     CAmount nMoneySupplyPrev = pindex->pprev ? pindex->pprev->nMoneySupply : 0;
     pindex->nMoneySupply = nMoneySupplyPrev + nValueOut - nValueIn - nFees;
-    LogPrintf("%s: nValueOut=%d, nValueIn=%d, nMoneySupplyPrev=%d, pindex->nMoneySupply=%d, nFees=%d", __func__, nValueOut, nValueIn, nMoneySupplyPrev, pindex->nMoneySupply, nFees);
+    //LogPrintf("%s: nValueOut=%d, nValueIn=%d, nMoneySupplyPrev=%d, pindex->nMoneySupply=%d, nFees=%d", __func__, nValueOut, nValueIn, nMoneySupplyPrev, pindex->nMoneySupply, nFees);
     pindex->nMint = pindex->nMoneySupply - nMoneySupplyPrev + nFees;
 
     if (!pblocktree->WriteBlockIndex(CDiskBlockIndex(pindex)))
