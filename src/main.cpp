@@ -700,7 +700,7 @@ bool ReVerifyPoSBlock(CBlockIndex* pindex)
         // track money supply and mint amount info
         CAmount nMoneySupplyPrev = pindex->pprev ? pindex->pprev->nMoneySupply : 0;
         pindex->nMoneySupply = nMoneySupplyPrev + nValueOut - nValueIn - nFees;
-        LogPrintf("%s: nMoneySupplyPrev=%d, pindex->nMoneySupply=%d, nFees = %d", __func__, nMoneySupplyPrev, pindex->nMoneySupply, nFees);
+        //LogPrintf("%s: nMoneySupplyPrev=%d, pindex->nMoneySupply=%d, nFees = %d", __func__, nMoneySupplyPrev, pindex->nMoneySupply, nFees);
         pindex->nMint = pindex->nMoneySupply - nMoneySupplyPrev + nFees;
 
         //PoW phase redistributed fees to miner. PoS stage destroys fees.
@@ -1475,11 +1475,6 @@ bool GetCoinAge(const CTransaction& tx, const unsigned int nTxTime, uint64_t& nC
     return true;
 }
 
-bool MoneyRange(CAmount nValueOut)
-{
-    return nValueOut >= 0 && nValueOut <= Params().MaxMoneyOut();
-}
-
 bool IsSerialInBlockchain(const CBigNum& bnSerial, int& nHeightTx)
 {
     uint256 txHash = 0;
@@ -1646,8 +1641,6 @@ CAmount GetMinRelayFee(const CTransaction& tx, unsigned int nBytes, bool fAllowF
             nMinFee = 0;
     }
 
-    if (!MoneyRange(nMinFee))
-        nMinFee = Params().MaxMoneyOut();
     return nMinFee;
 }
 
@@ -1822,9 +1815,8 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState& state, const CTransa
                     REJECT_NONSTANDARD, "bad-txns-too-many-sigops");
         }
 
-        CAmount nFees = 0; //nValueIn - nValueOut;
-        double dPriority = 0;
-        GetPriority(tx, chainActive.Height());
+        CAmount nFees = tx.nTxFee;
+        double dPriority = GetPriority(tx, chainActive.Height());
 
         CTxMemPoolEntry entry(tx, nFees, GetTime(), dPriority, chainActive.Height());
         unsigned int nSize = entry.GetTxSize();
@@ -3141,7 +3133,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     // track money supply and mint amount info
     CAmount nMoneySupplyPrev = pindex->pprev ? pindex->pprev->nMoneySupply : 0;
     pindex->nMoneySupply = nMoneySupplyPrev + nValueOut - nValueIn - nFees;
-    LogPrintf("%s: nValueOut=%d, nValueIn=%d, nMoneySupplyPrev=%d, pindex->nMoneySupply=%d, nFees=%d", __func__, nValueOut, nValueIn, nMoneySupplyPrev, pindex->nMoneySupply, nFees);
+    //LogPrintf("%s: nValueOut=%d, nValueIn=%d, nMoneySupplyPrev=%d, pindex->nMoneySupply=%d, nFees=%d", __func__, nValueOut, nValueIn, nMoneySupplyPrev, pindex->nMoneySupply, nFees);
     pindex->nMint = pindex->nMoneySupply - nMoneySupplyPrev + nFees;
 
     if (!pblocktree->WriteBlockIndex(CDiskBlockIndex(pindex)))
