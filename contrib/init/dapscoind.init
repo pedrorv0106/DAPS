@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#  dapscoind The DAPS core server.
+#  dapscoind The DAPScoin core server.
 #
 #
 # chkconfig: 345 80 20
