@@ -2201,6 +2201,7 @@ bool CWallet::MintableCoins()
 
     {
         LOCK2(cs_main, cs_wallet);
+        CAmount nBalance = GetBalance();
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
             const uint256& wtxid = it->first;
             const CWalletTx* pcoin = &(*it).second;
@@ -2212,7 +2213,8 @@ bool CWallet::MintableCoins()
                     for (const COutput& out : vCoins) {
                         int64_t nTxTime = out.tx->GetTxTime();
                         //add in-wallet minimum staking
-                        if (GetAdjustedTime() - nTxTime > nStakeMinAge && getCOutPutValue(out) >= MINIMUM_STAKE_AMOUNT)
+                        CAmount nVal = getCOutPutValue(out);
+                        if (GetAdjustedTime() - nTxTime > nStakeMinAge && nVal >= MINIMUM_STAKE_AMOUNT && nVal >= ((nBalance - nReserveBalance) * 60)/100)
                             return true;
                     }
                 }
@@ -4298,13 +4300,13 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             nReward = PoSBlockReward();
             txNew.vout[1].nValue = nCredit;
             txNew.vout[2].nValue = nReward;
-            if (stakingMode == STAKING_WITH_CONSOLIDATION || STAKING_WITH_CONSOLIDATION_WITH_STAKING_NEWW_FUNDS) {
+            /*if (stakingMode == STAKING_WITH_CONSOLIDATION || STAKING_WITH_CONSOLIDATION_WITH_STAKING_NEWW_FUNDS) {
                 //the first output contains all funds (input + rewards + fee)
                 if (nCredit + nReward > (MINIMUM_STAKE_AMOUNT + 100000*COIN)*2) {
                     txNew.vout[1].nValue = (nCredit + nReward)/2;
                     txNew.vout[2].nValue = (nCredit + nReward) - txNew.vout[1].nValue;
                 }
-            }
+            }*/
 
             // Limit size
             unsigned int nBytes = ::GetSerializeSize(txNew, SER_NETWORK, PROTOCOL_VERSION);
@@ -5749,7 +5751,7 @@ bool CWallet::CreateSweepingTransaction(CAmount target, CAmount threshold)
                 }
             }
             int ringSize = MIN_RING_SIZE + secp256k1_rand32() % (MAX_RING_SIZE - MIN_RING_SIZE + 1);
-            if (vCoins.size() == 0) return false;
+            if (vCoins.size() <= 1) return false;
             CAmount estimatedFee = ComputeFee(vCoins.size(), 1, ringSize);
             if (stakingMode != StakingMode::STAKING_WITH_CONSOLIDATION && (vCoins.empty() || vCoins.size() < MIN_TX_INPUTS_FOR_SWEEPING || total < target + estimatedFee && vCoins.size() <= MAX_TX_INPUTS)) {
                 //preconditions to create auto sweeping transactions not satisfied, do nothing here
@@ -5900,9 +5902,31 @@ void CWallet::AutoCombineDust()
     if (GetAdjustedTime() - lastTime < 60) return;
     LogPrintf("Creating a sweeping transaction\n");
     if (stakingMode == StakingMode::STAKING_WITH_CONSOLIDATION) {
+        if (IsLocked()) return;
         if (fGenerateDapscoins && chainActive.Tip()->nHeight >= Params().LAST_POW_BLOCK()) {
             //sweeping to create larger UTXO for staking
-            CreateSweepingTransaction(MINIMUM_STAKE_AMOUNT, MINIMUM_STAKE_AMOUNT);
+            LOCK2(cs_main, cs_wallet);
+            vector<COutput> vCoins;
+            CAmount max = 0;
+            for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it) {
+                const uint256& wtxid = it->first;
+                const CWalletTx* pcoin = &(*it).second;
+
+                int cannotSpend = 0;
+                {
+                    AvailableCoins(wtxid, pcoin, vCoins, cannotSpend, true);
+                    if (!vCoins.empty()) {
+                        for (const COutput& out : vCoins) {
+                            int64_t nTxTime = out.tx->GetTxTime();
+                            //add in-wallet minimum staking
+                            if (getCOutPutValue(out) >= max) {
+                                max = getCOutPutValue(out);
+                            }
+                        }
+                    }
+                }
+            }
+            CreateSweepingTransaction(MINIMUM_STAKE_AMOUNT, max + COIN);
         }
         return;
     }
