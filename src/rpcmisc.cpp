@@ -61,13 +61,14 @@ UniValue getinfo(const UniValue &params, bool fHelp) {
             "  \"proxy\": \"host:port\",     (string, optional) the proxy used by the server\n"
             "  \"difficulty\": xxxxxx,       (numeric) the current difficulty\n"
             "  \"testnet\": true|false,      (boolean) if the server is using testnet or not\n"
-            "  \"moneysupply\" : \"supply\"       (numeric) The money supply when this block was added to the blockchain\n"
+            "  \"moneysupply\" : \"supply\"  (numeric) The money supply when this block was added to the blockchain\n"
             "  \"keypoololdest\": xxxxxx,    (numeric) the timestamp (seconds since GMT epoch) of the oldest pre-generated key in the key pool\n"
             "  \"keypoolsize\": xxxx,        (numeric) how many new keys are pre-generated\n"
             "  \"unlocked_until\": ttt,      (numeric) the timestamp in seconds since epoch (midnight Jan 1 1970 GMT) that the wallet is unlocked for transfers, or 0 if the wallet is locked\n"
             "  \"paytxfee\": x.xxxx,         (numeric) the transaction fee set in dapscoin/kb\n"
             "  \"relayfee\": x.xxxx,         (numeric) minimum relay fee for non-free transactions in dapscoin/kb\n"
-            "  \"staking status\": true|false,  (boolean) if the wallet is staking or not\n"
+            "  \"staking mode\": enabled|disabled,  (string) if staking is enabled or disabled\n"
+            "  \"staking status\": active|inactive, (string) if staking is active or inactive\n"
             "  \"errors\": \"...\"           (string) any error messages\n"
             "}\n"
             "\nExamples:\n" +
@@ -107,7 +108,8 @@ UniValue getinfo(const UniValue &params, bool fHelp) {
         nStaking = true;
     else if (mapHashedBlocks.count(chainActive.Tip()->nHeight - 1) && nLastCoinStakeSearchInterval)
         nStaking = true;
-    obj.push_back(Pair("staking status", (nStaking ? "Staking Active" : "Staking Not Active")));
+    obj.push_back(Pair("staking mode", (pwalletMain->ReadStakingStatus() ? "enabled" : "disabled")));
+    obj.push_back(Pair("staking status", (nStaking ? "active" : "inactive")));
     obj.push_back(Pair("errors", GetWarnings("statusbar")));
     return obj;
 }
@@ -459,13 +461,14 @@ UniValue getstakingstatus(const UniValue& params, bool fHelp)
             "Returns an object containing various staking information.\n"
             "\nResult:\n"
             "{\n"
-            "  \"validtime\": true|false,          (boolean) if the chain tip is within staking phases\n"
-            "  \"haveconnections\": true|false,    (boolean) if network connections are present\n"
-            "  \"walletunlocked\": true|false,     (boolean) if the wallet is unlocked\n"
-            "  \"mintablecoins\": true|false,      (boolean) if the wallet has mintable coins\n"
-            "  \"enoughcoins\": true|false,        (boolean) if available coins are greater than reserve balance\n"
-            "  \"mnsync\": true|false,             (boolean) if masternode data is synced\n"
-            "  \"staking status\": true|false,     (boolean) if the wallet is staking or not\n"
+            "  \"validtime\": true|false,           (boolean) if the chain tip is within staking phases\n"
+            "  \"haveconnections\": true|false,     (boolean) if network connections are present\n"
+            "  \"walletunlocked\": true|false,      (boolean) if the wallet is unlocked\n"
+            "  \"mintablecoins\": true|false,       (boolean) if the wallet has mintable coins\n"
+            "  \"enoughcoins\": true|false,         (boolean) if available coins are greater than reserve balance\n"
+            "  \"mnsync\": true|false,              (boolean) if masternode data is synced\n"
+            "  \"staking mode\": enabled|disabled,  (string) if staking is enabled or disabled\n"
+            "  \"staking status\": active|inactive, (string) if staking is active or inactive\n"
             "}\n"
             "\nExamples:\n" +
             HelpExampleCli("getstakingstatus", "") + HelpExampleRpc("getstakingstatus", ""));
@@ -492,7 +495,8 @@ UniValue getstakingstatus(const UniValue& params, bool fHelp)
         nStaking = true;
     else if (mapHashedBlocks.count(chainActive.Tip()->nHeight - 1) && nLastCoinStakeSearchInterval)
         nStaking = true;
-    obj.push_back(Pair("staking status", nStaking));
+    obj.push_back(Pair("staking mode", (pwalletMain->ReadStakingStatus() ? "enabled" : "disabled")));
+    obj.push_back(Pair("staking status", (nStaking ? "active" : "inactive")));
 
     return obj;
 }
