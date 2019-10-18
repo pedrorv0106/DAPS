@@ -243,7 +243,7 @@ void OverviewPage::setWalletModel(WalletModel* model)
     this->walletModel = model;
     if (model && model->getOptionsModel()) {
         // Set up transaction list
-        LogPrintf("\n%s:setWalletModel\n", __func__);
+        LogPrintf("%s:setWalletModel\n", __func__);
         filter = new TransactionFilterProxy(this);
         filter->setSourceModel(model->getTransactionTableModel());
         filter->setLimit(NUM_ITEMS);
@@ -484,7 +484,7 @@ void OverviewPage::updateRecentTransactions(){
                 ui->lblRecentTransaction->setVisible(true);
             }
         } else {
-            LogPrintf("\npwalletMain has not been initialized\n");
+            LogPrintf("pwalletMain has not been initialized\n");
         }
     }
 }
