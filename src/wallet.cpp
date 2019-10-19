@@ -3927,11 +3927,23 @@ bool CWallet::selectDecoysAndRealIndex(CTransaction& tx, int& myIndex, int ringS
         CTransaction txPrev;
         uint256 hashBlock;
         if (!GetTransaction(tx.vin[i].prevout.hash, txPrev, hashBlock)) {
+            LogPrintf("\nSelected transaction is not in the main chain\n");
             return false;
         }
 
         CBlockIndex* atTheblock = mapBlockIndex[hashBlock];
+        CBlockIndex* tip = chainActive.Tip();
         if (!chainActive.Contains(atTheblock)) continue;
+        uint256 hashTip = tip->GetBlockHash();
+        //verify that tip and hashBlock must be in the same fork
+        if (!atTheblock) {
+            continue;
+        } else {
+            CBlockIndex* ancestor = tip->GetAncestor(atTheblock->nHeight);
+            if (ancestor != atTheblock) {
+                continue;
+            }
+        }
 
         CKeyImage ki;
         if (!generateKeyImage(txPrev.vout[tx.vin[i].prevout.n].scriptPubKey, ki)) {
