@@ -2163,7 +2163,7 @@ UniValue autocombinedust(const UniValue& params, bool fHelp)
         throw runtime_error("Changed settings in wallet but failed to save to database\n");
 
     UniValue result(UniValue::VOBJ);
-    result.push_back(Pair("autocombinedust", pwalletMain->fCombineDust()));
+    result.push_back(Pair("autocombinedust", params[0].get_bool()));
     result.push_back(Pair("amount", int(pwalletMain->nAutoCombineThreshold)));
     return result;
 }
