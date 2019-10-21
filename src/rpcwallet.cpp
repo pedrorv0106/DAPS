@@ -2162,7 +2162,10 @@ UniValue autocombinedust(const UniValue& params, bool fHelp)
     if (!walletdb.WriteAutoCombineSettings(fEnable, nThreshold))
         throw runtime_error("Changed settings in wallet but failed to save to database\n");
 
-    return NullUniValue;
+    UniValue result(UniValue::VOBJ);
+    result.push_back(Pair("autocombinedust", pwalletMain->fCombineDust()));
+    result.push_back(Pair("amount", int(pwalletMain->nAutoCombineThreshold)));
+    return result;
 }
 
 UniValue printMultiSend()
