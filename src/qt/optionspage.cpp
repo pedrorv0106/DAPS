@@ -69,7 +69,7 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
             stkStatus = false;
             pwalletMain->walletStakingInProgress = false;
             pwalletMain->WriteStakingStatus(false);
-            emit model->stakingStatusChanged(false);
+            //emit model->stakingStatusChanged(false);
         } else {
             QString error;
             StakingStatusError stt = model->getStakingStatusError(error);
@@ -77,7 +77,7 @@ OptionsPage::OptionsPage(QWidget* parent) : QDialog(parent),
                 stkStatus = false;
                 pwalletMain->walletStakingInProgress = false;
                 pwalletMain->WriteStakingStatus(false);
-                emit model->stakingStatusChanged(false);
+                //emit model->stakingStatusChanged(false);
             }
         }
     }
