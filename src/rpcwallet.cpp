@@ -2153,8 +2153,11 @@ UniValue autocombinedust(const UniValue& params, bool fHelp)
     CWalletDB walletdb(pwalletMain->strWalletFile);
     CAmount nThreshold = 0;
 
-    if (fEnable)
+    if (fEnable) {
         nThreshold = params[1].get_int();
+    } else {
+        nThreshold = 0;
+    }
 
     pwalletMain->fCombineDust = fEnable;
     pwalletMain->nAutoCombineThreshold = nThreshold;
