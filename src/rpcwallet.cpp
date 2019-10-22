@@ -2153,8 +2153,11 @@ UniValue autocombinedust(const UniValue& params, bool fHelp)
     CWalletDB walletdb(pwalletMain->strWalletFile);
     CAmount nThreshold = 0;
 
-    if (fEnable)
+    if (fEnable) {
         nThreshold = params[1].get_int();
+    } else {
+        nThreshold = 0;
+    }
 
     pwalletMain->fCombineDust = fEnable;
     pwalletMain->nAutoCombineThreshold = nThreshold;
@@ -2162,7 +2165,10 @@ UniValue autocombinedust(const UniValue& params, bool fHelp)
     if (!walletdb.WriteAutoCombineSettings(fEnable, nThreshold))
         throw runtime_error("Changed settings in wallet but failed to save to database\n");
 
-    return NullUniValue;
+    UniValue result(UniValue::VOBJ);
+    result.push_back(Pair("autocombinedust", params[0].get_bool()));
+    result.push_back(Pair("amount", int(pwalletMain->nAutoCombineThreshold)));
+    return result;
 }
 
 UniValue printMultiSend()
