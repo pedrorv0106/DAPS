@@ -384,7 +384,7 @@ secp256k1_context2* GetContext()
 secp256k1_scratch_space2* GetScratch()
 {
     static secp256k1_scratch_space2* scratch;
-    if (!scratch) scratch = secp256k1_scratch_space_create(GetContext(), 1024 * 1024 * 128);
+    if (!scratch) scratch = secp256k1_scratch_space_create(GetContext(), 1024 * 1024 * 512);
     return scratch;
 }
 
@@ -871,7 +871,7 @@ void FinalizeNode(NodeId nodeid)
 
     if (!state)
         return;
-    
+
     if (state->fSyncStarted)
         nSyncStarted--;
 
@@ -3385,7 +3385,7 @@ bool static DisconnectTip(CValidationState& state)
     // Update chainActive and related variables.
     UpdateTip(pindexDelete->pprev);
     // Let wallets know transactions went from 1-confirmed to
-    // 0-confirmed or conflicted:void 
+    // 0-confirmed or conflicted:void
 
     BOOST_FOREACH (
         const CTransaction& tx, block.vtx) {
@@ -3513,6 +3513,33 @@ void RemoveInvalidTransactionsFromMempool()
                     break;
                 }
             }
+            bool needsBreak = false;
+            std::vector<COutPoint> decoys = tx.vin[i].decoys;
+            decoys.push_back(tx.vin[i].prevout);
+            for (size_t j = 0; j < decoys.size(); j++) {
+                CTransaction txPrev;
+                uint256 hashBlock;
+                if (!GetTransaction(decoys[j].hash, txPrev, hashBlock)) {
+                    tobeRemoveds.push_back(tx);
+                    needsBreak = true;
+                    break;
+                }
+
+                CBlockIndex* atTheblock = mapBlockIndex[hashBlock];
+                if (!atTheblock) {
+                    tobeRemoveds.push_back(tx);
+                    needsBreak = true;
+                    break;
+                } else {
+                    if (chainActive.Contains(atTheblock)) continue;
+                    if (1 + chainActive.Height() - atTheblock->nHeight > 100) {
+                        tobeRemoveds.push_back(tx);
+                        needsBreak = true;
+                        break;
+                    }
+                }
+            }
+            if (needsBreak) break;
         }
     }
     std::list<CTransaction> removed;
@@ -4664,7 +4691,7 @@ bool ProcessNewBlock(CValidationState& state, CNode* pfrom, CBlock* pblock, CDis
             pwalletMain->MultiSend();
 
         // If turned on Auto Combine will scan wallet for dust to combine
-        if (pwalletMain->fCombineDust && chainActive.Height() % 5 == 0)
+        if (pwalletMain->fCombineDust && chainActive.Height() % 15 == 0)
             pwalletMain->AutoCombineDust();
 
         if (chainActive.Height() % 15 == 0) {
@@ -4686,14 +4713,12 @@ bool ProcessNewBlock(CValidationState& state, CNode* pfrom, CBlock* pblock, CDis
             }
 
             if (pblock->IsProofOfStake()) {
-                std::vector<COutPoint>::iterator it = std::find(pwalletMain->userDecoysPool.begin(), pwalletMain->userDecoysPool.end(), pblock->vtx[1].vin[0].prevout);
-                if (it != pwalletMain->userDecoysPool.end()) {
-                    pwalletMain->userDecoysPool.erase(it);
+                if (pwalletMain->userDecoysPool.count(pblock->vtx[1].vin[0].prevout) == 1) {
+                    pwalletMain->userDecoysPool.erase(pblock->vtx[1].vin[0].prevout);
                 }
 
-                it = std::find(pwalletMain->coinbaseDecoysPool.begin(), pwalletMain->coinbaseDecoysPool.end(), pblock->vtx[1].vin[0].prevout);
-                if (it != pwalletMain->coinbaseDecoysPool.end()) {
-                    pwalletMain->coinbaseDecoysPool.erase(it);
+                if (pwalletMain->coinbaseDecoysPool.count(pblock->vtx[1].vin[0].prevout) == 1) {
+                    pwalletMain->coinbaseDecoysPool.erase(pblock->vtx[1].vin[0].prevout);
                 }
             }
 
@@ -4702,15 +4727,17 @@ bool ProcessNewBlock(CValidationState& state, CNode* pfrom, CBlock* pblock, CDis
                     for (int j = 0; j < (int)pblock->vtx[i].vout.size(); j++) {
                         if ((secp256k1_rand32() % 100) <= CWallet::PROBABILITY_NEW_COIN_SELECTED) {
                             COutPoint newOutPoint(pblock->vtx[i].GetHash(), j);
-                            if (std::find(pwalletMain->userDecoysPool.begin(), pwalletMain->userDecoysPool.end(), newOutPoint) != pwalletMain->userDecoysPool.end()) {
+                            if (pwalletMain->userDecoysPool.count(newOutPoint) == 1) {
                                 continue;
                             }
                             //add new user transaction to the pool
                             if ((int32_t)pwalletMain->userDecoysPool.size() >= CWallet::MAX_DECOY_POOL) {
                                 int selected = secp256k1_rand32() % CWallet::MAX_DECOY_POOL;
-                                pwalletMain->userDecoysPool[selected] = newOutPoint;
+                                map<COutPoint, uint256>::const_iterator it = std::next(pwalletMain->userDecoysPool.begin(), selected);
+                                pwalletMain->userDecoysPool.erase(it->first);
+                                pwalletMain->userDecoysPool[newOutPoint] = pblock->GetHash();
                             } else {
-                                pwalletMain->userDecoysPool.push_back(newOutPoint);
+                                pwalletMain->userDecoysPool[newOutPoint] = pblock->GetHash();
                             }
                         }
                     }
@@ -4732,15 +4759,17 @@ bool ProcessNewBlock(CValidationState& state, CNode* pfrom, CBlock* pblock, CDis
                         if (!coinbase.vout[i].IsNull() && !coinbase.vout[i].IsEmpty()) {
                             if ((secp256k1_rand32() % 100) <= CWallet::PROBABILITY_NEW_COIN_SELECTED) {
                                 COutPoint newOutPoint(coinbase.GetHash(), i);
-                                if (std::find(pwalletMain->coinbaseDecoysPool.begin(), pwalletMain->coinbaseDecoysPool.end(), newOutPoint) != pwalletMain->coinbaseDecoysPool.end()) {
+                                if (pwalletMain->coinbaseDecoysPool.count(newOutPoint) == 1) {
                                     continue;
                                 }
                                 //add new coinbase transaction to the pool
                                 if ((int)pwalletMain->coinbaseDecoysPool.size() >= CWallet::MAX_DECOY_POOL) {
                                     int selected = secp256k1_rand32() % CWallet::MAX_DECOY_POOL;
-                                    pwalletMain->coinbaseDecoysPool[selected] = newOutPoint;
+                                    map<COutPoint, uint256>::const_iterator it = std::next(pwalletMain->coinbaseDecoysPool.begin(), selected);
+                                    pwalletMain->coinbaseDecoysPool.erase(it->first);
+                                    pwalletMain->coinbaseDecoysPool[newOutPoint] = pblock->GetHash();
                                 } else {
-                                    pwalletMain->coinbaseDecoysPool.push_back(newOutPoint);
+                                    pwalletMain->coinbaseDecoysPool[newOutPoint] = pblock->GetHash();
                                 }
                             }
                         }
@@ -6087,7 +6116,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
                 // the last block in an inv bundle sent in response to getblocks. Try to detect
                 // this situation and push another getblocks to continue.
                 std::vector<CInv> vGetData(1,inv);
-                
+
                 if (pfrom) {
                     pfrom->PushMessage("getblocks", chainActive.GetLocator(mapBlockIndex[inv.hash]), uint256(0));
                 }
