@@ -3500,6 +3500,7 @@ bool DisconnectBlocksAndReprocess(int blocks)
 
 void RemoveInvalidTransactionsFromMempool()
 {
+    LOCK(cs_main, pwalletMain->cs_wallet);
     LOCK(mempool.cs);
     std::vector<CTransaction> tobeRemoveds;
     for (std::map<uint256, CTxMemPoolEntry>::const_iterator it = mempool.mapTx.begin(); it != mempool.mapTx.end(); ++it) {
